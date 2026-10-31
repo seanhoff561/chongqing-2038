@@ -14,6 +14,9 @@ export interface Scenario {
   draw?: number;
   /** 0 clear to 1 flat overcast light (until the weather schedule drives it) */
   overcast?: number;
+  /** the hour it starts at (default the run's 06:00), and dev flags it starts with (the machines' lineup) */
+  hour?: number;
+  flags?: Partial<import('../sim/types').SimState['flags']>;
 }
 
 export const scenarios: Scenario[] = [
@@ -23,6 +26,7 @@ export const scenarios: Scenario[] = [
   { name: 'hideout', world: 'hideout', desc: 'the furnished air-raid shelter (test scene)', run: true, furnished: true },
   { name: 'yuzhong', world: 'yuzhong', desc: 'Yuzhong at 1:1 from the real ground and map, from Jiefangbei', overcast: 0.6, at: 'jiefangbei' },
   { name: 'tunnels', world: 'yuzhong', desc: 'the Grand Tunnel under Yuzhong, at the junction of its north passage', overcast: 0.6, at: 'Tunnel junction (north passage)' },
+  { name: 'units', world: 'lineup', desc: "the machines' lineup: every kind on a plaza at noon, walking their beats at him", hour: 12, flags: { god: true, clear: true }, overcast: 0.4 },
   { name: 'reference', world: 'reference', desc: 'the reference hillside (docs/reference/look-01.jpg) from the vantage roof', draw: 700, overcast: 1 },
 ];
 

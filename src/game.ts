@@ -116,6 +116,8 @@ export class Game {
     this.scenario = sc;
     this.world = getWorld(sc.world);
     this.state = createState(seed, this.world);
+    if (sc.hour !== undefined) this.state.time = sc.hour * 3600;
+    Object.assign(this.state.flags, sc.flags);
     if (sc.run) startRun(this.state, this.world);
     if (sc.furnished) furnish(this.state, this.world);
     const sp = sc.spawn ?? this.world.teleports.find(t => t.name === sc.at);

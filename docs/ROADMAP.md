@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 31 of 41 done
+## M4: 32 of 42 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -776,11 +776,13 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-25** Lost shelter (U-013)
   - After a survived raid the stash is destroyed and the shelter unusable; he must make a new shelter elsewhere (M3-28)
   - A sim test covers it
-- [ ] **M4-26** Machine models
+- [x] **M4-26** Machine models
   - Code-built meshes: cameras, lamppost cameras, patrol and hunter drones with spinning rotors, quadrupeds with leg animation, humanoids, turrets and docks
   - ?scenario=units shows a lineup; a screenshot
   - The machines (U-031): white so they're seen, detailed and armed (rifles, launchers, armour plates, sensor heads); they move like soldiers (human-like walk, run, crouch, aim and turn animations), not robots; genuinely intimidating; models and animations from openly licensed sources if found, else built to reference
-  - U-038: street heavies: bigger, scarier robots along the streets
+- [ ] **M4-26b** Street heavies (U-038)
+  - U-038: street heavies: bigger, scarier robots along the streets (split from M4-26): a heavy walker kind, about 3 m tall, armoured and carrying a heavy gun, on some of the street beats, with its own rigged model
+  - Sim test: heavies walk street beats in the city, see and fire as machines do, and take damage by place
 - [ ] **M4-27** The world shows the alert state
   - Unit lights go white, amber or red by state; LED boards switch to alert text; sirens sound
   - No HUD indicator; screenshots Unaware and Engaged

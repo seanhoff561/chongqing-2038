@@ -4,8 +4,9 @@ import { buildGym } from './sets/gym';
 import { buildHideoutScene } from './sets/hideout-scene';
 import { buildReference } from './sets/reference';
 import { buildYuzhong } from './yuzhong';
+import { buildLineup } from './sets/lineup';
 
-const builders: Record<string, () => World> = { gym: buildGym, hideout: buildHideoutScene, reference: buildReference, yuzhong: buildYuzhong };
+const builders: Record<string, () => World> = { gym: buildGym, hideout: buildHideoutScene, reference: buildReference, yuzhong: buildYuzhong, lineup: buildLineup };
 const cache = new Map<string, World>();
 
 export function getWorld(name: string): World {
