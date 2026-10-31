@@ -54,6 +54,8 @@ export function hideoutParts(ox: number, oy: number, oz: number, o: { shaftTop?:
       { kind: 'boxes', x: ox + 6.5, y: oy, z: oz + 0.8, yaw: 1.1 },
     ]),
     { kind: 'rubble', x: ox + 4.25, y: oy, z: oz - 2.6, yaw: 0, w: 1.4, h: 2.2 },
+    // The light down the vent (M4-41).
+    { kind: 'ventlight', x: sx, y: oy, z: sz, yaw: 0, h: H.shaftTop, text: id('grate') },
     // The grate (its text the interactable it follows) under its heap of rubbish bags (M3-72, U-038).
     { kind: 'grate', x: sx, y: oy + H.shaftTop - 0.04, z: sz, yaw: 0, w: 2 * hs, text: id('grate') },
     { kind: 'cover', x: sx, y: oy + H.shaftTop, z: sz, yaw: 0, text: id('grate') + '-bags' },

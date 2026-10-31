@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-41 The hideout lit (U-050).
-Features done: 191 / 332 | Last done: M4-40
+**Status:** building M4. Next: M4-42 A roll key (U-050).
+Features done: 192 / 332 | Last done: M4-41
 <!-- /status -->
 
 ## Log
@@ -49,3 +49,4 @@ Features done: 191 / 332 | Last done: M4-40
 - M4-26b Street heavies (U-038): street heavies: a 3 m walker with a cannon on each district's main street (U-038)
 - M4-27 The world shows the alert state: the alert in the world: machine lights by state, LED tickers and edict boards on alert, sirens; signs glow again
 - M4-40 Pitched roof eaves to grab (U-050): the pitched roofs' eaves are ledges to hang from and haul up over (U-050)
+- M4-41 The hideout lit (U-050): the hideout lit: daylight down the vent by day, the alley's neon by night (U-050)

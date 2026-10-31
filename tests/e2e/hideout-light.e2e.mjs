@@ -1,6 +1,6 @@
 // M4-41 (U-050): the start hideout lit. In the chamber at noon, daylight down the vent; at night the alley's neon down
 // it; both brighter than the chamber was (luminance over the middle of the view, BEFORE measured on the build before).
-const BEFORE = { day: Number(process.env.HL_DAY ?? 0), night: Number(process.env.HL_NIGHT ?? 0) };
+const BEFORE = { day: 4.7, night: 0.3 };
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=run&seed=1', 'hideout-light');
   const lum = hour => page.evaluate(`(() => {
@@ -22,7 +22,7 @@ export default async function ({ open, fail, screenshot }) {
   const night = await lum(23);
   await screenshot(page, 'hideout-night');
   console.log(`hideout light: day ${day.toFixed(1)} (before ${BEFORE.day}), night ${night.toFixed(1)} (before ${BEFORE.night})`);
-  if (BEFORE.day && !(day > BEFORE.day * 1.5 + 4)) fail('hideout-light', `day ${day.toFixed(1)} not brighter than ${BEFORE.day}`);
-  if (BEFORE.night && !(night > BEFORE.night * 1.5 + 4)) fail('hideout-light', `night ${night.toFixed(1)} not brighter than ${BEFORE.night}`);
+  if (!(day > BEFORE.day * 1.5 + 4)) fail('hideout-light', `day ${day.toFixed(1)} not brighter than ${BEFORE.day}`);
+  if (!(night > BEFORE.night * 1.5 + 4)) fail('hideout-light', `night ${night.toFixed(1)} not brighter than ${BEFORE.night}`);
   await page.close();
 }

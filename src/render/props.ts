@@ -142,7 +142,27 @@ const builders: Record<string, Builder> = {
     for (const [x, z] of [[-o, -o], [o, -o], [-o, o], [o, o]]) parts.push(new THREE.BoxGeometry(0.1, p.h!, 0.1).translate(x, p.h! / 2, z));
     return new THREE.Mesh(mergeGeometries(parts), material(MAT.metal));
   },
-  neonGlow: () => { const l = new THREE.PointLight(0xff3b8b, 5, 16, 1.5); return l; },
+  // The alley's neon light, bright enough to read the alley by (U-050).
+  // (Its reach kept to the alley: a point light shines through rock.)
+  neonGlow: () => { const l = new THREE.PointLight(0xff3b8b, 14, 11, 1.3); return l; },
+  // The vent's light into the chamber under it (M4-41, U-050): daylight down the shaft by day (more with the grate up and
+  // the bags off it), the alley's neon by night, and a faint beam of it down the shaft; p.h the shaft's height.
+  ventlight: p => {
+    const g = new THREE.Group(), light = new THREE.PointLight(0xe8eeff, 0, 22, 1.5), h = p.h!;
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 1.0, h, 12, 1, true).translate(0, h / 2, 0),
+      new THREE.MeshBasicMaterial({ color: 0xe8eeff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+    light.position.y = 2.5;
+    g.add(light, beam);
+    const day = new THREE.Color(0xe8eeff), neon = new THREE.Color(0xff4f9a);
+    g.userData.tick = (_t: number, open: Record<string, boolean>) => {
+      const k = night.k, up = open[p.text!] ? 1.6 : 1;
+      light.color.copy(day).lerp(neon, k);
+      light.intensity = ((1 - k) * 6 + k * 3.5) * up;
+      beam.material.color.copy(light.color);
+      beam.material.opacity = ((1 - k) * 0.07 + k * 0.03) * up;
+    };
+    return g;
+  },
   mattress: () => {
     const g = new THREE.Group();
     g.add(new THREE.Mesh(box(2.0, 0.16, 1.1, 0, -0.16, 0), lam(0x5d5546)));

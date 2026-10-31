@@ -172,3 +172,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-27: the alert in the world
 - At night in Jiefangbei, let a camera see you and stay seen: do the machines' lights going amber then red read clearly, do the LED tickers and edict boards switch to the alert, is the siren alarming without being grating? Is it clear when it's calmed down again, with no HUD telling you?
+
+## M4-41: the hideout lit (U-050)
+- Start a run by day and again at night (dev panel time slider): is the chamber light enough to find your way and still feel like a hideout under the street? Does the light down the vent look right, brighter with the grate open?

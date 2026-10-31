@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 35 of 71 done
+## M4: 36 of 71 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -789,7 +789,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-40** Pitched roof eaves to grab (U-050)
   - The eaves of the old quarter's pitched tile roofs are a ledge his hands find: he can hang from them and pull up onto the roof
   - A sim test hangs from a pitched roof's eave near the start hideout and pulls up onto it
-- [ ] **M4-41** The hideout lit (U-050)
+- [x] **M4-41** The hideout lit (U-050)
   - At night the alley's neon lights the alley and throws its colour down the vent shaft into the chamber
   - By day daylight falls through the vent grate into the chamber; the chamber is no longer pitch dark
   - Screenshots of the chamber by day and by night, brighter than before (a luminance check)
