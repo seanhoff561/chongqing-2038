@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-40 Pitched roof eaves to grab (U-050).
-Features done: 190 / 311 | Last done: M4-27
+**Status:** building M4. Next: M4-41 The hideout lit (U-050).
+Features done: 191 / 332 | Last done: M4-40
 <!-- /status -->
 
 ## Log
@@ -48,3 +48,4 @@ Features done: 190 / 311 | Last done: M4-27
 - M4-26 Machine models: the machines' models: white armoured rigs that walk, trot, aim and fly (U-031)
 - M4-26b Street heavies (U-038): street heavies: a 3 m walker with a cannon on each district's main street (U-038)
 - M4-27 The world shows the alert state: the alert in the world: machine lights by state, LED tickers and edict boards on alert, sirens; signs glow again
+- M4-40 Pitched roof eaves to grab (U-050): the pitched roofs' eaves are ledges to hang from and haul up over (U-050)

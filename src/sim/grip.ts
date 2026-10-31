@@ -8,7 +8,7 @@ import { B, DT, type InputFrame, type SimState } from './types';
 import type { World } from '../world/world';
 import type { Player, Grip } from './player';
 import { movement as M } from '../data/movement';
-import { raycast, topAt, frameIn, frameOut, frameDirOut } from '../world/geom';
+import { raycast, topAt, topOver, frameIn, frameOut, frameDirOut, query } from '../world/geom';
 import { heightAt } from '../world/heightfield';
 import { free, moveHorizontal, moveVertical, groundGap } from './physics';
 import { startAction, kickOff } from './parkour';
@@ -26,6 +26,20 @@ function lookDir(p: Player) {
 }
 
 /** The grip under the reticle, if a hand could take it from where his body is. */
+/** Where he stands pulled up over a lip, `back` in from its edge: on the top, or on a slope rising from it (a pitched
+ *  roof's eave, U-050). */
+function onto(world: World, lip: Grip, back: number) {
+  const x = lip.x - lip.nx * back, z = lip.z - lip.nz * back;
+  let up = lip.top;
+  if (lip.kind !== 'lip') return { x, y: up + 1e-3, z };
+  // (His feet's box sits on the highest of a slope under it: only a slope, not some higher top beside the edge.)
+  for (const i of query(world.index, x - HW, z - HW, x + HW, z + HW)) {
+    const s = world.index.solids[i];
+    if (s.ramp && s.y0 <= lip.top + 0.05) up = Math.max(up, Math.min(lip.top + 0.6, topOver(s, x - HW, z - HW, x + HW, z + HW)));
+  }
+  return { x, y: up + 1e-3, z };
+}
+
 export function findGrab(world: World, p: Player): Grip | null {
   const ex = p.pos.x, ey = eyeY(p), ez = p.pos.z, d = lookDir(p);
   let best: Grip | null = null, bestT = G.rayReach;
@@ -46,9 +60,11 @@ export function findGrab(world: World, p: Player): Grip | null {
     const hx = ex + d.x * h.t, hy = ey + d.y * h.t, hz = ez + d.z * h.t;
     best = null;
     if (Math.abs(h.ny) < M.steep) {
-      // A wall face just below its top edge is a lip, if nothing sits on the edge.
+      // A wall face just below its top edge is a lip, if nothing sits on the edge. (Above the edge of a slope, such as a
+      // pitched roof's eave, clear of the slope as it rises: U-050.)
       const top = s ? topAt(s, hx, hz) : heightAt(world.index.ground!, hx - h.nx * 0.05, hz - h.nz * 0.05) ?? hy;
-      if (top - hy <= G.lipDepth && free(world.index, hx - h.nx * 0.07, top + 0.02, hz - h.nz * 0.07, 0.3, 0.05))
+      const ix = hx - h.nx * 0.07, iz = hz - h.nz * 0.07, over = s?.ramp ? Math.max(top, topAt(s, ix, iz)) : top;
+      if (top - hy <= G.lipDepth && free(world.index, ix, over + (s?.ramp ? 0.07 : 0.02), iz, 0.3, 0.05))
         best = { x: hx, y: top, z: hz, nx: h.nx, nz: h.nz, kind: 'lip', top };
     } else if (s && h.ny > 0.7 && !s.ramp) {
       // On a top surface near an edge facing him: grip that edge (found in a turned solid's own frame).
@@ -149,7 +165,7 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
   const atTop = lip.kind === 'lip' || lip.y >= lip.top - 0.3;
   if (atTop && p.pos.y >= lip.top - L.mantleFrom - 1e-3 && ((input.buttons & B.JUMP) || input.my > 0) && (input.my > 0 || (input.pressed & B.JUMP))) {
     const back = lip.kind === 'lip' ? HW + 0.05 : HW + 0.12;
-    const b = { x: lip.x - lip.nx * back, y: lip.top + 1e-3, z: lip.z - lip.nz * back };
+    const b = onto(world, lip, back);
     if (free(world.index, b.x, b.y, b.z, M.height.crouch) && free(world.index, p.pos.x, Math.max(p.pos.y, lip.top) + 1e-3, p.pos.z, M.height.crouch)) {
       p.hands[0].grip = p.hands[1].grip = null;
       startAction(p, 'climbup', G.climbTime, b, 'ground', 'crouch', 0);
@@ -161,11 +177,13 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
   // Feet on the wall below the hands? Then Space pushes off; without footing it pumps a swing (U-005).
   const foothold = !!raycast(world.index, p.pos.x, p.pos.y + 0.45, p.pos.z, -nx, 0, -nz, HW + 0.45);
   // Hanging free from a bar or an edge, Space held a moment hauls him up onto it, a muscle-up (U-035): onto the
-  // ledge behind the edge, or standing on the bar itself, if there's room.
-  p.muscle = !foothold && (input.buttons & B.JUMP) ? (p.muscle || 0) + DT : 0;
+  // ledge behind the edge, or standing on the bar itself, if there's room. From the eave of a slope out over the wall
+  // (a pitched roof's, U-050) W held hauls him up too.
+  const eave = lip.kind === 'lip' && input.my > 0 && onto(world, lip, HW + 0.05).y > lip.top + 0.05;
+  p.muscle = !foothold && ((input.buttons & B.JUMP) || eave) ? (p.muscle || 0) + DT : 0;
   if (p.muscle >= G.muscleUp && lip.kind === 'lip') {
     for (const back of [HW + 0.05, 0.03]) {
-      const b = { x: lip.x - lip.nx * back, y: lip.top + 1e-3, z: lip.z - lip.nz * back };
+      const b = onto(world, lip, back);
       if (!free(world.index, b.x, b.y, b.z, M.height.crouch) || groundGap(world.index, b, 0.05) === Infinity) continue;
       p.muscle = 0;
       p.hands[0].grip = p.hands[1].grip = null;

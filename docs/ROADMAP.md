@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 34 of 51 done
+## M4: 35 of 71 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -786,7 +786,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-27** The world shows the alert state
   - Unit lights go white, amber or red by state; LED boards switch to alert text; sirens sound
   - No HUD indicator; screenshots Unaware and Engaged
-- [ ] **M4-40** Pitched roof eaves to grab (U-050)
+- [x] **M4-40** Pitched roof eaves to grab (U-050)
   - The eaves of the old quarter's pitched tile roofs are a ledge his hands find: he can hang from them and pull up onto the roof
   - A sim test hangs from a pitched roof's eave near the start hideout and pulls up onto it
 - [ ] **M4-41** The hideout lit (U-050)
@@ -802,10 +802,47 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [ ] **M4-44** Every item use answers (U-050)
   - Using any item (left mouse with it in hand) either does something or says why it can't
   - A sim test uses every item in the catalogue, in hand on open ground, and each gives an effect or a message
+- [ ] **M4-69** A chalk bag, not climbing gloves (U-053)
+  - Climbing gloves are gone; a chalk bag is found in their place (loot and the zipline's list of things to ride with drop them)
+  - Chalked hands hold longer: hanging and pipes cost half while there's chalk in the bag, and it runs down with use
+  - A sim test hangs with and without chalk and compares the drain; the chalk runs out
+- [ ] **M4-56** Rain without the splash particles (U-051)
+  - Rain falls as rain; the splash and drip particles over every surface are gone
+  - A screenshot in rain
+- [ ] **M4-49** Quick opening, a circle filling (U-051)
+  - Opening, searching and working things is quick: a circle fills round the crosshair at each thing's own speed (a drawer fast, a locked cabinet slower), instead of the bar
+  - Each kind's time set in data; a sim test checks a drawer opens well under a second and harder things take longer; a screenshot of the circle
+- [ ] **M4-68** Holding things like a person (U-052)
+  - The pistol is held as in a modern shooter's viewmodel: gripped in the right hand with the left wrapped under it, arms in from the lower right, raised to the sights to aim; the knife, crowbar and other tools held as a person holds them
+  - Draw, idle sway, walking bob, firing recoil and reload motions; screenshots of each held item
+- [ ] **M4-60** Melee swings that land on anything (U-052)
+  - Left mouse with the knife or crowbar always swings, seen in the hands; the blow lands on what's in reach: a machine (as now), a wall or object (a clang or thud, a scrape), nothing (a whoosh)
+  - A sim test swings at the air, a wall and a machine and gets each outcome
+- [ ] **M4-57** Many more machines: deadly main streets (U-051)
+  - Far more machines: the main streets thick with them (walking in pairs and squads, cameras and turrets at the junctions, drones overhead), all but certain death to cross in the open; the side streets as busy as the main streets were
+  - Sim test: counts per main and side street length within the districts; a run across a main street by day is seen within seconds
+- [ ] **M4-59** Machines that move like they're alive (U-051)
+  - Drones search: they wander between buildings, drop to inspect building faces, windows and alleys, never flying straight lines for long
+  - Walkers leave the dead straight line: they drift, stop to look at doors, corners and bins, turn their heads, then go on
+  - Sim tests: a drone's path over a minute visits building faces and isn't a straight line; walkers stop to look along their beats
+- [ ] **M4-58** Columns go somewhere; patrols change over (U-051)
+  - The factory's columns march to exits round the city's edge (the bridges, the riverside roads, the tunnels) and leave by them, not vanishing
+  - Now and then a walker from a column changes over with one on a street beat, which takes its place, so the machines feel connected
+  - Sim tests: a column's way ends at an exit; a changeover happens within a few hours of game time
+- [ ] **M4-53** Machines where he doesn't expect them (U-051)
+  - Every so often a machine waits where he wouldn't look for one: inside a building he enters, on a roof, in the gap between two buildings, at the bottom of a stair
+  - Sim test: over a day such lurkers appear in buildings, on roofs and in gaps, and see him as any machine does
 - [ ] **M4-45** Combat AI (U-050)
   - Drones in a fight keep moving: they circle and strafe him at a stand-off, change height and jink when shot at, never hanging still over him
   - Humanoids in a fight move like soldiers: to cover and between covers, flanking, one suppressing while another advances, strafing when caught in the open
   - Sim tests: an engaged drone's position over 10 s keeps changing and stays off the point over his head; humanoids under fire move between covers and flank
+- [ ] **M4-61** The marks of damage (U-052)
+  - Rounds and blows leave marks: bullet holes and chips in walls, scrapes from the crowbar, dents and sparks on metal and on machines, each where it hit
+  - The marks stay (up to a cap, oldest gone first); screenshots of a wall and a machine after a fight
+- [ ] **M4-62** Machines that break apart (U-052)
+  - Machines are easy enough to hurt that a fight can be won, and they come apart where they're hit: a humanoid's head or arm shot off, its rifle shot out of its hands (it can't fire), a quadruped's launcher wrecked, a turret's barrels bent
+  - A drone hit in a rotor loses lift, spins out, crashes into what's below or beside it and blows up; sparks and smoke from hurt machines
+  - Sim tests: a humanoid's rifle destroyed stops it firing; a drone's rotor hit brings it down; screenshots
 - [ ] **M4-46** Relentless pursuit (U-050)
   - Once they have him, the machines follow him the way he goes: along side streets and alleys, up and down stairs, over low walls and into the underground (humanoids and quadrupeds with a person's agility; drones through alleys and tunnels)
   - No easy escape: breaking contact takes real effort (out of sight, a hiding place, a way they can't follow)
@@ -814,12 +851,45 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Small explosive drones: FPV kamikaze drones that dive at him and blow up, and bomb droppers that drop grenades from above, sent when a district has had him in sight too long
   - Heard coming, can be shot down or dodged; a blast hurts by distance
   - Sim tests: seen too long, strike drones come; a dive explodes at him; one shot down doesn't
+- [ ] **M4-64** Knocked down (U-052)
+  - A blast near him throws him by its force: off his feet, tumbling, landing on the ground where he lies a moment and gets up (the view goes with him)
+  - A sim test: a blast beside him throws him away from it and leaves him down, then up
+- [ ] **M4-65** Rocket launchers (U-052)
+  - The heavies' rocket pods fire rockets: seen and heard coming, a blast where they land (damage and knockdown by distance)
+  - He can find and fire a rocket launcher too (rare, heavy, loud)
+  - Sim tests: a rocket's blast hurts and throws him; his rocket wrecks a machine
+- [ ] **M4-66** Falls that feel like falls (U-052)
+  - Falling from a height feels like it: wind rising in his ears with his speed, the view's pull, a hard landing (a roll, a stumble, or down on the ground after a big one)
+  - A sim test of a long fall's landing states; the wind level is set by fall speed
 - [ ] **M4-48** Giant walkers (U-050)
   - Giant spider robots and massive, creepy walking machines move through the streets on their own beats, rigged and animated
   - Sim test: they walk the streets and see him; a screenshot of each
+- [ ] **M4-33** Audio engine and machine sounds
+  - Web Audio engine with 3D panning; synthesized rotor buzz with Doppler, servo whine, gunfire, footsteps and sirens; more drones are louder
+  - The smoke test starts audio after a click with no errors
+- [ ] **M4-50** The sounds of things (U-051)
+  - Opening and searching make the sound that fits the thing: a drawer slides, a locker clangs, a door creaks, a crate's lid scrapes, bags rustle
+  - Sim/e2e: every interactable kind maps to a sound and plays it
+- [ ] **M4-51** The empty city's ambience (U-051)
+  - A dystopian, futuristic ambience of a vast vertical city with not a soul in it: distant hum and wind between towers, far-off machinery, a drone somewhere, rain on metal; calm enough to fall into a trance, never over the top
+  - It changes with where he is (street, roof, alley, underground, indoors) and the hour; a long tuning pass is logged in PLAYTEST
+  - Rain sounds real (U-052): on the street, on roofs, metal and awnings, dripping under cover, muffled indoors
+- [ ] **M4-52** Frightening machines (U-051)
+  - The machines sound genuinely frightening, by design (the unseen, the sudden, the inhuman): sounds that tell him he's being watched, noticed and hunted before he sees anything; loud and terrifying close up
+  - At high alert the city goes mad: sirens, broadcasts, rotors, footfalls closing in; calm returns slowly so he stays on edge
+- [ ] **M4-54** Gunfire quick, deadly and real (U-051)
+  - Machine fire is fast and lethal: rounds arrive at once, a burst kills in seconds in the open
+  - It sounds like real gunfire: the crack of rounds passing close, the report and its echo off the buildings, distance and walls changing it
+- [ ] **M4-55** His breath and heartbeat (U-051)
+  - Spent, hurt or terrified he breathes hard and his heart pounds, louder the worse it is
+  - A sim test drives the breath and heart levels from endurance, HP and alert; the sound plays them
+- [ ] **M4-63** The raid wakes him to sirens (U-052)
+  - When a raid breaks in he wakes to sirens and flashing red light round the chamber, loud and sudden, through the 10 s
+  - A screenshot of the flashing light; the siren plays
 - [ ] **M4-28** Street speakers and announcements
   - Speakers and LED boards run the machine's calm announcements by state and time (curfew at night, alerts, search, heightened)
   - A unit test picks the right line for each state
+  - U-053: the announcements in a Chinese woman's voice, echoing down the streets between the buildings, saying what the occupier wants him to hear (he's alone, he's been abandoned, come out); at times a horror game's dread
 - [ ] **M4-29** Machines in the first district
   - Patrol data for Shibati, Jiaochangkou and the tunnels: cameras, lampposts, 2 drone docks, quadrupeds, humanoids, delivery robots
   - A sim test runs a full game day with no stuck units
@@ -833,17 +903,14 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [ ] **M4-32** Pursuit escapes in the first district
   - Scripted escapes for three pursuits (a drone tail on the stairs, a quadruped chase in the alleys, a camera spot at Jiaochangkou) break contact and the search ends without finding him
   - The pursuits load as ?scenario=pursuit-*
-- [ ] **M4-33** Audio engine and machine sounds
-  - Web Audio engine with 3D panning; synthesized rotor buzz with Doppler, servo whine, gunfire, footsteps and sirens; more drones are louder
-  - The smoke test starts audio after a click with no errors
 - [ ] **M4-34** Delivery robots
   - Wheeled robots at 2 m/s on flat streets (no stairs) with short sight; loud noise sends them off route
   - A sim test covers patrol and a stairs refusal
-- [ ] **M4-35** Tower searchlights
+- [-] **M4-35** Tower searchlights
   - Rooftop searchlights sweep at night, adding full light inside their cone; on contact they converge on the last known position
   - A sim test covers sweep and convergence
 
-## M5: 0 of 34 done
+## M5: 0 of 35 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
@@ -953,6 +1020,9 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - No zipline spawns on its own; a zipline kit (cable, clamps, a trolley) is found as loot and strung by him between two anchors in reach of each other and in line of sight (masts, poles, railings, a roof's edge), sloping down, then ridden as M3-52's lines are
   - He can take it down and carry it on; it weighs and takes space like any item; machines that see a strung line investigate it
   - A sim test strings one across a street between two roofs and rides it
+- [ ] **M5-34** Realistic item models (U-053)
+  - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
+  - Screenshots of every item in the backpack and in hand
 
 ## M6: 0 of 27 done
 
