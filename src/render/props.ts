@@ -197,6 +197,8 @@ const builders: Record<string, Builder> = {
       s.rotation.set(i, i * 2, i * 3);
       g.add(s);
     }
+    // A fall that's cleared (M4-24): gone once its interactable is open.
+    if (p.text) g.userData.tick = (_t: number, open: Record<string, boolean>) => { g.visible = !open[p.text!]; };
     return g;
   },
   grate: p => {

@@ -32,7 +32,7 @@ export function checkCollapse(state: SimState) {
 
 /** Hooks that run when he lies down (the lamp off), when he wakes (the save), and what may find him asleep: a fate
  *  is when, of what, and why (the start hideout given away, M3-72). */
-export interface Fate { at: number; cause: string; why: string }
+export interface Fate { at: number; cause: string; why: string; /** he wakes to it (a raid, M4-24), not dies */ wake?: boolean }
 export const sleepHooks: { beforeSleep: ((s: SimState, until: number) => number)[]; afterWake: ((s: SimState) => void)[]; fates: ((s: SimState, until: number, w: World) => Fate | null)[] } = { beforeSleep: [], afterWake: [], fates: [] };
 
 // A bed: E claims it as his shelter's (U-013) and opens the sleep menu.
@@ -47,6 +47,6 @@ onCmd((s, c, w) => {
   for (const h of sleepHooks.beforeSleep) until = Math.min(until, h(s, until));
   const fate = sleepHooks.fates.map(f => f(s, until, w)).filter(f => f && f.at < until).sort((a, b) => a!.at - b!.at)[0];
   sleepUntil(s, fate?.at ?? until, where);
-  if (fate) { s.events.push({ t: 'msg', text: fate.why }); die(s, fate.cause); }
+  if (fate) { s.events.push({ t: 'msg', text: fate.why }); if (!fate.wake) die(s, fate.cause); }
   if (!s.dead) for (const h of sleepHooks.afterWake) h(s);
 });

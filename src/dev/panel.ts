@@ -1,8 +1,11 @@
-// ?dev=1 panel: noclip, god mode, teleports, scenario switch, fps, frame time and draw-call readout, a GPU bench.
+// ?dev=1 panel: noclip, god mode, teleports, scenario switch, fps, frame time and draw-call readout, a GPU bench;
+// for playtests, a few things to hand, a tag on him, and a raid on the nearest hideout in 5 s (M4-24).
 import type { Game } from '../game';
 import { scenarios } from '../data/scenarios';
 import { clockText } from '../sim/clock';
 import { teleport } from '../sim/player';
+import { addItem } from '../sim/inventory';
+import { SCALE } from '../sim/clock';
 
 export class DevPanel {
   readonly el: HTMLDivElement;
@@ -21,6 +24,7 @@ export class DevPanel {
       <div class="row">teleport <select class="tp"></select></div>
       <div class="row">scenario <select class="sc">${scenarios.map(s => `<option>${s.name}</option>`).join('')}</select></div>
       <div class="row">time <input type="range" class="time" min="0" max="24" step="0.25" style="width:110px"> <span class="clock"></span></div>
+      <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="raid">raid now</button></div>
       <div class="row extra"></div>`;
     document.body.appendChild(el);
     this.stats = el.querySelector('.stats')!;
@@ -35,6 +39,12 @@ export class DevPanel {
     time.oninput = () => {
       const t = game.state.time;
       game.state.time = Math.floor(t / 86400) * 86400 + Number(time.value) * 3600;
+    };
+    el.querySelectorAll<HTMLButtonElement>('[data-give]').forEach(b => { b.onclick = () => { const id = b.dataset.give!; addItem(game.state, game.state.inv.pack, id, 1, id === 'pistol' ? { charge: 15 } : {}); b.blur(); }; });
+    el.querySelector<HTMLButtonElement>('.tag')!.onclick = () => { game.state.player.tag = true; };
+    el.querySelector<HTMLButtonElement>('.raid')!.onclick = () => {
+      const p = game.state.player.pos, h = [...game.state.shelters].sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0];
+      if (h) Object.assign(h, { compromised: true, raid: game.state.time + 5 * SCALE, raided: false });
     };
     const bench = el.querySelector<HTMLButtonElement>('.bench')!;
     bench.onclick = () => { bench.blur(); el.querySelector('.benchout')!.textContent = this.bench(); };

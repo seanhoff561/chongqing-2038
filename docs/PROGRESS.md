@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-24 Hideout raid.
-Features done: 185 / 301 | Last done: M4-23
+**Status:** building M4. Next: M4-25 Lost shelter (U-013).
+Features done: 186 / 301 | Last done: M4-24
 <!-- /status -->
 
 ## Log
@@ -43,3 +43,4 @@ Features done: 185 / 301 | Last done: M4-23
 - M4-22d Visual pass: roofs, QR codes, paving, road paint, grates (U-049): the visual pass: sparse composed roofs, rare QR codes, worn off-white paint, grime over the paving, grates you see through
 - M4-22c Faster loading and a new run without reloading (U-048): loading screen, a third faster city build, and new runs in place (U-048)
 - M4-23 Tracking home: followed home: a hideout given away by a sighting or a tag (U-013)
+- M4-24 Hideout raid: the raid: woken with 10 s, the old way out past the rubble, the EMP trap (U-013)

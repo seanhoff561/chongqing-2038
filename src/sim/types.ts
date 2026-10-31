@@ -64,6 +64,10 @@ export interface Shelter {
   id: string; x: number; y: number; z: number; battery: number; compromised: boolean;
   /** he was within TRACK.near of its bed last tick (M4-23) */
   near?: boolean;
+  /** given away, when they come for it (M4-24), and whether they have; an EMP trap rigged in it */
+  raid?: number;
+  raided?: boolean;
+  trap?: boolean;
 }
 
 export interface SimState {
@@ -82,6 +86,8 @@ export interface SimState {
   /** his hideouts (U-013, U-018): every bed he has claimed, where it is, its car battery charge (%) and
    *  whether the machines know where it is */
   shelters: Shelter[];
+  /** a raid breaking in on him (M4-24): the hideout's bed, when they're in, where they come in */
+  raid?: { id: string; at: number; x: number; y: number; z: number };
   /** furniture he has put down: beds, crates */
   placed: Placed[];
   /** things he dropped, lying where they fell */

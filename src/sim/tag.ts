@@ -6,6 +6,7 @@ import { DT, type SimState } from './types';
 import type { World } from '../world/world';
 import { TAG, SIGHT, TRACK } from '../data/units';
 import { SCALE } from './clock';
+import { raidTime } from './raid';
 import { visibility } from './perception';
 import { onUseId } from './use';
 import { rand } from './rng';
@@ -50,7 +51,10 @@ export function stepTrack(s: SimState) {
   for (const u of s.units) if (u.saw !== undefined && u.saw > saw) saw = u.saw;
   for (const h of s.shelters) {
     const near = Math.hypot(p.x - h.x, p.y - h.y, p.z - h.z) <= TRACK.near;
-    if (near && (saw === s.time || (!h.near && (s.player.tag || s.time - saw <= TRACK.after * SCALE)))) h.compromised = true;
+    if (near && !h.compromised && (saw === s.time || (!h.near && (s.player.tag || s.time - saw <= TRACK.after * SCALE)))) {
+      h.compromised = true;
+      h.raid = raidTime(s, h.id);
+    }
     h.near = near;
   }
 }
