@@ -50,7 +50,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   };
   const toDoor = (q: V3): V3[] | null => { for (const [door, inside] of doors) if (Math.hypot(door.x - q.x, door.z - q.z) < 20 && straight(w, q, door) && straight(w, door, inside)) return [door, inside]; return null; };
   // The districts' own beats: their two longest main streets within 300 m of their centres.
-  const district: Patrol[] = [];
+  const district: Patrol[] = [], heavies: Patrol[] = [];
   for (const k of DISTRICTS) {
     const L = GEO.landmarks[k], runs: V3[][] = [];
     for (const st of w.streets) {
@@ -62,7 +62,10 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       }
     }
     const len = (r: V3[]) => r.slice(1).reduce((a, q, i) => a + Math.hypot(q.x - r[i].x, q.z - r[i].z), 0);
-    for (const r of runs.filter(q => len(q) > 120).sort((a, b) => len(b) - len(a)).slice(0, 2)) district.push({ kind: 'street', unit: 'quadruped', pts: r, dwell: r.map((_, i) => (i === 0 || i === r.length - 1 ? DWELL.end : 0)), hours: [0, 24] });
+    const long = runs.filter(q => len(q) > 120).sort((a, b) => len(b) - len(a)).slice(0, 2);
+    for (const r of long) district.push({ kind: 'street', unit: 'quadruped', pts: r, dwell: r.map((_, i) => (i === 0 || i === r.length - 1 ? DWELL.end : 0)), hours: [0, 24] });
+    // A street heavy (U-038) up and down the longest, day and night: too big for alleys and doors, it keeps to the road.
+    if (long[0]) heavies.push({ kind: 'street', unit: 'heavy', pts: long[0], dwell: long[0].map((_, i) => (i === 0 || i === long[0].length - 1 ? DWELL.end * 2 : 0)), hours: [0, 24] });
   }
   let street = 0;
   const out = base.concat(district).map((p): Patrol => {
@@ -138,7 +141,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
   if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out;
+  return out.concat(heavies);
 }
 
 /** Where a column's pair peels off (M4-01b): beside the bins in alleys within 20 m of its way, one every 150 m or so,

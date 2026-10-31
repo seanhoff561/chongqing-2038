@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-26b Street heavies (U-038).
-Features done: 188 / 302 | Last done: M4-26
+**Status:** building M4. Next: M4-27 The world shows the alert state.
+Features done: 189 / 302 | Last done: M4-26b
 <!-- /status -->
 
 ## Log
@@ -46,3 +46,4 @@ Features done: 188 / 302 | Last done: M4-26
 - M4-24 Hideout raid: the raid: woken with 10 s, the old way out past the rubble, the EMP trap (U-013)
 - M4-25 Lost shelter (U-013): a lost shelter: burnt out after a raid he lives through, or one he wasn't there for (U-013)
 - M4-26 Machine models: the machines' models: white armoured rigs that walk, trot, aim and fly (U-031)
+- M4-26b Street heavies (U-038): street heavies: a 3 m walker with a cannon on each district's main street (U-038)

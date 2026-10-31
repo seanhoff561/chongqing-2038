@@ -13,7 +13,7 @@ import { RIGS, type Anim } from './machines';
 const NEAR = 220;
 const KINDS = Object.keys(RIGS) as UnitKind[];
 /** Metres of ground a stride's half covers, by kind (its phase advances with the ground it covers). */
-const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
+const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
 
 /** Every unit in one batch, each part of it an instance: one draw call for all the machines near him. */
 export class UnitView {

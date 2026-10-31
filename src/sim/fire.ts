@@ -1,7 +1,8 @@
 // Machines firing at him (DESIGN section 6: M4-11 the turrets, M4-18 the rest). An armed machine that's Engaged, or
 // whose district is, fires while it has him in sight and reach: a turret six rounds a second, 70% hitting within 40 m
 // and fewer on to 60; a humanoid's rifle bursts of three every 1.2 s, each hitting 0.55 x how well it sees him x
-// (1 - 0.06 x his speed) x (1 - d/80); a hunter drone's SMG bursts of two every 0.8 s, 40%; a quadruped's prod at
+// (1 - 0.06 x his speed) x (1 - d/80), a street heavy's cannon (M4-26b) six every 2 s, 0.45 the same way to 100 m;
+// a hunter drone's SMG bursts of two every 0.8 s, 40%; a quadruped's prod at
 // arm's length every 1.5 s, stunning him a second. A hit hurts: its damage, then 30% a heavy bleed or else a light
 // one, and 15% a limb (a sprained leg, or a graze to an arm that only bleeds).
 import type { SimState } from './types';
@@ -42,7 +43,7 @@ export function stepFire(s: SimState, w: World) {
     while (u.fire <= 0) {
       if (W.noise) s.events.push({ t: 'noise', x: at.x, y: at.y, z: at.z, r: W.noise, kind: 'gunfire' }, { t: 'shot', x: at.x, y: at.y, z: at.z });
       const speed = Math.hypot(p.vel.x, p.vel.z);
-      const hit = wpn === 'rifle' ? W.accuracy * visibility(s, w, u.kind, at) * Math.max(0, 1 - 0.06 * speed) * Math.max(0, 1 - d / W.reach)
+      const hit = wpn === 'rifle' || wpn === 'cannon' ? W.accuracy * visibility(s, w, u.kind, at) * Math.max(0, 1 - 0.06 * speed) * Math.max(0, 1 - d / W.reach)
         : W.accuracy * (d <= W.sure ? 1 : Math.max(0, 1 - (d - W.sure) / (W.reach - W.sure)));
       if (rand(s.rng) < hit) { hitHim(s, W.damage, wpn); if (W.stun) p.stun = Math.max(p.stun, W.stun); }
       u.left = (u.left ?? W.burst) - 1;

@@ -45,6 +45,15 @@ describe("the machines' models (M4-26)", () => {
     expect(head(0) - head(1)).toBeGreaterThan(0.3);
     expect(head(0)).toBeGreaterThan(1.8);
   });
+  it("a street heavy (M4-26b) stands 3 m on its feet and swings its cannon up level to fire", () => {
+    pose('heavy', {});
+    for (const f of [7, 10]) expect(Math.abs(pt(f, 0, -0.13, 0).y), `foot ${f}`).toBeLessThan(0.08);
+    expect(pt(2, 0, 0.34, 0).y).toBeGreaterThan(2.8);
+    pose('heavy', { aim: 1 });
+    const muzzle = pt(3, 0, -0.62, 1.45), breech = pt(3, 0, -0.62, 0.5);
+    expect(muzzle.z - breech.z).toBeGreaterThan(0.85);
+    expect(Math.abs(muzzle.y - breech.y)).toBeLessThan(0.2);
+  });
   it('a quadruped trots on diagonal pairs; rotors turn', () => {
     pose('quadruped', { speed: 3, phase: 0.8 });
     const feet = [2, 4, 6, 8].map(i => pt(i + 1, 0, -0.38, 0).z - pt(i, 0, 0, 0).z);

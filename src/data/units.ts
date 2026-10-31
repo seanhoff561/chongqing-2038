@@ -1,6 +1,6 @@
 // The machines that move (DESIGN section 7): how fast each kind goes on its beat and when chasing, whether it takes
 // stairs, how high it flies, and the hours its beats keep by default. Speeds in real metres a second.
-export type UnitKind = 'quadruped' | 'humanoid' | 'drone' | 'hunter' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
+export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
 /** The machines that stay where they're put (M4-07, M4-11). */
 export const STATIC = new Set<UnitKind>(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
@@ -9,6 +9,8 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   quadruped: { patrol: 3, chase: 8, stairs: true, fly: 0, zh: '四足机器人', en: 'Quadruped', hp: 150, weapon: 'prod' },
   // Armoured (its plates take a tenth of a hit: ZONES) and armed with a rifle (M4-18).
   humanoid: { patrol: 2.5, chase: 4.5, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 300, weapon: 'rifle' },
+  // A street heavy (M4-26b, U-038): a 3 m walker on the main streets, heavily armoured, a rotary cannon on its arm.
+  heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
   drone: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 40 },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
   hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
@@ -29,11 +31,12 @@ export const ZONES: Record<UnitKind, Record<string, number>> = {
   drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 },
   quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5 },
   humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2 },
+  heavy: { body: 0.05, head: 0.6, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
   turret: { body: 0.05, head: 1 },
   delivery: { body: 1 }, carrier: { body: 0.3 },
   camera: { body: 1 }, sweeper: { body: 1 }, lamppost: { body: 1 }, pir: { body: 1 }, tripwire: { body: 1 }, acoustic: { body: 1 },
 };
-export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number }>> = { quadruped: { head: 60 }, humanoid: { head: 75, knee: 100, battery: 120 }, turret: { head: 100 } };
+export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number }>> = { quadruped: { head: 60 }, humanoid: { head: 75, knee: 100, battery: 120 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100 } };
 
 /** The fixed sensors (M4-11, DESIGN section 7): a motion sensor's cone and reach and the movement it notices (his
  *  speed times how his posture shows him, so a crawl slides under it). */
@@ -46,6 +49,7 @@ export const WEAPONS = {
   turret: { burst: 1, every: 1 / 6, damage: 12, reach: 60, sure: 40, accuracy: 0.7, noise: 150, stun: 0 },
   rifle: { burst: 3, every: 1.2, damage: 18, reach: 80, sure: 0, accuracy: 0.55, noise: 150, stun: 0 },
   smg: { burst: 2, every: 0.8, damage: 8, reach: 35, sure: 35, accuracy: 0.4, noise: 100, stun: 0 },
+  cannon: { burst: 6, every: 2, damage: 24, reach: 100, sure: 0, accuracy: 0.45, noise: 250, stun: 0 },
   prod: { burst: 1, every: 1.5, damage: 15, reach: 1.5, sure: 1.5, accuracy: 1, noise: 0, stun: 1 },
 };
 export type Weapon = keyof typeof WEAPONS;
@@ -75,7 +79,7 @@ export const PISTOL = { damage: 25, mag: 15, every: 0.15, noise: 150, reach: 150
 
 /** How long after a machine has him (Engaged) it tells the network (DESIGN section 5), real seconds: the wired
  *  sensors at once nearly, the cameras in a second, the walkers slowest. */
-export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5 };
+export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5, heavy: 2 };
 /** How far into the districts next to his the network's word of him goes (DESIGN section 5), metres. */
 export const SPREAD = 300;
 
@@ -119,6 +123,7 @@ export const PHASE = 0.08;
 export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number; night: number; eye: number; ir: number; lamp: number; thermal: number; hear: number }> = {
   quadruped: { fov: 120, pitch: 0, day: 30, night: 20, eye: 0.85, ir: 0, lamp: 0, thermal: 20, hear: 1.5 },
   humanoid: { fov: 100, pitch: 0, day: 40, night: 22, eye: 1.8, ir: 0.3, lamp: 0, thermal: 0, hear: 1 },
+  heavy: { fov: 110, pitch: 0, day: 45, night: 25, eye: 2.8, ir: 0.3, lamp: 0, thermal: 25, hear: 1 },
   drone: { fov: 100, pitch: 45, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 15, thermal: 30, hear: 0.8 },
   hunter: { fov: 100, pitch: 45, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 15, thermal: 30, hear: 0.8 },
   delivery: { fov: 120, pitch: 0, day: 18, night: 10, eye: 0.5, ir: 0, lamp: 0, thermal: 0, hear: 1 },

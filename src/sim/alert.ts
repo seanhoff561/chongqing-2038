@@ -17,7 +17,7 @@ import { DT } from './types';
 
 type V3 = { x: number; y: number; z: number };
 /** How far up or down each kind steps without a stair: a quadruped's metre's jump; nothing climbs (M4-09). */
-const STEP: Record<UnitKind, number> = { quadruped: 1, humanoid: 0.5, drone: 99, hunter: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
+const STEP: Record<UnitKind, number> = { quadruped: 1, humanoid: 0.5, heavy: 0.4, drone: 99, hunter: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
 export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200 };
 
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
@@ -48,7 +48,7 @@ function walk(s: SimState, w: World, u: Unit) {
   // Immobilised (M4-19): it stands where it is.
   if (u.lame) return;
   // A humanoid with him in its sights stands and shoots (M4-18), unless it's making for cover.
-  if (u.kind === 'humanoid' && u.aim && !t.cover && !t.back) return;
+  if ((u.kind === 'humanoid' || u.kind === 'heavy') && u.aim && !t.cover && !t.back) return;
   if (t.i >= t.path.length) {
     if (!t.back) {
       // Holding its cover while it can see him (M4-10).

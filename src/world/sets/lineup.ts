@@ -10,7 +10,7 @@ export function buildLineup(): World {
   const solids: Solid[] = [solid(-60, -1, -60, 60, 0, 60, MAT.concrete)], labels: Label[] = [], patrols: Patrol[] = [], cameras: Camera[] = [];
   const card = (text: string, x: number, z: number) => labels.push({ text, x, y: 0.01, z, face: 'up' });
   // The walkers and the drones: out from the back row toward him and back.
-  ([['humanoid', -9, 0, '人形机器人 Humanoid'], ['humanoid', -6, 0, ''], ['quadruped', -3, 0, '四足机器人 Quadruped'], ['carrier', 2, 0, '运输机器人 Carrier'], ['delivery', 6.5, 0, '配送机器人 Delivery'],
+  ([['heavy', -15, 0, '重型机甲 Heavy walker'], ['humanoid', -9, 0, '人形机器人 Humanoid'], ['humanoid', -6, 0, ''], ['quadruped', -3, 0, '四足机器人 Quadruped'], ['carrier', 2, 0, '运输机器人 Carrier'], ['delivery', 6.5, 0, '配送机器人 Delivery'],
     ['drone', 10, 4, '巡逻无人机 Patrol drone'], ['hunter', 13.5, 5, '猎杀无人机 Hunter drone']] as [UnitKind, number, number, string][]).forEach(([unit, x, y, name]) => {
     patrols.push({ kind: y ? 'drone' : 'street', unit, pts: [{ x, y, z: 2 }, { x, y, z: 12 }], dwell: [1.5, 1.5], hours: [0, 24] });
     if (name) card(name, x, 14.5);
