@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { canvasTexture, CJK } from './textures';
 import { mulberry } from './rand';
-import { night } from './materials';
+import { night, alarm } from './materials';
 import { Kit } from './propkit';
 import type { Prop } from '../world/world';
 
@@ -17,10 +17,13 @@ export const SLOGANS = ['宵禁时间二十一点', '服从调度保持距离', 
   '营业中', '欢迎光临', '二十四小时', '限时特价', '旺铺招租', '拆'];
 /** The LED ticker's scrolling message. */
 const TICKER = '欢迎光临 ★ 营业时间 07:00—21:00 ★ 宵禁期间禁止外出 ★ 服从调度 ★ 电池回收 ★ ';
+/** What it runs instead while the district's after him (M4-27). */
+const ALERT = '警报 ★ 发现非法人员 ★ 原地不动 ★ 举报可获奖励 ★ ALERT ★ STAY WHERE YOU ARE ★ ';
 
 const S = 2048, V = 128, VH = 512, H = 512, HH = 128, Q = 128;
 /** Where each kind sits in the atlas: vertical names in two rows of 16 (0..1024), horizontal names then slogans in
- *  rows of 4 (1024..1792), QR codes in a row of 16 (1792..1920), the LED ticker's strip the atlas's width (1920..1984). */
+ *  rows of 4 (1024..1792), QR codes in a row of 16 (1792..1920), the LED ticker's strip the atlas's width (1920..1984)
+ *  and its alert strip under it (1984..2048). */
 const vSlot = (i: number) => ({ x: (i % 16) * V, y: Math.floor(i / 16) * VH, w: V, h: VH });
 const hSlot = (i: number) => ({ x: (i % 4) * H, y: 1024 + Math.floor(i / 4) * HH, w: H, h: HH });
 const qSlot = (i: number) => ({ x: (i % 16) * Q, y: 1792, w: Q, h: Q });
@@ -51,10 +54,12 @@ function draw(g: CanvasRenderingContext2D) {
   // The ticker's message, squeezed a little so a whole number of them fills the strip and it scrolls round without
   // a seam (the atlas repeats across).
   g.textAlign = 'left'; g.font = `bold 44px ${CJK}`;
-  const L = g.measureText(TICKER).width, n = Math.max(1, Math.round(S / L));
-  g.setTransform(S / (n * L), 0, 0, 1, 0, 0);
-  for (let k = 0; k < n; k++) g.fillText(TICKER, k * L, TY + TH / 2 + 2);
-  g.setTransform(1, 0, 0, 1, 0, 0);
+  for (const [text, y] of [[TICKER, TY], [ALERT, TY + TH]] as const) {
+    const L = g.measureText(text).width, n = Math.max(1, Math.round(S / L));
+    g.setTransform(S / (n * L), 0, 0, 1, 0, 0);
+    for (let k = 0; k < n; k++) g.fillText(text, k * L, y + TH / 2 + 2);
+    g.setTransform(1, 0, 0, 1, 0, 0);
+  }
 }
 
 let atlas: THREE.Texture | null = null;
@@ -75,7 +80,14 @@ export function signs() {
   const m = new THREE.MeshPhongMaterial({ map: tex(), emissive: 0xffffff, emissiveMap: tex(), emissiveIntensity: 0.4, vertexColors: true, alphaTest: 0.4, side: THREE.DoubleSide });
   m.onBeforeCompile = sh => {
     sh.uniforms.scroll = scroll;
-    sh.vertexShader = 'attribute float glow;\nuniform float scroll;\nvarying float vGlow;\n' + sh.vertexShader.replace('#include <color_vertex>', '#include <color_vertex>\nvGlow = min(glow, 1.0);\nvMapUv.x += step(1.5, glow) * scroll;\nvEmissiveMapUv.x += step(1.5, glow) * scroll;');
+    sh.uniforms.alarm = alarm;
+    // (On alarm a ticker reads its alert strip, a row down the atlas, in red.)
+    sh.vertexShader = 'attribute float glow;\nuniform float scroll;\nuniform float alarm;\nvarying float vGlow;\n' + sh.vertexShader.replace('#include <color_vertex>', `#include <color_vertex>
+vGlow = min(glow, 1.0);
+float led = step(1.5, glow), red = led * step(0.5, alarm);
+vMapUv += vec2(led * scroll, -red * ${TH / S});
+vEmissiveMapUv += vec2(led * scroll, -red * ${TH / S});
+vColor.rgb = mix(vColor.rgb, vec3(1.0, 0.12, 0.06), red);`);
     sh.fragmentShader = 'varying float vGlow;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive * vColor.rgb * vGlow;');
   };
   m.customProgramCacheKey = () => 'signs';

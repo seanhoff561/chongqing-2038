@@ -338,6 +338,8 @@ export function mergeGeometries(parts: THREE.BufferGeometry[]): THREE.BufferGeom
   const pos = new Float32Array(total * 3), nor = new Float32Array(total * 3), uv = new Float32Array(total * 2);
   const col = coloured ? new Float32Array(total * 3).fill(1) : null;
   const tiled = gs.some(g => g.getAttribute('tile')), tile = tiled ? new Float32Array(total) : null;
+  // (Signs' glow, M3-14: lit neon and the LED tickers; lost in the merge, nothing glowed, U-050.)
+  const glowing = gs.some(g => g.getAttribute('glow')), glow = glowing ? new Float32Array(total) : null;
   let o = 0;
   for (const g of gs) {
     const n = g.getAttribute('position').count;
@@ -349,6 +351,8 @@ export function mergeGeometries(parts: THREE.BufferGeometry[]): THREE.BufferGeom
     if (col && c) col.set(c.array as Float32Array, o * 3);
     const t = g.getAttribute('tile');
     if (tile && t) tile.set(t.array as Float32Array, o);
+    const gl = g.getAttribute('glow');
+    if (glow && gl) glow.set(gl.array as Float32Array, o);
     o += n;
   }
   const out = new THREE.BufferGeometry();
@@ -357,5 +361,6 @@ export function mergeGeometries(parts: THREE.BufferGeometry[]): THREE.BufferGeom
   out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   if (col) out.setAttribute('color', new THREE.BufferAttribute(col, 3));
   if (tile) out.setAttribute('tile', new THREE.BufferAttribute(tile, 1));
+  if (glow) out.setAttribute('glow', new THREE.BufferAttribute(glow, 1));
   return out;
 }

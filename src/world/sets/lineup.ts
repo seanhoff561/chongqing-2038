@@ -1,6 +1,6 @@
 // The machines' lineup (M4-26, ?scenario=units): every kind of the occupier's machines on a plaza, the walkers and
 // drones each on a short beat toward him and back, the cameras and sensors on posts, a drone dock with its hunters, a
-// name card in front of each.
+// name card in front of each; an edict board and a shop's LED ticker at the back, to show the alert (M4-27).
 import { solid, type Solid } from '../geom';
 import { makeWorld, type World, type Label, type Patrol, type Camera, type Prop } from '../world';
 import { MAT } from '../mats';
@@ -28,7 +28,8 @@ export function buildLineup(): World {
   post(6, 0.5); post(10, 0.5);
   cameras.push({ kind: 'tripwire', x: 6, y: 0.4, z: -4.05, yaw: Math.PI / 2, to: { x: 10, y: 0.4, z: -4.05 } });
   card('激光绊线 Tripwire', 8, -2.5);
-  const props: Prop[] = [{ kind: 'dronedock', x: 17, y: 0, z: -4, yaw: 0 }];
+  solids.push(solid(10, 0, -8, 15, 4.2, -7.5, MAT.plaster));
+  const props: Prop[] = [{ kind: 'dronedock', x: 17, y: 0, z: -4, yaw: 0 }, { kind: 'edict', x: -14, y: 0, z: -8, yaw: 0 }, { kind: 'ledboard', x: 12.5, y: 3.2, z: -7.45, yaw: 0, w: 4 }];
   card('无人机坞 Dock', 17, -1.5);
   return makeWorld({ name: 'lineup', solids, labels, patrols, cameras, props, docks: [{ x: 17, y: 2.6, z: -4 }], spawn: { x: 2, y: 0, z: 19, yaw: 0 } });
 }

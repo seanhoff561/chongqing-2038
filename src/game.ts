@@ -16,7 +16,7 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
-import { beep, servo, radio, gunshot } from './audio/moves';
+import { beep, servo, radio, gunshot, siren } from './audio/moves';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -38,7 +38,8 @@ import { DeathScreen } from './ui/death';
 import { Furniture } from './render/furniture';
 import { Rain } from './render/rain';
 import { StatusIndicator } from './ui/status';
-import { lodRadius } from './render/materials';
+import { lodRadius, alarm } from './render/materials';
+import { districtOf } from './sim/district';
 import { PauseMenu } from './ui/pause';
 import { findGrab } from './sim/grip';
 import { allInters, interLabel } from './sim/interact';
@@ -135,10 +136,15 @@ export class Game {
 
   private beepIn = 0;
   private servoIn = 0;
+  private sirenIn = 0;
   /** The machines' sounds near him: the cameras beep (M4-07, U-038), the nearest within 12 m every 2.5 s; the
    *  quadrupeds' servos whine (M4-09), the nearest within 30 m at each stride. Louder nearer. */
   private machineSounds(dt: number) {
     const p = this.state.player.pos;
+    // The alert shown where he is (M4-27): the boards on his district's alert, its siren while it's Engaged.
+    const st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
+    alarm.value = st === 'engaged' || st === 'searching' || st === 'heightened' ? 1 : 0;
+    if ((this.sirenIn -= dt) <= 0) { this.sirenIn = 2.7; if (st === 'engaged') siren(this.audio, 0.1); }
     if ((this.beepIn -= dt) <= 0) {
       this.beepIn = 2.5;
       let near = 12;

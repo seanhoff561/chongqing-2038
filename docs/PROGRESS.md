@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-27 The world shows the alert state.
-Features done: 189 / 302 | Last done: M4-26b
+**Status:** building M4. Next: M4-40 Pitched roof eaves to grab (U-050).
+Features done: 190 / 311 | Last done: M4-27
 <!-- /status -->
 
 ## Log
@@ -47,3 +47,4 @@ Features done: 189 / 302 | Last done: M4-26b
 - M4-25 Lost shelter (U-013): a lost shelter: burnt out after a raid he lives through, or one he wasn't there for (U-013)
 - M4-26 Machine models: the machines' models: white armoured rigs that walk, trot, aim and fly (U-031)
 - M4-26b Street heavies (U-038): street heavies: a 3 m walker with a cannon on each district's main street (U-038)
+- M4-27 The world shows the alert state: the alert in the world: machine lights by state, LED tickers and edict boards on alert, sirens; signs glow again

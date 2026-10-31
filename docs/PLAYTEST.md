@@ -169,3 +169,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-26: the machines' models (U-031)
 - Open ?scenario=units: walk up to each machine. Do they read as the occupier's soldiers (white, armoured, armed) and are they intimidating up close? Watch the humanoids walk, then let one see you (it raises its rifle and fires; you can't be hurt here): does it move like a soldier? Do the quadruped's trot and the drones' rotors look right? And the street heavy (M4-26b, U-038): big and scary enough? In the city one walks each district's main street: meet one at night.
+
+## M4-27: the alert in the world
+- At night in Jiefangbei, let a camera see you and stay seen: do the machines' lights going amber then red read clearly, do the LED tickers and edict boards switch to the alert, is the siren alarming without being grating? Is it clear when it's calmed down again, with no HUD telling you?

@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 33 of 42 done
+## M4: 34 of 51 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -783,9 +783,40 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-26b** Street heavies (U-038)
   - U-038: street heavies: bigger, scarier robots along the streets (split from M4-26): a heavy walker kind, about 3 m tall, armoured and carrying a heavy gun, on some of the street beats, with its own rigged model
   - Sim test: heavies walk street beats in the city, see and fire as machines do, and take damage by place
-- [ ] **M4-27** The world shows the alert state
+- [x] **M4-27** The world shows the alert state
   - Unit lights go white, amber or red by state; LED boards switch to alert text; sirens sound
   - No HUD indicator; screenshots Unaware and Engaged
+- [ ] **M4-40** Pitched roof eaves to grab (U-050)
+  - The eaves of the old quarter's pitched tile roofs are a ledge his hands find: he can hang from them and pull up onto the roof
+  - A sim test hangs from a pitched roof's eave near the start hideout and pulls up onto it
+- [ ] **M4-41** The hideout lit (U-050)
+  - At night the alley's neon lights the alley and throws its colour down the vent shaft into the chamber
+  - By day daylight falls through the vent grate into the chamber; the chamber is no longer pitch dark
+  - Screenshots of the chamber by day and by night, brighter than before (a luminance check)
+- [ ] **M4-42** A roll key (U-050)
+  - A key of its own to roll: pressed just before or as he lands from a fall, he rolls and takes less fall damage from heights up to the roll's limit
+  - It's in the controls list; a sim test lands a drop with and without the roll key and compares the damage
+- [ ] **M4-43** Brighter lights at night (U-050)
+  - Signs, neon, lit windows, street lamps and the machines' lights glow brighter after dark, and the lamps light the street round them
+  - Night screenshots before and after with a luminance check
+- [ ] **M4-44** Every item use answers (U-050)
+  - Using any item (left mouse with it in hand) either does something or says why it can't
+  - A sim test uses every item in the catalogue, in hand on open ground, and each gives an effect or a message
+- [ ] **M4-45** Combat AI (U-050)
+  - Drones in a fight keep moving: they circle and strafe him at a stand-off, change height and jink when shot at, never hanging still over him
+  - Humanoids in a fight move like soldiers: to cover and between covers, flanking, one suppressing while another advances, strafing when caught in the open
+  - Sim tests: an engaged drone's position over 10 s keeps changing and stays off the point over his head; humanoids under fire move between covers and flank
+- [ ] **M4-46** Relentless pursuit (U-050)
+  - Once they have him, the machines follow him the way he goes: along side streets and alleys, up and down stairs, over low walls and into the underground (humanoids and quadrupeds with a person's agility; drones through alleys and tunnels)
+  - No easy escape: breaking contact takes real effort (out of sight, a hiding place, a way they can't follow)
+  - Sim tests: chased into an alley and down into the underground, the machines keep after him
+- [ ] **M4-47** Strike drones (U-050)
+  - Small explosive drones: FPV kamikaze drones that dive at him and blow up, and bomb droppers that drop grenades from above, sent when a district has had him in sight too long
+  - Heard coming, can be shot down or dodged; a blast hurts by distance
+  - Sim tests: seen too long, strike drones come; a dive explodes at him; one shot down doesn't
+- [ ] **M4-48** Giant walkers (U-050)
+  - Giant spider robots and massive, creepy walking machines move through the streets on their own beats, rigged and animated
+  - Sim test: they walk the streets and see him; a screenshot of each
 - [ ] **M4-28** Street speakers and announcements
   - Speakers and LED boards run the machine's calm announcements by state and time (curfew at night, alerts, search, heightened)
   - A unit test picks the right line for each state

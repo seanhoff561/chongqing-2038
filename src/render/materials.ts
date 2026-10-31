@@ -296,6 +296,9 @@ export function setNight(k: number) {
 }
 /** 0 by day to 1 at night, for lights that only burn after dark (searchlights, floodlit beams). */
 export const night = { k: 0 };
+/** The alert where he is (M4-27): 1 while his district is after him (Engaged, searching or Heightened), else 0; the
+ *  LED boards run the alert, the edict boards flash red. */
+export const alarm = { value: 0 };
 
 /** Metres covered by one texture repeat. */
 export const texScale = (id: number) => (isFacade(id) ? FACADE_M : (draws[id] ?? draws[MAT.concrete])[1]);

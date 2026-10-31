@@ -83,6 +83,14 @@ export function radio(a: Audio, gain: number) {
   a.tone(t + 0.19, 0.12, gain, 660, 660, 'square');
 }
 
+/** The district's siren while it's after him (M4-27): a wail up and down, 2.6 s. */
+export function siren(a: Audio, gain: number) {
+  if (!a.ready || gain < 0.005) return;
+  const t = a.ctx!.currentTime + 0.005;
+  a.tone(t, 1.3, gain, 520, 1150, 'sawtooth');
+  a.tone(t + 1.3, 1.3, gain, 1150, 520, 'sawtooth');
+}
+
 /** A turret's round (M4-11): a hard crack and its thump, carried far. */
 export function gunshot(a: Audio, gain: number) {
   if (!a.ready || gain < 0.005) return;

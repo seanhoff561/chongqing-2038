@@ -8,12 +8,20 @@ import { PLANTS } from './plants';
 import { quad, slot, signs, SIGN_PROPS } from './signs';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { propAtlas, atlasMaterial } from './prop-atlas';
+import { alarm } from './materials';
 
 // One material for every library prop: the atlas carries every surface, leaves included (alpha-tested).
 const PROP_MAT = atlasMaterial(new THREE.MeshPhongMaterial({ map: propAtlas(), alphaTest: 0.45, vertexColors: true, shininess: 8 }));
 const leaves = () => PROP_MAT;
 // The ASI's cyan strips and red camera lights share one unlit material, coloured per vertex: one draw per chunk.
 const GLOW_MAT = new THREE.MeshBasicMaterial({ vertexColors: true });
+// The edict boards' glyphs: their own, gone red while the district's after him (M4-27).
+const EDICT_MAT = new THREE.MeshBasicMaterial({ vertexColors: true });
+EDICT_MAT.onBeforeCompile = sh => {
+  sh.uniforms.alarm = alarm;
+  sh.fragmentShader = 'uniform float alarm;\n' + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.1, 0.05), alarm);');
+};
+EDICT_MAT.customProgramCacheKey = () => 'edict';
 const ASI = 0x9fe8ff, RED = 0xff3020;
 
 const seedOf = (p: Prop) => (Math.round(p.x * 13) * 73856093) ^ (Math.round(p.z * 7) * 19349663) ^ Math.round(p.y * 5);
@@ -299,7 +307,7 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
     k.box(3.2, 1.7, 0.18, 0x15181a, 0, 2.6).box(3.3, 0.08, 0.26, 0x2a2e32, 0, 4.3);
     const glow = new Kit(seedOf(p) + 1);
     for (let row = 0; row < 4; row++) for (let x = -1.4; x < 1.3;) { const w = 0.12 + r() * 0.3; glow.box(w, 0.16, 0.02, row ? ASI : RED, x + w / 2, 3.95 - row * 0.36, 0.1); x += w + 0.06; }
-    return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: glow.geometry(), mat: GLOW_MAT }]);
+    return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: glow.geometry(), mat: EDICT_MAT }]);
   },
   // A bundle of cables down a wall (out of it, +z), clipped every few metres, a junction box and a loop or two.
   cablebundle: p => {
