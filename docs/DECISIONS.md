@@ -2,6 +2,8 @@
 
 Newest first. D-### are my design calls where BRIEF.md is silent; U-### are director's notes.
 
+- D-103 (M4-42, U-050) The roll has a key of its own, V: held as he lands, or pressed within 0.3 s before, he rolls (crouch tapped just before landing still works too). A roll lands a fall of up to 7 m unhurt and eases worse ones up to 10 m (damage only for the metres past 7, no broken bones); past 10 m a roll doesn't help. The pause menu's controls list it.
+
 - D-102 (M4-41, U-050) The hideout lit: a light at the foot of the vent shaft follows the day, daylight (cool white) down the shaft by day and the alley's magenta neon by night, stronger with the grate up and the bags off; a faint beam of it hangs in the shaft. It falls off along the chamber, a pool of light under the vent and dimmer at the ends. The alley's own neon light is nearly three times as bright but reaches only 11 m (a point light shines through rock, and from 24 m it tinted the chamber pink at noon). The test scene's chamber has it too.
 
 - D-101 (M4-40, U-050) Pitched roofs' eaves are ledges: a slope's low edge counts as a lip when the space just over the rising slope is clear (it was tested flat, so the slope itself blocked it), and pulling up over a lip sets him on the highest part of the slope under his feet. An eave sticks out 0.4 m past the wall, so his feet find no wall under it and he hangs free: W held now hauls him up over an edge as Space does (a muscle-up), so the eaves round the start hideout go up the obvious way.

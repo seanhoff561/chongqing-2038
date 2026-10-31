@@ -175,3 +175,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-41: the hideout lit (U-050)
 - Start a run by day and again at night (dev panel time slider): is the chamber light enough to find your way and still feel like a hideout under the street? Does the light down the vent look right, brighter with the grate open?
+
+## M4-42: the roll key (U-050)
+- Drop off a two-storey roof holding V as you land: does the roll feel right and save you? Is V a comfortable key for it?

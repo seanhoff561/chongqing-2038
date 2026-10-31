@@ -22,7 +22,7 @@ export interface Player {
   onGround: boolean;
   /** highest feet height since leaving the ground, for fall outcomes */
   fallFrom: number;
-  /** seconds since crouch was last pressed (roll window) */
+  /** seconds since crouch was last pressed, or the roll key last held, in the air (roll window) */
   crouchAge: number;
   /** grip endurance 0-100; at 0 the hands slip until it recovers */
   endurance: number;

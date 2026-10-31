@@ -21,6 +21,45 @@ function drop(h: number, roll: boolean) {
   return lands[0] as Extract<SimEvent, { t: 'land' }>;
 }
 
+/** Walk off a ledge of height h with the roll key (M4-42, U-050) held all the way down. */
+function dropHolding(h: number) {
+  const { world, state } = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, h, 10)], { x: 0, y: h, z: 0, yaw: 0 });
+  const lands: SimEvent[] = [];
+  for (let i = 0; i < secs(5); i++) {
+    run(state, world, 1, { my: 1, buttons: state.player.pos.z < -2.5 ? B.ROLL : 0 });
+    lands.push(...state.events.filter(e => e.t === 'land' && e.h > 1));
+  }
+  return { e: lands[0] as Extract<SimEvent, { t: 'land' }>, state };
+}
+
+describe('the roll key (M4-42)', () => {
+  it('held as he lands, a 6.5 m drop is a roll and does nothing; a 9 m one is eased', () => {
+    const r = dropHolding(6.5);
+    expect(r.e.roll).toBe(true);
+    expect(r.e.outcome.damage).toBe(0);
+    expect(r.state.body.hp).toBe(100);
+    const big = dropHolding(9), bare = drop(9, false);
+    expect(big.e.roll).toBe(true);
+    expect(big.e.outcome.damage).toBeLessThan(bare.outcome.damage / 2);
+    expect(big.e.outcome.fracture).toBe(false);
+  });
+  it('pressed just before landing it rolls too; pressed long before it doesn\'t', () => {
+    const tap = (at: number) => {
+      const { world, state } = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, 6.5, 10)], { x: 0, y: 6.5, z: 0, yaw: 0 });
+      let land: Extract<SimEvent, { t: 'land' }> | undefined, done = false;
+      for (let i = 0; i < secs(5) && !land; i++) {
+        const go = !done && !state.player.onGround && state.player.pos.y < at && state.player.vel.y < 0;
+        if (go) done = true;
+        run(state, world, 1, { my: 1, pressed: go ? B.ROLL : 0, buttons: go ? B.ROLL : 0 });
+        land = state.events.find(e => e.t === 'land' && e.h > 1) as typeof land;
+      }
+      return land!;
+    };
+    expect(tap(0.6).roll).toBe(true);
+    expect(tap(5).roll).toBe(false);
+  });
+});
+
 describe('falls and rolls', () => {
   it('3.5 m: nothing', () => {
     const e = drop(3.5, false);
