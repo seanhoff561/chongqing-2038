@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 38 of 71 done
+## M4: 39 of 71 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -799,7 +799,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-43** Brighter lights at night (U-050)
   - Signs, neon, lit windows, street lamps and the machines' lights glow brighter after dark, and the lamps light the street round them
   - Night screenshots before and after with a luminance check
-- [ ] **M4-44** Every item use answers (U-050)
+- [x] **M4-44** Every item use answers (U-050)
   - Using any item (left mouse with it in hand) either does something or says why it can't
   - A sim test uses every item in the catalogue, in hand on open ground, and each gives an effect or a message
 - [ ] **M4-69** A chalk bag, not climbing gloves (U-053)
@@ -914,6 +914,9 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
+- [ ] **M5-17** Healing items
+  - Bandage, tourniquet, splint, painkillers and first-aid kit behave as in DESIGN section 4 with use times
+  - Sim tests cover each
 - [ ] **M5-01** Laptop shell
   - L opens Anna's laptop over the view without pausing; at night its glow adds 0.5 light at his position
   - The laptop battery drains while open (2 game hours) and charges at a powered shelter
@@ -965,9 +968,6 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
 - [ ] **M5-16** Salvage
   - Downed drones and disabled robots can be dismantled (hold E, tool needed) for the parts in DESIGN section 8
   - A sim test covers it
-- [ ] **M5-17** Healing items
-  - Bandage, tourniquet, splint, painkillers and first-aid kit behave as in DESIGN section 4 with use times
-  - Sim tests cover each
 - [ ] **M5-18** Shotgun and nail gun
   - Shotgun pellets and shells with a 180 m noise; the nail gun is quiet (25 m), short-ranged and can pin a door shut
   - Sim tests cover both

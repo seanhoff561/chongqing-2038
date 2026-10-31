@@ -18,10 +18,21 @@ export function heldStack(s: SimState): Stack | null {
   return s.inv.pack.items.find(x => x.uid === uid) ?? null;
 }
 
+/** Why using a thing did nothing (U-050: every use answers), by what it is. */
+const WHY: Partial<Record<ItemCat, string>> = {
+  med: 'nothing for it to treat', wear: "it's worn as it is", tool: 'nothing here to use it on', device: 'nothing here for it to work on',
+  part: 'a part: it goes into something at a workbench', key: 'it opens something: use it at what it fits', ammo: 'R loads it, with the gun in hand',
+  throw: 'nothing here to throw it at', weapon: 'nothing in reach', misc: 'nothing to do with it here',
+};
+const WHY_ID: Record<string, string> = { headlamp: 'H switches the headlamp on and off' };
+
 export function useStack(s: SimState, w: World, st: Stack, input: InputFrame) {
-  const f = byId.get(st.id) ?? byCat.get(item(st.id).cat);
+  const it = item(st.id), f = byId.get(st.id) ?? byCat.get(it.cat);
   s.events.push({ t: 'use', id: st.id });
+  const n = s.events.length, task = s.task, held = s.inv.held, count = st.n, charge = st.charge;
   f?.(s, w, st, input);
+  // Nothing came of it that he'd notice: he's told why.
+  if (s.events.length === n && s.task === task && s.inv.held === held && st.n === count && st.charge === charge) s.events.push({ t: 'msg', text: `${it.en}: ${WHY_ID[st.id] ?? WHY[it.cat] ?? 'nothing to do with it here'}` });
 }
 
 onCmd((s, c, w) => {
