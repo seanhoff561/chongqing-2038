@@ -8,7 +8,7 @@ import { PLANTS } from './plants';
 import { quad, slot, signs, SIGN_PROPS } from './signs';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { propAtlas, atlasMaterial } from './prop-atlas';
-import { alarm } from './materials';
+import { alarm, lampPool } from './materials';
 
 // One material for every library prop: the atlas carries every surface, leaves included (alpha-tested).
 const PROP_MAT = atlasMaterial(new THREE.MeshPhongMaterial({ map: propAtlas(), alphaTest: 0.45, vertexColors: true, shininess: 8 }));
@@ -238,7 +238,9 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
     const g = k.geometry();
     if (r() < 0.15) g.rotateX(0.18 + r() * 0.2);
     const cam = new Kit(1).box(0.22, 0.16, 0.3, 0xd8d8d8, 0, 6.2, 0.25).geometry();
-    return group([{ geo: g, mat: PROP_MAT }, { geo: cam, mat: PROP_MAT }, { geo: new Kit(2).box(0.05, 0.05, 0.05, RED, 0, 6.24, 0.42).geometry(), mat: GLOW_MAT }]);
+    // Its lamp lit under the head, and its pool of light on the street (M4-43, U-050).
+    const lit = new Kit(3).box(0.24, 0.02, 0.5, 0xe8f0ff, 0, 6.98, 1.4).geometry(), spot = new THREE.CircleGeometry(8, 24).rotateX(-Math.PI / 2).translate(0, 0.05, 1.6);
+    return group([{ geo: g, mat: PROP_MAT }, { geo: cam, mat: PROP_MAT }, { geo: new Kit(2).box(0.05, 0.05, 0.05, RED, 0, 6.24, 0.42).geometry(), mat: GLOW_MAT }, { geo: lit, mat: GLOW_MAT }, { geo: spot, mat: lampPool() }]);
   },
   bench: p => { const k = new Kit(seedOf(p)).use('wood'); k.box(1.8, 0.06, 0.45, 0x6a5a44, 0, 0.42).box(1.8, 0.4, 0.05, 0x6a5a44, 0, 0.5, -0.2); for (const x of [-0.75, 0.75]) k.box(0.06, 0.42, 0.4, 0x3a3a3a, x, 0); return group([{ geo: k.geometry(), mat: PROP_MAT }]); },
   bin: p => { const k = new Kit(seedOf(p)).use('paint'); k.cyl(0.3, 0.32, 0.9, 0x2e5a3e, 0, 0, 0, 10).cyl(0.34, 0.34, 0.06, 0x2a4a34, 0, 0.9, 0, 10); return group([{ geo: k.geometry(), mat: PROP_MAT }]); },

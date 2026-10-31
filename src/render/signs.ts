@@ -95,7 +95,7 @@ vColor.rgb = mix(vColor.rgb, vec3(1.0, 0.12, 0.06), red);`);
 }
 /** Every frame: the glyphs' glow by the hour, the ticker on. */
 export function tickSigns(t: number) {
-  if (signMat) signMat.emissiveIntensity = 0.4 + 1.1 * night.k;
+  if (signMat) signMat.emissiveIntensity = 0.5 + 2.4 * night.k;
   scroll.value = (t * 0.04) % 1;
 }
 

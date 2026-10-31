@@ -288,11 +288,25 @@ export function setWet(k: number, day = 1) {
 }
 let wetR = 0;
 
-/** 0 by day to 1 at night: lit windows glow. */
+/** A street lamp's pool of light on the ground under it (M4-43, U-050): a soft disc, added over the street after dark. */
+let pool: THREE.MeshBasicMaterial | null = null;
+export function lampPool() {
+  if (pool) return pool;
+  const tex = canvasTexture('lampPool', 128, 128, (g, w) => {
+    const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.35, 'rgba(255,255,255,0.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, w, w);
+  }, false);
+  return (pool = new THREE.MeshBasicMaterial({ map: tex, color: 0xd6e4ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+}
+
+/** 0 by day to 1 at night: lit windows glow, signs burn brighter, the street lamps throw their pools (U-050: bright
+ *  enough to see by after dark). */
 export function setNight(k: number) {
   night.k = k;
-  for (const m of glowing) m.emissiveIntensity = k * 1.25;
-  for (const m of signs) m.emissiveIntensity = m.userData.day * (1 + 0.7 * k);
+  for (const m of glowing) m.emissiveIntensity = k * 2.2;
+  for (const m of signs) m.emissiveIntensity = m.userData.day * (1 + 1.8 * k);
+  if (pool) pool.opacity = 0.85 * k;
 }
 /** 0 by day to 1 at night, for lights that only burn after dark (floodlit beams). */
 export const night = { k: 0 };

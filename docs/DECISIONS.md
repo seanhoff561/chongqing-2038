@@ -2,6 +2,8 @@
 
 Newest first. D-### are my design calls where BRIEF.md is silent; U-### are director's notes.
 
+- D-104 (M4-43, U-050) Brighter after dark. The smart lampposts' lamps glow under their heads and lay an 8 m pool of cool light on the street below (an additive disc, by night only); lit windows burn at 2.2 (were 1.25) and a few more are lit (two tiles in five of a facade with some lights left on, were three in ten; still an emptied city); the signs' light boxes and neon at up to 2.8x by night (were 1.7x), the ticker material 2.9 (was 1.5); the machines' lights 2.6x after dark; the night sky's light on things up a quarter. Down a Jiefangbei street at 23:00 the frame's mean luminance went 3.9 to 7.2. Dark corners off the lit streets still need the headlamp (U-032).
+
 - D-103 (M4-42, U-050) The roll has a key of its own, V: held as he lands, or pressed within 0.3 s before, he rolls (crouch tapped just before landing still works too). A roll lands a fall of up to 7 m unhurt and eases worse ones up to 10 m (damage only for the metres past 7, no broken bones); past 10 m a roll doesn't help. The pause menu's controls list it.
 
 - D-102 (M4-41, U-050) The hideout lit: a light at the foot of the vent shaft follows the day, daylight (cool white) down the shaft by day and the alley's magenta neon by night, stronger with the grate up and the bags off; a faint beam of it hangs in the shaft. It falls off along the chamber, a pool of light under the vent and dimmer at the ends. The alley's own neon light is nearly three times as bright but reaches only 11 m (a point light shines through rock, and from 24 m it tinted the chamber pink at noon). The test scene's chamber has it too.

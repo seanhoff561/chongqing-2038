@@ -200,8 +200,8 @@ export function drawFacade(id: number, g: CanvasRenderingContext2D, S: number) {
 export const LIGHT_TILES = 6;
 
 /** The lit windows only, warm on black: the emissive map for night. The city's emptied (U-031, M3-63): a flat here
- *  and there where someone's holed up, a few of its windows lit, most of the facade dark; the machines' works lit
- *  all along. */
+ *  and there where the lights were left on when they fled, a few of its windows lit, most of the facade dark; the
+ *  machines' works lit all along. */
 export function drawFacadeLights(id: number, g: CanvasRenderingContext2D, S: number) {
   const st = STYLES[id], T = S / LIGHT_TILES, px = T / FACADE_M;
   g.fillStyle = '#000'; g.fillRect(0, 0, S, S);
@@ -215,7 +215,7 @@ export function drawFacadeLights(id: number, g: CanvasRenderingContext2D, S: num
       }
       continue;
     }
-    if (r() > 0.3) continue;
+    if (r() > 0.4) continue;
     for (const w of layout(st, px)) {
       if (w.kind >= 0.45 || r() > 0.35) continue;
       const grd = g.createLinearGradient(0, oy + w.y, 0, oy + w.y + w.h);

@@ -178,3 +178,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-42: the roll key (U-050)
 - Drop off a two-storey roof holding V as you land: does the roll feel right and save you? Is V a comfortable key for it?
+
+## M4-43: brighter at night (U-050)
+- Walk Jiefangbei's streets at 23:00 (dev panel time): can you see where you're going on the lit streets without the headlamp, while alleys and corners stay dark enough to hide in? Do the lamp pools, signs and windows look right, not too much?

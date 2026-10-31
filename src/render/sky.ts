@@ -56,8 +56,8 @@ export class Sky {
     v.sun.castShadow = v.shadows && d > 0.05 && under < 0.5;
     v.sun.intensity = 1.7 * d * (1 - under) * (1 - 0.7 * flat) * (1 - 0.5 * weather.rain);
     v.sun.color.setHSL(0.09, 0.5 - 0.3 * d, 0.85 + 0.1 * d);
-    // (Night's dark enough to need the headlamp, U-032: a little moonlight, less under cloud.)
-    v.hemi.intensity = (0.55 + 0.7 * d - 0.15 * flat * (1 - d)) * (1 - under * 0.85) * (1 + 0.1 * flat * d) * (1 - 0.3 * weather.rain);
+    // (Night's dark enough to need the headlamp off the lit streets, U-032, and the city's glow to see shapes by, U-050.)
+    v.hemi.intensity = (0.68 + 0.57 * d - 0.15 * flat * (1 - d)) * (1 - under * 0.85) * (1 + 0.1 * flat * d) * (1 - 0.3 * weather.rain);
     v.hemi.color.copy(NIGHT_SKY).lerp(new THREE.Color(0xc8d4e0), d).lerp(new THREE.Color(0x5f74a8), (1 - d) * 0.9);
     v.hemi.groundColor.copy(NIGHT_GROUND).lerp(DAY_GROUND, d);
     if (lit > 0) {

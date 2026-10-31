@@ -9,12 +9,15 @@ import type { World } from '../world/world';
 import type { UnitKind } from '../data/units';
 import { SCALE } from '../sim/clock';
 import { RIGS, type Anim } from './machines';
+import { night } from './materials';
 
 /** How near a unit must be to be drawn. */
 const NEAR = 220;
 const KINDS = Object.keys(RIGS) as UnitKind[];
 /** Metres of ground a stride's half covers, by kind (its phase advances with the ground it covers). */
 const LIGHT = { unaware: new THREE.Color(1, 1, 1), suspicious: new THREE.Color(1, 0.55, 0.08), engaged: new THREE.Color(1, 0.1, 0.06), out: new THREE.Color(0, 0, 0) };
+/** Their lights brighter after dark (U-050). */
+const BOOST = { value: 1 };
 const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
 
 /** Every unit in one batch, each part of it an instance: one draw call for all the machines near him. */
@@ -41,7 +44,8 @@ export class UnitView {
     mat.onBeforeCompile = sh => {
       const chunk = THREE.ShaderChunk.color_vertex.replace('vColor *= getBatchingColor( getIndirectIndex( gl_DrawID ) );', 'vTint = getBatchingColor( getIndirectIndex( gl_DrawID ) ).rgb;');
       sh.vertexShader = 'attribute float glow;\nvarying float vGlow;\nvarying vec3 vTint;\n' + sh.vertexShader.replace('#include <color_vertex>', 'vTint = vec3(1.0);\n' + chunk + '\nvGlow = glow;');
-      sh.fragmentShader = 'varying float vGlow;\nvarying vec3 vTint;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive + vColor.rgb * vGlow * vTint;');
+      sh.uniforms.boost = BOOST;
+      sh.fragmentShader = 'varying float vGlow;\nvarying vec3 vTint;\nuniform float boost;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive + vColor.rgb * vGlow * vTint * boost;');
     };
     mat.customProgramCacheKey = () => 'units';
     this.batch = new THREE.BatchedMesh(Math.max(1, units.reduce((a, u) => a + RIGS[u.kind].parts.length, 0)), verts, 0, mat);
@@ -59,6 +63,7 @@ export class UnitView {
   update(w: World, units: Unit[], time: number, cam: THREE.Vector3) {
     let shown = 0;
     const t = time / SCALE, a = this.anim;
+    BOOST.value = 1 + 1.6 * night.k;
     units.forEach((u, i) => {
       // (An idle camera's housing still shows, M4-16, and a machine that's out where it stopped, M4-17.)
       const p = unitPose(w, u, time), on = (p.active || u.cam !== undefined || !!u.stop) && u.kind !== 'lamppost' && Math.hypot(p.x - cam.x, p.z - cam.z) <= NEAR;
