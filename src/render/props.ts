@@ -97,23 +97,6 @@ function neon(p: Prop): THREE.Object3D {
   return g;
 }
 
-/** A sweeping searchlight beam: a long additive cone that pans. */
-function searchlight(p: Prop): THREE.Object3D {
-  const g = new THREE.Group();
-  const len = p.d ?? 60;
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(len * 0.12, len, 20, 1, true).translate(0, -len / 2, 0).rotateX(-Math.PI / 2),
-    new THREE.MeshBasicMaterial({ color: 0xdfe8ff, transparent: true, opacity: 0.09, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
-  cone.rotation.x = 0.2;
-  const pivot = new THREE.Group();
-  pivot.add(cone);
-  g.add(pivot);
-  g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 0.5, 10), lam(0x333333, 0x666666)));
-  const phase = p.x * 0.13;
-  // Its beam burns only after dark (U-031).
-  g.userData.tick = (t: number) => { pivot.visible = night.k > 0.2; pivot.rotation.y = Math.sin(t * 0.25 + phase) * 1.2; pivot.rotation.x = 0.7 + Math.sin(t * 0.17 + phase) * 0.25; };
-  return g;
-}
-
 /** Scripted machines crossing over the hideout grate: decor only, they cannot perceive anything. */
 function patrolDecor(): THREE.Object3D {
   const g = new THREE.Group();
@@ -152,7 +135,6 @@ const builders: Record<string, Builder> = {
   floodlight: () => new THREE.Mesh(new THREE.ConeGeometry(4.5, 15, 16, 1, true).translate(0, -7.5, 0).rotateX(-0.63), FLOOD),
   lamp,
   neon,
-  searchlight,
   patrolDecor,
   stilts: p => {
     const parts: THREE.BufferGeometry[] = [];
@@ -244,7 +226,7 @@ const builders: Record<string, Builder> = {
 
 type Tick = (t: number, open: Record<string, boolean>) => void;
 const ticking: Tick[] = [];
-/** Animate props that move (searchlights, scripted patrols, doors following the world state). */
+/** Animate props that move (scripted patrols, doors following the world state). */
 export function tickProps(t: number, open: Record<string, boolean> = {}) {
   // Floodlit beams show after dark only (U-031).
   FLOOD.opacity = 0.08 * night.k;

@@ -294,7 +294,7 @@ export function setNight(k: number) {
   for (const m of glowing) m.emissiveIntensity = k * 1.25;
   for (const m of signs) m.emissiveIntensity = m.userData.day * (1 + 0.7 * k);
 }
-/** 0 by day to 1 at night, for lights that only burn after dark (searchlights, floodlit beams). */
+/** 0 by day to 1 at night, for lights that only burn after dark (floodlit beams). */
 export const night = { k: 0 };
 /** The alert where he is (M4-27): 1 while his district is after him (Engaged, searching or Heightened), else 0; the
  *  LED boards run the alert, the edict boards flash red. */

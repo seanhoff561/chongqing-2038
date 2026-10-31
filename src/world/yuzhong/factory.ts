@@ -3,7 +3,7 @@
 // the slope to the rivers, each a different height, their ribbon windows lit all night; roof monitors over them
 // and stacks with a glowing band and a red beacon at the top. Gates cut into the faces that front the roads glow
 // inside, and the columns march out of them along the roads (the convoy paths). Every gate guarded: floodlights
-// on masts, searchlights on the roof over it, jersey barriers funnelling the way out, a sentry box (the posts
+// on masts, jersey barriers funnelling the way out, a sentry box (the posts
 // the machines' sentries stand at, M4). Laid out square to the podium's fitted rectangle, then turned.
 import { solid, turn, carve, type Solid } from '../geom';
 import { MAT } from '../mats';
@@ -157,8 +157,7 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
       local.push(solid(x - 1, roof, z - 1, x + 1, roof + 1.5, z + 1, MAT.metal));
     }
     if (!gate) continue;
-    // The gate: its apron levelled to the road, barriers funnelling the way out, floodlights, a sentry box,
-    // searchlights on the roof over it.
+    // The gate: its apron levelled to the road, barriers funnelling the way out, floodlights, a sentry box.
     const { k, u, y, out } = gate, n = wn(k), face = (uu: number, d: number, yy: number) => world(onFace(h, k, uu, d), yy);
     for (let uu = u - 12; uu <= u + 12; uu += 1) for (let d = 0.5; d < out; d += 1) {
       const ks = sample(...onFace(h, k, uu, d));
@@ -172,9 +171,8 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
       decor.push(solid(m[0] - 0.6, y + 11, m[1] - 0.6, m[0] + 0.6, y + 11.5, m[1] + 0.6, MAT.glare));
       f.props.push({ kind: 'floodlight', x: top.x, y: top.y, z: top.z, yaw: Math.atan2(aim.x - top.x, aim.z - top.z) });
     }
-    // A searchlight on the roof over the gate, sweeping the road.
+    // A post on the roof over the gate (its searchlight gone, U-053).
     const sl = face(u - 4, -1, roof + 1.1);
-    f.props.push({ kind: 'searchlight', x: sl.x, y: sl.y, z: sl.z, yaw, d: 70 });
     f.features.push({ kind: 'post', x: sl.x, y: roof, z: sl.z, group: f.gates.length, nx: n.nx, nz: n.nz });
     local.push(box(h, k, u + 9, u + 11.6, 1.2, 3.8, y, y + 2.7, MAT.concrete), box(h, k, u + 8.8, u + 11.8, 1.0, 4.0, y + 2.7, y + 2.9, MAT.concrete));
     decor.push(box(h, k, u + 9.3, u + 11.3, 3.8, 3.82, y + 1.3, y + 2.1, MAT.glare));

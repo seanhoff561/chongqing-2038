@@ -22,8 +22,6 @@ export function buildHideoutScene(): World {
     { kind: 'neonGlow', x: 11.5, y: 12, z: 0.5, yaw: 0 },
     { kind: 'neon', x: 18, y: 16, z: -6.95, yaw: 0, h: 1.6, text: '火锅 · 老码头' },
     { kind: 'neon', x: 3, y: 15, z: 6.95, yaw: Math.PI, h: 1.4, text: '请居民留在室内' },
-    { kind: 'searchlight', x: 19, y: 31.5, z: -11, yaw: 0, d: 70 },
-    { kind: 'searchlight', x: 1, y: 37.5, z: -10, yaw: 2, d: 70 },
     { kind: 'patrolDecor', x: 10, y: 9, z: 0, yaw: 0 },
   ];
   return makeWorld({

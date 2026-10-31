@@ -30,6 +30,7 @@ The director is often away, and a goal check sends you back to work while featur
 - Never special-case game code to pass a test. If a test is wrong, fix the test and say why in the commit.
 - Git: no force-push, history rewrites, branch deletion, or --no-verify.
 - Ambitious game, simple code: no abstractions, options, or files the game doesn't need yet.
+- The map is frozen (U-053): the city's layout and geometry stay as they are. Fix what's broken, but change nothing else about the map unless the director asks.
 
 ## Director's notes
 When the director messages you mid-build, their note outranks everything, BRIEF.md included. Log it in docs/DECISIONS.md as U-### (their words, then how you'll apply it), update features.json (add, change, or drop features), apply it right away if it's small or make it the next feature if it's big, reply in a line or two, and carry on. Playtest reports work the same way: fix what failed, note what passed. Answer questions briefly and carry on. If they say stop or pause, stop.
