@@ -3,13 +3,15 @@
 // come in, everywhere within 18 m of the way they come is swept, and if he's still there he dies, unless an EMP trap
 // he rigged in the hideout downs them as they come (30 s). Out by then, by a second way he opened beforehand (the
 // start hideout's rubble fall cleared with a crowbar, the old vent with its rungs past it), he lives, and they're
-// after him from there: the nearest garage's humanoids, come in by the way in. Away, it's raided without him.
+// after him from there: the nearest garage's humanoids, come in by the way in. Away, it's raided without him. Either
+// way, if he lives, they burn it (M4-25): the stash and everything of his there gone, the bed no use; a new hideout
+// is for making somewhere else.
 import type { SimState, Shelter } from './types';
 import type { World } from '../world/world';
 import { RAID } from '../data/units';
 import { SCALE } from './clock';
 import { makeRng, rand, hashString } from './rng';
-import { SHELTER_R } from './shelter';
+import { SHELTER_R, stashIds } from './shelter';
 import { sleepHooks } from './sleep';
 import { die } from './body';
 import { nearestNav } from './nav';
@@ -53,14 +55,28 @@ function squad(s: SimState, w: World, at: V3) {
   return out;
 }
 
+/** Burnt out (M4-25): the stash and what he kept or left there gone, the bed burnt, the hideout his no longer. */
+function burn(s: SimState, w: World, h: Shelter, seen = false) {
+  const near = (q: V3) => Math.hypot(q.x - h.x, q.y - h.y, q.z - h.z) <= SHELTER_R;
+  for (const id of stashIds(s, w, h)) { delete s.containers[id]; s.wstate.gone[id] = true; }
+  for (const t of w.inter) if (t.kind === 'table' && near(t) && s.wstate.benches?.[t.id]) delete s.wstate.benches[t.id];
+  s.placed = s.placed.filter(q => !near(q));
+  s.dropped = s.dropped.filter(q => !near(q));
+  s.wstate.gone[h.id] = true;
+  s.shelters = s.shelters.filter(x => x !== h);
+  (s.lost ??= []).push({ x: h.x, y: h.y, z: h.z, seen });
+}
+
 /** Every tick. */
 export function stepRaid(s: SimState, w: World) {
   const p = s.player.pos;
-  for (const h of s.shelters) {
+  // Back at one they burnt out, he sees it.
+  for (const l of s.lost ?? []) if (!l.seen && Math.hypot(p.x - l.x, p.y - l.y, p.z - l.z) < 6) { l.seen = true; s.events.push({ t: 'msg', text: 'burnt out: the stash, the bed, all of it' }); }
+  for (const h of [...s.shelters]) {
     if (h.raid === undefined || h.raided || s.time < h.raid) continue;
     h.raided = true;
-    // (Away, it's raided without him: M4-25.)
-    if (Math.hypot(p.x - h.x, p.y - h.y, p.z - h.z) > SHELTER_R) continue;
+    // Away, it's raided without him.
+    if (Math.hypot(p.x - h.x, p.y - h.y, p.z - h.z) > SHELTER_R) { burn(s, w, h); continue; }
     const e = entryOf(w, h);
     s.raid = { id: h.id, at: s.time + RAID.warn * SCALE, ...e };
     s.events.push({ t: 'msg', text: 'metal shrieking at the way in: they have found the hideout' }, { t: 'sfx', id: 'breach' }, { t: 'noise', ...e, r: 40, kind: 'breach' });
@@ -70,12 +86,11 @@ export function stepRaid(s: SimState, w: World) {
   s.raid = undefined;
   const h = s.shelters.find(x => x.id === r.id), them = squad(s, w, r);
   if (h?.trap) {
-    h.trap = false;
     for (const u of them) u.off = s.time + RAID.emp * SCALE;
-    s.events.push({ t: 'msg', text: 'the EMP trap goes off in their faces' }, { t: 'sfx', id: 'emp' });
-    return;
-  }
-  if (Math.hypot(p.x - r.x, p.y - r.y, p.z - r.z) <= RAID.sweep) die(s, 'raid');
+    s.events.push({ t: 'msg', text: 'the EMP trap goes off in their faces: the hideout is lost, get out' }, { t: 'sfx', id: 'emp' });
+  } else if (Math.hypot(p.x - r.x, p.y - r.y, p.z - r.z) <= RAID.sweep) { die(s, 'raid'); return; }
+  else s.events.push({ t: 'msg', text: 'behind you they are burning the hideout' });
+  if (h) burn(s, w, h, true);
 }
 
 // Asleep in a hideout they're coming for, he wakes to them breaking in.

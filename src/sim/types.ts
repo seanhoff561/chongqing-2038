@@ -88,6 +88,8 @@ export interface SimState {
   shelters: Shelter[];
   /** a raid breaking in on him (M4-24): the hideout's bed, when they're in, where they come in */
   raid?: { id: string; at: number; x: number; y: number; z: number };
+  /** hideouts the machines burnt out (M4-25): where each was, and whether he has come back and seen it */
+  lost?: { x: number; y: number; z: number; seen?: boolean }[];
   /** furniture he has put down: beds, crates */
   placed: Placed[];
   /** things he dropped, lying where they fell */

@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-25 Lost shelter (U-013).
-Features done: 186 / 301 | Last done: M4-24
+**Status:** building M4. Next: M4-26 Machine models.
+Features done: 187 / 301 | Last done: M4-25
 <!-- /status -->
 
 ## Log
@@ -44,3 +44,4 @@ Features done: 186 / 301 | Last done: M4-24
 - M4-22c Faster loading and a new run without reloading (U-048): loading screen, a third faster city build, and new runs in place (U-048)
 - M4-23 Tracking home: followed home: a hideout given away by a sighting or a tag (U-013)
 - M4-24 Hideout raid: the raid: woken with 10 s, the old way out past the rubble, the EMP trap (U-013)
+- M4-25 Lost shelter (U-013): a lost shelter: burnt out after a raid he lives through, or one he wasn't there for (U-013)
