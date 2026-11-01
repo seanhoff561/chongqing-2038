@@ -10,6 +10,8 @@ export class FPCamera {
   /** 0 none, 0.5 sprain, 1 broken leg: an uneven step */
   limp = 0;
   private eye = M.eye.stand;
+  /** a blast's tumble so far (M4-64) */
+  private tumble = 0;
   /** stride phase: one step per half turn, so arms swing with sin(bob) */
   bob = 0;
   private dip = 0;
@@ -42,6 +44,9 @@ export class FPCamera {
     if (p.mode === 'wallrun' || p.mode === 'cling') rollTarget = (p.mode === 'wallrun' ? 0.14 : 0.08) * Math.sign(p.wall.nx * Math.cos(yaw) - p.wall.nz * Math.sin(yaw));
     // Leaning round a corner (U-032): the head out to the side and tipped that way.
     rollTarget -= p.lean * 0.14;
+    // Thrown and down (M4-64): the view tumbles with him, then lies on its side till he's up.
+    if (p.knock) this.tumble += dt * 9; else this.tumble *= Math.exp(-5 * dt);
+    if (p.mode === 'down') rollTarget += 0.7;
     this.roll += (rollTarget - this.roll) * k;
     this.lean += (p.lean - this.lean) * k;
     // Sprinting has to read clearly (U-003): FOV kick, harder bob, a slight lean.
@@ -55,7 +60,7 @@ export class FPCamera {
     const out = bx + this.lean * LEAN.out;
     this.cam.position.set(pos.x + Math.cos(yaw) * out, pos.y + this.eye + by - this.dip - Math.abs(this.lean) * LEAN.dip, pos.z - Math.sin(yaw) * out);
     // (The pistol's kick lifts the view as it lifts his aim: M4-21.)
-    this.cam.rotation.set(pitch + p.kick - this.sprint * 0.04, yaw, this.roll + limpDip * 0.4 + Math.sin(this.bob) * 0.006 * this.sprint);
+    this.cam.rotation.set(pitch + p.kick - this.sprint * 0.04 + Math.sin(this.tumble) * 0.5 * Math.min(1, this.tumble), yaw, this.roll + limpDip * 0.4 + Math.sin(this.bob) * 0.006 * this.sprint + Math.sin(this.tumble * 0.7) * 0.6 * Math.min(1, this.tumble));
   }
 
   eyeHeight() { return this.eye; }

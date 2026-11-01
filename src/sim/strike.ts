@@ -8,6 +8,7 @@ import { isOff, type Unit } from './units';
 import { leave } from './alert';
 import { districtOf } from './district';
 import { damage } from './body';
+import { knock } from './knock';
 import { raycast } from '../world/geom';
 import { rayGround } from '../world/heightfield';
 import { STRIKE } from '../data/units';
@@ -20,6 +21,8 @@ export function blast(s: SimState, at: V3, B: { reach: number; damage: number })
   s.events.push({ t: 'noise', x: at.x, y: at.y, z: at.z, r: STRIKE.noise, kind: 'explosion' }, { t: 'sfx', id: 'boom' }, { t: 'mark', x: at.x, y: at.y, z: at.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
   const d = Math.hypot(s.player.pos.x - at.x, s.player.pos.y + 1 - at.y, s.player.pos.z - at.z);
   if (d < B.reach) { const dmg = B.damage * (1 - d / B.reach); damage(s, dmg, 'blast'); s.events.push({ t: 'hurt', dmg, cause: 'blast' }); }
+  // Its force throws him, off his feet (M4-64).
+  if (d < B.reach * 1.5) knock(s, at, 2 + 8 * (1 - d / (B.reach * 1.5)));
 }
 
 /** The first thing under a point. */

@@ -4,6 +4,7 @@ import type { SimState } from './types';
 import type { World } from '../world/world';
 import { unitPose } from './units';
 import { damage } from './body';
+import { knock } from './knock';
 import { CRASH } from '../data/units';
 
 export function stepBreaks(s: SimState, w: World) {
@@ -17,5 +18,6 @@ export function stepBreaks(s: SimState, w: World) {
       { t: 'mark', x: p.x, y: p.y + 0.3, z: p.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
     const d = Math.hypot(s.player.pos.x - p.x, s.player.pos.y + 1 - p.y, s.player.pos.z - p.z);
     if (d < CRASH.reach) { const dmg = CRASH.damage * (1 - d / CRASH.reach); damage(s, dmg, 'blast'); s.events.push({ t: 'hurt', dmg, cause: 'blast' }); }
+    if (d < CRASH.reach * 1.5) knock(s, p, 2 + 6 * (1 - d / (CRASH.reach * 1.5)));
   }
 }

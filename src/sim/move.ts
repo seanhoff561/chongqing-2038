@@ -14,6 +14,7 @@ import { hideNear, enterHide, stepHidden } from './hide';
 import { checkWater, stepSwim } from './swim';
 import { tryZip, stepZip } from './zip';
 import { tryChimney, stepChimney } from './chimney';
+import { stepDown, KNOCK } from './knock';
 import { limits, type Limits } from './body';
 
 let L: Limits;
@@ -81,6 +82,7 @@ export function stepPlayer(state: SimState, world: World, input: InputFrame): vo
     case 'chimney': stepChimney(state, world, input); return;
     case 'hidden': stepHidden(state, world, input); return;
     case 'swim': stepSwim(state, world, input); return;
+    case 'down': stepDown(state, world); return;
   }
   if ((input.pressed & B.INTERACT) && p.onGround) {
     const h = hideNear(world, p);
@@ -255,7 +257,8 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
     p.coyote = Math.max(0, p.coyote - DT);
     if (p.pos.y > p.fallFrom) p.fallFrom = p.pos.y;
   }
-  p.mode = p.onGround ? 'ground' : 'air';
+  p.mode = p.down ? 'down' : p.onGround ? 'ground' : 'air';
+  if (p.mode === 'down') return;
   if (world.water.length && checkWater(state, world)) return;
   if (!p.onGround) {
     // In a narrow gap X braces him across it (M3-78, U-060).
@@ -299,6 +302,8 @@ function land(state: SimState, idx: SolidIndex) {
   // (A big fall's landing keeps the roll's sound, U-055.)
   if (h > 0.4) sfx(state, h > 3 ? 'roll' : h > M.noise.landMinH ? 'land-hard' : 'land');
   p.fallFrom = p.pos.y;
+  // Thrown by a blast, he lands down and lies a moment (M4-64).
+  if (p.knock) { p.knock = false; p.mode = 'down'; p.down = KNOCK.down; }
 }
 
 /** DESIGN section 3: what a fall of h metres does (U-054: as a rolled fall was, every time): nothing to 7 m, eased

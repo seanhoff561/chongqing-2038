@@ -3,7 +3,7 @@ import type { Vec3 } from './types';
 import { movement as M } from '../data/movement';
 
 export type Posture = 'stand' | 'crouch' | 'crawl' | 'hidden';
-export type Mode = 'ground' | 'air' | 'action' | 'grip' | 'cling' | 'wallrun' | 'wallclimb' | 'chimney' | 'swim' | 'hidden' | 'zip' | 'dead' | 'noclip';
+export type Mode = 'ground' | 'air' | 'action' | 'grip' | 'cling' | 'wallrun' | 'wallclimb' | 'chimney' | 'swim' | 'hidden' | 'zip' | 'dead' | 'noclip' | 'down';
 
 /** A timed scripted move (mantle, vault, climb-up, entering a box): lerps the feet from a to b. */
 export interface Action { kind: string; t: number; dur: number; a: Vec3; b: Vec3; then: Mode; posture: Posture; speed: number }
@@ -68,6 +68,9 @@ export interface Player {
   lean: number;
   /** a tracking tag stuck in his clothes (M4-22) */
   tag: boolean;
+  /** thrown by a blast, tumbling (M4-64); seconds left lying on the ground where he landed (a blast, a big fall) */
+  knock?: boolean;
+  down?: number;
   /** where he climbs back out of a hiding spot */
   hideExit: Vec3 | null;
 }
