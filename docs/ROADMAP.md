@@ -1159,7 +1159,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 0 of 27 done
+## M6: 2 of 27 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1226,7 +1226,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [ ] **M6-21** City tunnels
   - Air-raid tunnels across districts, the hospital basement link, the telecom cable tunnel, the Line 1 and Line 6 tunnels and the flood culvert
   - A sim test walks from the hideout to Xiaoshizi underground
-- [ ] **M6-22** Machines across the city
+- [x] **M6-22** Machines across the city
   - Patrol data for every district: cameras, lampposts, docks, drones, quadrupeds, humanoids, delivery robots, turrets, garages for squads
   - A sim test runs a full game day across the city with no stuck units in under 30 s of wall time
 - [ ] **M6-23** Coverage tool
@@ -1241,7 +1241,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [ ] **M6-26** Whole-city render budgets
   - Draw calls and triangles stay within each preset's budget at 10 viewpoints across the city
   - A browser test records them
-- [ ] **M6-27** River border enforcement
+- [x] **M6-27** River border enforcement
   - Swimming more than 60 m from either bank outside a route draws river drone boats with sonar and thermal; unprepared crossings fail
   - A sim test covers it
 

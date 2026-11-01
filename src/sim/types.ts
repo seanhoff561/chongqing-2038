@@ -159,6 +159,8 @@ export interface SimState {
   taps?: number[];
   /** the keycards he's cloned (M5-24) */
   cloned?: string[];
+  /** out too far on the river (M6-27): since when, and when the drone boats set out */
+  river?: { since: number; boats?: number };
   /** the zipline kit's first clamp, on (M5-33) */
   kitRig?: Vec3;
   /** what Anna last remarked on, and when, and how things stood (M5-32) */

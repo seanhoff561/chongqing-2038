@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 291 / 368 | Last done: M5-23b
+Features done: 293 / 368 | Last done: M6-27
 <!-- /status -->
 
 ## Log
@@ -119,3 +119,4 @@ Features done: 291 / 368 | Last done: M5-23b
 - M5-35 Building types (U-091): building types rolled for each run: homes, offices, clinics, workshops, military posts, each with its rooms, lining and loot
 - M5-01, M5-02, M5-03, M5-04, M5-05, M5-06, M5-07, M5-08, M5-09, M5-10, M5-11, M5-12, M5-13, M5-14, M5-15, M5-16, M5-18, M5-19, M5-20, M5-21, M5-22, M5-23, M5-24, M5-25, M5-26, M5-27, M5-28, M5-29, M5-30, M5-31, M5-32, M5-33, M5-25b, M5-36: Anna's laptop and the tech she runs, the tools and the kit
 - M5-23b Roller shutters (split from M5-23): roller shutters on a quarter of the locked shopfronts, prised up with the crowbar to crawl under
+- M6-22, M6-27: the city's machines checked through a day; the river border

@@ -54,6 +54,7 @@ import { stepPlanks } from './ladder';
 import { stepPower } from './power';
 import { stepRemarks } from './remarks';
 import { stepKitLines } from './zipkit';
+import { stepRiver } from './river';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
@@ -152,6 +153,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepBody(state);
   stepRemarks(state, world);
   stepKitLines(state, world);
+  stepRiver(state, world);
   checkCollapse(state);
   state.tick++;
   state.time += GAME_PER_TICK;

@@ -4,3 +4,4 @@ logs/
 scratch/
 *.log
 geo-cache/
+.claude/worktrees/

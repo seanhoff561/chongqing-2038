@@ -233,7 +233,9 @@ export function buildYuzhong(): World {
   world.nav = buildNav(sts, g, world.index, walksOf(world.features));
   world.features.push(...keys.map((k, n) => ({ kind: `key:${k.name}`, x: k.at.x, y: k.at.y, z: k.at.z, group: n })));
   // The beats as walked, off the streets and under the ground (M4-01).
-  world.patrols = walkedBeats(world, net.patrols, [tun.at.junction, tun.at.metro]);
+  world.patrols = walkedBeats(world, net.patrols, [tun.at.junction, tun.at.metro])
+    // (No walker's beat off the ground's grid, out past the city's edge where the street network runs on: M6-22.)
+    .filter(p => p.kind !== 'street' || p.pts.every(q => q.x >= g.x0 && q.z >= g.z0 && q.x <= g.x0 + (g.w - 1) * g.cell && q.z <= g.z0 + (g.h - 1) * g.cell));
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
   world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
   // Each parked scooter's battery, prised out with a crowbar (M5-23).

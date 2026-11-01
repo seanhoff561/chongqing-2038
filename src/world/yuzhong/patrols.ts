@@ -128,7 +128,9 @@ function walkedLine(w: World, r: V3[]): V3[] {
 function flyOver(w: World, p: Patrol): Patrol {
   const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
   // (A stop inside something, a street running under a building, is held over its roof instead.)
-  const top = (x: number, z: number) => { const h = raycast(w.index, x, 600, z, 0, -1, 0, 600); return h ? 600 - h.t : -Infinity; };
+  // (The highest thing within a drone's width of the point: one at a building's very edge goes over it, M6-22.)
+  const top1 = (x: number, z: number) => { const h = raycast(w.index, x, 600, z, 0, -1, 0, 600); return h ? 600 - h.t : -Infinity; };
+  const top = (x: number, z: number) => Math.max(top1(x, z), top1(x - 0.6, z - 0.6), top1(x + 0.6, z - 0.6), top1(x - 0.6, z + 0.6), top1(x + 0.6, z + 0.6));
   const stops = p.pts.map(q => (overlaps(w.index, { x0: q.x - 0.3, y0: q.y - 0.3, z0: q.z - 0.3, x1: q.x + 0.3, y1: q.y + 0.3, z1: q.z + 0.3 }) ? { ...q, y: top(q.x, q.z) + 6 } : q));
   stops.forEach((q, i) => {
     const a = stops[i - 1];
@@ -227,9 +229,10 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
         pts.push(q); dwell.push(p.dwell[i]);
         // Down to look over a building's face now and then (M4-59): out from its nearest wall, at its middle height.
         const f = i % 3 === 2 && faces < ALIVE.faces ? faceNear(w, q) : null;
-        if (f && clear(w, q, f.at, 0)) { pts.push(f.at); dwell.push(ALIVE.faceLook); look[pts.length - 1] = f.yaw; pts.push(q); dwell.push(0); faces++; }
+        // (Clear of the wall by more than its own width, as the dips below: M6-22 found one brushing a tower's corner.)
+        if (f && clear(w, q, f.at, 0) && !overlaps(w.index, { x0: f.at.x - 0.6, y0: f.at.y - 0.6, z0: f.at.z - 0.6, x1: f.at.x + 0.6, y1: f.at.y + 0.6, z1: f.at.z + 0.6 })) { pts.push(f.at); dwell.push(ALIVE.faceLook); look[pts.length - 1] = f.yaw; pts.push(q); dwell.push(0); faces++; }
         if (i % 3 !== 1 || dips >= 4) return;
-        const h = hides.find(f => Math.hypot(f.x - q.x, f.z - q.z) < 30 && clear(w, q, { x: f.x, y: f.y + 6, z: f.z }, 0));
+        const h = hides.find(f => Math.hypot(f.x - q.x, f.z - q.z) < 30 && clear(w, q, { x: f.x, y: f.y + 6, z: f.z }, 0) && !overlaps(w.index, { x0: f.x - 0.6, y0: f.y + 5.4, z0: f.z - 0.6, x1: f.x + 0.6, y1: f.y + 6.6, z1: f.z + 0.6 }));
         if (!h) return;
         pts.push({ x: h.x, y: h.y + 6, z: h.z }, q); dwell.push(DWELL.alley, 0);
         dips++;
