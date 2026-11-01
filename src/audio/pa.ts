@@ -1,12 +1,14 @@
-// The street speakers' voice (M4-28, U-053, U-092): a chime that rings down the street and comes back off the blocks,
-// then the announcement in a calm Chinese woman's voice (recorded once with a neural text-to-speech model: credits),
-// played as a street loudspeaker sounds: thin (its horn's band, a lift where speech carries), a little driven, from the
-// lamppost it's on, and echoing down the street after it. Quieter the farther the speaker, dull indoors. No subtitles.
+// The street speakers' voice (M4-28, U-053, U-092, U-094): a chime, then the announcement in a calm Chinese woman's
+// voice (recorded once with a neural text-to-speech model: credits), from the real loudspeakers on the lampposts round
+// him, each where it stands. Close to one it's clear and dry, its horn's thin band; the farther a speaker, the later
+// it reaches him (sound's own speed), the duller and quieter, and the more of it is the street's reverb. Indoors
+// it's all muffled through the walls. No subtitles.
 import type { Audio } from './audio';
 
-/** The chime's echoes (s after it), how near a speaker it's heard (m), how long after the chime the words start (s),
- *  and the street's echoes of the voice: how long after, how much each time. */
-const PA = { echoes: [0, 0.34, 0.75, 1.2], hear: 90, words: 1.9, delay: 0.31, feedback: 0.38 };
+/** How near a speaker is heard (m), how long after the chime the words start (s), the horn's band and lift, how loud
+ *  the horn is, and how the street's reverb grows with distance (its share of a speaker heard d m off: d / wet, at
+ *  most `most`). */
+const PA = { hear: 90, words: 1.9, band: [380, 3600], lift: 2000, level: 0.9, wet: 120, most: 0.5, sound: 343 };
 
 const lines = new Map<string, Promise<AudioBuffer | null>>();
 function line(a: Audio, id: string) {
@@ -15,39 +17,51 @@ function line(a: Audio, id: string) {
   return p;
 }
 
-/** An announcement (its line's id) from a speaker at `from`, him `dist` m off. */
-export function announce(a: Audio, id: string, from: { x: number; y: number; z: number }, dist: number, indoors: boolean) {
-  if (!a.ready) return;
-  const near = Math.max(0, 1 - dist / PA.hear) * (indoors ? 0.35 : 1);
-  if (near < 0.02) return;
-  const ctx = a.ctx!, t = ctx.currentTime + 0.05;
-  // Two soft falling bell tones, and their echoes.
-  PA.echoes.forEach((e, k) => {
-    const g = 0.06 * near * 0.5 ** k;
-    a.tone(t + e, 1.2, g, 784, 782, 'sine', a.bus.voice);
-    a.tone(t + e + 0.55, 1.6, g, 587, 586, 'sine', a.bus.voice);
-  });
+/** The street between the blocks: a short, dense reverb (early slaps off the facades, a 1.2 s tail), made once. */
+let street: ConvolverNode | null = null;
+function reverb(a: Audio) {
+  if (street) return street;
+  const ctx = a.ctx!, n = Math.round(ctx.sampleRate * 1.3), ir = ctx.createBuffer(2, n, ctx.sampleRate);
+  let s = 7;
+  for (let c = 0; c < 2; c++) {
+    const d = ir.getChannelData(c);
+    for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) >>> 0; d[i] = ((s / 2147483648) - 1) * Math.exp(-i / (ctx.sampleRate * 0.28)) * 0.5; }
+    // A few slaps off the facades across the street.
+    for (const [t, g] of [[0.045, 0.5], [0.09, 0.32], [0.16, 0.22]]) d[Math.round(t * ctx.sampleRate) + c * 37] += g;
+  }
+  street = ctx.createConvolver(); street.buffer = ir; street.connect(a.bus.voice);
+  return street;
+}
+
+/** An announcement (its line's id) from the speakers at `from` (nearest first), heard at `head`. */
+export function announce(a: Audio, id: string, from: { x: number; y: number; z: number }[], head: { x: number; y: number; z: number }, indoors: boolean) {
+  if (!a.ready || !from.length) return;
+  const ctx = a.ctx!, t0 = ctx.currentTime + 0.05, wet = reverb(a);
   line(a, id).then(buf => {
-    if (!buf || a.master.gain.value === 0) return;
-    // The horn: its band, a lift at 2 kHz, driven a little; then the lamppost's place, and the street's echo.
-    const src = ctx.createBufferSource(), lo = ctx.createBiquadFilter(), hi = ctx.createBiquadFilter(), lift = ctx.createBiquadFilter(), drive = ctx.createWaveShaper(), level = ctx.createGain();
-    src.buffer = buf;
-    lo.type = 'highpass'; lo.frequency.value = 350;
-    hi.type = 'lowpass'; hi.frequency.value = indoors ? 900 : 3800;
-    lift.type = 'peaking'; lift.frequency.value = 2000; lift.Q.value = 1.1; lift.gain.value = 6;
-    const curve = new Float32Array(1024);
-    for (let i = 0; i < curve.length; i++) { const x = (i / (curve.length - 1)) * 2 - 1; curve[i] = Math.tanh(2.2 * x) / Math.tanh(2.2); }
-    drive.curve = curve;
-    level.gain.value = 1.6 * near;
-    const pan = a.panner(0.5, false), echo = ctx.createDelay(1), back = ctx.createGain(), dull = ctx.createBiquadFilter();
-    pan.disconnect(); pan.connect(a.bus.voice);
-    if (pan.positionX) { pan.positionX.value = from.x; pan.positionY.value = from.y; pan.positionZ.value = from.z; } else pan.setPosition(from.x, from.y, from.z);
-    echo.delayTime.value = PA.delay; back.gain.value = PA.feedback; dull.type = 'lowpass'; dull.frequency.value = 2400;
-    src.connect(lo).connect(lift).connect(drive).connect(hi).connect(level);
-    level.connect(pan);
-    level.connect(echo).connect(dull).connect(back).connect(echo);
-    back.connect(a.bus.voice);
-    src.start(Math.max(ctx.currentTime, t + PA.words));
-    src.onended = () => setTimeout(() => { for (const n of [src, lo, lift, drive, hi, level, pan, echo, back, dull]) n.disconnect(); }, 3000);
+    if (a.master.gain.value === 0) return;
+    for (const sp of from) {
+      const d = Math.hypot(sp.x - head.x, sp.y - head.y, sp.z - head.z);
+      if (d > PA.hear) continue;
+      const at = t0 + d / PA.sound;
+      // The horn: its band, a lift where speech carries, the air (and the walls, indoors) taking the top off far ones.
+      const lo = ctx.createBiquadFilter(), hi = ctx.createBiquadFilter(), lift = ctx.createBiquadFilter(), level = ctx.createGain(), dry = ctx.createGain(), send = ctx.createGain();
+      lo.type = 'highpass'; lo.frequency.value = PA.band[0];
+      hi.type = 'lowpass'; hi.frequency.value = indoors ? 700 : Math.max(1400, PA.band[1] - d * 22);
+      lift.type = 'peaking'; lift.frequency.value = PA.lift; lift.Q.value = 1; lift.gain.value = 4;
+      level.gain.value = PA.level * (indoors ? 0.4 : 1);
+      const w = Math.min(PA.most, d / PA.wet);
+      dry.gain.value = 1 - w; send.gain.value = w * 0.6;
+      // Where it stands: an HRTF source falling off with distance as a real one does.
+      const pan = a.panner(1, true);
+      pan.disconnect(); pan.connect(a.bus.voice);
+      if (pan.positionX) { pan.positionX.value = sp.x; pan.positionY.value = sp.y; pan.positionZ.value = sp.z; } else pan.setPosition(sp.x, sp.y, sp.z);
+      lo.connect(lift).connect(hi).connect(level);
+      level.connect(dry).connect(pan);
+      level.connect(send).connect(wet);
+      // The chime first, then the words.
+      for (const [dt, f] of [[0, 784], [0.55, 587]]) a.tone(at + dt, 1.3, 0.12, f, f - 2, 'sine', lo);
+      if (buf) { const src = ctx.createBufferSource(); src.buffer = buf; src.connect(lo); src.start(at + PA.words); }
+      setTimeout(() => { for (const n of [lo, hi, lift, level, dry, send, pan]) n.disconnect(); }, ((at - ctx.currentTime) + PA.words + (buf?.duration ?? 0) + 2) * 1000);
+    }
   });
 }

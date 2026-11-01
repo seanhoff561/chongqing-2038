@@ -232,3 +232,13 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 ## M4-28: the street speakers (U-053)
 - Stand in a street near a lamppost for a few minutes, by day and after 21:00. Does a soft two-tone chime ring down the street and come back off the blocks, then a calm woman's voice in Mandarin (your browser's own Chinese voice: Chrome and Edge have one; if none, only the chime and subtitle)? Is it eerie, not annoying, at its volume?
 - Get seen, then hide: does the alert line come within seconds, then the search line ("Come out. We won't hurt you.")? Do the LED tickers switch strips (curfew by night, red alert and search)?
+
+## M4 (the machines): please play a run
+- Frame rate (M4-83b, Q-009): with ?dev=1, the dev panel's fps in a busy street by day and at night, and any stutters.
+- Combat (M4-101): shoot each kind of machine you meet. Do head shots feel worth it? Do drones fall and walkers drop? Can you search every wreck? Is their fire fair now?
+- The street speakers (U-092): the voice and its loudspeaker sound, without subtitles: eerie, clear enough, not too loud?
+- Pursuits (M4-32): try ?scenario=pursuit-drone, pursuit-dog and pursuit-camera. Can you get away (the hideout grate is close to the stairs)? Does the search feel tense but fair?
+- Delivery robots (M4-34): throw firecrackers near one: does it scuttle off?
+- The city's edge (M4-100): from a high roof at the edge, does the city run on past the river into the hills, by day and at night?
+- Doors (U-083, U-090): handles on every door, chains round the handles, every door visible?
+

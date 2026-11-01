@@ -249,7 +249,12 @@ export class Game {
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
       // (The street speakers: heard, not read: U-092.)
-      else if (e.t === 'pa') { const p = this.state.player.pos; announce(this.audio, e.id, e, Math.hypot(e.x - p.x, e.y - p.y - 1.6, e.z - p.z), this.sound.env.where === 'indoors'); }
+      else if (e.t === 'pa') {
+        // (From the lampposts' speakers round him, the nearest three: U-094.)
+        const p = this.state.player.pos, head = { x: p.x, y: p.y + 1.6, z: p.z };
+        const from = this.world.cameras.filter(c => c.kind === 'lamppost' && Math.abs(c.x - p.x) < 90 && Math.abs(c.z - p.z) < 90).sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z)).slice(0, 3);
+        announce(this.audio, e.id, from, head, this.sound.env.where === 'indoors');
+      }
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }

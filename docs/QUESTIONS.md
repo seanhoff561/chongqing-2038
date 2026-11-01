@@ -37,3 +37,6 @@ The session's network policy denies commons.wikimedia.org and upload.wikimedia.o
 
 ## Q-008 Which are the "parking lot style buildings"? (resolved: the empty open shells, replaced in M3-36)
 U-034 asks to get rid of the parking-lot-style buildings. Default: the banded facades (long horizontal strips of concrete over dark slots, used for shops, offices and malls in the centres), which read like multi-storey car parks; they become window-grid facades like the rest. If you meant something else (the megastructures on columns, the blocks built over lanes, the factory halls), say which.
+
+## Q-009 Your frame rate (M4-83b, U-061)
+M4-83b asks for about 144 fps on your machine; only you can measure it. In this cloud session the browser draws with a software renderer, so its timings (and the perf smoke test's 5 ms CPU and 250-call budgets, now at 13-17 ms and 283-296 calls) say little about a real GPU. Default: M4-83b stays open until you report; I carry on with M5. To report: open the game with ?dev=1, stand in a busy street by day and at night, and note the dev panel's frame rate (and its bench), plus anywhere it stutters. If it's under 144, the next job is merging the city's per-chunk draws (the cell you stand in alone is ~130 draws: chunk meshes, room interiors, doors and windows).
