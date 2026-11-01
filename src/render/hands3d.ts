@@ -2,6 +2,7 @@
 // The model's joints are flat siblings (built for tracked poses), so finger curls are done with our own
 // forward kinematics along each finger chain.
 import * as THREE from 'three';
+import { surface } from './surfaces';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Player } from '../sim/player';
 
@@ -58,7 +59,9 @@ export class Hands3D {
     cam.add(this.group);
     const loader = new GLTFLoader();
     const skin = new THREE.MeshStandardMaterial({ color: 0xc89f86, roughness: 0.75, metalness: 0, emissive: 0x2a1a12, emissiveIntensity: 0.35 });
-    const sleeve = new THREE.MeshStandardMaterial({ color: 0x3a4148, roughness: 0.95, emissive: 0x0a0c0e, emissiveIntensity: 0.4 });
+    // (His sleeve's cloth: a twill weave, worn in places, a seam down it: M4-99.)
+    const cloth = surface('fabric').clone(); cloth.repeat.set(3, 5); cloth.needsUpdate = true;
+    const sleeve = new THREE.MeshStandardMaterial({ color: 0x4a525a, roughness: 0.95, emissive: 0x0a0c0e, emissiveIntensity: 0.4, map: cloth });
     let loaded = 0;
     ['left', 'right'].forEach((name, i) => loader.load(`./models/hands/${name}.glb`, gltf => {
       const root = gltf.scene;

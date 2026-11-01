@@ -3,6 +3,7 @@
 // curled fingers). He holds things in a handshake grip, so -X is up in his view and -Z is forward.
 import * as THREE from 'three';
 import { item } from '../data/items';
+import { surface } from './surfaces';
 
 const M = (color: number, rough = 0.6, metal = 0) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
 const steel = M(0x4a4f55, 0.45, 0.6), dark = M(0x1d1f22, 0.5, 0.3), rubber = M(0x222222, 0.9), red = M(0x9a2420, 0.6), wood = M(0x6b4a2e, 0.8);
@@ -20,7 +21,7 @@ const group = (...o: THREE.Object3D[]) => { const g = new THREE.Group(); g.add(.
  *  slide (named, to run back as it fires) with its sights and ejection port, and the barrel's crown. (No muzzle
  *  flash: U-058.) */
 function pistol() {
-  const poly = M(0x2c2f32, 0.7, 0.05), slideMat = M(0x464b52, 0.4, 0.5);
+  const poly = M(0x383b3f, 0.7, 0.05), slideMat = M(0x595f67, 0.4, 0.5);
   const grip = group(box(0.105, 0.03, 0.036, poly), box(0.012, 0.032, 0.038, dark, 0.058, 0, 0.002), ...[0, 1, 2, 3].map(k => box(0.006, 0.031, 0.037, rubber, -0.03 + k * 0.022, 0, 0)));
   grip.rotation.y = -0.32; grip.position.set(0.012, 0, 0.012);
   const slide = group(box(0.032, 0.028, 0.19, slideMat), box(0.008, 0.006, 0.006, dark, -0.019, 0, -0.088), box(0.008, 0.012, 0.006, dark, -0.019, 0, 0.088), box(0.004, 0.004, 0.004, white, -0.024, 0, 0.088),
@@ -113,9 +114,30 @@ function fit(gun: THREE.Object3D, mods: string[]) {
   return gun;
 }
 
+/** Tins, pots and bars with a printed label (their own materials, so it goes on no other model). */
+const LABELLED = new Set(['energy', 'luncheon', 'noodles', 'chocolate']);
+/** Each of a model's materials given its surface once (M4-99): metal worn and scratched, rubber and polymer grips
+ *  stippled, wood grained, a tin's label printed, food, drink, medicine and ammunition without a shape of their own
+ *  boxed in cardboard, the rest scuffed plastic. */
+function dress(o: THREE.Object3D, id: string): THREE.Object3D {
+  const cat = item(id).cat, boxed = !models[id] && ['food', 'drink', 'med', 'ammo'].includes(cat);
+  o.traverse(m => {
+    const mat = (m as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+    if (!mat || !('roughness' in mat) || mat.map) return;
+    const c = mat.color, warm = c.r > c.b * 1.3 && c.r > 0.25;
+    mat.map = surface(LABELLED.has(id) ? 'label' : boxed ? 'cardboard' : mat.metalness >= 0.3 ? 'metal' : mat.roughness >= 0.85 && c.r < 0.2 ? 'stipple' : warm && mat.roughness >= 0.75 ? 'wood' : 'plastic');
+    mat.needsUpdate = true;
+  });
+  return o;
+}
+
 /** The item model for a held item: a dedicated shape, or a box sized from its backpack footprint; a pistol with its
  *  attachments. */
 export function itemModel(id: string, mods?: string[]): THREE.Object3D {
+  return dress(model(id, mods), id);
+}
+
+function model(id: string, mods?: string[]): THREE.Object3D {
   const make = models[id];
   if (make) return id === 'pistol' && mods?.length ? fit(make(), mods) : make();
   const d = item(id);

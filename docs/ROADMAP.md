@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 90 of 103 done
+## M4: 91 of 103 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -973,7 +973,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Stairways are blocked part-way more often (rubble, a fallen slab, a welded grille), so a building often can't be climbed all the way by its stairs
   - Sewer and tunnel passages blocked more often too, and many more of them flooded (wading or swimming, some full to the roof)
   - Sim test: the share of stairways and sewer passages blocked and flooded per district; the ways round still exist
-- [ ] **M4-99** Realistic textures (U-073)
+- [x] **M4-99** Realistic textures (U-073)
   - Fitting realistic textures on the things seen close: his sleeve (cloth weave, wear, seams), the guns and items (worn metal, grip stippling, wood grain, cardboard, plastic, labels), the machines (painted panels, seams, scuffs, grime)
   - Procedural (drawn at load), no new files to download; the frame rate holds
   - Screenshots: the sleeve and pistol close up, a machine close up

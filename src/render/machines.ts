@@ -14,9 +14,19 @@ function paint(g: THREE.BufferGeometry, color: number, glow: number) {
   for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
   g2.setAttribute('color', new THREE.BufferAttribute(col, 3));
   g2.setAttribute('glow', new THREE.BufferAttribute(new Float32Array(n).fill(glow), 1));
-  if (g2.attributes.uv) g2.deleteAttribute('uv');
+  // Its plates' texture (M4-99) laid on at one scale whatever the part's size: each face's own two axes, PANEL m a
+  // repeat.
+  const P = g2.attributes.position, N = g2.attributes.normal, uv = new Float32Array(n * 2);
+  for (let i = 0; N && i < n; i++) {
+    const ax = Math.abs(N.getX(i)), ay = Math.abs(N.getY(i)), az = Math.abs(N.getZ(i));
+    uv[i * 2] = (ax >= ay && ax >= az ? P.getZ(i) : P.getX(i)) / PANEL;
+    uv[i * 2 + 1] = (ay > ax && ay >= az ? P.getZ(i) : P.getY(i)) / PANEL;
+  }
+  g2.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
   return g2;
 }
+/** How far the machines' plate texture runs before it repeats (m). */
+const PANEL = 0.8;
 /** A box (w, h, d) centred at (x, y, z), turned (rx, ry, rz) about its centre. */
 const box = (w: number, h: number, d: number, x: number, y: number, z: number, c: number, glow = 0, rx = 0, ry = 0, rz = 0) =>
   paint(new THREE.BoxGeometry(w, h, d).rotateX(rx).rotateY(ry).rotateZ(rz).translate(x, y, z), c, glow);

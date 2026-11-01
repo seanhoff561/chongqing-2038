@@ -9,6 +9,7 @@ import type { World } from '../world/world';
 import type { UnitKind } from '../data/units';
 import { SCALE } from '../sim/clock';
 import { RIGS, type Anim } from './machines';
+import { surface } from './surfaces';
 import { night } from './materials';
 
 /** How near a unit must be to be drawn. */
@@ -48,7 +49,8 @@ export class UnitView {
   constructor(units: Unit[]) {
     const kinds = KINDS.filter(k => POOL[k]), n = (k: UnitKind) => Math.min(POOL[k]!, units.filter(u => u.kind === k).length);
     const verts = kinds.reduce((a, k) => a + RIGS[k].parts.reduce((b, g) => b + g.attributes.position.count, 0), 0);
-    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    // (Their plates painted with seams, rivets, scuffs and grime low down: M4-99.)
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true, map: surface('panel') });
     // (Each unit's colour tints its lights only, not its paint.)
     mat.onBeforeCompile = sh => {
       const chunk = THREE.ShaderChunk.color_vertex.replace('vColor *= getBatchingColor( getIndirectIndex( gl_DrawID ) );', 'vTint = getBatchingColor( getIndirectIndex( gl_DrawID ) ).rgb;');
