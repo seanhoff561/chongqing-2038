@@ -64,7 +64,8 @@ export class Marks {
       s.n++; s.mesh.count = Math.min(s.n, CAP); s.mesh.instanceMatrix.needsUpdate = true;
     }
     // Sparks off metal and machines (bright, fast), grit off stone (grey, slower); nothing off wood or cloth.
-    const metal = e.on === 'metal' || e.on === 'machine', count = metal ? 14 : e.on === 'hard' ? 8 : 0;
+    // (None off a wall from a round since U-071: only a machine sparks when it's hit, and a blow's.)
+    const metal = e.on === 'metal' || e.on === 'machine', count = e.kind === 'bullet' && e.on !== 'machine' ? 0 : metal ? 14 : e.on === 'hard' ? 8 : 0;
     const pos = this.sparks.geometry.getAttribute('position') as THREE.BufferAttribute, col = this.sparks.geometry.getAttribute('color') as THREE.BufferAttribute;
     for (let k = 0; k < count; k++) {
       const i = this.next++ % SPARKS, sp = metal ? 3 + Math.random() * 3 : 1 + Math.random();

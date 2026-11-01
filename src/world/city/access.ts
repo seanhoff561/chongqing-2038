@@ -39,8 +39,11 @@ export function door(id: string, box: Solid, hinge: [number, number], dir: [numb
     out.props.push({ kind: 'door', x: hinge[0], y: box.y0, z: hinge[1], yaw, w, h: box.y1 - box.y0, d: 0.05, text: id });
     // What holds it, plain to see (U-066), gone when it's forced: a chain wound across it and its padlock; a lock's
     // hasp and padlock.
-    if (lock === 'chained') for (const [dy, cw, ch] of [[0, w * 0.85, 0.05], [0.12, w * 0.7, 0.04], [-0.1, 0.09, 0.12]]) out.props.push({ kind: 'chain', x: mx, y: y + dy, z: mz, yaw, w: cw, h: ch, d: 0.16, text: id });
-    if (lock === 'locked') for (const [dy, cw, ch] of [[0, 0.22, 0.05], [-0.07, 0.07, 0.09]]) out.props.push({ kind: 'chain', x: mx - dir[0] * w * 0.38, y: y + dy, z: mz - dir[1] * w * 0.38, yaw, w: cw, h: ch, d: 0.12, text: id });
+    // (Through the door and out both faces, a padlock hanging on each side: seen from inside as from out, U-072.)
+    const n: [number, number] = [-dir[1], dir[0]], put = (u: number, dy: number, off: number, cw: number, ch: number, cd: number) =>
+      out.props.push({ kind: 'chain', x: mx + dir[0] * u + n[0] * off, y: y + dy, z: mz + dir[1] * u + n[1] * off, yaw, w: cw, h: ch, d: cd, text: id });
+    if (lock === 'chained') { put(0, 0, 0, w * 0.9, 0.06, 0.22); put(0, 0.14, 0, w * 0.75, 0.05, 0.2); for (const off of [-0.12, 0.12]) put(0, -0.12, off, 0.1, 0.13, 0.05); }
+    if (lock === 'locked') { put(w * 0.36, 0, 0, 0.24, 0.06, 0.16); for (const off of [-0.1, 0.1]) put(w * 0.36, -0.09, off, 0.08, 0.1, 0.045); }
   }
   out.inter.push({ id, kind: 'door', x: hinge[0] + (dir[0] * w) / 2, y: box.y0 + 1.1, z: hinge[1] + (dir[1] * w) / 2, r: 0.9, zh: label[0], en: label[1], data: lock === 'shut' ? { part: id } : { part: id, lock } });
 }

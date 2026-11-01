@@ -9,6 +9,7 @@ export const CONTAINER = {
   drawer: { w: 4, h: 3, time: 0.15, noise: 3 },
   cabinet: { w: 5, h: 4, time: 0.25, noise: 4 },
   locker: { w: 4, h: 6, time: 0.35, noise: 6 },
+  wardrobe: { w: 5, h: 6, time: 0.3, noise: 4 },
   crate: { w: 6, h: 4, time: 0.3, noise: 5 },
   fridge: { w: 4, h: 5, time: 0.2, noise: 4 },
   car: { w: 6, h: 3, time: 0.5, noise: 6 },
@@ -16,7 +17,8 @@ export const CONTAINER = {
 } as const;
 export type ContainerType = keyof typeof CONTAINER;
 
-const typeOf = (it: Inter) => ((it.data?.type as ContainerType) ?? 'crate');
+/** Its kind of container (anything unknown searched as a crate: U-072, a wardrobe's search crashed the game). */
+const typeOf = (it: Inter): ContainerType => { const t = it.data?.type as string | undefined; return t && t in CONTAINER ? (t as ContainerType) : 'crate'; };
 
 /** Fills a container's grid the first time it's searched. Loot tables plug in here. */
 export let fillContainer = (s: SimState, it: Inter) => {

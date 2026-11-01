@@ -5,21 +5,19 @@ import type { Audio } from './audio';
 
 type Group = { files: string[]; gain: number; delay?: number };
 const n = (base: string, ks: (number | string)[]) => ks.map(k => `${base}${k}.ogg`);
-const STEP = n('footstep_concrete_00', [0, 1, 2, 3, 4]), CLOTH = n('cloth', [1, 2, 3, 4]), SOFT = n('impactSoft_medium_00', [0, 1, 2]);
+const CLOTH = n('cloth', [1, 2, 3, 4]), SOFT = n('impactSoft_medium_00', [0, 1, 2]);
 const IMP = (kind: string) => n(`impact${kind}_00`, [0, 1, 2]);
 
 /** Each sound's recordings and how loud (and how late, to meet a blow's swing). */
 export const SAMPLES: Record<string, Group> = {
-  'step-jog': { files: STEP, gain: 0.35 }, 'step-sprint': { files: STEP, gain: 0.5 }, 'step-crouch': { files: STEP, gain: 0.14 }, 'step-crawl': { files: CLOTH, gain: 0.22 },
+  // (His footsteps and the gunfire stay synthesised: U-071.)
   land: { files: SOFT, gain: 0.5 }, 'land-hard': { files: IMP('Soft_heavy'), gain: 0.85 }, grab: { files: n('handleSmallLeather', ['', 2]), gain: 0.4 }, grab2: { files: n('handleSmallLeather', ['', 2]), gain: 0.35 },
   'door-open': { files: n('doorOpen_', [1, 2]), gain: 0.6 }, 'door-close': { files: n('doorClose_', [1, 2, 3, 4]), gain: 0.6 }, force: { files: IMP('Wood_heavy'), gain: 0.9 }, latch: { files: ['metalLatch.ogg'], gain: 0.5 },
   glass: { files: IMP('Glass_heavy'), gain: 0.85 }, 'blow-glass': { files: IMP('Glass_light'), gain: 0.6 },
-  'open-cabinet': { files: n('creak', [1, 2, 3]), gain: 0.45 }, 'open-locker': { files: IMP('Metal_medium'), gain: 0.55 }, 'open-crate': { files: IMP('Plank_medium'), gain: 0.5 }, 'open-car': { files: ['metalClick.ogg'], gain: 0.55 },
+  'open-cabinet': { files: n('creak', [1, 2, 3]), gain: 0.45 }, 'open-wardrobe': { files: n('creak', [1, 2, 3]), gain: 0.55 }, 'open-locker': { files: IMP('Metal_medium'), gain: 0.55 }, 'open-crate': { files: IMP('Plank_medium'), gain: 0.5 }, 'open-car': { files: ['metalClick.ogg'], gain: 0.55 },
   'open-stash': { files: CLOTH, gain: 0.5 }, rustle: { files: CLOTH, gain: 0.45 }, bags: { files: CLOTH, gain: 0.5 }, drop: { files: ['dropLeather.ogg'], gain: 0.5 },
   'grip-iron': { files: IMP('Metal_light'), gain: 0.35 }, knock: { files: IMP('Wood_light'), gain: 0.5 }, rubble: { files: IMP('Mining'), gain: 0.6 },
   'blow-crowbar-metal': { files: IMP('Metal_heavy'), gain: 0.85, delay: 0.12 }, 'blow-crowbar-hard': { files: IMP('Plate_heavy'), gain: 0.75, delay: 0.12 }, 'blow-crowbar-soft': { files: IMP('Punch_heavy'), gain: 0.7, delay: 0.12 },
-  // Gunfire: his pistol's report, and a rifle's for the machines' fire (placed and dulled by distance: gunfire.ts).
-  pistol: { files: n('pistol', [0, 1, 2]), gain: 0.8 }, rifle: { files: n('rifle', [0, 1]), gain: 0.9 },
   'blow-knife-metal': { files: IMP('Metal_light'), gain: 0.6, delay: 0.1 }, 'blow-knife-hard': { files: n('knifeSlice', ['', 2]), gain: 0.6, delay: 0.1 }, 'blow-knife-soft': { files: n('knifeSlice', ['', 2]), gain: 0.45, delay: 0.1 },
 };
 

@@ -3,6 +3,7 @@ import { B, DT, type InputFrame, type SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { movement as M } from '../data/movement';
 import { raycast } from '../world/geom';
+import { hideNear } from './hide';
 
 export const REACH = 2.0;
 /** the hold-E task that lies him down to sleep rough, and its length in seconds */
@@ -123,6 +124,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   // B starts the rough-sleep hold (U-066: its own key).
   if ((input.pressed & B.SLEEP) && p.mode === 'ground') { s.task = { id: ROUGH, t: 0, dur: ROUGH_HOLD }; return; }
   if (!it || !(input.pressed & B.INTERACT)) return;
+  // Crouched by a wardrobe or crate he can curl up in, F hides him in it rather than searching it (U-072).
+  if (p.posture === 'crouch' && hideNear(w, p) >= 0) return;
   input.pressed &= ~B.INTERACT;
   const h = handlers.get(it.kind);
   if (!h) return;

@@ -52,6 +52,7 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   // steel locker's clang, a crate's lid scraping up, a fridge's seal letting go, a car boot's catch, a bag's rustle;
   // a door's latch, a grate's cold iron under his hands, a first blow at a window, stones shifting, springs, a knock.
   'open-drawer': (a, t) => { a.noise(t, 0.22, 0.14, 'bandpass', 1400, 1.5, 900); a.tone(t + 0.2, 0.05, 0.12, 300, 180, 'triangle'); },
+  'open-wardrobe': (a, t) => { a.noise(t, 0.05, 0.12, 'highpass', 2200); a.noise(t + 0.04, 0.55, 0.07, 'bandpass', 700, 6, 450); a.tone(t + 0.06, 0.5, 0.035, 330, 240, 'sawtooth'); },
   'open-cabinet': (a, t) => { a.noise(t, 0.04, 0.12, 'highpass', 2500); a.noise(t + 0.03, 0.4, 0.06, 'bandpass', 900, 6, 600); a.tone(t + 0.05, 0.35, 0.03, 420, 300, 'sawtooth'); },
   'open-locker': (a, t) => { a.tone(t, 0.04, 0.2, 900, 600, 'square'); a.tone(t + 0.05, 0.6, 0.18, 410, 395, 'triangle'); a.tone(t + 0.05, 0.5, 0.08, 1130, 1100); a.noise(t + 0.05, 0.08, 0.2, 'highpass', 2000); },
   'open-crate': (a, t) => { a.noise(t, 0.35, 0.16, 'bandpass', 700, 2, 1200); a.tone(t + 0.3, 0.1, 0.2, 130, 70, 'triangle'); },
@@ -122,14 +123,6 @@ export function radio(a: Audio, gain: number) {
   a.noise(t, 0.35, gain * 0.5, 'bandpass', 1800, 3);
   a.tone(t + 0.05, 0.12, gain, 880, 880, 'square');
   a.tone(t + 0.19, 0.12, gain, 660, 660, 'square');
-}
-
-/** The district's siren while it's after him (M4-27): a wail up and down, 2.6 s. */
-export function siren(a: Audio, gain: number) {
-  if (!a.ready || gain < 0.005) return;
-  const t = a.ctx!.currentTime + 0.005;
-  a.tone(t, 1.3, gain, 520, 1150, 'sawtooth');
-  a.tone(t + 1.3, 1.3, gain, 1150, 520, 'sawtooth');
 }
 
 /** The raid siren (M4-63): a loud whoop rising, its octave over it, every 0.8 s while they break in. */

@@ -158,14 +158,15 @@ function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, 
     // Its space, turned so its doors (the shell's +z) face the room.
     out.hides.push({ id: out.hides.length, kind: 'wardrobe', yaw: Math.atan2(nx, nz), inner: { x0: cx - hw, y0: y + 0.05, z0: cz - hd, x1: cx + hw, y1: y + 1.9, z1: cz + hd } });
   }
-  // Only a container with loot, and a floor's first bed and table, are there to use.
-  if (!('zh' in P) || ('loot' in P && !loot) || ('use' in P && (P.use === 'mattress' ? site.bed : site.table))) return;
+  // Every container is there to search (U-072: what looks like one is one), only the one chosen for it holding
+  // anything; and a floor's first bed and table to use.
+  if (!('zh' in P) || ('use' in P && (P.use === 'mattress' ? site.bed : site.table))) return;
   // The front face, where he reaches in.
   const [fx, fz] = at((b[0] + b[2]) / 2 + face[0] * ((b[2] - b[0]) / 2 + 0.05), (b[1] + b[3]) / 2 + face[1] * ((b[3] - b[1]) / 2 + 0.05));
   if ('use' in P) { if (P.use === 'mattress') site.bed = id; else site.table = id; } else site.containers.push(id);
   out.inter.push('use' in P
     ? { id, kind: P.use, x: fx, y: y + P.h, z: fz, r: 0.8, zh: P.zh, en: P.en }
-    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: { type: p, loot: P.loot } });
+    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: loot ? { type: p, loot: P.loot } : { type: p } });
 }
 
 /** A model prop (render/roomprops.ts) at frame point (u, v) on the floor, its front facing `face` (a step in the

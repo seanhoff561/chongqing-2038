@@ -19,7 +19,7 @@ const CONTROLS: [string, string][] = [
   ['Ctrl (hold) or C', 'crouch; while running: slide'],
   ['X', 'chimney: brace across a narrow gap (X again or Space lets go)'],
   ['Z', 'crawl'],
-  ['F (hold)', 'interact'],
+  ['F (hold)', 'interact; crouched (C) by a wardrobe or crate, hide in it'],
   ['B (hold)', 'lie down and sleep rough'],
   ['Left mouse, holding something', 'use it: fire, strike; the knife from behind a machine: a takedown (hold)'],
   ['Right mouse (hold) / R', 'aim a gun / reload'],

@@ -1,11 +1,10 @@
 // The machines frightening by design (M4-52, U-051): the unseen, the sudden, the inhuman. A machine's eye on him he
 // hears before he sees it: a low throb and a thin high whine from where it is, rising as it makes him out. The moment
 // one notices him, its head's ratchet and a rising ping from there; the moment one has him, a shriek of metal and a
-// blow he feels. Close up a walker's servos grind, loud. And at high alert the city goes mad: sirens wailing, the
+// blow he feels. Close up a walker's servos grind, loud. And at high alert the city goes mad (no siren: U-071): the
 // broadcasts' clipped voices, a swarm of rotors and a march of footfalls far off all round; calm comes back slowly, so
 // he stays on edge long after.
 import type { Audio } from './audio';
-import { siren } from './moves';
 import type { World } from '../world/world';
 import type { SimState } from '../sim/types';
 import type { Alert } from '../sim/district';
@@ -52,7 +51,6 @@ export class Dread {
   private eye!: { gain: GainNode; pan: PannerNode };
   private grind!: { gain: GainNode; pan: PannerNode };
   private swarm!: GainNode;
-  private sirenIn = 0;
   private sayIn = 8;
   private marchIn = 0;
   private lookIn = 0;
@@ -82,8 +80,6 @@ export class Dread {
       // High alert: the swarm far off all round.
       this.swarm.gain.setTargetAtTime(0.06 * Math.max(0, A - 0.3) / 0.7, t, 1);
     }
-    // The sirens while it's high, sounding on as it falls.
-    if ((this.sirenIn -= dt) <= 0) { this.sirenIn = 2.7; if (A > 0.55) siren(a, 0.12 * A); }
     // The broadcasts: a clipped, inhuman voice, now and then.
     if ((this.sayIn -= dt) <= 0) { this.sayIn = 10 + Math.random() * 14; if (A > 0.5) this.say(t, A); }
     // Footfalls marching somewhere near, closing in.

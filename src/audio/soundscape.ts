@@ -10,7 +10,7 @@ import { Breath } from './breath';
 import { Music } from './music';
 import { machineShot, echo } from './gunfire';
 import { gunshot, raidSiren } from './moves';
-import { loadSamples, samplesLoaded, playSample } from './samples';
+import { loadSamples, samplesLoaded } from './samples';
 import { raycast } from '../world/geom';
 import type { World } from '../world/world';
 import type { SimEvent, SimState } from '../sim/types';
@@ -62,7 +62,7 @@ export class Soundscape {
 
   /** His pistol fired: its report, and unsuppressed, its echoes off what's round him. */
   fired(quiet: boolean) {
-    if (quiet || !playSample(this.a, 'pistol')) gunshot(this.a, 0.9, quiet);
+    gunshot(this.a, 0.9, quiet);
     if (!quiet && this.a.ready) echo(this.a, this.env.where, 0.25, this.a.ctx!.currentTime);
   }
 

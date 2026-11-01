@@ -15,5 +15,10 @@ export default async function ({ open, fail, screenshot }) {
     })()`);
     if (!ok) { fail('streetdoors', `no ${lock} street door found`); continue; }
     await screenshot(page, `streetdoor-${lock}`);
+    // And from inside (U-072: what holds it shows on both faces).
+    if (lock !== 'collapsed') {
+      await page.evaluate(`(() => { const g = window.__cq.game, s = g.state; const yaw = g.input.yaw; s.flags.god = true; s.player.pos.x -= Math.sin(yaw) * 4.4; s.player.pos.z -= Math.cos(yaw) * 4.4; g.input.yaw = yaw + Math.PI; for (let i = 0; i < 10; i++) g.runFrames(2); })()`);
+      await screenshot(page, `streetdoor-${lock}-inside`);
+    }
   }
 }
