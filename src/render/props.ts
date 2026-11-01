@@ -333,7 +333,7 @@ function swingers(props: Prop[]): THREE.Mesh[] {
     if (ps[0].kind === 'chain' || ps[0].kind === 'padlock') { out.push(locks(ps)); continue; }
     const door = ps[0].kind === 'door';
     // A unit slab: a door's from its hinge along +x, a pane's about its middle; each scaled to its size.
-    const mesh = new THREE.InstancedMesh(door ? leaf() : new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
+    const mesh = new THREE.InstancedMesh(door ? leaf().clone() : new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
     const place = (i: number, a: number) => {
       const p = ps[i];
       m.makeTranslation(p.x, p.y, p.z).multiply(q.makeRotationY(p.yaw + a)).multiply(sc.makeScale(p.w!, p.h!, p.d ?? (door ? 0.06 : 0.03)));
@@ -372,7 +372,8 @@ function swingers(props: Prop[]): THREE.Mesh[] {
   return out;
 }
 
-/** A door's leaf, a unit slab from its hinge along +x, with a lever handle on each face near its free edge (U-083):
+/** A door's leaf (each chunk's its own copy: its bounds are set to the chunk's, U-090), a unit slab from its hinge along
+ *  +x, with a lever handle on each face near its free edge (U-083):
  *  a round rose against the face and the lever back toward the hinge, at HANDLE's height (in the leaf's unit frame,
  *  so it's scaled with the door, a little smaller on a small one). */
 let leafGeo: THREE.BufferGeometry | null = null;
