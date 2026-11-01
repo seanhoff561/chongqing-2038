@@ -56,6 +56,9 @@ const HIDE_NAMES: Record<string, [string, string]> = {
   tank: ['躲进水箱', 'Hide in the water tank'], drum: ['躲进水桶', 'Hide in the drum'], kiosk: ['躲进报亭', 'Hide in the kiosk'], boot: ['躲进后备箱', 'Hide in the car boot'], van: ['躲进货车', 'Hide in the van'],
 };
 
+/** What he drinks rather than eats, for its sound (U-058). */
+const DRINKS = new Set(['water', 'riverwater', 'energy']);
+
 export class Game {
   world!: World;
   state!: SimState;
@@ -222,6 +225,8 @@ export class Game {
     for (const e of this.state.events) {
       if (e.t === 'land') this.view.fp.landed(e.h);
       else if (e.t === 'sfx') playMove(this.audio, e.id);
+      // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
+      else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
       else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }
       else if (e.t === 'fire') { gunshot(this.audio, 0.9); this.gun.fired(); }
       else if (e.t === 'open') this.inv.toggle(true);

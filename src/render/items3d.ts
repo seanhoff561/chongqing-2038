@@ -17,8 +17,8 @@ const cyl = (r: number, l: number, m: THREE.Material, axis: 'x' | 'y' | 'z' = 'x
 const group = (...o: THREE.Object3D[]) => { const g = new THREE.Group(); g.add(...o); return g; };
 
 /** The QSZ-92 (M4-21b, U-032): a raked polymer grip with its magazine's base, the frame and trigger guard, the steel
- *  slide (named, to run back as it fires) with its sights and ejection port, the barrel's crown, and a muzzle flash
- *  (named, hidden until a shot). */
+ *  slide (named, to run back as it fires) with its sights and ejection port, and the barrel's crown. (No muzzle
+ *  flash: U-058.) */
 function pistol() {
   const poly = M(0x2c2f32, 0.7, 0.05), slideMat = M(0x464b52, 0.4, 0.5);
   const grip = group(box(0.105, 0.03, 0.036, poly), box(0.012, 0.032, 0.038, dark, 0.058, 0, 0.002), ...[0, 1, 2, 3].map(k => box(0.006, 0.031, 0.037, rubber, -0.03 + k * 0.022, 0, 0)));
@@ -26,10 +26,8 @@ function pistol() {
   const slide = group(box(0.032, 0.028, 0.19, slideMat), box(0.008, 0.006, 0.006, dark, -0.019, 0, -0.088), box(0.008, 0.012, 0.006, dark, -0.019, 0, 0.088), box(0.004, 0.004, 0.004, white, -0.024, 0, 0.088),
     box(0.012, 0.0285, 0.035, dark, -0.004, 0, -0.005), ...[0, 1, 2, 3, 4].map(k => box(0.02, 0.0285, 0.003, dark, 0, 0, 0.06 + k * 0.007)));
   slide.name = 'slide'; slide.position.set(-0.066, 0, -0.062);
-  const flash = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.16, 7, 1, true).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffc860, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
-  flash.name = 'flash'; flash.position.set(-0.066, 0, -0.24); flash.visible = false;
   return group(grip, box(0.026, 0.026, 0.16, poly, -0.042, 0, -0.07), box(0.004, 0.022, 0.05, poly, -0.012, 0, -0.04), box(0.032, 0.022, 0.004, poly, -0.03, 0, -0.065), box(0.016, 0.006, 0.006, steel, -0.022, 0, -0.03),
-    slide, cyl(0.0065, 0.012, steel, 'z', -0.07, 0, -0.16), cyl(0.0035, 0.013, rubber, 'z', -0.07, 0, -0.161), flash);
+    slide, cyl(0.0065, 0.012, steel, 'z', -0.07, 0, -0.16), cyl(0.0035, 0.013, rubber, 'z', -0.07, 0, -0.161));
 }
 
 const models: Record<string, () => THREE.Object3D> = {

@@ -1,5 +1,5 @@
 // M4-21b: guns made real (U-032). The pistol in his hands; aimed down the sights it comes up to the eye and the view
-// zooms; a shot flashes, runs the slide back and kicks the view; E leans him round to the right. A screenshot of each.
+// zooms; a shot runs the slide back and kicks the view, no flash (U-058); E leans him round to the right. A screenshot of each.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=gym&seed=1', 'gun');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
@@ -17,10 +17,10 @@ export default async function ({ open, fail, screenshot }) {
   if (aimed.fov > fov0 * 0.7) fail('gun', `aiming: fov ${aimed.fov.toFixed(1)} from ${fov0}`);
   if (Math.abs(aimed.x) > 0.02 || Math.abs(aimed.y) > 0.08) fail('gun', `aiming: slide off the middle (${aimed.x.toFixed(3)}, ${aimed.y.toFixed(3)})`);
   await screenshot(page, 'gun-aimed');
-  // A shot: the flash, the slide back, the view kicked.
+  // A shot: the slide back, the view kicked, and no flash.
   const shot = await page.evaluate(`(() => { const g = window.__cq.game; g.input.mouse = 128 | 64; g.input.pressed = 64; g.runFrames(2);
-    const m = g.heldModel; return { flash: m.getObjectByName('flash').visible, slide: m.getObjectByName('slide').position.z, kick: g.state.player.kick, rounds: g.state.inv.pack.items.find(x => x.id === 'pistol').charge }; })()`);
-  if (!shot.flash) fail('gun', 'no muzzle flash');
+    const m = g.heldModel; return { flash: !!m.getObjectByName('flash'), slide: m.getObjectByName('slide').position.z, kick: g.state.player.kick, rounds: g.state.inv.pack.items.find(x => x.id === 'pistol').charge }; })()`);
+  if (shot.flash) fail('gun', 'a muzzle flash (U-058: none)');
   if (shot.slide < -0.05) fail('gun', `slide didn't run back (${shot.slide})`);
   if (shot.kick <= 0.02) fail('gun', `no kick (${shot.kick})`);
   if (shot.rounds !== 14) fail('gun', `rounds ${shot.rounds}`);
