@@ -389,7 +389,8 @@ There is no visible draw distance (U-012): detail is drawn within the preset's r
 
 ## 16. Performance budgets
 
-Target (U-022): 150 fps, 6.7 ms a frame, at 1080p on the director's machine. The browser never draws faster than
+Target (U-022): 150 fps, 6.7 ms a frame, at 1080p on the director's machine. U-061: about 144 fps held from now on: every feature
+keeps a frame's CPU work (sim ticks and render) inside the budget, the crowds and every later machine included. The browser never draws faster than
 the display refreshes (a 60 Hz screen shows 60), so the dev panel shows frame time in milliseconds (sim, render CPU,
 whole frame) and a **bench** button: 60 frames back to back, waited out on the GPU, as ms a frame and the frame rate
 that makes.

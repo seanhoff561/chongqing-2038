@@ -72,7 +72,7 @@ export interface Convoy { pts: { x: number; y: number; z: number }[]; spurs: { s
 /** A machine's beat (M3-37, M4-01): along streets (into alleys and buildings off them), over the roofs, or under the
  *  ground; who walks it, where it pauses (real seconds at each point), between the hours it keeps (game clock). Out
  *  to its last point and back. Its points are where the walker's feet go (a drone's, where it flies). */
-export interface Patrol { kind: 'street' | 'drone' | 'under'; unit: import('../data/units').UnitKind; pts: { x: number; y: number; z: number }[]; dwell: number[]; hours: [number, number]; /** a drone's rooftop dock (world docks, M4-08) */ dock?: number }
+export interface Patrol { kind: 'street' | 'drone' | 'under'; unit: import('../data/units').UnitKind; pts: { x: number; y: number; z: number }[]; dwell: number[]; hours: [number, number]; /** a drone's rooftop dock (world docks, M4-08) */ dock?: number; /** how many groups walk it, spread round its loop, and how many in each (M4-57) */ crowd?: { n: number; size: number }; /** where it faces while it waits at a point, by the point's index: something it stops to look at (M4-59) */ look?: Record<number, number> }
 /** A place reached only one way, with a tool (U-037): where, what it takes, and where that's used from. */
 export interface Gate { tool: string; x: number; y: number; z: number; from: { x: number; y: number; z: number } }
 

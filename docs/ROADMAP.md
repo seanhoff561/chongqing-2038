@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 50 of 78 done
+## M4: 51 of 86 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -839,10 +839,41 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-76** Thumbs out of the pistol (U-056)
   - Holding the pistol, neither hand's thumb (nor any fingertip) passes through the gun: the right thumb lies along the frame's left side, the left under it, at the hip and aimed
   - A browser check finds no thumb joint or fingertip inside any part of the gun; close-up screenshots
+- [ ] **M4-77** Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057)
+  - The crowbar (and every item without a hold of its own) is held exactly as it was before M4-68
+  - Clicking with the crowbar or knife while a blow is still coming back gives no 'nothing to use it on' message
+  - Neither thumb's flesh (its thickness along every bone) passes into the pistol at the hip or aimed, checked by a browser test
+  - The hand doesn't show through the side of its sleeve: the forearm bends only a little at the wrist and the sleeve covers the wrist
+- [ ] **M4-83** Smooth frame rate: 144 fps (U-061)
+  - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
+  - What made it choppy found and fixed (the M4-57 crowds' per-frame work, units drawn far off, per-frame allocations), without losing the machines
+  - A browser check of the frame's CPU time in the busiest district kept as a guard from now on; real-GPU frame rate in PLAYTEST
+- [ ] **M4-84** Swinging round corners to redirect momentum (U-061)
+  - Running past a building's or pillar's outside corner, or a pole, he can grab it (the grab button as he passes within reach) and swing round it, coming off in the new direction with most of his speed (up to about 120 degrees of turn)
+  - It works at a sprint and from a wall-run; it costs grip endurance like a hang; letting go early leaves him on a tangent
+  - Sim tests: sprinting past a corner and swinging round it keeps at least 80% of the speed into the new direction; a pole the same; without the grab he runs on straight
+- [ ] **M4-81** Chimneying on its own key (U-060)
+  - Chimneying (bracing across a gap) has its own key, X, shown in the pause menu's keys; Space no longer starts it, so jumping in a narrow gap jumps
+  - Pressed between two walls the right distance apart, standing or in the air, X braces him; pressed again or Space lets go as now
+  - Sim tests: Space in a gap jumps without bracing; X braces from the ground and from the air
+- [ ] **M4-82** No floor drawn over holes (U-060)
+  - Wherever the ground or a floor has a hole he can fall or climb through (shafts, manholes, grates' openings, stairwells, broken floors, ways down), no floor is drawn over it, and nothing drawn hides an opening that's really there
+  - A check across the city's holes: at each, a ray down through what's drawn finds the same opening the sim has (nothing drawn within the hole); the cases found fixed; screenshots of a few
+- [ ] **M4-78** Pistol attachments: suppressor, extended magazine, sights (U-058)
+  - A suppressor, an extended magazine and sights (a reflex sight, a 4x scope) are found as loot (the police station, the machines' guards) and fitted to the pistol in the backpack (dropped onto it) or taken off again; each shows on the gun
+  - Suppressed, a shot is heard 40 m round instead of 150 and sounds a muffled crack; an extended magazine holds 25 rounds; aiming with the reflex sight is steadier, with the scope the view zooms 4x
+  - Sim tests: the suppressed shot's noise radius, 25 rounds in the extended magazine, the scope's zoom; a screenshot of the fitted pistol
+- [ ] **M4-79** No muzzle flash; eating and drinking sounds (U-058)
+  - The pistol's muzzle flash is gone; its slide and kick stay
+  - Eating plays a wrapper's rustle and chewing, drinking (water, river water, the energy drink) gulps
+- [ ] **M4-80** No automatic fullscreen (U-059)
+  - Clicking into the game captures the mouse but never makes the page fullscreen
+  - While he plays, leaving the page asks first (Ctrl+W crouching forward can't close the tab unasked)
+  - An e2e check of both
 - [x] **M4-60** Melee swings that land on anything (U-052)
   - Left mouse with the knife or crowbar always swings, seen in the hands; the blow lands on what's in reach: a machine (as now), a wall or object (a clang or thud, a scrape), nothing (a whoosh)
   - A sim test swings at the air, a wall and a machine and gets each outcome
-- [ ] **M4-57** Many more machines: deadly main streets (U-051)
+- [x] **M4-57** Many more machines: deadly main streets (U-051)
   - Far more machines: the main streets thick with them (walking in pairs and squads, cameras and turrets at the junctions, drones overhead), all but certain death to cross in the open; the side streets as busy as the main streets were
   - Sim test: counts per main and side street length within the districts; a run across a main street by day is seen within seconds
 - [ ] **M4-59** Machines that move like they're alive (U-051)

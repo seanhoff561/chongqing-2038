@@ -20,6 +20,7 @@ describe('terrain and the Eighteen Stairs', () => {
     const rise = heightAt(g, ...pts[pts.length - 1])! - heightAt(g, ...pts[0])!;
     expect(rise).toBeGreaterThan(8);
     const s = createState(1, w);
+    s.units.length = 0; // (The ground's what's tested, not the machines: the streets are deadly since M4-57.)
     teleport(s.player, pts[0][0], heightAt(g, ...pts[0])! + 0.6, pts[0][1]);
     run(s, w, 30);
     let k = 1, falls = 0;

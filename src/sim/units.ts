@@ -4,7 +4,7 @@
 // (parked at the beat's start otherwise). So sleeping skips time for free and he can learn exact timings. Movement
 // runs in real seconds, the hours on the game clock.
 import type { World, Patrol, Convoy } from '../world/world';
-import { UNITS, PHASE, COLUMN, SWEEP, DRONE, CONVERGE, type UnitKind } from '../data/units';
+import { UNITS, PHASE, COLUMN, SWEEP, DRONE, CONVERGE, ALIVE, type UnitKind } from '../data/units';
 import { makeRng, rand, hashString } from './rng';
 import { SCALE, hourOf, dayOf } from './clock';
 
@@ -20,6 +20,8 @@ export interface Unit {
   sent?: number;
   /** the hiding place it last passed near, and checked or not (M4-15) */
   near?: number;
+  /** one of a beat's crowd (M4-57): another group round its loop, or the rest of a pair or squad */
+  mate?: boolean;
   /** a walker out only while its district is Heightened (M4-16), and whether it's out (or an idle camera on) */
   extra?: boolean;
   on?: boolean;
@@ -86,7 +88,7 @@ function timeline(p: Patrol, speed: number) {
   let t = 0, yaw = 0;
   stops.forEach((a, k) => {
     const b = stops[(k + 1) % stops.length], pa = p.pts[a], pb = p.pts[b], d = Math.hypot(pb.x - pa.x, pb.y - pa.y, pb.z - pa.z);
-    if (p.dwell[a] > 0) { legs.push({ t0: t, dur: p.dwell[a], a, b: a, yaw }); t += p.dwell[a]; }
+    if (p.dwell[a] > 0) { legs.push({ t0: t, dur: p.dwell[a], a, b: a, yaw: p.look?.[a] ?? yaw }); t += p.dwell[a]; }
     if (d > 0.01) { yaw = Math.atan2(pb.x - pa.x, pb.z - pa.z); legs.push({ t0: t, dur: d / speed, a, b, yaw }); t += d / speed; }
   });
   const tl = { legs, T: Math.max(t, 1e-3) };
@@ -111,6 +113,13 @@ export function createUnits(seed: number, w: World): Unit[] {
   // The reserves (M4-14): three hunter drones on each dock, a squad of two humanoids in each garage.
   w.docks.forEach((_, dock) => { for (let k = 0; k < CONVERGE.perDock; k++) out.push({ id: out.length, kind: 'hunter', patrol: -1, phase: 0, state: 'unaware', reserve: { dock } }); });
   w.garages.forEach((_, garage) => { for (let k = 0; k < CONVERGE.squad; k++) out.push({ id: out.length, kind: 'humanoid', patrol: -1, phase: 0, state: 'unaware', reserve: { garage } }); });
+  // The crowds (M4-57): the rest of each crowded beat's walkers, the groups spread round its loop, a group's members
+  // walking a few metres apart.
+  w.patrols.forEach((p, i) => {
+    if (!p.crowd) return;
+    const T = timeline(p, UNITS[p.unit].patrol).T, gap = 3.5 / UNITS[p.unit].patrol;
+    for (let j = 0; j < p.crowd.n; j++) for (let k = 0; k < p.crowd.size; k++) if (j || k) out.push({ id: out.length, kind: p.unit, patrol: i, phase: out[i].phase + (T * j) / p.crowd.n + k * gap, state: 'unaware', mate: true });
+  });
   return out;
 }
 
@@ -206,11 +215,23 @@ export function unitPose(w: World, u: Unit, time: number): Pose {
 /** Where a unit is along its beat at a time (its hours aside). */
 function beatPose(w: World, u: Unit, time: number): Pose {
   const p = w.patrols[u.patrol];
-  // Each day from 06:00 a beat runs to other timings (M4-04, U-021): yesterday's gaps aren't today's.
-  const { legs, T } = timeline(p, UNITS[u.kind].patrol), day = dayOf(time - 6 * 3600), shift = day > 1 ? ((hashString(`day${u.id}:${day}`) % 1000) / 1000) * T : 0;
+  // Each day from 06:00 a beat runs to other timings (M4-04, U-021): yesterday's gaps aren't today's. (A crowded beat's
+  // walkers all shift together, keeping their pairs and spacing: M4-57.)
+  const { legs, T } = timeline(p, UNITS[u.kind].patrol), day = dayOf(time - 6 * 3600), key = p.crowd && !u.extra ? `beat${u.patrol}` : `${u.id}`;
+  const shift = day > 1 ? ((hashString(`day${key}:${day}`) % 1000) / 1000) * T : 0;
   const t = (((time / SCALE + u.phase + shift) % T) + T) % T;
   let lo = 0, hi = legs.length - 1;
   while (lo < hi) { const m = (lo + hi + 1) >> 1; if (legs[m].t0 <= t) lo = m; else hi = m - 1; }
   const L = legs[lo], f = L.a === L.b ? 0 : Math.min(1, (t - L.t0) / L.dur), a = p.pts[L.a], b = p.pts[L.b];
-  return { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f, yaw: L.yaw, active: true };
+  const at = { x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f, yaw: L.yaw, active: true };
+  // Alive (M4-59): stopped to look at something, its head turns to and fro over it; on the move a walker drifts off
+  // the dead straight line and a drone weaves and bobs (never at a leg's ends, where it turns off into an alley or a door).
+  if (L.a === L.b) { if (p.look?.[L.a] !== undefined) at.yaw += Math.sin((t - L.t0) * 2.1) * ALIVE.sweep; return at; }
+  const d = Math.hypot(b.x - a.x, b.z - a.z);
+  if (d < 10 || (p.kind !== 'drone' && p.kind !== 'street')) return at;
+  const env = Math.sin(Math.PI * f), s = f * d, k = u.id * 1.7, nx = (b.z - a.z) / d, nz = -(b.x - a.x) / d;
+  const off = p.kind === 'drone' ? env * ALIVE.weave * Math.sin(s / 11 + k) : env * ALIVE.drift * Math.sin(s / 6 + k);
+  at.x += nx * off; at.z += nz * off;
+  if (p.kind === 'drone') at.y += env * ALIVE.bob * Math.sin(s / 7 + k);
+  return at;
 }

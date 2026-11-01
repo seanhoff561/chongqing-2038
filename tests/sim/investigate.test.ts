@@ -1,6 +1,7 @@
 // M4-04: awareness and investigation. Awareness climbs and falls per unit; at 0.3 a unit is Suspicious and walks to
 // where it saw him, looks about for 8 s and walks back onto its beat; at 1.0 it's Engaged. Beats shift: each day to
 // other timings, and after the hive has seen him somewhere, units passing near go to check the place.
+import { ALIVE } from '../../src/data/units';
 import { describe, it, expect } from 'vitest';
 import { setup, floor, run, secs } from './helpers';
 import { teleport } from '../../src/sim/player';
@@ -40,7 +41,8 @@ describe('awareness and investigation (M4-04)', () => {
     expect(u.trip).toBeUndefined();
     expect(u.state).toBe('unaware');
     const p = unitPose(world, u, state.time);
-    expect(Math.abs(p.x)).toBeLessThan(0.01);
+    // (Within the drift off its line a walker has since M4-59: U-051, not dead straight.)
+    expect(Math.abs(p.x)).toBeLessThan(ALIVE.drift + 0.01);
     expect(p.z).toBeLessThanOrEqual(-19.9);
     expect(p.z).toBeGreaterThanOrEqual(-30.1);
   });

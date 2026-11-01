@@ -118,6 +118,11 @@ export const COLUMN = {
 
 /** A beat's pauses (real seconds): at its ends, where it looks into an alley, where it goes into a building. */
 export const DWELL = { end: 6, alley: 8, inside: 12, tunnel: 90 };
+/** Moving like they're alive (M4-59): a walker stops to look at a door, a bin or down a side street within `near` m of its way at most every
+ *  `every` m, for `look` s, turning its head `sweep` rad either side; on the move it drifts up to `drift` m off the
+ *  line. A drone drops to look over a building face (`face` m out from it, `faceLook` s) at every third point of its line (up to `faces`),
+ *  and weaves `weave` m either side of its line and `bob` m up and down. */
+export const ALIVE = { near: 12, every: 35, look: 2.5, sweep: 0.6, drift: 0.5, face: 4, faceLook: 3, faces: 30, weave: 3, bob: 1.5 };
 /** A run's units start each somewhere else along their loops: at most this share of a loop out (M4-01). */
 export const PHASE = 0.08;
 

@@ -93,7 +93,9 @@ describe('fixed sensors (M4-11)', () => {
   });
   it('the city has turrets at the factory gates, tripwires and acoustic sensors in the Grand Tunnel, motion sensors in the shelters', () => {
     const w = getWorld('yuzhong'), n = (k: string) => w.cameras.filter(c => c.kind === k);
-    expect(n('turret').length).toBe(w.features.filter(f => f.kind === 'gate').length);
+    // (One over each gate; the rest at the districts' main junctions, on lampposts: M4-57.)
+    const gates = w.features.filter(f => f.kind === 'gate');
+    expect(n('turret').filter(t => gates.some(g => Math.hypot(t.x - g.x, t.z - g.z) < 3)).length).toBe(gates.length);
     expect(n('tripwire').length).toBe(2);
     for (const c of n('tripwire')) expect(Math.hypot(c.to!.x - c.x, c.to!.z - c.z)).toBeGreaterThan(4.5);
     expect(n('acoustic').length).toBeGreaterThanOrEqual(3);

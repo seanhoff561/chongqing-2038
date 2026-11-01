@@ -74,6 +74,7 @@ describe('Yuzhong at 1:1 (M3-41b)', () => {
     const cases = [picks.find(s => s.kind === 'secondary')!, picks.find(s => s.kind === 'residential')!, picks.find(s => s.steps)!];
     for (const s of cases) {
       const st = createState(1, w), [x, z] = s.pts[0];
+      st.units.length = 0; // (The ground's what's tested, not the machines: the streets are deadly since M4-57.)
       teleport(st.player, x, heightAt(g, x, z)! + 0.6, z);
       run(st, w, 30);
       let k = 1;

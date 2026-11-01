@@ -17,10 +17,12 @@ describe('units and their beats (M4-01)', () => {
     const s = createState(5, w);
     // (The beats' walkers: the columns' and the cameras' aren't on beats; every other beat's second walker is out
     // only while its district is Heightened, M4-16.)
-    expect(s.units.filter(u => u.patrol >= 0 && !u.extra).length).toBe(P.length);
+    // (Plus the crowded beats' other walkers, M4-57: the rest of each pair or squad and the other groups round the loop.)
+    expect(s.units.filter(u => u.patrol >= 0 && !u.extra && !u.mate).length).toBe(P.length);
+    expect(s.units.filter(u => u.mate).length).toBe(P.reduce((a, p) => a + (p.crowd ? p.crowd.n * p.crowd.size - 1 : 0), 0));
     expect(s.units.filter(u => u.extra).length).toBe(Math.floor(P.length / 2));
     expect(JSON.parse(JSON.stringify(s.units))).toEqual(s.units);
-    for (const u of s.units.filter(q => q.patrol >= 0 && !q.extra)) {
+    for (const u of s.units.filter(q => q.patrol >= 0 && !q.extra && !q.mate)) {
       expect(u.state).toBe('unaware');
       expect(u.phase).toBeGreaterThanOrEqual(0);
       expect(u.phase).toBeLessThanOrEqual(PHASE * loopOf(w, u) + 1e-6);

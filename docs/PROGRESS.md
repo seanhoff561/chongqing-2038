@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-57 Many more machines: deadly main streets (U-051).
-Features done: 207 / 339 | Last done: M4-76
+**Status:** building M4. Next: M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057).
+Features done: 208 / 347 | Last done: M4-57
 <!-- /status -->
 
 ## Log
@@ -66,3 +66,4 @@ Features done: 207 / 339 | Last done: M4-76
 - M4-68 Holding things like a person (U-052): holding things like a person: a shooter's pistol hold, draw, sway, bob, recoil and reload (U-052)
 - M4-60 Melee swings that land on anything (U-052): melee swings that land on anything: a machine, a wall or thing, or the air (U-052)
 - M4-76 Thumbs out of the pistol (U-056): the thumbs lie along the pistol instead of through it (U-056)
+- M4-57 Many more machines: deadly main streets (U-051): many more machines: district main streets thick with pairs, squads, drones and junction turrets; side streets busy (U-051)
