@@ -73,7 +73,7 @@ try {
   }
   // Feature checks.
   const dir = path.resolve('tests/e2e');
-  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.e2e.mjs') && f.includes(process.env.SMOKE_ONLY ?? '')).sort()) {
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.e2e.mjs') && (process.env.SMOKE_ONLY ?? '').split(',').some(x => f.includes(x))).sort()) {
     fs.appendFileSync('logs/smoke-progress.log', `${new Date().toISOString()} ${f}\n`);
     const mod = await import(path.join(dir, f));
     const before = fails.length;

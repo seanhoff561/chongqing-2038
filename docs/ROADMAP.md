@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 42 of 77 done
+## M4: 43 of 77 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -820,7 +820,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Climbing gloves are gone; a chalk bag is found in their place (loot and the zipline's list of things to ride with drop them)
   - Chalked hands hold longer: hanging and pipes cost half while there's chalk in the bag, and it runs down with use
   - A sim test hangs with and without chalk and compares the drain; the chalk runs out
-- [ ] **M4-56** Rain without the splash particles (U-051)
+- [x] **M4-56** Rain without the splash particles (U-051)
   - Rain falls as rain; the splash and drip particles over every surface are gone
   - A screenshot in rain
 - [ ] **M4-49** Quick opening, a circle filling (U-051)
