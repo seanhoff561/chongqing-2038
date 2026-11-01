@@ -20,6 +20,17 @@ const handlers = new Map<string, Kind>();
 export function onInteract(kind: string, h: Kind) {
   handlers.set(kind, h);
 }
+/** The kinds of thing he can act on. */
+export const interKinds = () => [...handlers.keys()];
+
+/** The sound of his hands on a thing as he starts on it (M4-50, U-051): a drawer sliding, a cabinet's hinge, a locker's
+ *  clang, a crate's lid scraping, a fridge's seal, a car boot's catch, a bag's rustle; a door's latch, a grate's cold
+ *  iron, a first blow at a window, stones shifting under the crowbar, a mattress's springs, a knock on a table. (What
+ *  follows, a door swinging, a grate grinding, glass going, the handlers play.) */
+export const START_SOUND: Record<string, (it: Inter) => string> = {
+  container: it => `open-${(it.data?.type as string | undefined) ?? 'crate'}`,
+  pickup: () => 'rustle', door: () => 'latch', grate: () => 'grip-iron', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock',
+};
 
 /** What the prompt says for an interactable: its kind's label for the moment, else its own name. */
 export const interLabel = (s: SimState, it: Inter): [string, string] => handlers.get(it.kind)?.label?.(s, it) ?? [it.zh, it.en];
@@ -117,7 +128,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   if (!h) return;
   const why = h.can?.(s, it) ?? null;
   if (why) { s.events.push({ t: 'msg', text: why }); return; }
-  const dur = h.dur?.(s, it) ?? 0;
+  const dur = h.dur?.(s, it) ?? 0, sound = START_SOUND[it.kind]?.(it);
+  if (sound) s.events.push({ t: 'sfx', id: sound });
   if (dur > 0) s.task = { id: it.id, t: 0, dur };
   else h.now?.(s, w, it);
 }

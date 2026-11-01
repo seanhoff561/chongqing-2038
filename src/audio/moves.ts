@@ -47,6 +47,23 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   // The pistol's magazine out and in, and the slide (M4-21).
   reload: (a, t) => { a.tone(t, 0.05, 0.12, 900, 700, 'square'); a.noise(t + 0.55, 0.06, 0.2, 'highpass', 2500); a.tone(t + 1.05, 0.07, 0.18, 600, 400, 'square'); a.noise(t + 1.1, 0.05, 0.22, 'highpass', 3000); },
   bags: (a, t) => { a.noise(t, 0.6, 0.12, 'bandpass', 1400, 0.6, 600); a.noise(t + 0.5, 0.5, 0.1, 'bandpass', 1100, 0.6, 500); },
+  // The sounds of things as he starts on them (M4-50, U-051): a drawer sliding out on its runners, a cabinet's hinge, a
+  // steel locker's clang, a crate's lid scraping up, a fridge's seal letting go, a car boot's catch, a bag's rustle;
+  // a door's latch, a grate's cold iron under his hands, a first blow at a window, stones shifting, springs, a knock.
+  'open-drawer': (a, t) => { a.noise(t, 0.22, 0.14, 'bandpass', 1400, 1.5, 900); a.tone(t + 0.2, 0.05, 0.12, 300, 180, 'triangle'); },
+  'open-cabinet': (a, t) => { a.noise(t, 0.04, 0.12, 'highpass', 2500); a.noise(t + 0.03, 0.4, 0.06, 'bandpass', 900, 6, 600); a.tone(t + 0.05, 0.35, 0.03, 420, 300, 'sawtooth'); },
+  'open-locker': (a, t) => { a.tone(t, 0.04, 0.2, 900, 600, 'square'); a.tone(t + 0.05, 0.6, 0.18, 410, 395, 'triangle'); a.tone(t + 0.05, 0.5, 0.08, 1130, 1100); a.noise(t + 0.05, 0.08, 0.2, 'highpass', 2000); },
+  'open-crate': (a, t) => { a.noise(t, 0.35, 0.16, 'bandpass', 700, 2, 1200); a.tone(t + 0.3, 0.1, 0.2, 130, 70, 'triangle'); },
+  'open-fridge': (a, t) => { a.noise(t, 0.08, 0.1, 'lowpass', 1200); a.tone(t, 0.06, 0.12, 180, 110); a.noise(t + 0.06, 0.3, 0.03, 'bandpass', 3000, 1, 2000); },
+  'open-car': (a, t) => { a.tone(t, 0.05, 0.25, 700, 400, 'square'); a.noise(t, 0.05, 0.25, 'highpass', 2500); a.noise(t + 0.08, 0.5, 0.08, 'bandpass', 500, 3, 300); a.tone(t + 0.55, 0.12, 0.2, 110, 60); },
+  'open-stash': (a, t) => { for (let i = 0; i < 4; i++) a.noise(t + i * 0.07, 0.12, 0.09, 'bandpass', 3000 + i * 400, 1.2, 1800); },
+  rustle: (a, t) => { for (let i = 0; i < 3; i++) a.noise(t + i * 0.08, 0.1, 0.08, 'bandpass', 3400 - i * 300, 1.2, 2000); },
+  latch: (a, t) => { a.tone(t, 0.03, 0.18, 1600, 900, 'square'); a.noise(t, 0.03, 0.15, 'highpass', 3000); a.tone(t + 0.06, 0.03, 0.1, 1200, 800, 'square'); },
+  'grip-iron': (a, t) => { a.tone(t, 0.25, 0.12, 620, 600, 'triangle'); a.noise(t, 0.06, 0.12, 'bandpass', 2400, 2); },
+  'blow-glass': (a, t) => { a.tone(t, 0.12, 0.3, 160, 80); a.tone(t, 0.2, 0.05, 2600, 2500); },
+  rubble: (a, t) => { for (let i = 0; i < 5; i++) a.noise(t + i * 0.09 + (i % 2) * 0.03, 0.12, 0.16, 'bandpass', 500 + i * 150, 2, 300); a.tone(t, 0.1, 0.2, 900, 850, 'triangle'); },
+  springs: (a, t) => { a.noise(t, 0.2, 0.08, 'lowpass', 700); for (let i = 0; i < 3; i++) a.tone(t + i * 0.06, 0.12, 0.03, 900 + i * 140, 820, 'sawtooth'); },
+  knock: (a, t) => { for (let i = 0; i < 2; i++) { a.tone(t + i * 0.16, 0.07, 0.25, 260, 140, 'triangle'); a.noise(t + i * 0.16, 0.03, 0.1, 'bandpass', 1500, 2); } },
   drop: (a, t) => { a.noise(t, 0.08, 0.12, 'lowpass', 900); a.tone(t, 0.05, 0.05, 160, 90); },
   glass: (a, t) => { a.noise(t, 0.5, 0.45, 'highpass', 3500, 0.7, 7000); for (let i = 0; i < 5; i++) a.tone(t + 0.05 + i * 0.04, 0.06, 0.08, 3800 + i * 600, 3000, 'sine'); },
   // A rocket's launch and roar (M4-65).

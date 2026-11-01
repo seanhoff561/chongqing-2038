@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 72 of 88 done
+## M4: 73 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -924,7 +924,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-33** Audio engine and machine sounds
   - Web Audio engine with 3D panning; synthesized rotor buzz with Doppler, servo whine, gunfire, footsteps and sirens; more drones are louder
   - The smoke test starts audio after a click with no errors
-- [ ] **M4-50** The sounds of things (U-051)
+- [x] **M4-50** The sounds of things (U-051)
   - Opening and searching make the sound that fits the thing: a drawer slides, a locker clangs, a door creaks, a crate's lid scrapes, bags rustle
   - Sim/e2e: every interactable kind maps to a sound and plays it
 - [ ] **M4-51** The empty city's ambience (U-051)
