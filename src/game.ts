@@ -30,7 +30,7 @@ import { teleport } from './sim/player';
 import { writeSave, readSave, type SaveFile } from './sim/save';
 import { syncWorld } from './sim/doors';
 import { playMove } from './audio/moves';
-import { Hands3D, poseFor, gripPose, HELD_AT } from './render/hands3d';
+import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel } from './render/gunfeel';
 import { HeldMotion } from './render/viewmodel';
@@ -340,7 +340,7 @@ export class Game {
     this.heldId = id;
     const slot = this.hands.heldSlot(1);
     this.heldModel = null;
-    if (slot) { slot.clear(); if (id) { const m = itemModel(id); m.position.copy(HELD_AT); slot.add(m); this.heldModel = m; } }
+    if (slot) { slot.clear(); if (id) { const m = itemModel(id); m.position.copy(heldAt(id)); slot.add(m); this.heldModel = m; } }
   }
 
   start() {

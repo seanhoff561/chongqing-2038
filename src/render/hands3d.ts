@@ -12,7 +12,7 @@ const CHAIN = (f: string) => f === 'thumb'
 
 /** Finger curl 0 (straight) to 1 (fist) and thumb curl; where the hand sits in camera space and how it's turned; where
  *  its elbow is, if the forearm runs off at an angle to the hand (holding a gun: U-052), else straight back from it. */
-export interface HandPose { curl: number; thumb: number; pos: THREE.Vector3; rot: THREE.Euler; elbow?: THREE.Vector3 }
+export interface HandPose { curl: number; thumb: number; pos: THREE.Vector3; rot: THREE.Euler; elbow?: THREE.Vector3; /** the thumb moved out from the palm (metres along the back of the hand's axis), clear of a pistol's side (U-061) */ thumbOut?: number }
 
 interface Hand {
   pivot: THREE.Group;
@@ -21,6 +21,9 @@ interface Hand {
   /** each finger bone's axis along the finger */
   along: Map<string, number>;
   thumbAxis: THREE.Vector3;
+  /** the thumb moved out from the palm, along the back of the hand's axis */
+  outAxis: THREE.Vector3;
+  out: number;
   bones: Map<string, THREE.Object3D>;
   rest: Map<string, { p: THREE.Vector3; q: THREE.Quaternion }>;
   side: number;
@@ -35,6 +38,8 @@ interface Hand {
 export const CALIB = { thumbMix: 0.6, flip: 1 };
 
 const tmpQ = new THREE.Quaternion(), tmpV = new THREE.Vector3(), BACK = new THREE.Vector3(0, 0, 1);
+/** The most the forearm turns off the line of the hand (radians). */
+const WRIST = 0.3;
 const CHAINS: Record<string, string[]> = Object.fromEntries(FINGERS.map(f => [f, CHAIN(f)]));
 const SCRATCH_P = Array.from({ length: 5 }, () => new THREE.Vector3()), SCRATCH_Q = Array.from({ length: 5 }, () => new THREE.Quaternion());
 /** Each joint's share of a full curl, from the knuckle out. */
@@ -86,14 +91,14 @@ export class Hands3D {
       const pivot = new THREE.Group();
       pivot.add(orient);
       // Sleeve back from the wrist toward the elbow.
-      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.062, 0.75, 14).rotateX(Math.PI / 2).translate(0, 0, 0.385), sleeve);
+      const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.062, 0.77, 14).rotateX(Math.PI / 2).translate(0, 0, 0.365), sleeve);
       pivot.add(cuff);
       const held = new THREE.Group();
       pivot.add(held);
       this.group.add(pivot);
       const curlAxis = L.clone().multiplyScalar(side * CALIB.flip);
       const thumbAxis = F.clone().multiplyScalar(side * CALIB.flip * CALIB.thumbMix).add(L.clone().multiplyScalar(side * CALIB.flip * (1 - CALIB.thumbMix))).normalize();
-      this.hands[i] = { pivot, curlAxis, thumbAxis, bones, rest, along, side, curl: 0.3, thumb: 0.3, held, cuff, arm: BACK.clone() };
+      this.hands[i] = { pivot, curlAxis, thumbAxis, outAxis: Bk.clone().normalize(), out: 0, bones, rest, along, side, curl: 0.3, thumb: 0.3, held, cuff, arm: BACK.clone() };
       if (++loaded === 2) this.ready = true;
     }, undefined, () => { /* missing model: no hands */ }));
   }
@@ -116,6 +121,8 @@ export class Hands3D {
           qs[j].premultiply(tmpQ);
         }
       }
+      // The thumb moved out from the palm, all of it from its root.
+      if (thumb && h.out) for (const q of pts) q.addScaledVector(h.outAxis, h.out);
       names.forEach((n, j) => {
         const b = h.bones.get(n)!;
         b.position.copy(pts[j]); b.quaternion.copy(qs[j]);
@@ -132,12 +139,17 @@ export class Hands3D {
     if (!h) return;
     h.curl += (pose.curl - h.curl) * k;
     h.thumb += (pose.thumb - h.thumb) * k;
+    h.out += ((pose.thumbOut ?? 0) - h.out) * k;
     h.pivot.position.lerp(pose.pos, k);
     tmpQ.setFromEuler(pose.rot);
     h.pivot.quaternion.slerp(tmpQ, k);
-    // The forearm toward the elbow (in the hand's frame), bending at the wrist.
-    if (pose.elbow) tmpV.copy(pose.elbow).sub(h.pivot.position).applyQuaternion(tmpQ.copy(h.pivot.quaternion).invert()).normalize();
-    else tmpV.copy(BACK);
+    // The forearm toward the elbow (in the hand's frame), bending at the wrist no more than a wrist bends inside a
+    // sleeve: further and the hand's heel shows through its side (U-057).
+    if (pose.elbow) {
+      tmpV.copy(pose.elbow).sub(h.pivot.position).applyQuaternion(tmpQ.copy(h.pivot.quaternion).invert()).normalize();
+      const a = tmpV.angleTo(BACK);
+      if (a > WRIST) tmpV.copy(BACK).lerp(tmpV, WRIST / a).normalize();
+    } else tmpV.copy(BACK);
     h.arm.lerp(tmpV, k).normalize();
     h.cuff.quaternion.setFromUnitVectors(BACK, h.arm);
     this.applyCurl(h);
@@ -164,17 +176,19 @@ export function gripPose(cam: THREE.Camera, gx: number, gy: number, gz: number, 
 
 /** Where a held item sits on the right hand's pivot. */
 export const HELD_AT = new THREE.Vector3(0, -0.03, -0.075);
+/** Where an item sits in the fist: HELD_AT, or deeper for the pistol, whose grip is fitted to the hand (U-057). */
+export const heldAt = (id: string) => (HOLDS[id]?.seat ? HELD_AT.clone().add(HOLDS[id].seat!) : HELD_AT.clone());
 /** How each thing is held (U-052), the right hand's place and turn in camera space: a handshake grip (the back of the
  *  hand outward, whatever is held standing up through the fist), the pistol out in front at the lower right as a
- *  shooter holds it, the knife low with its point forward, the crowbar leant
- *  forward and across like a club. The forearms run down and away to elbows at his sides. */
-const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; thumb?: number; lthumb?: number; lcurl?: number } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
-/** (A hold's thumbs, right and left, and the left hand's fingers, if not curled tight round the grip: the pistol's thumbs
- *  lie forward along the frame and the left fingers wrap the right hand's, U-056.) */
+ *  shooter holds it, the knife low with its point forward. The forearms run down and away to elbows at his sides. */
+const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; curl?: number; thumb?: number; thumbOut?: number; lthumb?: number; lcurl?: number; seat?: THREE.Vector3 } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
+/** (A hold's fingers and thumbs, right and left, if not curled tight round the grip, and where the item sits in the fist
+ *  if not at HELD_AT: the pistol's thumb forward along the frame's side, moved
+ *  out from the palm so it's clear of the gun (U-061), the left hand's fingers wrapping the right's: U-056, U-057, fitted by
+ *  tests/e2e/thumbs.e2e.mjs.) */
 const HOLDS: Record<string, typeof HOLD> = {
-  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, lthumb: 0.15, lcurl: 0.7 },
+  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, thumbOut: -0.014, lthumb: 0.15, lcurl: 0.7 },
   knife: { pos: new THREE.Vector3(0.2, -0.22, -0.36), rot: new THREE.Euler(-0.9, 0.2, -1.3) },
-  crowbar: { pos: new THREE.Vector3(0.2, -0.28, -0.36), rot: new THREE.Euler(-0.35, 0.1, -0.85) },
 };
 const LEFT_ROT = new THREE.Euler(0.25, -0.6, 1.35);
 const R_ELBOW = new THREE.Vector3(0.3, -0.62, 0.08), L_ELBOW = new THREE.Vector3(-0.1, -0.66, 0.08);
@@ -192,15 +206,17 @@ export function poseFor(p: Player, i: number, readied: boolean, holding: string,
   // Riding a line (M3-52): both fists up round the hook or trolley over his head.
   if (p.mode === 'zip') return { curl: 0.9, thumb: 0.75, pos: P(0.07, 0.38, -0.22), rot: R(1.4, 0, 0) };
   const hold = HOLDS[holding] ?? HOLD;
-  if (holding && i === 1) return { curl: 0.95, thumb: hold.thumb ?? 0.8, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: R_ELBOW };
+  // (Only the holds of their own bend the forearms toward the elbows; the rest are held as they always were, U-057.)
+  const own = holding in HOLDS;
+  if (holding && i === 1) return { curl: hold.curl ?? 0.95, thumb: hold.thumb ?? 0.8, thumbOut: hold.thumbOut, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: own ? R_ELBOW : undefined };
   // The left hand wraps the item at its support point: its fist centre (the mirror of HELD_AT) lands there; changing
   // a magazine it drops to his belt and comes back with the new one.
   if (holding && support) {
-    const grip = support.clone().add(HELD_AT).applyEuler(hold.rot).add(hold.pos);
+    const grip = support.clone().add(heldAt(holding)).applyEuler(hold.rot).add(hold.pos);
     const fist = HELD_AT.clone().applyEuler(LEFT_ROT), pos = grip.sub(fist);
     const down = reload >= 0 ? Math.sin(Math.min(1, reload / 0.8) * Math.PI) : 0;
     if (down > 0) pos.add(new THREE.Vector3(-0.08, -0.3, 0.12).multiplyScalar(down));
-    return { curl: (hold.lcurl ?? 0.85) - down * 0.3, thumb: hold.lthumb ?? 0.7, pos, rot: LEFT_ROT.clone(), elbow: L_ELBOW };
+    return { curl: (hold.lcurl ?? 0.85) - down * 0.3, thumb: hold.lthumb ?? 0.7, pos, rot: LEFT_ROT.clone(), elbow: own ? L_ELBOW : undefined };
   }
   if (readied) return { curl: 0.1, thumb: 0.15, pos: P(0.16, -0.12, -0.38), rot: R(0.9, 0.15, 0.1) };
   // On his feet (U-007): hands low at his sides, forearms running down out of view, swinging with the stride,

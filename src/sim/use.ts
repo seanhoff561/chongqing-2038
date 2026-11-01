@@ -31,8 +31,9 @@ export function useStack(s: SimState, w: World, st: Stack, input: InputFrame) {
   s.events.push({ t: 'use', id: st.id });
   const n = s.events.length, task = s.task, held = s.inv.held, count = st.n, charge = st.charge;
   f?.(s, w, st, input);
-  // Nothing came of it that he'd notice: he's told why.
-  if (s.events.length === n && s.task === task && s.inv.held === held && st.n === count && st.charge === charge) s.events.push({ t: 'msg', text: `${it.en}: ${WHY_ID[st.id] ?? WHY[it.cat] ?? 'nothing to do with it here'}` });
+  // Nothing came of it that he'd notice: he's told why. (Not while a blow or a shot is still coming back: the swing is
+  // the answer, U-057.)
+  if (s.player.swing <= 0 && s.events.length === n && s.task === task && s.inv.held === held && st.n === count && st.charge === charge) s.events.push({ t: 'msg', text: `${it.en}: ${WHY_ID[st.id] ?? WHY[it.cat] ?? 'nothing to do with it here'}` });
 }
 
 onCmd((s, c, w) => {

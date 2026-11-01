@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057).
-Features done: 212 / 347 | Last done: M4-81
+**Status:** building M4. Next: M4-83 Smooth frame rate: 144 fps (U-061).
+Features done: 213 / 347 | Last done: M4-77
 <!-- /status -->
 
 ## Log
@@ -71,3 +71,4 @@ Features done: 212 / 347 | Last done: M4-81
 - M4-79 No muzzle flash; eating and drinking sounds (U-058): no muzzle flash; eating and drinking sounds (U-058)
 - M4-80 No automatic fullscreen (U-059): no automatic fullscreen; the page asks before Ctrl+W closes it mid-run (U-059)
 - M4-81 Chimneying on its own key (U-060): chimneying on its own key, X (U-060)
+- M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057): the crowbar held as before, no use message mid-swing, the thumb along the pistol's side clear of it, the hand in its sleeve (U-057, U-061)

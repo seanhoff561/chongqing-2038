@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 55 of 86 done
+## M4: 56 of 86 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -839,7 +839,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-76** Thumbs out of the pistol (U-056)
   - Holding the pistol, neither hand's thumb (nor any fingertip) passes through the gun: the right thumb lies along the frame's left side, the left under it, at the hip and aimed
   - A browser check finds no thumb joint or fingertip inside any part of the gun; close-up screenshots
-- [ ] **M4-77** Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057)
+- [x] **M4-77** Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057)
   - The crowbar (and every item without a hold of its own) is held exactly as it was before M4-68
   - Clicking with the crowbar or knife while a blow is still coming back gives no 'nothing to use it on' message
   - Neither thumb's flesh (its thickness along every bone) passes into the pistol at the hip or aimed, checked by a browser test

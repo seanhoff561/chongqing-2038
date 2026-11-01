@@ -187,3 +187,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-68, M4-60: holding things, and blows (U-052)
 - Take out the pistol (1-5): does it come up from below and sit at the lower right like a shooter's, the slide's side showing? Walk, turn, aim (right mouse), fire and reload (R): do the bob, the lag behind the turn, the kick and the magazine change look like a person's hands? Take out the knife and the crowbar: held as you'd hold them? Swing (left mouse) at the air, a wall and a machine: the whoosh, then the clang, knock or thud, and the swing stopping short when it hits?
+
+## M4-77 to M4-81 (U-057 to U-060)
+- Hold the pistol: does the right thumb lie forward along the frame's side, clear of the gun, and the hand sit in its sleeve with no heel showing? The crowbar held as it was before? Click the crowbar quickly a few times: no "nothing to use it on". Fire: no muzzle flash. Eat noodles and drink water: the rustle and chewing, the gulps. Click into the game: it stays windowed (F11 for fullscreen); Ctrl+W while playing asks first. In a narrow gap, X braces you and Space just jumps.

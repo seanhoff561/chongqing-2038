@@ -37,6 +37,16 @@ describe('melee swings (M4-60)', () => {
     // Out of reach it's the air.
     expect(blow('knife', [solid(-2, 0, -4, 2, 3, -3, MAT.concrete)]).swing).toMatchObject({ on: 'air' });
   });
+  it("clicking again while the blow comes back says nothing (U-057)", () => {
+    const { world, state } = setup([floor(0, 100)]);
+    addItem(state, state.inv.pack, 'crowbar', 1);
+    state.inv.hotbar[0] = state.inv.pack.items[0].uid; state.inv.held = 1;
+    const msgs: string[] = [];
+    run(state, world, 1, { pressed: LMB, buttons: LMB });
+    run(state, world, 10);
+    run(state, world, 1, { pressed: LMB, buttons: LMB }, s => msgs.push(...s.events.flatMap(e => (e.t === 'msg' ? [e.text] : []))));
+    expect(msgs).toEqual([]);
+  });
   it('lands on a machine in reach', () => {
     const r = blow('crowbar', [], [{ kind: 'turret', x: 0, y: 1.5, z: -1.4, yaw: 0 }]);
     expect(r.swing).toMatchObject({ on: 'machine' });
