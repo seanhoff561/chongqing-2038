@@ -1031,7 +1031,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 2 of 36 done
+## M5: 36 of 38 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
@@ -1044,107 +1044,114 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Military buildings are high security: more of their doors locked, cameras or sensors at their entrances
   - Fewer chained and locked street doors than now, overall
   - Sim test: over a run the types come out near their shares and differ between runs; each type's rooms and loot differ; a military building's loot is better than a home's
-- [ ] **M5-01** Laptop shell
+- [x] **M5-01** Laptop shell
   - L opens Anna's laptop over the view without pausing; at night its glow adds 0.5 light at his position
   - The laptop battery drains while open (2 game hours) and charges at a powered shelter
   - Dense, dim, bilingual terminal styling per DESIGN section 12; the smoke test opens it
-- [ ] **M5-02** Laptop pages and navigation
+- [x] **M5-02** Laptop pages and navigation
   - Pages 状态 Status, 扫描 Scan, 地图 Map, 日志 Logs, 摄像头 Cams, 无人机 Drone and 笔记 Notes switch by keys and clicks; locked pages say what they need
   - A screenshot of the status page
   - The journal lists his hideouts (U-018)
-- [ ] **M5-03** Status page
+- [x] **M5-03** Status page
   - Shows health, wounds, bleeding, sprains and fractures, satiety, hydration, energy and sickness in both languages
   - The smoke test reads values that match the sim state
-- [ ] **M5-04** Scanning
+- [x] **M5-04** Scanning
   - With the laptop open, looking at an item, unit or device for 2 s scans it; Anna gives its name, purpose and uses from data
   - Scans are kept in state; a unit test checks every item and unit type has scan text
-- [ ] **M5-05** Food checks
+- [x] **M5-05** Food checks
   - Scanned food shows its remaining shelf life or that it's spoiled; unscanned food shows nothing
   - A unit test covers it
-- [ ] **M5-06** Auto-map: the whole city, filled in where he has been (U-096)
+- [x] **M5-06** Auto-map: the whole city, filled in where he has been (U-096)
   - The map page shows the whole city top-down from the start: every building's footprint, the districts named, his hideouts
   - Visited 10 m cells are recorded with their level; round them the map fills in each building's type and the ways down; underground it shows the tunnels he's walked
   - The smoke test sees the blank city before he's been anywhere, walks, and sees cells explored and buildings filled in
-- [ ] **M5-07** Binoculars and patrol logs
+- [x] **M5-07** Binoculars and patrol logs
   - Binoculars zoom; watching a unit for 3 s logs its type, place, time and heading; repeated sightings draw its route on the map
   - A sim test covers it
-- [ ] **M5-08** SDR dongle
+- [x] **M5-08** SDR dongle
   - Carrying the SDR and listening for 30 s reveals the district's drone routes and dock times on the map
   - It detects a tracking tag and lets him remove it
   - Sim tests cover both
-- [ ] **M5-09** Camera tap
+- [x] **M5-09** Camera tap
   - Fitting a tap to a camera's junction box (8 s) gives its live feed in the laptop; looping blinds it for 90 s without a silent-unit alarm
   - A sim test covers it
-- [ ] **M5-10** Network credentials
+- [x] **M5-10** Network credentials
   - Using the telecom credentials at an exchange terminal opens every camera feed in the districts it serves
   - A sim test covers it
-- [ ] **M5-11** Hacked drone
+- [x] **M5-11** Hacked drone
   - A salvaged drone plus the controller flies from the laptop (8 min battery); units can spot it; its flights reveal the aerial map
   - A sim test covers flight, battery and map reveal
-- [ ] **M5-12** Robot weak points
+- [x] **M5-12** Robot weak points
   - Scanning a disabled unit reveals that type's weak-point diagram in Anna
   - A sim test covers it
-- [ ] **M5-13** Signal jammer
+- [x] **M5-13** Signal jammer
   - Cuts the hive link within 25 m: pending broadcasts lost, drones hover blind; after 20 s running it becomes a beacon
   - Sim tests cover the cut and the beacon
-- [ ] **M5-14** EMP device
+- [x] **M5-14** EMP device
   - 6 m radius effects per DESIGN section 6 with 3 charges; it can be rigged as a trap at a shelter entrance
   - A sim test covers drones, robots and the trap
-- [ ] **M5-15** Workbench crafting
+- [x] **M5-15** Workbench crafting
   - Recipes live in src/data/recipes.ts; the bench lists recipes with missing parts; crafting consumes parts and takes time
   - A unit test checks every recipe part exists as an item; the smoke test crafts a bandage
-- [ ] **M5-16** Salvage
+- [x] **M5-16** Salvage
   - Downed drones and disabled robots can be dismantled (hold E, tool needed) for the parts in DESIGN section 8
   - A sim test covers it
-- [ ] **M5-18** Shotgun and nail gun
+- [x] **M5-18** Shotgun and nail gun
   - Shotgun pellets and shells with a 180 m noise; the nail gun is quiet (25 m), short-ranged and can pin a door shut
   - Sim tests cover both
-- [ ] **M5-19** Throwables
+- [x] **M5-19** Throwables
   - A throw arc; grenade (6 m, breaches weak doors), fire extinguisher smoke (blocks sight and thermal for 20 s), firecrackers (120 m decoy), thrown bottles and stones (small noise)
   - Sim tests: a decoy draws a quadruped; smoke breaks line of sight
-- [ ] **M5-20** Grappling hook
+- [x] **M5-20** Grappling hook
   - Aim at a ledge up to 20 m above and throw; it hooks if a ledge edge is near the aim point; climb or rappel the rope; retrieve it
   - A sim test climbs a 12 m wall
-- [ ] **M5-21** Rope and rappel
+- [x] **M5-21** Rope and rappel
   - Anchor the rope at an edge and rappel up to 20 m; it stays as a fixed line until taken
   - A sim test covers it
-- [ ] **M5-22** Telescoping ladder
+- [x] **M5-22** Telescoping ladder
   - Place it against a wall (climbable to 4 m) or flat across a gap up to 3.8 m (walkable at crouch speed); dropping it is a 30 m noise
   - Sim tests cover both placements
-- [ ] **M5-23** Crowbar prying
+- [x] **M5-23** Crowbar prying
   - Pry doors (not secure ones), shutters, vent covers, crates and scooter batteries with a 20 m noise and a duration
   - A sim test covers it
-- [ ] **M5-24** Locks, keys, lockpicks and keycards
+- [ ] **M5-23b** Roller shutters (split from M5-23)
+  - Some ground-floor shopfronts have roller shutters pulled down; the crowbar prises one up enough to crawl under, with a duration and a 20 m noise
+  - A sim test covers it
+- [x] **M5-24** Locks, keys, lockpicks and keycards
   - Lock grades: bad (lockpick works), good (key or crowbar), secure (keycard only); the cloner copies a card from a reader or a unit
   - Sim tests cover each grade
-- [ ] **M5-25** Bolt cutters
+- [x] **M5-25** Bolt cutters
   - Cut chains, padlocks, fences (opens a crawl gap), grates and cables
   - A sim test covers it
-- [ ] **M5-26** Wearables: gloves, headlamp, mylar
+- [x] **M5-25b** Bolt cutters on fences and cables (split from M5-25)
+  - Bolt cutters cut a crawl gap through a chain-link fence, drawn cut where it was cut
+  - They cut a camera's power cable at its junction box: the camera's out for good (the network notices a silence if it had seen him); the live cable shocks him unless his gloves are insulated
+  - A sim test covers both
+- [x] **M5-26** Wearables: gloves, headlamp, mylar
   - Climbing gloves halve hang and pipe stamina; the headlamp (white or red) sets his light level; worn mylar beats thermal
   - Sim tests cover each
-- [ ] **M5-27** Shelter power
+- [x] **M5-27** Shelter power
   - The car battery and inverter charge the laptop and run bench power tools and drain by use; car batteries come out of abandoned cars; a solar charger adds 5% a day
   - A sim test covers it
-- [ ] **M5-28** Seasons (U-032)
+- [x] **M5-28** Seasons (U-032)
   - The game starts in autumn and moves into winter: foliage colour and leaf fall, grass, light and weather change with the days
   - A unit test steps the calendar
-- [ ] **M5-28** Every tool has two uses
+- [x] **M5-36** Every tool has two uses
   - A data test: every tool lists at least two uses and each use maps to an implemented action
   - No single tool opens every lock grade or hazard
-- [ ] **M5-29** Water
+- [x] **M5-29** Water
   - Bottles refill clean at taps, or from the river (sickness 50% unless purified with a tablet)
   - A sim test covers it
-- [ ] **M5-30** Backpack upgrade
+- [x] **M5-30** Backpack upgrade
   - The hiking pack raises the grid to 10x7 and keeps its contents
   - A unit test covers it
-- [ ] **M5-31** Loot tiers
+- [x] **M5-31** Loot tiers
   - Loot tables for tiers 1-4 hold the items in DESIGN section 10; site containers use their tier
   - A unit test: tier 4 has the drone-hub parts and tier 1 holds no escape components
-- [ ] **M5-32** Anna's remarks
+- [x] **M5-32** Anna's remarks
   - Anna remarks (subtitled dialogue lines) on scans, injuries, low battery, nearby drones with the SDR, and tags
   - A unit test checks every trigger maps to an existing dialogue id
-- [ ] **M5-33** Player-set ziplines (U-034)
+- [x] **M5-33** Player-set ziplines (U-034)
   - No zipline spawns on its own; a zipline kit (cable, clamps, a trolley) is found as loot and strung by him between two anchors in reach of each other and in line of sight (masts, poles, railings, a roof's edge), sloping down, then ridden as M3-52's lines are
   - He can take it down and carry it on; it weighs and takes space like any item; machines that see a strung line investigate it
   - A sim test strings one across a street between two roofs and rides it

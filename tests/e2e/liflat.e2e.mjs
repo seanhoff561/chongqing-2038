@@ -9,7 +9,7 @@ export default async function ({ open, fail, screenshot }) {
     Object.assign(s.player.pos, { x: t.x, y: t.y - 1.45, z: t.z }); s.player.fallFrom = s.player.pos.y;
     const dx = b.x - t.x, dz = b.z - t.z; g.input.yaw = Math.atan2(-dx, -dz); g.input.pitch = -Math.atan2(1.5, Math.hypot(dx, dz));
     window.__cq.runFrames(40);
-    return { items: s.dropped.map(d => d.stack.id).sort().join(','), mode: s.player.mode }; })()`);
+    return { items: s.dropped.filter(d => !d.loose).map(d => d.stack.id).sort().join(','), mode: s.player.mode }; })()`);
   if (!r) { fail('liflat', 'no Li family flat teleport'); await page.close(); return; }
   if (r.items !== 'badge,phone') fail('liflat', `on the floor: ${r.items}`);
   await screenshot(page, 'liflat');

@@ -242,3 +242,19 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 - The city's edge (M4-100): from a high roof at the edge, does the city run on past the river into the hills, by day and at night?
 - Doors (U-083, U-090): handles on every door, chains round the handles, every door visible?
 
+
+## M5 (Anna and the tech): with ?dev=1 for the items
+- Building types (M5-35): new runs: do offices, clinics, workshops and military posts feel different inside? Is a military post worth the risk? Fewer chained doors?
+- The laptop (L, ← →): readable, dense but calm? Scan (look 2 s with it open), food dates in the backpack tooltip after scanning food.
+- The map (U-096): the whole city there from the start, buildings filling in with their colours as you go; underground, your tunnels. Readable?
+- Binoculars (aim with them): does a log line come after holding a machine 3 s? Its route on the map after a few?
+- SDR (carry it, laptop open 30 s): drone beats and dock times on the map. Camera tap at a junction box (under a lamppost camera, or beside a watched door): the feed on Cams, Enter to loop.
+- The drone (salvaged drone + controller, Drone page, Enter): does flying it feel right (WASD, Space, C, Shift, L back)? Do machines spotting it feel fair?
+- Jammer and EMP: do they feel strong but costly (the beacon, the charges)? Salvage with a knife or toolbox.
+- Crafting at a bench (F at it): the list readable, the timing right? Electronics need the hideout powered (car battery + inverter).
+- The shotgun, nail gun (nail a door shut point-blank), throwables (aim with right mouse for the arc): grenade, extinguisher cloud, firecrackers, bottles and stones.
+- Grappling hook (throw at a wall's top), rope at an edge (look down, use), rappel (crouch on the rope), ladder against a wall or across a gap: do they feel right?
+- Locks: lockpick on cheap locks, crowbar on good ones, the cloner at a card reader. Bolt cutters on chains and bolted grates.
+- Seasons: play a few days on: leaves turning and falling, grass drying, earlier dusk, more fog.
+- The zipline kit between two roofs: string it, ride it, take it down.
+

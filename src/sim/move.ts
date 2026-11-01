@@ -16,6 +16,7 @@ import { tryZip, stepZip } from './zip';
 import { tryChimney, stepChimney } from './chimney';
 import { stepDown, KNOCK } from './knock';
 import { limits, type Limits } from './body';
+import { onPlank } from './plank';
 
 let L: Limits;
 let look = { dYaw: 0, dPitch: 0 };
@@ -163,6 +164,8 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   const wl = Math.hypot(wx, wz);
   if (wl > 1) { wx /= wl; wz /= wl; }
   let sp = targetSpeed(p, input);
+  // (On a ladder laid across a gap, no faster than a crouch: M5-22.)
+  if (onPlank(state)) sp = Math.min(sp, M.speed.crouch);
   if (p.slide >= 0) {
     // A slide keeps its heading: friction bleeds it on the flat, the grade feeds it downhill and eats it
     // uphill (U-020); it ends crouched (or crawling under something low) once it's down to a walk.

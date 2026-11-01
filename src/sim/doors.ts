@@ -5,6 +5,7 @@ import type { SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { onInteract } from './interact';
 import { has } from './inventory';
+import { lockWay, lockDone } from './locks';
 import { overlaps } from '../world/geom';
 import { boxAt } from './physics';
 import { movement as M } from '../data/movement';
@@ -12,20 +13,20 @@ import { movement as M } from '../data/movement';
 export const doorSolid = (it: Inter) => it.data?.solid as number;
 
 /** Make the collision index match the dynamic world state (after load, or after a change): doors open, windows
- *  broken (M3-36), grates up (M3-72), rubble cleared (M4-24). */
+ *  broken (M3-36), grates up (M3-72), rubble cleared (M4-24), fences cut (M5-25b). */
 export function syncWorld(s: SimState, w: World) {
   for (const it of w.inter) {
-    if (it.kind !== 'door' && it.kind !== 'window' && it.kind !== 'grate' && it.kind !== 'rubble') continue;
+    if (it.kind !== 'door' && it.kind !== 'window' && it.kind !== 'grate' && it.kind !== 'rubble' && it.kind !== 'fence') continue;
     if (doorSolid(it) >= 0) w.index.off[doorSolid(it)] = s.wstate.open[it.id] ? 1 : 0;
   }
 }
 
-/** Seconds to force a lock (M3-36): a lock wrenched out, a jammed door shouldered. */
-const FORCE: Record<string, number> = { locked: 1.6, jammed: 1, chained: 2.2 };
-const lockOf = (s: SimState, it: Inter) => (s.wstate.unlocked?.[it.id] ? undefined : (it.data?.lock as string | undefined));
+/** Seconds to shoulder a jammed door (M3-36), or prise one nailed shut (M5-18); locks and chains: locks.ts. */
+const FORCE: Record<string, number> = { jammed: 1, pinned: 2 };
+const lockOf = (s: SimState, it: Inter) => (s.wstate.pinned?.[it.id] ? 'pinned' : s.wstate.unlocked?.[it.id] ? undefined : (it.data?.lock as string | undefined));
 
 function swing(s: SimState, w: World, it: Inter, loud = false) {
-  const open = !s.wstate.open[it.id];
+  const open = !s.wstate.open[it.id], lock = lockOf(s, it);
   if (!open) {
     // Don't shut a door on him.
     w.index.off[doorSolid(it)] = 0;
@@ -33,27 +34,36 @@ function swing(s: SimState, w: World, it: Inter, loud = false) {
     if (overlaps(w.index, boxAt(p.pos.x, p.pos.y, p.pos.z, M.height[p.posture]))) { w.index.off[doorSolid(it)] = 1; return; }
   }
   s.wstate.open[it.id] = open;
+  if (open && s.wstate.pinned) delete s.wstate.pinned[it.id];
   if (it.data?.key || it.data?.lock) (s.wstate.unlocked ??= {})[it.id] = true;
   w.index.off[doorSolid(it)] = open ? 1 : 0;
   s.events.push({ t: 'sfx', id: loud ? 'force' : open ? 'door-open' : 'door-close' });
-  s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: loud ? 14 : 4, kind: loud ? 'force' : 'door' });
+  // (Forced: 20 m with the crowbar, M5-23; a jammed door shouldered, 14.)
+  s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: loud ? (lock === 'jammed' ? 14 : 20) : 4, kind: loud ? 'force' : 'door' });
 }
 
 onInteract('door', {
   can: (s, it) => {
     if (s.wstate.open[it.id]) return null;
-    const key = it.data?.key as string | undefined;
-    if (key && !s.wstate.unlocked?.[it.id] && !has(s.inv.pack, key)) return 'locked';
     const lock = lockOf(s, it);
     if (lock === 'collapsed') return 'collapsed';
-    // A chain through the handles: the crowbar prises it, bolt cutters cut it; a lock is wrenched out with the crowbar.
-    if (lock === 'chained' && !has(s.inv.pack, 'crowbar') && !has(s.inv.pack, 'boltcutters')) return 'chained shut';
-    if (lock === 'locked' && !key && !has(s.inv.pack, 'crowbar')) return 'locked';
-    return null;
+    // Nailed shut (M5-18): prised with the crowbar.
+    if (lock === 'pinned') return has(s.inv.pack, 'crowbar') ? null : 'nailed shut';
+    // Its lock by its grade (M5-24): a card, the cloner, picks, the crowbar or bolt cutters.
+    const way = lockWay(s, it, lock);
+    return typeof way === 'string' ? way : null;
   },
-  // A locked, jammed or chained door is forced: held, and loud.
-  dur: (s, it) => (s.wstate.open[it.id] ? 0 : FORCE[lockOf(s, it) ?? ''] ?? 0),
-  done: (s, w, it) => swing(s, w, it, true),
+  // Forced, picked or cloned: held; forced is loud.
+  dur: (s, it) => {
+    if (s.wstate.open[it.id]) return 0;
+    const lock = lockOf(s, it), way = lockWay(s, it, lock);
+    return lock === 'jammed' || lock === 'pinned' ? FORCE[lock] : typeof way === 'string' ? 0 : way.secs;
+  },
+  done: (s, w, it) => {
+    const lock = lockOf(s, it), way = lockWay(s, it, lock), quiet = typeof way !== 'string' && !way.loud && lock !== 'jammed' && lock !== 'pinned';
+    if (typeof way !== 'string') lockDone(s, it, way.how);
+    swing(s, w, it, !quiet);
+  },
   now: (s, w, it) => swing(s, w, it),
 });
 

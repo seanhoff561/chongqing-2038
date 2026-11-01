@@ -23,9 +23,10 @@ export class Hud {
     this.root.appendChild(this.scope);
   }
 
-  /** Looking through the 4x scope (U-058): its round view over the screen (no crosshair: U-079). */
+  /** Looking through the 4x scope (U-058): its round view over the screen (no crosshair: U-079); or through the
+   *  binoculars (M5-07), their two. */
   private scope: HTMLDivElement;
-  setScope(on: boolean) { const v = on ? 'block' : 'none'; if (this.scope.style.display !== v) this.scope.style.display = v; }
+  setScope(on: boolean, binos = false) { const v = on ? 'block' : 'none', c = binos ? 'scope binos' : 'scope'; if (this.scope.style.display !== v) this.scope.style.display = v; if (this.scope.className !== c) this.scope.className = c; }
   /** Aiming down the sights or through the scope: the centre dot gone (U-079). */
   setAiming(on: boolean) { const d = this.root.querySelector<HTMLDivElement>('.dot')!, v = on ? 'none' : ''; if (d.style.display !== v) d.style.display = v; }
 

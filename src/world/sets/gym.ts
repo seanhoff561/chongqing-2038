@@ -127,8 +127,14 @@ export function buildGym(): World {
   solids.push(solid(118, 4, -6, 140, 5, 6, MAT.concrete)); // a tunnel floor under the plateau
   label('坡 SLOPE 30%', 90, 4, 0, 'up');
 
+  // A chain-link fence (M5-25b): bolt cutters cut a crawl gap through its bottom.
+  add(solid(3, 0.7, -4.04, 7, 2.2, -3.96, MAT.hidden));
+  const fenceLow = solids.length;
+  add(solid(3, 0, -4.04, 7, 0.7, -3.96, MAT.hidden));
+  const inter = [{ id: 'gym-fence', kind: 'fence', x: 5, y: 0.5, z: -4, r: 1.5, zh: '铁丝网', en: 'Chain-link fence', data: { solid: fenceLow, x0: 3, x1: 7, z: -4, h: 2.2 } }];
+  label('铁丝网 FENCE', 5, 2.4, -4);
   return makeWorld({
-    name: 'gym', solids, labels, climbables, hides, ground,
+    name: 'gym', solids, labels, climbables, hides, ground, inter,
     water: [{ x0: -30, y0: -3.3, z0: 24, x1: -16, y1: -0.3, z1: 36 }],
     spawn: { x: 0, y: 0, z: 0, yaw: 0 },
     teleports: [

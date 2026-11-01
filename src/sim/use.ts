@@ -10,6 +10,8 @@ const byId = new Map<string, UseFn>();
 const byCat = new Map<ItemCat, UseFn>();
 export const onUseId = (id: string, f: UseFn) => byId.set(id, f);
 export const onUseCat = (c: ItemCat, f: UseFn) => byCat.set(c, f);
+/** Whether an item has a use of its own in hand (M5-36's check). */
+export const usedInHand = (id: string) => byId.has(id);
 
 /** The stack in his hands, or null for empty hands. */
 export function heldStack(s: SimState): Stack | null {

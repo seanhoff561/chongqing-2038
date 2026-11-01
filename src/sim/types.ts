@@ -53,8 +53,12 @@ export type SimEvent =
   | { t: 'sfx'; id: string }
   | { t: 'ate'; id: string; sick: boolean }
   | { t: 'msg'; text: string }
+  | { t: 'bench'; id: string }
+  | { t: 'logged'; kind: import('../data/units').UnitKind; head: number }
   /** a line of dialogue (src/data/dialogue) */
   | { t: 'say'; id: string }
+  /** Anna has scanned something (M5-04) */
+  | { t: 'scan'; id: string }
   /** the street speakers' announcement (M4-28), from the lamppost nearest him */
   | { t: 'pa'; id: string; x: number; y: number; z: number }
   /** a humanoid calling the others (M4-10) */
@@ -72,6 +76,9 @@ export interface FallOutcome { damage: number; sprain: boolean; fracture: boolea
 
 export interface Shelter {
   id: string; x: number; y: number; z: number; battery: number; compromised: boolean;
+  /** an inverter wired in, and a solar charger set up (M5-27) */
+  inverter?: boolean;
+  solar?: boolean;
   /** he was within TRACK.near of its bed last tick (M4-23) */
   near?: boolean;
   /** given away, when they come for it (M4-24), and whether they have; an EMP trap rigged in it */
@@ -123,7 +130,7 @@ export interface SimState {
   target: string | null;
   task: { id: string; t: number; dur: number } | null;
   /** dynamic world state: searched containers, opened doors, removed things */
-  wstate: { searched: Record<string, true>; open: Record<string, boolean>; gone: Record<string, true>; unlocked?: Record<string, true>; benches?: Record<string, true>; /** the floors' loose spots rolled so far (U-085) */ loose?: Record<string, true> };
+  wstate: { searched: Record<string, true>; open: Record<string, boolean>; gone: Record<string, true>; unlocked?: Record<string, true>; benches?: Record<string, true>; /** the floors' loose spots rolled so far (U-085) */ loose?: Record<string, true>; /** wrecks taken apart (M5-16) */ salvaged?: Record<string, true>; /** doors nailed shut (M5-18) */ pinned?: Record<string, true> };
   /** lines he has rigged with rope and hooks (M3-52), and the first hook of one he's rigging */
   lines?: import('../world/world').Line[];
   rig?: Vec3 | null;
@@ -132,6 +139,49 @@ export interface SimState {
   /** events emitted during the latest tick */
   events: SimEvent[];
   flags: { god: boolean; noclip: boolean; rain: number; fog?: number; clear?: boolean };
+  /** Anna's laptop (M5-01): open or shut, its battery (0 to 1) */
+  laptop?: { open: boolean; charge: number };
+  /** what Anna's scanned ('unit:<kind>', 'item:<id>'), what she's scanning now and how long he's looked, and the last (M5-04) */
+  scans?: Record<string, true>;
+  scan?: { target: string | null; t: number; done?: boolean };
+  lastScan?: string;
+  /** the last food stack scanned (its uid), for her Scan page (M5-05) */
+  lastFood?: number;
+  /** the 10 m cells he's been in, by layer: 'cx,cz,layer' (M5-06) */
+  explored?: Record<string, 1>;
+  /** the machine he's watching through binoculars, for how long (real s) and when the next line's logged (M5-07) */
+  watch?: { u: number; t: number; next: number };
+  /** Anna's patrol log (M5-07) */
+  sightings?: import('./binoculars').Sighting[];
+  /** what Anna has from the SDR (M5-08): districts whose drones she's heard, how long she's listened in each (real s) */
+  sdr?: { heard: Record<string, true>; t: Record<string, number> };
+  /** the cameras (world indices) he's tapped (M5-09) */
+  taps?: number[];
+  /** the keycards he's cloned (M5-24) */
+  cloned?: string[];
+  /** the zipline kit's first clamp, on (M5-33) */
+  kitRig?: Vec3;
+  /** what Anna last remarked on, and when, and how things stood (M5-32) */
+  remarks?: { last: Record<string, number>; hp: number; bleed: boolean; leg: string; tag: boolean; low: boolean };
+  /** the hacked drone in the air (M5-11): where it is, its look, and how long an armed machine has had it in sight */
+  flight?: { x: number; y: number; z: number; yaw: number; pitch: number; seen: number };
+  /** the jammer running (M5-13): since when (game time), and whether it's become a beacon */
+  jam?: { since: number; beacon?: boolean };
+  /** EMP devices rigged as traps (M5-14): the device and where */
+  traps?: { stack: import('./inventory').Stack; x: number; y: number; z: number }[];
+  /** things thrown, in the air (M5-19): what, when, where, how fast */
+  thrown?: { id: string; stack: import('./inventory').Stack; t: number; x: number; y: number; z: number; vx: number; vy: number; vz: number }[];
+  /** powder clouds (M5-19) and firecrackers going off: where and till when */
+  smoke?: { x: number; y: number; z: number; until: number }[];
+  crackers?: { x: number; y: number; z: number; until: number; next: number }[];
+  /** when he can next cough in a cloud (M5-36) */
+  coughAt?: number;
+  /** ropes he's hung and ladders he's stood against walls (M5-20 to M5-22): each a climbable, and the item it was */
+  ropes?: (import('../world/world').Climbable & { item: string })[];
+  /** ladders laid across gaps (M5-22): where he stood, his heading, from and to how far along it, its top, the item */
+  planks?: { x: number; z: number; yaw: number; a: number; b: number; y: number; item: string }[];
+  /** the kinds of machine whose weak points she knows, from scanning one disabled (M5-12) */
+  weak?: Partial<Record<import('../data/units').UnitKind, true>>;
   /** fog and rain now, 0 to 1 (M3-12): from the seeded schedule, forced up by the dev flags */
   weather: { fog: number; rain: number };
 }

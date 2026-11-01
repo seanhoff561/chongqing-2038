@@ -27,7 +27,8 @@ export let fillContainer = (s: SimState, it: Inter) => {
 };
 export const setFiller = (f: typeof fillContainer) => { fillContainer = f; };
 
-function open(s: SimState, it: Inter) {
+/** Opens it beside the backpack, filled the first time. */
+export function openContainer(s: SimState, it: Inter) {
   if (!s.containers[it.id]) {
     const t = CONTAINER[typeOf(it)];
     s.containers[it.id] = grid(t.w, t.h);
@@ -38,13 +39,19 @@ function open(s: SimState, it: Inter) {
   s.events.push({ t: 'open', id: it.id });
 }
 
+/** An armoury's locked locker or crate (M5-23): prised open with the crowbar, slowly and loudly. */
+export const PRY = { secs: 2.5, noise: 20 };
+const locked = (s: SimState, it: Inter) => it.data?.lock === 'locked' && !s.wstate.unlocked?.[it.id];
+
 onInteract('container', {
-  dur: (s, it) => (s.wstate.searched[it.id] ? 0 : CONTAINER[typeOf(it)].time),
-  now: (s, _w, it) => open(s, it),
+  can: (s, it) => (locked(s, it) && !s.inv.pack.items.some(i => i.id === 'crowbar') ? 'locked: prise it open with a crowbar' : null),
+  dur: (s, it) => (locked(s, it) ? PRY.secs : s.wstate.searched[it.id] ? 0 : CONTAINER[typeOf(it)].time),
+  now: (s, _w, it) => openContainer(s, it),
   done: (s, _w, it) => {
+    if (locked(s, it)) { (s.wstate.unlocked ??= {})[it.id] = true; s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: PRY.noise, kind: 'crowbar' }, { t: 'sfx', id: 'force' }); }
     const t = CONTAINER[typeOf(it)];
     if (t.noise) s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: t.noise, kind: 'search' });
-    open(s, it);
+    openContainer(s, it);
   },
 });
 

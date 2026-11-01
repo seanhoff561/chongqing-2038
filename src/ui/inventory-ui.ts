@@ -2,6 +2,7 @@
 // shift-click moves it straight across, 'take all' empties the container into the backpack, 1-5 over an item binds it to
 // the hotbar. Moves go to the sim as commands.
 import { hideoutList } from '../sim/shelter';
+import { foodCheck } from '../sim/food';
 import type { Game } from '../game';
 import type { Grid, Stack } from '../sim/inventory';
 import { dims, weight } from '../sim/inventory';
@@ -21,8 +22,6 @@ export class InventoryUI {
   private drag: { uid: number; from: string; rot: boolean; ox: number; oy: number; ghost: HTMLDivElement } | null = null;
   private hover: { uid: number; from: string } | null = null;
   private tip: HTMLDivElement;
-  /** extra content renderers (food checks, scans) can hook the tooltip */
-  tipExtra: (s: Stack) => string = () => '';
 
   constructor(private game: Game) {
     this.el = document.createElement('div');
@@ -139,7 +138,9 @@ export class InventoryUI {
   private showTip(st: Stack, anchor: HTMLElement) {
     const d = item(st.id), r = anchor.getBoundingClientRect();
     const mods = st.mods?.length ? `<br>${st.mods.map(m => item(m).en).join(', ')} fitted (right-click: take off)` : st.id === 'pistol' ? '<br>Drop an attachment on it to fit it' : '';
-    this.tip.innerHTML = `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${mods}${this.tipExtra(st)}`;
+    // Its shelf life, once Anna's read the date (M5-05).
+    const fc = foodCheck(this.game.state, st), food = fc ? `<br><i>安娜：${fc[0]} · ${fc[1]}</i>` : '';
+    this.tip.innerHTML = `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${mods}${food}`;
     this.tip.style.cssText = `display:block;left:${r.right + 6}px;top:${r.top}px`;
   }
 

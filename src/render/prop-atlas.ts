@@ -3,6 +3,7 @@
 // cardboard, stone, bark, bin bags, galvanised metal, faded sign faces). Parts carry a tile index and UVs in
 // metres; the shader wraps each part's UVs inside its tile, so the whole library still draws with one material.
 import * as THREE from 'three';
+import { SEASON_U } from './season';
 import { canvasTexture } from './textures';
 import { mulberry } from './rand';
 
@@ -117,13 +118,21 @@ export function atlasMaterial<M extends THREE.Material>(m: M): M {
   m.onBeforeCompile = sh => {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float tile;\nvarying float vTile;')
       .replace('#include <uv_vertex>', '#include <uv_vertex>\nvTile = tile;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vTile;')
+    // (Leaves turn and thin with the season, M5-28: each patch of a card its own way.)
+    sh.uniforms.uTurn = SEASON_U.turn; sh.uniforms.uBare = SEASON_U.bare;
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vTile;\nuniform float uTurn;\nuniform float uBare;')
       .replace('#include <map_fragment>', `#ifdef USE_MAP
   vec2 cell = vec2(mod(vTile + 0.5, 4.0) - 0.5, 3.0 - floor((vTile + 0.5) / 4.0));
   vec2 atlasG = vMapUv * 0.234375;
   vec4 sampledDiffuseColor = textureGrad(map, (cell + 0.03125 + fract(vMapUv) * 0.9375) * 0.25, dFdx(atlasG), dFdy(atlasG));
   diffuseColor *= sampledDiffuseColor;
-#endif`);
+#endif
+  if (abs(vTile - ${tileOf('leaves')}.0) < 0.5) {
+    float hz = fract(sin(dot(floor(vMapUv * 2.0), vec2(12.9898, 78.233))) * 43758.5453);
+    if (hz < uBare) discard;
+    vec3 gold = mix(vec3(0.62, 0.42, 0.12), vec3(0.45, 0.22, 0.08), fract(hz * 7.0));
+    diffuseColor.rgb = mix(diffuseColor.rgb, gold * (0.6 + 0.4 * dot(diffuseColor.rgb, vec3(0.33)) * 2.0), clamp(uTurn * (0.6 + hz * 0.8), 0.0, 1.0));
+  }`);
   };
   m.customProgramCacheKey = () => 'prop-atlas';
   return m;

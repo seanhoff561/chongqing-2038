@@ -12,11 +12,13 @@ import { raycast } from '../world/geom';
 import { lightAt, LAMP_LIGHT } from './light';
 import { daylight, SCALE } from './clock';
 import { unitPose, isOff, type Pose } from './units';
+import { smoked } from './throw';
 import { onUseId } from './use';
 import { LEAN } from './player';
 import { remember } from './hive';
 import { heightened, districtOf } from './district';
 import { leave } from './alert';
+import { laptopLight } from './laptop';
 
 type V3 = { x: number; y: number; z: number };
 
@@ -100,10 +102,12 @@ export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose): num
   for (const q of bodyPoints(s)) {
     const dx = q.x - eye.x, dy = q.y - eye.y, dz = q.z - eye.z, L = Math.hypot(dx, dy, dz);
     if (L < 0.01 || (dx * ax + dy * ay + dz * az) / L < half) continue;
-    if (!raycast(w.index, eye.x, eye.y, eye.z, dx / L, dy / L, dz / L, L - 0.05)) seen++;
+    // (Not through a powder cloud, M5-19.)
+    if (!raycast(w.index, eye.x, eye.y, eye.z, dx / L, dy / L, dz / L, L - 0.05) && !smoked(s, eye, q)) seen++;
   }
   if (!seen) return 0;
-  let light = Math.max(lightAt(w, p, s.time, LAMP_LIGHT[s.player.lamp]), S.ir);
+  // (His open laptop's screen lights him too: M5-01.)
+  let light = Math.max(lightAt(w, p, s.time, Math.max(LAMP_LIGHT[s.player.lamp], laptopLight(s))), S.ir);
   if (daylight(s.time) < 0.5) {
     // By night: in a searchlight's spot he's lit; within thermal range his heat shows (M4-06).
     const cx = p.x - eye.x, cy = p.y + 0.9 - eye.y, cz = p.z - eye.z, cl = Math.hypot(cx, cy, cz) || 1;

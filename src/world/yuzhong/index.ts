@@ -236,6 +236,14 @@ export function buildYuzhong(): World {
   world.patrols = walkedBeats(world, net.patrols, [tun.at.junction, tun.at.metro]);
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
   world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
+  // Each parked scooter's battery, prised out with a crowbar (M5-23).
+  world.props.forEach((p, i) => { if (p.kind === 'scooter') world.inter.push({ id: `scooter${i}`, kind: 'scooter', x: p.x, y: p.y + 0.45, z: p.z, r: 0.6, zh: '电动车', en: 'Scooter' }); });
+  // Each camera's junction box (M5-09): where a tap clips in.
+  world.cameras.forEach((c, i) => {
+    if (!c.box) return;
+    world.props.push({ kind: 'jbox', ...c.box });
+    world.inter.push({ id: `jbox${i}`, kind: 'jbox', x: c.box.x, y: c.box.y, z: c.box.z, r: 0.5, zh: '接线盒', en: 'Junction box', data: { cam: i } });
+  });
   world.garages = placeGarages(world, home.at.spawn);
   // No floor drawn over a hole (M4-82, U-060, U-066): a finish (a floor's tiles or boards, a roof's patch, moss, a
   // puddle) is drawn only where there's something under it to stand on: not over a stairwell, a trapdoor or a hole.

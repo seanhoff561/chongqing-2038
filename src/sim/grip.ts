@@ -41,18 +41,22 @@ function onto(world: World, lip: Grip, back: number) {
   return { x, y: up + 1e-3, z };
 }
 
+/** The ropes he's hung himself (M5-20's grappling hook, M5-21's rope), kept in step with the sim each tick
+ *  (grapple.ts): climbed as pipes are. */
+export const ropes: import('../world/world').Climbable[] = [];
+
 export function findGrab(world: World, p: Player): Grip | null {
   const ex = p.pos.x, ey = eyeY(p), ez = p.pos.z, d = lookDir(p);
   let best: Grip | null = null, bestT = G.rayReach;
   // Pipes and ladders: nearest point of the look ray to the vertical bar.
   const hl = d.x * d.x + d.z * d.z;
-  if (hl > 1e-6) for (const c of world.climbables) {
+  if (hl > 1e-6) for (const c of ropes.length ? world.climbables.concat(ropes) : world.climbables) {
     const cx = c.x + c.nx * 0.08, cz = c.z + c.nz * 0.08;
     const t = Math.max(0, Math.min(bestT, ((cx - ex) * d.x + (cz - ez) * d.z) / hl));
     const px = ex + d.x * t, pz = ez + d.z * t, py = ey + d.y * t;
     if (Math.hypot(px - cx, pz - cz) > G.pipeRadius || py < c.y0 || py > c.y1) continue;
     bestT = t;
-    best = { x: cx, y: py, z: cz, nx: c.nx, nz: c.nz, kind: c.kind === 'pipe' ? 'pipe' : 'rung', top: c.y1 };
+    best = { x: cx, y: py, z: cz, nx: c.nx, nz: c.nz, kind: c.kind === 'pipe' || c.kind === 'rope' ? 'pipe' : 'rung', top: c.y1 };
   }
   const h = raycast(world.index, ex, ey, ez, d.x, d.y, d.z, bestT);
   if (h) {

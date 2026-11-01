@@ -8,6 +8,11 @@ type Play = (a: Audio, t: number) => void;
 const breath = (a: Audio, t: number, gain: number, dur = 0.16, f = 900) => a.noise(t, dur, gain, 'bandpass', f, 1.4, f * 0.7);
 
 export const MOVE_SOUNDS: Record<string, Play> = {
+  // A fire extinguisher bursting into a cloud; a firecracker (M5-19).
+  hiss: (a, t) => { a.noise(t, 0.08, 0.35, 'highpass', 1500); a.noise(t + 0.05, 1.6, 0.18, 'bandpass', 3000, 0.6, 1200); },
+  crack: (a, t) => { a.noise(t, 0.03, 0.5, 'highpass', 2000); a.noise(t + 0.09, 0.025, 0.35, 'highpass', 2500); a.tone(t, 0.04, 0.2, 400, 120, 'square'); },
+  // The EMP's pulse (M5-14): a sharp electric crack and a falling whine.
+  zap: (a, t) => { a.noise(t, 0.06, 0.4, 'highpass', 3000); a.tone(t, 0.5, 0.12, 2400, 180, 'sawtooth'); a.tone(t + 0.02, 0.3, 0.08, 60, 40, 'square'); },
   'step-crawl': (a, t) => a.noise(t, 0.18, 0.05, 'bandpass', 2400, 0.8, 1600),
   'step-crouch': (a, t) => a.noise(t, 0.07, 0.08, 'lowpass', 900),
   'step-jog': (a, t) => { a.noise(t, 0.08, 0.16, 'lowpass', 1100); a.tone(t, 0.06, 0.06, 90, 60); },

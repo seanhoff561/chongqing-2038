@@ -27,7 +27,8 @@ extraInters.push(placedInters);
 /** Claim a bed: a new hideout, or nothing if it's already one of his. */
 export function claimBed(s: SimState, it: Inter, battery = 0) {
   if (s.shelters.some(h => h.id === it.id)) return;
-  s.shelters.push({ id: it.id, x: it.x, y: it.y, z: it.z, battery, compromised: false });
+  // (One given power comes with its inverter: M5-27.)
+  s.shelters.push({ id: it.id, x: it.x, y: it.y, z: it.z, battery, compromised: false, ...(battery > 0 ? { inverter: true } : {}) });
   s.events.push({ t: 'msg', text: s.shelters.length > 1 ? 'another hideout' : 'your bed now' });
 }
 
@@ -85,7 +86,7 @@ onUseId('toolbox', (s, w, st) => {
 });
 
 onInteract('table', {
-  now: (s, _w, it) => { s.events.push({ t: 'msg', text: isBench(s, it) ? 'workbench' : 'a table: put a toolbox on it to make a workbench' }); },
+  now: (s, _w, it) => { s.events.push(isBench(s, it) ? { t: 'bench', id: it.id } : { t: 'msg', text: 'a table: put a toolbox on it to make a workbench' }); },
 });
 
 /** His hideouts for the journal: where each is (district) and what its bed is, nearest first. */

@@ -11,6 +11,7 @@ import { free } from './physics';
 import { has, consume } from './inventory';
 import { damage } from './body';
 import { onUseId } from './use';
+import { anchorRope } from './rappel';
 
 /** What he hangs from, best first: its friction along the line. */
 const RIDERS: [string, number][] = [['trolley', 0.03], ['pulley', 0.04], ['hook', 0.08], ['grapple', 0.08], ['insgloves', 0.16]];
@@ -18,6 +19,7 @@ const RIDERS: [string, number][] = [['trolley', 0.03], ['pulley', 0.04], ['hook'
 const HANG = 2.05, REACH = 0.7;
 const MAX_LEN = 40, MIN_FALL = 0.1, TOP = 18;
 
+export { frame, MAX_LEN, MIN_FALL };
 export const allLines = (s: SimState, w: World): Line[] => (s.lines?.length ? w.lines.concat(s.lines) : w.lines);
 
 /** The line's high end, its direction down it, its length and how steep it is (sine). */
@@ -46,7 +48,7 @@ export function lineInReach(s: SimState, w: World): { line: number; s: number } 
 export function tryZip(s: SimState, w: World): boolean {
   const p = s.player, lines = allLines(s, w), { line: best, s: bs } = lineInReach(s, w);
   if (best < 0) return false;
-  const rider = RIDERS.find(([id]) => has(s.inv.pack, id));
+  const rider = lines[best].kit ? RIDERS[0] : RIDERS.find(([id]) => has(s.inv.pack, id));
   if (!rider) { s.events.push({ t: 'msg', text: 'needs a hook, a pulley or gloves' }); return false; }
   if (lines[best].live && !has(s.inv.pack, 'insgloves')) {
     // A live line: the shock throws him off.
@@ -71,7 +73,7 @@ export function tryZip(s: SimState, w: World): boolean {
 export function stepZip(s: SimState, w: World, input: InputFrame) {
   const p = s.player, z = p.zip, l = z ? allLines(s, w)[z.line] : null;
   if (!z || !l) { p.mode = 'air'; p.zip = null; return; }
-  const f = frame(l), mu = RIDERS.find(([id]) => has(s.inv.pack, id))?.[1] ?? 0.16, cos = Math.sqrt(1 - f.sin * f.sin);
+  const f = frame(l), mu = l.kit ? RIDERS[0][1] : RIDERS.find(([id]) => has(s.inv.pack, id))?.[1] ?? 0.16, cos = Math.sqrt(1 - f.sin * f.sin);
   z.v = Math.max(0, Math.min(TOP, z.v + M.gravity * (f.sin - mu * cos) * DT));
   const ns = z.s + z.v * DT, x = f.h.x + f.dx * ns, y = f.h.y + f.dy * ns - HANG, zz = f.h.z + f.dz * ns;
   // Ctrl lets go; the line's end, or something in the way, drops him off it, still moving.
@@ -87,10 +89,13 @@ export function stepZip(s: SimState, w: World, input: InputFrame) {
   p.fallFrom = p.pos.y;
 }
 
-/** Rope in hand: the first use sets a hook on an anchor in reach, the second throws the other to rig the line. */
-onUseId('rope', (s, w) => {
+/** Rope in hand: looking down over an edge, it's anchored there to rappel (rappel.ts); else the first use sets a hook
+ *  on an anchor in reach, the second throws the other to rig the line. */
+onUseId('rope', (s, w, st) => {
   const p = s.player, eye: Vec3 = { x: p.pos.x, y: p.pos.y + M.eye[p.posture], z: p.pos.z };
   const dx = -Math.sin(p.yaw) * Math.cos(p.pitch), dy = Math.sin(p.pitch), dz = -Math.cos(p.yaw) * Math.cos(p.pitch);
+  // Looking down over an edge he stands at: anchored there to rappel (M5-21).
+  if (!s.rig && p.pitch < -0.5 && anchorRope(s, w, st)) return;
   if (!has(s.inv.pack, 'hook', 2)) { s.events.push({ t: 'msg', text: 'needs two hooks' }); return; }
   const hit = raycast(w.index, eye.x, eye.y, eye.z, dx, dy, dz, s.rig ? MAX_LEN + 5 : 2.5);
   if (!hit) { s.events.push({ t: 'msg', text: s.rig ? 'nothing to hook there' : 'no anchor in reach' }); return; }

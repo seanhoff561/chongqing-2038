@@ -14,6 +14,16 @@ export function shelfLeft(s: SimState, st: Stack): number | null {
   return f.shelfDays - (s.time - (st.made ?? s.time)) / 86400;
 }
 
+/** What Anna says of a packet's date once she's read it (M5-05): days (or hours) left, or spoiled; nothing for one
+ *  she hasn't scanned, or for what isn't food. */
+export function foodCheck(s: SimState, st: Stack): [string, string] | null {
+  const left = st.checked ? shelfLeft(s, st) : null;
+  if (left === null) return null;
+  if (left < 0) return ['已变质，别吃', "spoiled: don't eat it"];
+  if (left < 1) { const h = Math.max(1, Math.floor(left * 24)); return [`还能放 ${h} 小时`, `keeps ${h} more hour${h > 1 ? 's' : ''}`]; }
+  const d = Math.floor(left); return [`还能放 ${d} 天`, `keeps ${d} more day${d > 1 ? 's' : ''}`];
+}
+
 export const spoiled = (s: SimState, st: Stack) => (shelfLeft(s, st) ?? 1) < 0;
 
 export function makeSick(s: SimState) {

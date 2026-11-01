@@ -1,4 +1,4 @@
-// M3-53 (U-022): the frame budget for 150 fps (6.7 ms a frame). At four Yuzhong viewpoints (a street, a rooftop,
+// M3-53 (U-022), M4-83b (U-061): the frame budget for 150 fps (6.7 ms a frame), by day and at night. At four Yuzhong viewpoints (a street, a rooftop,
 // the tunnel, the overview) the draw calls and triangles stay in budget, and so does the CPU of a frame: a sim tick
 // plus building and submitting the render. GPU time can't be measured headlessly (software WebGL); the director
 // reports the real frame rate (docs/PLAYTEST.md).
@@ -9,10 +9,11 @@ export default async function ({ open, fail }) {
   const page = await open('?scenario=shibati&seed=1', 'perf');
   // [name, teleport, up from the feet, yaw, pitch]
   const views = [['street', 'jiaochangkou', 0, 0, -0.05], ['rooftop', 'shibati', 25, -0.585, -0.1], ['tunnel', "Friends' hideout (vent grate)", 0, 0.4, 0], ['overview', 'jiefangbei', 120, 2.6, -0.35]];
-  for (const [name, tp, up, yaw, pitch] of views) {
+  // (By day and at night, M4-83b: the night's lamps and lit windows cost too.)
+  for (const [name, tp, up, yaw, pitch, hour] of views.flatMap(v => [[...v, 14], [`${v[0]} at night`, ...v.slice(1), 23]])) {
     const r = await page.evaluate(`(async () => {
       const g = window.__cq.game, s = g.world.teleports.find(t => t.name === ${JSON.stringify(tp)});
-      g.state.time = 14 * 3600; g.state.flags.clear = true; g.state.flags.noclip = ${up > 0};
+      g.state.time = ${hour} * 3600; g.state.flags.clear = true; g.state.flags.noclip = ${up > 0};
       Object.assign(g.state.player.pos, { x: s.x, y: s.y - 1.45 + ${up}, z: s.z }); g.input.yaw = ${yaw}; g.input.pitch = ${pitch};
       window.__cq.runFrames(30);
       // The sim: a second of ticks standing still.
@@ -26,11 +27,14 @@ export default async function ({ open, fail }) {
         await new Promise(res => setTimeout(res, 100));
         t0 = performance.now(); g.render(1, 1 / 60); if (i >= 3) times.push(performance.now() - t0);
       }
-      const render = times.sort((a, b) => a - b)[times.length >> 1];
+      times.sort((a, b) => a - b);
+      const render = times[times.length >> 1], worst = times[Math.floor(times.length * 0.9)];
       const info = g.view.renderer.info.render;
-      return { sim, render, calls: info.calls, tris: info.triangles };
+      return { sim, render, worst, calls: info.calls, tris: info.triangles };
     })()`);
-    console.log(`  perf ${name}: ${r.calls} calls, ${(r.tris / 1000).toFixed(0)}k tris, sim ${r.sim.toFixed(2)} ms + render ${r.render.toFixed(2)} ms`);
+    console.log(`  perf ${name}: ${r.calls} calls, ${(r.tris / 1000).toFixed(0)}k tris, sim ${r.sim.toFixed(2)} ms + render ${r.render.toFixed(2)} ms (90th ${r.worst.toFixed(2)})`);
+    // (No frame of its own work twice the usual or worse: no stalls from garbage made every frame, M4-83b.)
+    if (r.worst > 2 * r.render + 1) fail('perf', `${name}: a slow frame, ${r.worst.toFixed(2)} ms against ${r.render.toFixed(2)} usually`);
     if (r.calls > BUDGET.calls) fail('perf', `${name}: ${r.calls} draw calls (budget ${BUDGET.calls})`);
     if (r.tris > BUDGET.tris) fail('perf', `${name}: ${r.tris} triangles (budget ${BUDGET.tris})`);
     if (r.sim + r.render > BUDGET.cpu) fail('perf', `${name}: ${(r.sim + r.render).toFixed(2)} ms of CPU a frame (budget ${BUDGET.cpu})`);

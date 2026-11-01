@@ -4,6 +4,7 @@
 import type { SimState } from './types';
 import { makeRng, rand, randInt, hashString } from './rng';
 import { dayOf, hourOf } from './clock';
+import { seasonOf, SEASON } from './season';
 
 export interface Weather { fog: number; rain: number }
 
@@ -12,14 +13,15 @@ const W = { morningFog: 0.65, heavyFog: 0.3, fogEnd: [9, 12], spells: [0, 2], sp
 interface Day { fog: number; fogEnd: number; spells: { start: number; end: number; rain: number }[] }
 
 function day(seed: number, d: number): Day {
-  const r = makeRng(hashString(`weather:${seed}:${d}`));
-  const foggy = rand(r) < W.morningFog;
+  const r = makeRng(hashString(`weather:${seed}:${d}`)), k = seasonOf((d - 1) * 86400 + 43200).t;
+  // (Toward winter, the fog season: foggier mornings, fewer but longer spells of rain: M5-28.)
+  const foggy = rand(r) < W.morningFog + SEASON.fog * k;
   const fog = foggy ? (rand(r) < W.heavyFog ? 0.85 + rand(r) * 0.15 : 0.35 + rand(r) * 0.3) : 0.05 + rand(r) * 0.1;
   const fogEnd = W.fogEnd[0] + rand(r) * (W.fogEnd[1] - W.fogEnd[0]);
   const spells: Day['spells'] = [];
-  if (rand(r) < W.rainyDay) {
+  if (rand(r) < W.rainyDay + SEASON.rainyDay * k) {
     for (let i = 0, n = 1 + randInt(r, W.spells[1]); i < n; i++) {
-      const start = rand(r) * 24, len = W.spellLen[0] + rand(r) * (W.spellLen[1] - W.spellLen[0]);
+      const start = rand(r) * 24, len = W.spellLen[0] + rand(r) * (W.spellLen[1] - W.spellLen[0]) + SEASON.spellLen * k;
       spells.push({ start, end: start + len, rain: 0.3 + rand(r) * 0.7 });
     }
   }

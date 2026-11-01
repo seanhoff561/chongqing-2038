@@ -6,11 +6,11 @@ import { MAT } from './mats';
 
 /** Vertical climbable. (nx, nz) points from the wall out toward where the climber hangs. */
 /** pole: a street pole with step bolts up it (U-032), climbed like a ladder; its post stands behind the grip line. */
-export interface Climbable { kind: 'pipe' | 'ladder' | 'pole'; x: number; z: number; y0: number; y1: number; nx: number; nz: number }
+export interface Climbable { kind: 'pipe' | 'ladder' | 'pole' | 'rope'; x: number; z: number; y0: number; y1: number; nx: number; nz: number }
 
 /** A box he can curl up in. The interior box is what must fit him. */
 /** A line he can ride hanging from it (M3-52): a cable strung between buildings, live with power or dead. */
-export interface Line { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number }; live?: boolean }
+export interface Line { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number }; live?: boolean; /** strung from his zipline kit (M5-33): its own trolley rides it, and it's taken down again as the kit; a machine has seen it */ kit?: boolean; seen?: boolean }
 
 /** A place to curl up in: inner is its space, centred where it is with its own width (x) and depth (z) before
  *  it's turned by yaw (as a prop's: three's rotation.y). */
@@ -66,7 +66,7 @@ export interface Nav { pts: { x: number; y: number; z: number }[]; adj: [number,
 export const NAV = { street: 0, stairs: 1, tunnel: 2, jump: 3 } as const;
 /** A camera or another fixed sensor where it's mounted (M4-07, M4-11): which kind, its lens (a turret's gun, a
  *  sensor's head; a tripwire's one end, `to` its other), which way it faces. */
-export interface Camera { kind: 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic'; x: number; y: number; z: number; yaw: number; to?: { x: number; y: number; z: number }; /** idle until its district is Heightened (M4-16) */ dark?: boolean }
+export interface Camera { kind: 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic'; x: number; y: number; z: number; yaw: number; to?: { x: number; y: number; z: number }; /** idle until its district is Heightened (M4-16) */ dark?: boolean; /** its junction box, where a tap clips in (M5-09), facing out along yaw */ box?: { x: number; y: number; z: number; yaw: number } }
 /** A column's way out of the city (M3-57b), and its detours: how far along it, and the alley point gone to. */
 export interface Convoy { pts: { x: number; y: number; z: number }[]; spurs: { s: number; at: { x: number; y: number; z: number } }[] }
 /** A machine's beat (M3-37, M4-01): along streets (into alleys and buildings off them), over the roofs, or under the

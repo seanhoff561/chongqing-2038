@@ -198,7 +198,7 @@ function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, 
   if ('use' in P) { if (P.use === 'mattress') site.bed = id; else site.table = id; } else site.containers.push(id);
   out.inter.push('use' in P
     ? { id, kind: P.use, x: fx, y: y + P.h, z: fz, r: 0.8, zh: P.zh, en: P.en }
-    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: loot ? { type: p, loot: ROOM_LOOT[room] ?? P.loot, room } : { type: p, room } });
+    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: loot ? { type: p, loot: ROOM_LOOT[room] ?? P.loot, room, ...(room === 'armory' ? { lock: 'locked' } : {}) } : { type: p, room } });
 }
 
 /** A model prop (render/roomprops.ts) at frame point (u, v) on the floor, its front facing `face` (a step in the

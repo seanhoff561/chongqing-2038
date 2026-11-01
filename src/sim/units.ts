@@ -48,6 +48,8 @@ export interface Unit {
   told?: number;
   /** whether it has told the network and is telling it still (M4-13) */
   live?: boolean;
+  /** cut off by his jammer (M5-13) */
+  cut?: boolean;
   /** out (switched off, jammed) until this game time (M4-13); destroyed for good (M4-17) */
   off?: number;
   dead?: boolean;
@@ -236,6 +238,15 @@ export function unitPose(w: World, u: Unit, time: number): Pose {
     if (f > 0) { const b = beatPose(w, u, time), e = f * f * (3 - 2 * f); return { x: b.x + (home.x - b.x) * e, y: b.y + (home.y - b.y) * e, z: b.z + (home.z - b.z) * e, yaw: Math.atan2(home.x - b.x, home.z - b.z) + (c < DRONE.launch ? Math.PI : 0), active: true }; }
   }
   return beatPose(w, u, time);
+}
+
+/** A docked drone's next times (game) home on its dock and off it again, its hours aside (M5-08); null for one
+ *  without a dock. */
+export function dockTimes(w: World, u: Unit, time: number): { back: number; out: number } | null {
+  if (u.patrol < 0 || w.patrols[u.patrol].dock === undefined) return null;
+  const C = DRONE.flight + DRONE.charge, c = (((time / SCALE + u.phase + ((u.id * 97) % C)) % C) + C) % C;
+  const back = c >= DRONE.flight ? time - (c - DRONE.flight) * SCALE : time + (DRONE.flight - c) * SCALE;
+  return { back, out: back + DRONE.charge * SCALE };
 }
 
 /** Where a unit is along its beat at a time (its hours aside). */

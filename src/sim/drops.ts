@@ -15,7 +15,8 @@ onCmd((s, c, w) => {
   // It falls to whatever is under him.
   const p = s.player, hit = raycast(w.index, p.pos.x, p.pos.y + 0.2, p.pos.z, 0, -1, 0, 60);
   s.dropped.push({ stack, x: p.pos.x, y: hit ? p.pos.y + 0.2 - hit.t : p.pos.y, z: p.pos.z });
-  s.events.push({ t: 'noise', x: p.pos.x, y: p.pos.y, z: p.pos.z, r: 2, kind: 'drop' });
+  // (The telescoping ladder clatters down, heard 30 m round: M5-22.)
+  s.events.push({ t: 'noise', x: p.pos.x, y: p.pos.y, z: p.pos.z, r: stack.id === 'ladder' ? 30 : 2, kind: 'drop' });
 });
 
 extraInters.push(s => s.dropped.map(d => {

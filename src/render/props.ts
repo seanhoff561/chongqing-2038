@@ -256,7 +256,7 @@ export function tickProps(t: number, open: Record<string, boolean> = {}) {
 }
 
 /** Small things, a few pixels from further off: merged apart and drawn only near the camera (view.ts DETAIL). */
-const SMALL = new Set(['weeds', 'trash', 'debris', 'boxes', 'bags', 'pot', 'scooter', 'bike', 'sign', 'bin', 'rebar', 'shrub', 'garden', 'bench', 'mahjong', 'drum', 'stall',
+const SMALL = new Set(['jbox', 'weeds', 'trash', 'debris', 'boxes', 'bags', 'pot', 'scooter', 'bike', 'sign', 'bin', 'rebar', 'shrub', 'garden', 'bench', 'mahjong', 'drum', 'stall',
   'cablebundle', 'dish', 'antenna', 'stilts', 'laundry', 'dronewreck', 'bangbang']);
 
 /** Loose litter and clutter, nothing in the way or to hide in: the graphics preset draws a share of it (M3-17). */
@@ -327,7 +327,8 @@ export function smallProps(props: Prop[], share = 1): THREE.Mesh[] {
  *  interactable's world state opens. */
 function swingers(props: Prop[]): THREE.Mesh[] {
   const chunks = new Map<string, Prop[]>();
-  for (const p of props) { const k = `${p.kind === 'chain' || p.kind === 'padlock' ? 'lock' : p.kind}:${Math.floor(p.x / 64)},${Math.floor(p.z / 64)}`; (chunks.get(k) ?? chunks.set(k, []).get(k)!).push(p); }
+  // (The locks, few and small, a coarser grid: a draw for 128 m square, not 64.)
+  for (const p of props) { const lock = p.kind === 'chain' || p.kind === 'padlock', g = lock ? 128 : 64; const k = `${lock ? 'lock' : p.kind}:${Math.floor(p.x / g)},${Math.floor(p.z / g)}`; (chunks.get(k) ?? chunks.set(k, []).get(k)!).push(p); }
   const out: THREE.Mesh[] = [], m = new THREE.Matrix4(), q = new THREE.Matrix4(), sc = new THREE.Matrix4(), zero = new THREE.Matrix4().makeScale(0, 0, 0);
   for (const ps of chunks.values()) {
     if (ps[0].kind === 'chain' || ps[0].kind === 'padlock') { out.push(locks(ps)); continue; }

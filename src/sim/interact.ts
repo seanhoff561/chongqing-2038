@@ -31,6 +31,9 @@ export const interKinds = () => [...handlers.keys()];
 export const START_SOUND: Record<string, (it: Inter) => string> = {
   container: it => `open-${(it.data?.type as string | undefined) ?? 'crate'}`,
   pickup: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
+  // (M5: a wreck's metal, a junction box's catch, a terminal's keys, the bench, a rope's coil, a ladder's knock, a
+  // scooter's deck, a cable clamp.)
+  wreck: () => 'open-crate', jbox: () => 'latch', exchange: () => 'knock', bench: () => 'knock', rope: () => 'rustle', plank: () => 'knock', scooter: () => 'open-car', zipkit: () => 'latch', fence: () => 'rustle',
 };
 
 /** What the prompt says for an interactable: its kind's label for the moment, else its own name. */
@@ -100,8 +103,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   if (p.mode === 'dead') return;
   const task = s.task;
   // (A takedown is the knife's, M4-20; a reload the pistol's, M4-21; picking off a tag the dongle's, M4-22; treating
-  // himself the healing items', M5-17.)
-  if (task?.id.startsWith('takedown:') || task?.id.startsWith('treat:') || task?.id === 'reload' || task?.id === 'untag') return;
+  // himself the healing items', M5-17; making something at the bench, M5-15.)
+  if (task?.id.startsWith('takedown:') || task?.id.startsWith('treat:') || task?.id.startsWith('craft:') || task?.id === 'reload' || task?.id === 'load' || task?.id === 'untag') return;
   if (task?.id === ROUGH) {
     // Holding B lays him down to sleep rough (U-013, U-066); moving or hiding cancels it.
     if (!(input.buttons & B.SLEEP) || p.mode !== 'ground' || Math.hypot(p.vel.x, p.vel.z) > 0.5) { s.task = null; return; }

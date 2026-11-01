@@ -11,10 +11,11 @@ import { doorSolid } from './doors';
 import { overlaps } from '../world/geom';
 import { boxAt } from './physics';
 import { movement as M } from '../data/movement';
+import { has } from './inventory';
 
 /** Seconds each takes, and how far each is heard (m). */
 export const GRATE = {
-  unbolt: 1.4, lift: 0.8, shut: 1.6, lower: 0.6, cover: 0.8,
+  unbolt: 1.4, lift: 0.8, shut: 1.6, lower: 0.6, cover: 0.8, /** its bolt cut from above with bolt cutters (M5-25), or ground through (M5-36) */ cut: 3, grind: 2, grinder: 40,
   loud: 14, noise: 9, quiet: 3,
   /** what counts as up there by it: his things within this of it */
   near: 12,
@@ -68,15 +69,18 @@ onInteract('grate', {
   label,
   can: (s, it) => {
     const a = act(s, it);
-    if (a === 'lift' && !below(s, it) && bolted(s, it)) return 'bolted from below';
+    // (Bolt cutters cut its bolt from above: M5-25.)
+    if (a === 'lift' && !below(s, it) && bolted(s, it)) return has(s.inv.pack, 'boltcutters') || has(s.inv.pack, 'grinder') ? null : 'bolted from below';
     // Standing on it, he can't lift it.
     const on = ((it.data?.half as number | undefined) ?? 1.2) + 0.6;
     if (a === 'lift' && !below(s, it) && Math.abs(s.player.pos.x - it.x) < on && Math.abs(s.player.pos.z - it.z) < on && Math.abs(s.player.pos.y - it.y) < 0.3) return 'step off it';
     return null;
   },
-  dur: (s, it) => GRATE[act(s, it)],
+  dur: (s, it) => (act(s, it) === 'lift' && !below(s, it) && bolted(s, it) ? (has(s.inv.pack, 'boltcutters') ? GRATE.cut : GRATE.grind) : GRATE[act(s, it)]),
   done: (s, w, it) => {
     const a = act(s, it), o = s.wstate.open;
+    // (Its bolt ground through from above: the grinder's scream heard far, M5-36.)
+    if (a === 'lift' && !below(s, it) && bolted(s, it) && !has(s.inv.pack, 'boltcutters')) s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: GRATE.grinder, kind: 'grinder' });
     if (a === 'unbolt' || a === 'lift') {
       o[it.id] = true;
       o[bagsId(it)] = true;

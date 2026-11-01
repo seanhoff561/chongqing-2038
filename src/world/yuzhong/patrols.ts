@@ -431,8 +431,10 @@ export function columnSpurs(w: World, pts: V3[]): { s: number; at: V3 }[] {
 export function placeCameras(w: World): Camera[] {
   const out: Camera[] = [];
   for (const p of w.props) {
-    if (p.kind === 'lamppost') out.push({ kind: 'lamppost', x: p.x + Math.sin(p.yaw) * 0.25, y: p.y + 6.2, z: p.z + Math.cos(p.yaw) * 0.25, yaw: p.yaw });
-    else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + Math.sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + Math.cos(p.yaw) * 0.2, yaw: p.yaw });
+    // (Each with its junction box low on the pole, on the side it looks: M5-09.)
+    const box = { x: p.x + Math.sin(p.yaw) * 0.16, y: p.y + 1.25, z: p.z + Math.cos(p.yaw) * 0.16, yaw: p.yaw };
+    if (p.kind === 'lamppost') out.push({ kind: 'lamppost', x: p.x + Math.sin(p.yaw) * 0.25, y: p.y + 6.2, z: p.z + Math.cos(p.yaw) * 0.25, yaw: p.yaw, box });
+    else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + Math.sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + Math.cos(p.yaw) * 0.2, yaw: p.yaw, box });
   }
   const near = (x: number, z: number) => DISTRICTS.some(k => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 400);
   w.plots.filter(p => !p.far && p.route && p.route.length > 1 && (near(p.route[0].x, p.route[0].z) || p.type === 'military')).forEach((p, i) => {
@@ -445,7 +447,9 @@ export function placeCameras(w: World): Camera[] {
     // U-084, it sat 0.6 m inside and saw into the building.)
     let k = 0.15;
     while (k < 1.5 && overlaps(w.index, { x0: door.x + (dx / d) * k - 0.08, y0: door.y + 2.6, z0: door.z + (dz / d) * k - 0.08, x1: door.x + (dx / d) * k + 0.08, y1: door.y + 2.9, z1: door.z + (dz / d) * k + 0.08 })) k += 0.1;
-    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), ...(i % 12 === 6 && !post ? { dark: true } : {}) });
+    // (Its junction box on the wall beside the door, at his chest: M5-09.)
+    const box = { x: door.x + (dx / d) * 0.1 + (dz / d) * 1.15, y: door.y + 1.4, z: door.z + (dz / d) * 0.1 - (dx / d) * 1.15, yaw: Math.atan2(dx, dz) };
+    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), box, ...(i % 12 === 6 && !post ? { dark: true } : {}) });
   });
   // A turret at each main junction in the districts (M4-57), on the lamppost nearest it within 20 m, over its lamp,
   // looking along its street; none within 60 m of another.

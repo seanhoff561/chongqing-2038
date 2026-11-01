@@ -7,7 +7,7 @@ import { hideNear } from './sim/hide';
 import { lineInReach } from './sim/zip';
 import { createState, step } from './sim/sim';
 import { B, DT, type SimState, type Vec3 } from './sim/types';
-import { GAME_PER_TICK, SCALE } from './sim/clock';
+import { GAME_PER_TICK } from './sim/clock';
 import type { World } from './world/world';
 import { getWorld } from './world/build';
 import { scenarioByName, scenarios, type Scenario } from './data/scenarios';
@@ -18,11 +18,15 @@ import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
 import { announce } from './audio/pa';
 import { startPursuit } from './sim/pursuit';
+import { LaptopUI } from './ui/laptop';
+import { CraftUI } from './ui/craft-ui';
+import { WorldFx } from './render/worldfx';
+import { Leaves } from './render/season';
+import { seasonOf } from './sim/season';
 import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
 import { RaidLight } from './render/raidlight';
-import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
 import { InventoryUI } from './ui/inventory-ui';
@@ -38,6 +42,7 @@ import { playMove } from './audio/moves';
 import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel, zoomOf } from './render/gunfeel';
+import { BINOS, compass } from './sim/binoculars';
 import { HeldMotion } from './render/viewmodel';
 import { windOf } from './sim/move';
 import { Marks } from './render/marks';
@@ -73,6 +78,10 @@ export class Game {
   readonly view: View;
   readonly input: Input;
   readonly hud = new Hud();
+  laptop!: LaptopUI;
+  craft!: CraftUI;
+  /** whether he was flying the drone last frame (M5-11) */
+  private flew = false;
   readonly sky: Sky;
   readonly bodyFx: BodyFx;
   readonly inv: InventoryUI;
@@ -104,10 +113,9 @@ export class Game {
   readonly gun = new GunFeel();
   readonly motion = new HeldMotion();
   readonly marks = new Marks();
-  private rocketMeshes: THREE.Group[] = [];
-  private trailIn = 0;
+  private fx!: WorldFx;
+  private leaves!: Leaves;
   private grabAge = 0;
-  private smokeIn = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
@@ -129,18 +137,15 @@ export class Game {
     this.view.scene.add(this.rigged);
     this.view.scene.add(this.furniture.group);
     this.view.scene.add(this.marks.group);
-    // Rockets in flight (M4-65): a body and a burning tail, eight at most.
-    for (let i = 0; i < 8; i++) {
-      const g = new THREE.Group();
-      g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.7, 8).rotateX(Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0x4a5236 })));
-      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6).translate(0, 0, -0.4), new THREE.MeshBasicMaterial({ color: 0xffb050 })));
-      g.visible = false; this.rocketMeshes.push(g); this.view.scene.add(g);
-    }
+    this.fx = new WorldFx(this.view.scene, this.marks);
     this.rain = new Rain(this.view.scene);
+    this.leaves = new Leaves(this.view.scene);
     this.bodyFx = new BodyFx(this.view.renderer.domElement);
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.pause = new PauseMenu(this);
+    this.laptop = new LaptopUI(this);
+    this.craft = new CraftUI(this);
     this.load(opts.scenario, opts.seed);
   }
 
@@ -216,6 +221,12 @@ export class Game {
   private uiKeys() {
     for (const k of this.input.uiKeys.splice(0)) {
       if (k === 'Tab') this.inv.toggle();
+      // Anna's laptop, opened and shut without stopping anything (M5-01).
+      else if (k === 'KeyL') this.input.cmds.push({ c: 'act', name: this.state.flight ? 'land' : 'laptop' });
+      // Its pages, one way or the other (M5-02).
+      else if ((k === 'ArrowLeft' || k === 'ArrowRight') && this.state.laptop?.open) this.laptop.turn(k === 'ArrowLeft' ? -1 : 1);
+      // The Cams page's cameras, and looping one (M5-09); the Drone page's launch (M5-11).
+      else if ((k === 'ArrowUp' || k === 'ArrowDown' || k === 'Enter') && this.state.laptop?.open) this.laptop.pageKey(k === 'Enter' ? 0 : k === 'ArrowUp' ? -1 : 1);
     }
   }
 
@@ -247,6 +258,9 @@ export class Game {
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
+      else if (e.t === 'scan') this.laptop.showScan();
+      else if (e.t === 'bench') this.craft.toggle(true);
+      else if (e.t === 'logged') { const U = UNITS[e.kind], [zh, en] = compass(e.head); this.hud.say(`安娜：已记录${U.zh}，往${zh}`, `Anna: ${U.en} logged, heading ${en}`); }
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
       // (The street speakers: heard, not read: U-092.)
       else if (e.t === 'pa') {
@@ -266,40 +280,31 @@ export class Game {
     const pos = { x: this.prev.x + (p.pos.x - this.prev.x) * alpha, y: this.prev.y + (p.pos.y - this.prev.y) * alpha, z: this.prev.z + (p.pos.z - this.prev.z) * alpha };
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
     const gun = this.heldId === 'pistol' ? this.heldModel : null;
-    this.gun.aim(dt, !!gun && (this.input.mouse & B.AIM) !== 0 && !this.input.uiOpen);
-    this.view.fp.zoom = this.gun.ads * zoomOf(heldStack(this.state)?.mods);
+    // Binoculars held up (M5-07): ten times closer.
+    const binos = this.heldId === 'binoculars';
+    this.gun.aim(dt, (!!gun || binos) && (this.input.mouse & B.AIM) !== 0 && !this.input.uiOpen);
+    this.view.fp.zoom = this.gun.ads * (binos ? (1 - 1 / BINOS.zoom) / 0.38 : zoomOf(heldStack(this.state)?.mods));
+    // Flying the drone (M5-11): the view from it; landed, his own look back.
+    const fl = this.state.flight;
+    if (!fl && this.flew) { this.input.yaw = p.yaw; this.input.pitch = p.pitch; }
+    this.flew = !!fl;
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
+    if (fl) { this.view.fp.cam.position.set(fl.x, fl.y, fl.z); this.view.fp.cam.rotation.set(this.input.pitch, this.input.yaw, 0); }
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
     this.marks.update(dt);
-    // Rockets in the air, trailing smoke (M4-65).
-    const rs = this.state.rockets ?? [];
-    this.rocketMeshes.forEach((m, i) => { const r = rs[i]; m.visible = !!r; if (r) { m.position.set(r.x, r.y, r.z); m.lookAt(r.x + r.dx, r.y + r.dy, r.z + r.dz); } });
-    if (rs.length && (this.trailIn -= dt) <= 0) { this.trailIn = 0.04; for (const r of rs) this.marks.puff(r.x - r.dx * 0.5, r.y - r.dy * 0.5, r.z - r.dz * 0.5); }
-    // Hurt machines near him smoke and spark (M4-62).
-    if ((this.smokeIn -= dt) <= 0) {
-      this.smokeIn = 0.25;
-      const c = this.view.fp.cam.position;
-      for (const u of this.state.units) {
-        if (u.patrol < 0 && !u.convoy && !u.reserve) continue;
-        const hurt = u.disarmed || u.blind || (u.hp ?? UNITS[u.kind].hp) < UNITS[u.kind].hp * 0.5;
-        if (!hurt || (u.dead && this.state.time - (u.stop?.t ?? 0) > 120 * SCALE)) continue;
-        const q = unitPose(this.world, u, this.state.time);
-        if (Math.hypot(q.x - c.x, q.z - c.z) > 50) continue;
-        const h = u.kind === 'humanoid' ? 1.5 : u.kind === 'quadruped' ? 0.8 : 0.1;
-        this.marks.puff(q.x, q.y + h, q.z);
-        if (Math.random() < 0.3) this.marks.add({ t: 'mark', x: q.x, y: q.y + h, z: q.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
-      }
-    }
+    this.fx.update(this.state, this.world, this.heldId, (this.input.mouse & B.AIM) !== 0 && !this.input.uiOpen, this.view.fp.cam.position, dt);
     // Aimed through the 4x scope (U-058): the view through it, the gun out of sight behind it.
-    const scoped = !!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1;
-    this.hud.setScope(scoped);
+    const scoped = (!!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1) || (binos && this.gun.ads > 0.85);
+    this.hud.setScope(scoped, binos);
     this.hud.setAiming(!!gun && this.gun.ads > 0.5);
     if (scoped) this.hands.group.visible = false;
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
+    this.laptop.update();
+    this.craft.update();
     this.updatePrompt();
     this.updateHeld();
     this.hud.tick(dt);
@@ -322,6 +327,7 @@ export class Game {
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
+    this.leaves.update(seasonOf(this.state.time), this.state.tick / 60, cam, covered);
     this.view.setLamp(this.state.player.lamp);
     this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
@@ -362,7 +368,7 @@ export class Game {
 
   private updateHands(dt: number) {
     const p = this.state.player, cam = this.view.fp.cam;
-    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen;
+    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight;
     this.hideView.update(p.mode === 'hidden' && p.hideId >= 0 ? this.world.hides[p.hideId] ?? null : null);
     if (!this.hands.ready || !this.hands.group.visible) return;
     const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;

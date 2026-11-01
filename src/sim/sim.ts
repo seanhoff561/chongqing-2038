@@ -32,6 +32,28 @@ import { stepConverge } from './converge';
 import { stepHeli } from './heli';
 import { stepPa } from './announce';
 import { stepLoose } from './loose';
+import { stepLaptop } from './laptop';
+import { stepScan } from './scan';
+import { stepMap } from './automap';
+import { stepBinos } from './binoculars';
+import { stepSdr } from './sdr';
+import './camtap';
+import './pry';
+import './water';
+import './backpack';
+import './fence';
+import { stepFlight, stillWhileFlying } from './flight';
+import { stepJam } from './jammer';
+import { stepTraps } from './emp';
+import { stepCraft } from './craft';
+import { stepGuns } from './guns';
+import { stepThrown } from './throw';
+import { stepRopes } from './grapple';
+import { stepRappel } from './rappel';
+import { stepPlanks } from './ladder';
+import { stepPower } from './power';
+import { stepRemarks } from './remarks';
+import { stepKitLines } from './zipkit';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
@@ -79,9 +101,14 @@ export function createState(seed: number, world: World): SimState {
   return state;
 }
 
-export function step(state: SimState, world: World, input: InputFrame): void {
+export function step(state: SimState, world: World, raw: InputFrame): void {
   state.events.length = 0;
+  // (Flying the drone, M5-11: his body takes none of his input.)
+  const input = stillWhileFlying(state, raw);
   applyCmds(state, world, input.cmds);
+  stepRopes(state);
+  stepRappel(state, input);
+  stepPlanks(state, world);
   stepInteract(state, world, input);
   stepPlayer(state, world, input);
   stepSight(state, world);
@@ -90,10 +117,20 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepBreaks(state, world);
   stepStrike(state, world);
   stepRockets(state, world);
+  stepThrown(state, world);
+  stepJam(state, world);
+  stepTraps(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepPa(state, world);
   stepLoose(state, world);
+  stepLaptop(state);
+  stepPower(state);
+  stepScan(state, world);
+  stepMap(state, world);
+  stepBinos(state, world, input);
+  stepSdr(state);
+  stepFlight(state, world, raw);
   stepConverge(state, world);
   stepHeli(state, world);
   stepSearch(state, world);
@@ -101,7 +138,9 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepHeld(state, world, input);
   stepMelee(state, world, input);
   stepGun(state, input);
+  stepGuns(state, input);
   stepTag(state);
+  stepCraft(state, world);
   stepTreat(state);
   stepTrack(state);
   stepRaid(state, world);
@@ -111,6 +150,8 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepHearing(state, world);
   stepWeather(state);
   stepBody(state);
+  stepRemarks(state, world);
+  stepKitLines(state, world);
   checkCollapse(state);
   state.tick++;
   state.time += GAME_PER_TICK;

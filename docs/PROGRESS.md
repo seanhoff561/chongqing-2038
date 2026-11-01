@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 256 / 366 | Last done: M5-35
+Features done: 290 / 368 | Last done: M5-36
 <!-- /status -->
 
 ## Log
@@ -117,3 +117,4 @@ Features done: 256 / 366 | Last done: M5-35
 - M4-34 Delivery robots: delivery robots: wheeled rounds, never stairs, scared off route by loud noise
 - M4-100 Beyond the city's edge (U-077): beyond the city's edge: rivers, far towers lit at night, hills
 - M5-35 Building types (U-091): building types rolled for each run: homes, offices, clinics, workshops, military posts, each with its rooms, lining and loot
+- M5-01, M5-02, M5-03, M5-04, M5-05, M5-06, M5-07, M5-08, M5-09, M5-10, M5-11, M5-12, M5-13, M5-14, M5-15, M5-16, M5-18, M5-19, M5-20, M5-21, M5-22, M5-23, M5-24, M5-25, M5-26, M5-27, M5-28, M5-29, M5-30, M5-31, M5-32, M5-33, M5-25b, M5-36: Anna's laptop and the tech she runs, the tools and the kit

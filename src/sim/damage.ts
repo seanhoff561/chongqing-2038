@@ -43,7 +43,7 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
 }
 
 /** Each kind's body as a standing cylinder about where it is: its bottom and top (from its pose) and radius. */
-const BODY: Record<UnitKind, [number, number, number]> = {
+export const BODY: Record<UnitKind, [number, number, number]> = {
   quadruped: [0, 1, 0.5], humanoid: [0, 1.9, 0.35], heavy: [0, 3.1, 0.9], drone: [-0.15, 0.15, 0.45], hunter: [-0.2, 0.2, 0.55], fpv: [-0.1, 0.1, 0.3], bomber: [-0.2, 0.2, 0.55], spider: [17, 26, 2.5], colossus: [0, 9.2, 1.4], heli: [-1.2, 1.4, 3], crawler: [0, 0.35, 0.45], delivery: [0, 0.7, 0.45], carrier: [0, 1.8, 1],
   camera: [-0.2, 0.2, 0.25], sweeper: [-0.2, 0.2, 0.25], lamppost: [-0.2, 0.2, 0.25], turret: [-0.5, 0.4, 0.5], pir: [-0.1, 0.1, 0.15], tripwire: [0, 0, 0], acoustic: [-0.2, 0.2, 0.2],
 };
@@ -107,7 +107,7 @@ export function surfaceAt(s: SimState, w: World, reach: number, spread = { yaw: 
 
 /** A drone hit in a rotor (M4-62): it loses lift and drops, spinning, drifting on the way it was going, to the first
  *  thing under it; it can't see or act on the way down (sim/breaks.ts blows it up when it lands). */
-function crash(s: SimState, w: World, u: Unit) {
+export function crash(s: SimState, w: World, u: Unit) {
   const p = unitPose(w, u, s.time), down = raycast(w.index, p.x, p.y - 0.3, p.z, 0, -1, 0, 300), g = w.ground ? rayGround(w.ground, p.x, p.y - 0.3, p.z, 0, -1, 0, 300) : null;
   const t = Math.min(down?.t ?? 300, g?.t ?? 300);
   u.crash = { t: s.time, x: p.x, y: p.y, z: p.z, yaw: p.yaw, gy: p.y - 0.3 - (t >= 300 ? 0 : t) };

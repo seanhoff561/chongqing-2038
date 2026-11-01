@@ -16,9 +16,8 @@ import { sleepHooks } from './sleep';
 import { die } from './body';
 import { nearestNav } from './nav';
 import { isOff, unitPose } from './units';
-import { onUseId } from './use';
 import { onInteract } from './interact';
-import { takeStack, has } from './inventory';
+import { has } from './inventory';
 import { doorSolid } from './doors';
 
 type V3 = { x: number; y: number; z: number };
@@ -99,16 +98,7 @@ sleepHooks.fates.push(s => {
   return h ? { at: h.raid!, cause: 'raid', why: 'a crash wakes you', wake: true } : null;
 });
 
-// An EMP device rigged in a hideout as a trap on the way in (DESIGN section 6): it goes off as they come.
-onUseId('emp', (s, _w, st) => {
-  const p = s.player.pos, h = s.shelters.find(x => Math.hypot(p.x - x.x, p.y - x.y, p.z - x.z) <= SHELTER_R);
-  if (!h) { s.events.push({ t: 'msg', text: 'rig it in one of your hideouts, as a trap' }); return; }
-  if (h.trap) { s.events.push({ t: 'msg', text: 'a trap is rigged here already' }); return; }
-  takeStack(s.inv.pack, st.uid);
-  s.inv.held = 0;
-  h.trap = true;
-  s.events.push({ t: 'msg', text: 'EMP trap rigged on the way in' });
-});
+// (An EMP device rigged in a hideout as a trap on the way in goes off as they come: emp.ts rigs it.)
 
 // A rubble fall (the start hideout's passage stub east): cleared with a crowbar, slowly and loudly, a way on past it.
 onInteract('rubble', {

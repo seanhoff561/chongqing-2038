@@ -103,6 +103,11 @@ export const MODS: Record<string, { slot: 'muzzle' | 'optic'; noise?: number; ai
   suppressor: { slot: 'muzzle', noise: 40 }, reddot: { slot: 'optic', aim: 0.5 }, scope4x: { slot: 'optic', aim: 0.35, zoom: 4 },
 };
 export const MAGS: Record<string, number> = { mag9: 15, mag9x: 25 };
+/** The pump shotgun and the nail gun (M5-18, DESIGN section 6): pellets a shot and each one's damage, their cone
+ *  (degrees), what the tube or magazine holds, how far a shot's heard and reaches (m), real seconds between shots and to
+ *  load (a shell; the nail gun's strip), and its kick; the nails it takes to pin a door shut. */
+export const SHOTGUN = { pellets: 8, damage: 12, cone: 3.5, tube: 5, noise: 180, reach: 50, every: 0.9, shell: 0.5, kick: 0.07 };
+export const NAILGUN = { damage: 14, strip: 30, noise: 25, reach: 15, every: 0.3, reload: 1.5, spread: 1.2, kick: 0.01, pin: 4 };
 export const PISTOL = { damage: 25, mag: 15, every: 0.15, noise: 150, reach: 150, reload: 1.3, spread: { hip: 2.5, aim: 0.6, move: 0.6, low: 0.7 }, sway: 0.4, kick: 0.035, settle: 6 };
 
 /** How long after a machine has him (Engaged) it tells the network (DESIGN section 5), real seconds: the wired

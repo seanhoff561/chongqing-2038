@@ -7,6 +7,9 @@ import { moveHorizontal, moveVertical } from './physics';
 import { findLedge, startAction, PROBE } from './parkour';
 import { forward } from './move';
 
+/** The oxygen kit's air underwater (real seconds, full). */
+export const OXYGEN = { secs: 90 };
+
 /** Water surface height at the player's position, or -Infinity. */
 export function surfaceAt(world: World, p: Player): number {
   for (const w of world.water)
@@ -62,7 +65,10 @@ export function stepSwim(state: SimState, world: World, input: InputFrame) {
   p.fallFrom = p.pos.y;
   // Breath while the eyes are under.
   if (p.pos.y + M.eye.stand < s) {
-    p.breath = Math.max(0, p.breath - DT);
+    // (The oxygen kit, while it has any: 90 s of air, his own breath kept: M5-36.)
+    const o2 = state.inv.pack.items.find(i => i.id === 'oxygen' && (i.charge ?? 100) > 0);
+    if (o2) o2.charge = Math.max(0, (o2.charge ?? 100) - (100 * DT) / OXYGEN.secs);
+    else p.breath = Math.max(0, p.breath - DT);
     if (p.breath <= 0) state.events.push({ t: 'hurt', dmg: M.swim.drownDps * DT, cause: 'drown' });
   } else p.breath = Math.min(M.swim.breath, p.breath + 5 * DT);
   // Shallow enough to stand: wade out.

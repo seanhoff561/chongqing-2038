@@ -17,7 +17,7 @@ export const PROP_BOX: Record<string, { w: number; d: number; h: number }> = {
 
 /** Props hung on walls, strung overhead, set on roofs or built round a place: everything else stands on the
  *  ground or on whatever is under it (M3-56). */
-export const HUNG = new Set(['neon', 'neonGlow', 'neonblade', 'neonsign', 'ledscreen', 'laundry', 'vine', 'figroots', 'cablebundle', 'arches', 'train', 'grate', 'graffiti', 'qr', 'redbanner', 'ledboard', 'chain', 'padlock']);
+export const HUNG = new Set(['jbox', 'neon', 'neonGlow', 'neonblade', 'neonsign', 'ledscreen', 'laundry', 'vine', 'figroots', 'cablebundle', 'arches', 'train', 'grate', 'graffiti', 'qr', 'redbanner', 'ledboard', 'chain', 'padlock']);
 
 /** Props he can hide in (M3-47, U-021): the space inside, in the prop's frame: width (x), height, depth (z), its
  *  floor above the prop's foot and its middle along z. */

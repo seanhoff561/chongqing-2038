@@ -12,7 +12,10 @@ import { setFiller } from './containers';
 export function rollLoot(s: SimState, it: Inter) {
   const g = s.containers[it.id];
   for (const [id, n] of (it.data?.items as [string, number][] | undefined) ?? []) addItem(s, g, id, n);
-  const chosen = it.data?.loot as string | undefined, left = chosen ? undefined : LEFTOVER.rooms[(it.data?.room as string) ?? ''] ?? LEFTOVER.of[(it.data?.type as string) ?? ''];
+  // (A wreck holds its parts and nothing else: no chocolate in a drone, M5-16.)
+  if (it.id.startsWith('wreck:')) return;
+  // (A site's container rolls from its tier's table: M5-31.)
+  const chosen = (it.data?.tier ? `tier${it.data.tier}` : it.data?.loot) as string | undefined, left = chosen ? undefined : LEFTOVER.rooms[(it.data?.room as string) ?? ''] ?? LEFTOVER.of[(it.data?.type as string) ?? ''];
   const t = loot[chosen ?? left ?? ''];
   if (!t) return;
   const r = makeRng(hashString(`${s.seed}:${it.id}`));
@@ -33,6 +36,8 @@ export function rollOne(s: SimState, r: Rng, t: LootTable): [string, number, { m
   // pistol has what was left in it.
   if (MAGS[e.id]) return [e.id, n, { charge: MAGS[e.id] }];
   if (e.id === 'pistol') return [e.id, n, { charge: randInt(r, 16) }];
+  // (A car's battery, with what it's held on to since: M5-27.)
+  if (e.id === 'carbattery') return [e.id, n, { charge: 20 + randInt(r, 61) }];
   return [e.id, n, food ? { made: s.time - rand(r) * Math.min(food.shelfDays * 1.3, 400) * 86400 } : {}];
 }
 

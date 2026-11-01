@@ -2,6 +2,7 @@
 // look of the reference photo (U-009): stains, rain streaks, moss, patching. Facades with window grids live
 // in facades.ts and glow at night.
 import * as THREE from 'three';
+import { SEASON_U } from './season';
 import { canvasTexture, noise, blotches, streaks } from './textures';
 import { mulberry } from './rand';
 import { MAT } from '../world/mats';
@@ -169,6 +170,33 @@ function lodCut(m: THREE.Material, lod: Lod) {
 }
 
 /** A world material; vc for meshes that carry vertex colours (the merged world); lod splits near and far. */
+/** The insides' linings (M5-35), in one atlas, so a chunk's inside walls draw in one go whatever their linings. */
+export const LININGS: number[] = [MAT.plaster, MAT.wallpaper, MAT.tile, MAT.brick, MAT.concrete];
+export function interiorMaterial(lod: Lod): THREE.MeshPhongMaterial {
+  const key = `interior:${lod}`;
+  let m = mats.get(key);
+  if (m) return m;
+  const tex = canvasTexture('interiorAtlas', 2048, 1024, g => LININGS.forEach((id, i) => {
+    const [draw] = draws[id] ?? draws[MAT.concrete];
+    g.save(); g.translate((i % 4) * 512, Math.floor(i / 4) * 512); g.beginPath(); g.rect(0, 0, 512, 512); g.clip(); draw(g, 512, 512); g.restore();
+  }));
+  const mm = (m = new THREE.MeshPhongMaterial({ map: tex, vertexColors: true, ...DRY }));
+  lodCut(mm, lod);
+  const cut = mm.onBeforeCompile, key0 = mm.customProgramCacheKey;
+  mm.onBeforeCompile = (sh, rr) => {
+    cut.call(mm, sh, rr);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float lining;\nvarying float vLining;').replace('#include <uv_vertex>', '#include <uv_vertex>\nvLining = lining;');
+    // (Each lining's cell, its repeats wrapped inside it; the canvas's top row is the texture's upper half.)
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vLining;').replace('#include <map_fragment>', `vec2 cell = vec2(mod(vLining + 0.5, 4.0) - 0.5, 1.0 - floor((vLining + 0.5) / 4.0));
+vec2 aG = vMapUv * vec2(0.25, 0.5) * 0.97;
+vec4 sampledDiffuseColor = textureGrad(map, (cell + 0.015 + fract(vMapUv) * 0.97) * vec2(0.25, 0.5), dFdx(aG), dFdy(aG));
+diffuseColor *= sampledDiffuseColor;`);
+  };
+  mm.customProgramCacheKey = () => `${key0.call(mm)}:interior`;
+  mats.set(key, mm);
+  return mm;
+}
+
 export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPhongMaterial {
   const key = `${id}:${vc}:${lod}`;
   let m = mats.get(key);
@@ -242,9 +270,11 @@ export function groundMaterial(lod: Lod): THREE.MeshPhongMaterial {
     cut.call(m, sh, r);
     sh.uniforms.grassMap = { value: grass };
     sh.uniforms.rubbleMap = { value: rubble };
+    sh.uniforms.uStraw = SEASON_U.straw;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float grass;\nattribute float rubble;\nvarying vec2 vCover;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvCover = vec2(grass, rubble);');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D grassMap;\nuniform sampler2D rubbleMap;\nvarying vec2 vCover;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D grassMap;\nuniform sampler2D rubbleMap;\nuniform float uStraw;\nvarying vec2 vCover;')
       .replace('#include <map_fragment>', `vec4 sampledDiffuseColor = texture2D(map, vMapUv), gTex = texture2D(grassMap, vMapUv * ${k}), rTex = texture2D(rubbleMap, vMapUv * ${kr});
+gTex.rgb = mix(gTex.rgb, vec3(dot(gTex.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62), uStraw);
 sampledDiffuseColor = mix(sampledDiffuseColor, gTex, smoothstep(0.35, 0.65, vCover.x + (gTex.g - 0.36) * 1.2));
 diffuseColor *= mix(sampledDiffuseColor, rTex, smoothstep(0.35, 0.65, vCover.y + (rTex.r - 0.42) * 1.2));`);
   };

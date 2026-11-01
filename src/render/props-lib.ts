@@ -302,6 +302,12 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
     k.cyl(0.08, 0.06, 4.5, 0x3a3e42, 0, 0, 0, 8).box(0.25, 0.2, 0.45, 0xe0e0e0, 0, 4.4, 0.2).cyl(0.25, 0.25, 0.04, 0x2a2e32, 0, 4.1, 0, 8);
     return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: new Kit(5).box(0.05, 0.05, 0.05, RED, 0, 4.5, 0.44).geometry(), mat: GLOW_MAT }]);
   },
+  // A camera's junction box (M5-09): a grey steel box, its door's seam and a conduit up out of its top (its face +z).
+  jbox: p => {
+    const k = new Kit(seedOf(p)).use('metal');
+    k.box(0.3, 0.4, 0.12, 0x6a6e68, 0, -0.2, 0).box(0.26, 0.01, 0.005, 0x2a2e2a, 0, 0.12, 0.062).cyl(0.02, 0.02, 0.5, 0x4a4e4a, 0.08, 0.2, -0.02, 6);
+    return group([{ geo: k.geometry(), mat: PROP_MAT }]);
+  },
   // The occupier's LED edict board on two posts: rows of glowing glyph bars on a black face (+z).
   edict: p => {
     const k = new Kit(seedOf(p)).use('metal'), r = k.r;

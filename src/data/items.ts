@@ -31,6 +31,7 @@ export const items: ItemDef[] = [
   F('water', '矿泉水', 'Water bottle', 1, 2, 0.5, { satiety: 0, hydration: 20, shelfDays: 1000 }, '500 ml. Refillable.'),
   F('riverwater', '江水', 'River water', 1, 2, 0.5, { satiety: 0, hydration: 20, shelfDays: 1000, dirty: 0.5 }, 'Unsafe until purified.'),
   I('bottle', '空瓶', 'Empty bottle', 1, 2, 0.02, 'misc', 'Fill it at a tap or the river.', { uses: ['fill', 'throw-noise'] }),
+  I('stone', '石块', 'Stone', 1, 1, 0.4, 'throw', 'A lump of broken concrete. Thrown, it clatters where it lands.', { uses: ['throw-noise'] }),
   I('tablets', '净水片', 'Purification tablets', 1, 1, 0.02, 'med', 'One tablet treats a bottle of river water.', { stack: 10, uses: ['purify'] }),
 
   // Medical.
@@ -44,17 +45,17 @@ export const items: ItemDef[] = [
   // Shelter (U-013).
   I('bedroll', '睡袋', 'Sleeping bag', 3, 1, 1.4, 'misc', 'Rolled up. Put it down anywhere to make a bed.', { uses: ['place-bed'] }),
   I('mattress', '泡沫床垫', 'Foam mattress', 4, 2, 3, 'misc', 'Folded foam. A proper bed once laid out.', { uses: ['place-bed'] }),
-  I('toolbox', '工具箱', 'Toolbox', 2, 2, 4, 'tool', 'Put it on a table to make a workbench.', { uses: ['make-bench'] }),
+  I('toolbox', '工具箱', 'Toolbox', 2, 2, 4, 'tool', 'Put it on a table to make a workbench.', { uses: ['make-bench', 'salvage'] }),
   I('foldcrate', '折叠箱', 'Folding crate', 2, 2, 1.2, 'misc', 'Set it up for storage at your shelter.', { uses: ['place-crate'] }),
 
   // Tools.
-  I('grapple', '抓钩', 'Grappling hook', 2, 2, 1.5, 'tool', 'Hook and 20 m of rope.', { uses: ['climb-grapple', 'rappel', 'pull-down'] }),
+  I('grapple', '抓钩', 'Grappling hook', 2, 2, 1.5, 'tool', 'Hook and 20 m of rope.', { uses: ['climb-grapple', 'rappel'] }),
   I('ladder', '伸缩梯', 'Telescoping ladder', 1, 4, 7, 'tool', 'Extends to 4 m.', { uses: ['ladder-wall', 'ladder-bridge', 'drop-noise'] }),
   I('crowbar', '撬棍', 'Crowbar', 1, 3, 1.8, 'tool', 'Prise doors, shutters, vents and crates.', { uses: ['pry', 'melee', 'scooter-battery'] }),
   I('lockpick', '开锁工具', 'Lockpick set', 1, 1, 0.1, 'tool', 'Opens bad locks only.', { uses: ['pick-lock', 'pick-padlock'] }),
   I('picks', '发夹撬锁', 'Improvised lockpick', 1, 1, 0.02, 'tool', 'Bent hairpins. Three uses.', { stack: 3, uses: ['pick-lock', 'pick-padlock'] }),
-  I('boltcutters', '断线钳', 'Bolt cutters', 1, 3, 2.5, 'tool', 'Cut chains, padlocks, fences, grates and cables.', { uses: ['cut-chain', 'cut-fence', 'cut-cable'] }),
-  I('rope', '绳索', 'Rope and carabiners', 2, 2, 2, 'tool', '20 m static rope.', { uses: ['rappel', 'fixed-line', 'trolley-part'] }),
+  I('boltcutters', '断线钳', 'Bolt cutters', 1, 3, 2.5, 'tool', 'Cut chains, padlocks, fences, grates and cables.', { uses: ['cut-chain', 'cut-bolt', 'cut-fence', 'cut-cable'] }),
+  I('rope', '绳索', 'Rope and carabiners', 2, 2, 2, 'tool', '20 m static rope.', { uses: ['rappel', 'fixed-line', 'zipline'] }),
   // Chalk, not climbing gloves (U-053): chalked hands hang longer while there's chalk in the bag; a block refills it.
   I('chalk', '镁粉袋', 'Chalk bag', 1, 1, 0.2, 'wear', 'Chalked hands: hanging and pipes cost half while the chalk lasts.', { uses: ['grip'] }),
   I('chalkblock', '镁粉块', 'Chalk block', 1, 1, 0.06, 'misc', 'Crumbled into a chalk bag, fills it.', { stack: 3, uses: ['refill-chalk'] }),
@@ -69,9 +70,10 @@ export const items: ItemDef[] = [
   I('emp', '电磁脉冲装置', 'EMP device', 2, 2, 1.8, 'device', 'Three charges. Short range.', { uses: ['emp-blast', 'emp-trap'] }),
   I('cloner', '门卡复制器', 'Keycard cloner', 1, 1, 0.2, 'device', 'Copies RFID cards.', { uses: ['clone-card', 'read-badge'] }),
   I('canif', 'CAN 接口', 'CAN interface', 1, 1, 0.1, 'device', 'Talks to vehicle and boat controllers.', { uses: ['hotwire', 'read-ecu'] }),
-  I('grinder', '角磨机', 'Angle grinder', 2, 2, 2.5, 'tool', 'Cuts steel. Very loud. Needs a battery pack.', { uses: ['cut-bolt', 'cut-bars'] }),
+  I('grinder', '角磨机', 'Angle grinder', 2, 2, 2.5, 'tool', 'Cuts steel. Very loud. Needs a battery pack.', { uses: ['cut-bolt', 'salvage'] }),
   I('extinguisher', '灭火器', 'Fire extinguisher', 1, 2, 4, 'throw', 'Powder cloud that blocks sight and heat.', { uses: ['smoke', 'put-out-fire'] }),
   I('trolley', '滑索滑车', 'Haul-rope trolley', 2, 2, 2.2, 'tool', 'Pulley, carabiners and harness.', { uses: ['ride-haul-rope', 'zipline'] }),
+  I('zipkit', '滑索套件', 'Zipline kit', 3, 2, 3.5, 'tool', 'A coil of steel cable, two clamps and a trolley: strung between two anchors, ridden down.', { uses: ['zipline', 'fixed-line'] }),
   I('oxygen', '氧气瓶', 'Oxygen kit', 2, 3, 5, 'tool', '90 s of air underwater.', { uses: ['breathe-underwater', 'breathe-gas'] }),
   I('jerrycan', '柴油桶', 'Diesel jerrycan', 2, 3, 18, 'misc', '20 litres of diesel.', { uses: ['boat-fuel', 'generator-fuel'] }),
   I('carbattery', '汽车电瓶', 'Car battery', 2, 2, 15, 'part', '12 V lead-acid.', { uses: ['shelter-power', 'boat-battery'] }),
@@ -117,6 +119,7 @@ export const items: ItemDef[] = [
   I('powercell', '动力电池', 'Robot power cell', 2, 1, 3, 'part', 'High-capacity cell from a robot.', { uses: ['power-device'] }),
   I('sensorhead', '传感头', 'Sensor head', 2, 2, 1.2, 'part', 'A robot\'s eyes.'),
   I('armour', '装甲板', 'Armour plate', 2, 2, 4, 'part', 'Composite plate.'),
+  I('mrifle', '机器步枪', 'Machine rifle', 1, 4, 3.6, 'part', "A humanoid's rifle. Its biometric lock won't let it fire for you."),
   I('hook', '钢钩', 'Steel hook', 1, 1, 0.8, 'part', 'A forged hook.'),
   I('pulley', '滑轮组', 'Pulley block', 1, 1, 0.9, 'part', 'From the crane.'),
   I('harness', '安全带', 'Harness', 2, 1, 1.0, 'wear', 'Fall-arrest harness.'),

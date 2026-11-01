@@ -64,7 +64,7 @@ export function resume(s: SimState, u: Unit) {
 }
 
 /** The nearest machine free to go: a drone in the air, or one on the ground on its beat. */
-function nearest(s: SimState, w: World, at: V3, fly: boolean): Unit | null {
+export function nearest(s: SimState, w: World, at: V3, fly: boolean): Unit | null {
   let best: Unit | null = null, bd = Infinity;
   for (const u of s.units) {
     if (UNITS_FLY.has(u.kind) !== fly || u.convoy || u.reserve || u.trip || STATIC.has(u.kind) || isOff(s, u)) continue;

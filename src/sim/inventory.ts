@@ -6,6 +6,8 @@ export interface Stack {
   uid: number; id: string; n: number; x: number; y: number; rot: boolean;
   /** game time it was made (food spoilage) */
   made?: number;
+  /** Anna has read its date, so its shelf life shows (M5-05) */
+  checked?: boolean;
   /** charges or battery percent for devices */
   charge?: number;
   /** a pistol's attachments, and the magazine in it (U-058) */

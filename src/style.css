@@ -3,6 +3,7 @@ canvas { display: block; }
 #hud { position: fixed; inset: 0; pointer-events: none; }
 #hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(230,225,210,0.7); border-radius: 50%; }
 #hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh); }
+#hud .scope.binos { background: #000; -webkit-mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); -webkit-mask-composite: source-in; mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); mask-composite: intersect; }
 #hud .ring { display: none; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; transform: rotate(-90deg); }
 #hud .ring circle { fill: none; stroke-width: 2.5; }
 #hud .ring .track { stroke: rgba(230,225,210,0.18); }
@@ -79,3 +80,34 @@ canvas { display: block; }
 
 .inv-hideouts { align-self: flex-end; font-size: 11px; color: #b8b0a0; line-height: 1.5; max-width: 260px; }
 .inv-hideouts b { display: block; color: #d8cfb4; letter-spacing: 2px; margin-bottom: 2px; }
+
+/* Anna's laptop (M5-01, DESIGN section 12): a dim, dense, bilingual terminal over the view. */
+#laptop { position: fixed; left: 50%; bottom: 6vh; transform: translateX(-50%); width: min(560px, 80vw); background: rgba(8, 9, 8, 0.93); border: 1px solid #4a4030; color: #a89a78; font: 12px/1.45 'Courier New', monospace; padding: 6px 10px; z-index: 12; pointer-events: none; }
+#laptop .lt-head { display: flex; justify-content: space-between; border-bottom: 1px solid #3a3326; padding-bottom: 3px; color: #c8a96a; letter-spacing: 0.04em; }
+#laptop .lt-tabs { display: flex; flex-wrap: wrap; gap: 0 10px; padding: 3px 0; border-bottom: 1px solid #3a3326; font-size: 11px; color: #7d7563; pointer-events: auto; }
+#laptop .lt-tabs span { cursor: default; }
+#craft { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(720px, 92vw); max-height: 86vh; overflow: auto; background: rgba(8, 9, 8, 0.95); border: 1px solid #4a4030; color: #a89a78; font: 12px/1.45 'Courier New', monospace; padding: 8px 12px; z-index: 13; }
+#craft .cr-title { color: #c8a96a; border-bottom: 1px solid #3a3326; padding-bottom: 4px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+#craft span { color: #7d7563; }
+#craft .cr-row { display: grid; grid-template-columns: 170px 1fr 40px 80px; gap: 8px; padding: 3px 0; border-bottom: 1px solid #1f1c16; align-items: center; }
+#craft .cr-row.cant { opacity: 0.55; }
+#craft .short { color: #c0503c; }
+#craft .cr-make[data-make] { color: #e8c88a; border: 1px solid #6a5a3a; text-align: center; cursor: pointer; }
+#craft .bar { display: block; height: 6px; border: 1px solid #6a5a3a; }
+#craft .bar b { display: block; height: 100%; background: #c8a96a; }
+#dronehud { position: fixed; left: 50%; top: 3vh; transform: translateX(-50%); background: rgba(8, 9, 8, 0.8); border: 1px solid #4a4030; color: #c8a96a; font: 12px/1.4 'Courier New', monospace; padding: 3px 10px; z-index: 12; pointer-events: none; }
+#dronehud b { color: #e05a3a; font-weight: normal; }
+#laptop .lt-weak { border-collapse: collapse; margin: 3px 0; }
+#laptop .lt-weak td, #laptop .lt-weak th { border: 1px solid #3a3326; padding: 1px 6px; text-align: left; font-weight: normal; }
+#laptop .lt-map canvas, #laptop .lt-feed canvas { display: block; max-width: 100%; margin: 4px 0; }
+#laptop .lt-tabs .on { color: #e0b870; }
+#laptop .lt-tabs .locked { color: #4f4a3e; }
+#laptop .lt-body { padding: 8px 0 6px; min-height: 64px; }
+#laptop .lt-body span, #laptop .lt-locked { color: #7d7563; }
+#laptop .lt-h { color: #c8a96a; margin-bottom: 2px; }
+#laptop .lt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 18px; margin-top: 6px; }
+#laptop .lt-row { display: flex; justify-content: space-between; }
+#laptop .lt-row b { font-weight: normal; color: #c8b48a; }
+#laptop .lt-anna span { color: #7d7563; }
+#laptop .lt-foot { border-top: 1px solid #3a3326; padding-top: 3px; color: #6d6656; font-size: 11px; }
+
