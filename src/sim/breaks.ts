@@ -14,6 +14,9 @@ export function stepBreaks(s: SimState, w: World) {
     if (p.y > u.crash.gy + 0.05) continue;
     u.dead = true;
     u.stop = { x: p.x, y: u.crash.gy, z: p.z, yaw: p.yaw, t: s.time };
+    // A light patrol drone just clatters down, heard close by (M4-87: shot down quietly, the network needn't know);
+    // the hunters and bombers blow up.
+    if (u.kind === 'drone') { s.events.push({ t: 'noise', x: p.x, y: p.y, z: p.z, r: CRASH.clatter, kind: 'crash' }, { t: 'sfx', id: 'land-hard' }); continue; }
     s.events.push({ t: 'noise', x: p.x, y: p.y, z: p.z, r: CRASH.noise, kind: 'explosion' }, { t: 'sfx', id: 'boom' },
       { t: 'mark', x: p.x, y: p.y + 0.3, z: p.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
     const d = Math.hypot(s.player.pos.x - p.x, s.player.pos.y + 1 - p.y, s.player.pos.z - p.z);

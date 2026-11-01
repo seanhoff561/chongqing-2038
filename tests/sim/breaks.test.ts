@@ -6,7 +6,7 @@ import { hurtUnit } from '../../src/sim/damage';
 import { unitPose } from '../../src/sim/units';
 import type { Patrol } from '../../src/world/world';
 
-const stand = (unit: Patrol['unit'], z: number, y = 0): Patrol => ({ kind: unit === 'drone' ? 'drone' : 'street', unit, pts: [{ x: 0, y, z }, { x: 0, y, z: z + 0.01 }], dwell: [600, 600], hours: [0, 24] });
+const stand = (unit: Patrol['unit'], z: number, y = 0): Patrol => ({ kind: unit === 'drone' || unit === 'hunter' ? 'drone' : 'street', unit, pts: [{ x: 0, y, z }, { x: 0, y, z: z + 0.01 }], dwell: [600, 600], hours: [0, 24] });
 
 describe('machines that break apart (M4-62)', () => {
   it("a humanoid's rifle shot out of its hands: it stops firing", () => {
@@ -23,8 +23,8 @@ describe('machines that break apart (M4-62)', () => {
     run(state, world, secs(6), {}, s => { shots += s.events.filter(e => e.t === 'shot').length; });
     expect(shots).toBe(0);
   });
-  it('a drone hit in a rotor drops, crashes and blows up; near, it hurts him', () => {
-    const { world, state } = setup([floor(0, 200)], { x: 0, y: 0, z: 0, yaw: 0 }, { patrols: [stand('drone', -2, 9)] });
+  it('a hunter drone hit in a rotor drops, crashes and blows up; near, it hurts him (a patrol drone just clatters down: M4-87)', () => {
+    const { world, state } = setup([floor(0, 200)], { x: 0, y: 0, z: 0, yaw: 0 }, { patrols: [stand('hunter', -2, 9)] });
     state.time = 12 * 3600; state.flags.clear = true;
     const u = state.units[0];
     hurtUnit(state, world, u, 'rotors', 25);

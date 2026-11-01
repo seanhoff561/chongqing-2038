@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-99 Realistic textures (U-073).
-Features done: 246 / 364 | Last done: M4-95
+Features done: 247 / 364 | Last done: M4-87
 <!-- /status -->
 
 ## Log
@@ -107,3 +107,4 @@ Features done: 246 / 364 | Last done: M4-95
 - M4-30 Dev perception overlay: dev perception overlay: sight fans, awareness bars, alert and unit list
 - M4-96 Refilling water at running sinks (U-069): running sinks refill empty water bottles
 - M4-95 Spider robots in the sewers (U-069): spider robots patrol the sewers, clinging to the roofs, and go for him
+- M4-87 Drones everywhere (U-065): drones everywhere, scanning roofs and gaps; shot down quietly, searched for scrap

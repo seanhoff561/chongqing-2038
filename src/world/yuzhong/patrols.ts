@@ -27,6 +27,8 @@ const CROWD = { main: 120, side: 300, squad: 3, sideMin: 50, sideR: 250, sides: 
 const GIANTS = { colossi: 3 };
 /** How many spider robots live in each district's sewers, and how far out from its centre (U-069). */
 const CRAWLERS = { per: 6, r: 450 };
+/** The drones everywhere (U-065): how many more a district, how far out, how many stops a loop, how long each scan (s). */
+const SKY = { per: 12, r: 350, stops: 8, scan: 5 };
 
 /** A building's middle. */
 const centre = (q: { corners: [number, number][] }) => ({ x: q.corners.reduce((a, c) => a + c[0], 0) / q.corners.length, z: q.corners.reduce((a, c) => a + c[1], 0) / q.corners.length });
@@ -219,7 +221,36 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
   if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w));
+  return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w), skyDrones(w));
+}
+
+/** Drones everywhere (M4-87, U-065): a dozen more in each district, slow, wandering a loop of their own over the roofs
+ *  and down between the blocks, stopping over a roof or in a gap to turn and scan it. Each leg flown only where the
+ *  air's clear (else it rises over what's in the way). */
+function skyDrones(w: World): Patrol[] {
+  const out: Patrol[] = [], g = w.ground!;
+  for (const k of DISTRICTS) {
+    const L = GEO.landmarks[k], roofs = w.plots.filter(p => !p.far && Math.hypot(centre(p).x - L.x, centre(p).z - L.z) < SKY.r);
+    if (roofs.length < 8) continue;
+    for (let d = 0; d < SKY.per; d++) {
+      const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
+      for (let j = 0; j < SKY.stops; j++) {
+        const p = roofs[(d * 7919 + j * 104729) % roofs.length], c = centre(p);
+        // Over the roof, or down in the gap beside it (out from its side, at half its height or lower).
+        const gap = j % 2 === 1, a = ((d * 5 + j * 3) % 8) * (Math.PI / 4), off = gap ? 9 : 0;
+        const x = c.x + Math.cos(a) * off, z = c.z + Math.sin(a) * off, ground = heightAt(g, x, z) ?? p.base;
+        let q: V3 = { x, y: gap ? Math.max(ground + 9, Math.min(p.top - 4, ground + 20)) : p.top + 7, z };
+        const last = pts[pts.length - 1];
+        if (last && !clear(w, last, q, 0)) q = { ...q, y: Math.max(q.y, last.y, p.top + 7) };
+        if (last && !clear(w, last, q, 0)) { const up = { ...last, y: Math.max(last.y, p.top + 12) }; pts.push(up); dwell.push(0); }
+        pts.push(q); dwell.push(SKY.scan); look[pts.length - 1] = a + Math.PI;
+      }
+      // (Charging on the nearest roof dock, like the rest: M4-08.)
+      const dock = w.docks.reduce((b, q, i) => (b < 0 || Math.hypot(q.x - pts[0].x, q.z - pts[0].z) < Math.hypot(w.docks[b].x - pts[0].x, w.docks[b].z - pts[0].z) ? i : b), -1);
+      if (pts.length > 2) out.push({ kind: 'drone', unit: 'drone', pts, dwell, hours: [0, 24], look, ...(dock >= 0 ? { dock } : {}) });
+    }
+  }
+  return out;
 }
 
 /** Spider robots living in the sewers (M4-95, U-069): each up and down a run (its two legs, square to the map), a

@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 89 of 103 done
+## M4: 90 of 103 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -983,7 +983,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-96** Refilling water at running sinks (U-069)
   - A few sinks still run (some in each district, kitchens and washrooms): at one, F refills his water bottles, a sound of running water
   - Sim test: an empty bottle refilled at a running sink and not at a dry one
-- [ ] **M4-87** Drones everywhere (U-065)
+- [x] **M4-87** Drones everywhere (U-065)
   - Many more drones over the whole city, flying over buildings and between them, not fast, stopping to scan things (rooftops, windows, alleys) as they go
   - Easy to shoot down, and one shot down quietly does not tell the whole network: only machines that see or hear it go to look
   - A downed drone can be searched for scrap (rotors, a radio module, a camera module, a battery pack)

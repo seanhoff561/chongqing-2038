@@ -22,7 +22,7 @@ const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, 
 
 /** How many of each kind can be drawn at once (M4-83): the nearest within NEAR get an instance set from their kind's
  *  pool, so the batch (and the matrices it uploads each frame) is sized to what's near him, not to the whole city. */
-const POOL: Partial<Record<UnitKind, number>> = { humanoid: 110, quadruped: 110, drone: 40, hunter: 30, fpv: 12, bomber: 8, spider: 6, colossus: 4, heli: 1, crawler: 16, heavy: 8, carrier: 16, delivery: 16, camera: 160, sweeper: 8, turret: 40, pir: 12, tripwire: 4, acoustic: 8 };
+const POOL: Partial<Record<UnitKind, number>> = { humanoid: 110, quadruped: 110, drone: 70, hunter: 30, fpv: 12, bomber: 8, spider: 6, colossus: 4, heli: 1, crawler: 16, heavy: 8, carrier: 16, delivery: 16, camera: 160, sweeper: 8, turret: 40, pir: 12, tripwire: 4, acoustic: 8 };
 /** Frames between looks at a unit last seen this far past NEAR: none comes 50 m in half a second. */
 const RECHECK = 30;
 
