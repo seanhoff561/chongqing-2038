@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-86 Synth music by place (U-065).
-Features done: 235 / 356 | Last done: M4-63
+**Status:** building M4. Next: M4-89 Stairwells and trapdoors seen through (U-066).
+Features done: 236 / 356 | Last done: M4-86
 <!-- /status -->
 
 ## Log
@@ -94,3 +94,4 @@ Features done: 235 / 356 | Last done: M4-63
 - M4-54 Gunfire quick, deadly and real (U-051): gunfire quick, deadly and real: lethal bursts, the crack of misses, the report late, dulled by distance and walls, echoing (U-051); the sound wiring for breath, the raid siren and the music rides along
 - M4-55 His breath and heartbeat (U-051): his breath and heartbeat: spent, hurt or terrified he breathes hard and his heart pounds (U-051)
 - M4-63 The raid wakes him to sirens (U-052): the raid wakes him to sirens and red light flashing round the chamber (U-052)
+- M4-86 Synth music by place (U-065): synth music by place: a calm windy track high up, a grounded one in the streets, a deep one underground, slow beats (U-065)

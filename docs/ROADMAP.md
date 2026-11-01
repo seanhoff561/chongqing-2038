@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 78 of 95 done
+## M4: 79 of 95 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -934,7 +934,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-52** Frightening machines (U-051)
   - The machines sound genuinely frightening, by design (the unseen, the sudden, the inhuman): sounds that tell him he's being watched, noticed and hunted before he sees anything; loud and terrifying close up
   - At high alert the city goes mad: sirens, broadcasts, rotors, footfalls closing in; calm returns slowly so he stays on edge
-- [ ] **M4-86** Synth music by place (U-065)
+- [x] **M4-86** Synth music by place (U-065)
   - The ambience is melodic and relaxing to listen to, still a little haunting, not low and unnerving: synth/electronic music with a slow beat (nothing fast)
   - Tracks for where he is: a calm, windy one high up, a grounded one in the streets, another underground and in the sewers; they cross-fade as he moves between them
   - Sim/unit test: each place picks its track and the tempo stays slow; e2e: it plays without errors; the listening pass is in PLAYTEST
