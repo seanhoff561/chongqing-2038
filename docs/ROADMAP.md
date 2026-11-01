@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 87 of 101 done
+## M4: 87 of 103 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -962,7 +962,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - No darkening or sheen filter laid over buildings and the ground in rain
   - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain
   - The rain is a real recording of rain (freely licensed, its source in docs/CREDITS.md), louder out in it, dull indoors, with the dripping under cover (U-070)
-- [x] **M4-98** Recorded sounds (U-070)
+- [-] **M4-98** Recorded sounds (U-070)
   - Where good freely licensed recordings exist, the game's sounds are real recordings rather than synthesised: footsteps, doors, glass, gunfire, impacts, water, wind (their sources and licences listed in docs/CREDITS.md)
   - Each recording loads and plays; a missing one falls back to the synthesised sound
 - [x] **M4-93** Eldritch walkers (U-069)
@@ -973,6 +973,10 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Stairways are blocked part-way more often (rubble, a fallen slab, a welded grille), so a building often can't be climbed all the way by its stairs
   - Sewer and tunnel passages blocked more often too, and many more of them flooded (wading or swimming, some full to the roof)
   - Sim test: the share of stairways and sewer passages blocked and flooded per district; the ways round still exist
+- [ ] **M4-99** Realistic textures (U-073)
+  - Fitting realistic textures on the things seen close: his sleeve (cloth weave, wear, seams), the guns and items (worn metal, grip stippling, wood grain, cardboard, plastic, labels), the machines (painted panels, seams, scuffs, grime)
+  - Procedural (drawn at load), no new files to download; the frame rate holds
+  - Screenshots: the sleeve and pistol close up, a machine close up
 - [ ] **M4-95** Spider robots in the sewers (U-069)
   - Small spider robots live in the sewers and tunnels: they patrol them, cling to walls and ceilings, and hunt what comes down, fast and dangerous close
   - Sim test: spiders in every sewer district, they see and attack him underground; a screenshot of one on a tunnel wall
@@ -1001,7 +1005,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Patrol data for Shibati, Jiaochangkou and the tunnels: cameras, lampposts, 2 drone docks, quadrupeds, humanoids, delivery robots
   - A sim test runs a full game day with no stuck units
   - U-038: the open is dangerous (streets, roofs, open air): drones and robots everywhere, a high chance of being seen; streets impassable by normal means; under ground, inside or in a nook on a building's side is where he's safe
-- [ ] **M4-30** Dev perception overlay
+- [x] **M4-30** Dev perception overlay
   - ?dev=1 toggles perception cones, awareness bars, the alert overlay and a unit list
   - The smoke test toggles it
 - [ ] **M4-31** Core loop end to end
@@ -1018,6 +1022,9 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - A sim test covers sweep and convergence
 - [ ] **M4-83b** 144 fps on the director's machine (U-061)
   - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
+- [ ] **M4-100** Beyond the city's edge (U-077)
+  - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
+  - A screenshot from the edge looking out
 
 ## M5: 1 of 35 done
 

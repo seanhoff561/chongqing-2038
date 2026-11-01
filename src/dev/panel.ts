@@ -4,8 +4,11 @@ import type { Game } from '../game';
 import { scenarios } from '../data/scenarios';
 import { clockText } from '../sim/clock';
 import { teleport } from '../sim/player';
-import { addItem } from '../sim/inventory';
+import { addItem, newUid } from '../sim/inventory';
+import { items } from '../data/items';
+import { MAGS } from '../data/units';
 import { SCALE } from '../sim/clock';
+import { PerceptionOverlay } from './perception';
 
 export class DevPanel {
   readonly el: HTMLDivElement;
@@ -13,18 +16,21 @@ export class DevPanel {
   private extra: HTMLDivElement;
   private lastFrames = 0;
   private lastTime = performance.now();
+  readonly sight: PerceptionOverlay;
 
   constructor(private game: Game) {
+    this.sight = new PerceptionOverlay(game);
     const el = (this.el = document.createElement('div'));
     el.id = 'dev';
     el.innerHTML = `<div><b>DEV</b> <span class="seed"></span></div>
       <div class="row stats"></div>
       <div class="row"><button class="bench">bench</button> <span class="benchout"></span></div>
-      <div class="row"><label><input type="checkbox" class="noclip"> noclip</label> <label><input type="checkbox" class="god"> god</label></div>
+      <div class="row"><label><input type="checkbox" class="noclip"> noclip</label> <label><input type="checkbox" class="god"> god</label> <label><input type="checkbox" class="sight"> perception</label></div>
       <div class="row">teleport <select class="tp"></select></div>
       <div class="row">scenario <select class="sc">${scenarios.map(s => `<option>${s.name}</option>`).join('')}</select></div>
       <div class="row">time <input type="range" class="time" min="0" max="24" step="0.25" style="width:110px"> <span class="clock"></span></div>
       <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="raid">raid now</button></div>
+      <div class="row">item <select class="anyitem"></select> <button class="giveany">give</button> <button class="giveall">one of each</button></div>
       <div class="row extra"></div>`;
     document.body.appendChild(el);
     this.stats = el.querySelector('.stats')!;
@@ -32,6 +38,9 @@ export class DevPanel {
     const nc = el.querySelector<HTMLInputElement>('.noclip')!, god = el.querySelector<HTMLInputElement>('.god')!;
     nc.onchange = () => { game.state.flags.noclip = nc.checked; };
     god.onchange = () => { game.state.flags.god = god.checked; };
+    // The machines' sight, awareness and alert (M4-30).
+    const sight = el.querySelector<HTMLInputElement>('.sight')!;
+    sight.onchange = () => this.sight.toggle(sight.checked);
     const sc = el.querySelector<HTMLSelectElement>('.sc')!;
     sc.value = game.scenario.name;
     sc.onchange = () => { location.search = `?dev=1&scenario=${sc.value}&seed=${game.state.seed}`; };
@@ -42,6 +51,16 @@ export class DevPanel {
     };
     el.querySelectorAll<HTMLButtonElement>('[data-give]').forEach(b => { b.onclick = () => { const id = b.dataset.give!; addItem(game.state, game.state.inv.pack, id, 1, id === 'pistol' ? { charge: 15 } : {}); b.blur(); }; });
     el.querySelector<HTMLButtonElement>('.tag')!.onclick = () => { game.state.player.tag = true; };
+    // Creative (U-080): any item in the game into his backpack (a pistol or magazine loaded), or one of each; what
+    // doesn't fit lands at his feet.
+    const any = el.querySelector<HTMLSelectElement>('.anyitem')!;
+    any.innerHTML = items.map(i => `<option value="${i.id}">${i.en} · ${i.zh}</option>`).join('');
+    const give = (id: string) => {
+      const extra = id === 'pistol' ? { charge: 15 } : MAGS[id] ? { charge: MAGS[id] } : {};
+      if (addItem(game.state, game.state.inv.pack, id, 1, extra) > 0) game.state.dropped.push({ stack: { uid: newUid(game.state), id, n: 1, x: 0, y: 0, rot: false, ...extra }, x: game.state.player.pos.x, y: game.state.player.pos.y, z: game.state.player.pos.z });
+    };
+    el.querySelector<HTMLButtonElement>('.giveany')!.onclick = e => { give(any.value); (e.target as HTMLButtonElement).blur(); };
+    el.querySelector<HTMLButtonElement>('.giveall')!.onclick = e => { for (const i of items) give(i.id); (e.target as HTMLButtonElement).blur(); };
     el.querySelector<HTMLButtonElement>('.raid')!.onclick = () => {
       const p = game.state.player.pos, h = [...game.state.shelters].sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0];
       if (h) Object.assign(h, { compromised: true, raid: game.state.time + 5 * SCALE, raided: false });
@@ -49,7 +68,7 @@ export class DevPanel {
     const bench = el.querySelector<HTMLButtonElement>('.bench')!;
     bench.onclick = () => { bench.blur(); el.querySelector('.benchout')!.textContent = this.bench(); };
     this.fillTeleports();
-    setInterval(() => this.update(), 500);
+    setInterval(() => { this.update(); this.sight.update(); }, 500);
     el.addEventListener('keydown', e => e.stopPropagation());
   }
 
