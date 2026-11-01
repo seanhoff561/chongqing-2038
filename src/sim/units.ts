@@ -22,6 +22,8 @@ export interface Unit {
   near?: number;
   /** one of a beat's crowd (M4-57): another group round its loop, or the rest of a pair or squad */
   mate?: boolean;
+  /** when it was last hit (M4-45: a drone jinks) */
+  hurtAt?: number;
   /** a walker out only while its district is Heightened (M4-16), and whether it's out (or an idle camera on) */
   extra?: boolean;
   on?: boolean;
@@ -75,6 +77,9 @@ export interface Trip {
   visits?: { x: number; y: number; z: number }[];
   /** a humanoid's cover it's holding while it can see him (M4-10) */
   cover?: { x: number; y: number; z: number };
+  /** a humanoid bounding forward to cover nearer him, or strafing in the open (M4-45) */
+  advancing?: boolean;
+  strafe?: boolean;
 }
 export interface Pose { x: number; y: number; z: number; yaw: number; active: boolean; /** a drone on its dock, charging: sees nothing */ docked?: boolean }
 

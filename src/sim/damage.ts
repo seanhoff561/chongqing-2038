@@ -21,6 +21,7 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
   if (B.battery && (hits.battery ?? 0) >= B.battery) u.shut = true;
   if (u.hp <= 0) u.dead = true;
   s.events.push({ t: 'hit', id: u.id, zone, dmg: d });
+  u.hurtAt = s.time;
   if (isOff(s, u)) return;
   // Immobilised, it stands where it is.
   if (u.lame && !u.stop) { const p = unitPose(w, u, s.time); u.stop = { x: p.x, y: p.y, z: p.z, yaw: p.yaw, t: s.time }; }

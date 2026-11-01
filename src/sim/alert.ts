@@ -12,6 +12,7 @@ import { navPath } from './nav';
 import { raycast } from '../world/geom';
 import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
+import { orbitPoint, bounding, strafePoint } from './combat';
 import { SCALE } from './clock';
 import { DT } from './types';
 
@@ -48,11 +49,11 @@ function walk(s: SimState, w: World, u: Unit) {
   // Immobilised (M4-19): it stands where it is.
   if (u.lame) return;
   // A humanoid with him in its sights stands and shoots (M4-18), unless it's making for cover.
-  if ((u.kind === 'humanoid' || u.kind === 'heavy') && u.aim && !t.cover && !t.back) return;
+  if ((u.kind === 'humanoid' || u.kind === 'heavy') && u.aim && !t.cover && !t.back && !t.strafe) return;
   if (t.i >= t.path.length) {
     if (!t.back) {
-      // Holding its cover while it can see him (M4-10).
-      if (t.cover) return;
+      // Holding its cover while it can see him (M4-10); strafing, it's done its step aside.
+      if (t.cover || t.strafe) return;
       // Looking about, a slow sweep either way, 8 s (M4-04); then a humanoid goes through the hiding places near the
       // place one by one, looking briefly at each (M4-10).
       const look = t.kind === 'swap' ? ALERT.swap : t.visits ? SQUAD.look : ALERT.scan;
@@ -79,6 +80,8 @@ function walk(s: SimState, w: World, u: Unit) {
     if (d > 0.01) t.yaw = Math.atan2(dx, dz);
     if (d <= step) { t.pos = { ...q }; t.i++; step -= d; } else { t.pos = { x: t.pos.x + (dx / d) * step, y: t.pos.y + (dy / d) * step, z: t.pos.z + (dz / d) * step }; step = 0; }
   }
+  // A drone circling him in a fight keeps its eye on him (M4-45).
+  if ((u.kind === 'drone' || u.kind === 'hunter') && u.state === 'engaged' && u.seen && !t.back) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z);
 }
 
 export function stepAlert(s: SimState, w: World) {
@@ -105,10 +108,23 @@ export function stepAlert(s: SimState, w: World) {
       // still see him, and holds it while it can (M4-10).
       const t = u.trip;
       if (!t.back && t.kind !== 'check' && u.seen && (u.id + s.tick) % 6 === 0 && a >= SIGHT.min) {
-        const seesNow = Math.hypot(u.seen.x - s.player.pos.x, u.seen.z - s.player.pos.z) < 0.5;
+        const seesNow = Math.hypot(u.seen.x - s.player.pos.x, u.seen.z - s.player.pos.z) < 0.5, him = s.player.pos;
+        // A drone in the fight circles him at a stand-off (M4-45).
+        if ((u.kind === 'drone' || u.kind === 'hunter') && u.state === 'engaged') { t.path = [orbitPoint(s, u, t.pos, him)]; t.i = 0; t.scan = 0; t.visits = undefined; walk(s, w, u); continue; }
         if (u.kind === 'humanoid' && u.state === 'engaged' && seesNow) {
-          if (!t.cover || (u.id + s.tick) % 60 === 0) { const c = coverNear(s, w, t.pos); if (c) { t.cover = c; t.path = way(w, u.kind, t.pos, c); t.i = 0; t.scan = 0; } }
-        } else t.cover = undefined;
+          // By turns one bounds to cover nearer him while the rest hold theirs; with none to go to, it strafes (M4-45).
+          const adv = bounding(s, u);
+          // (It holds where it got to until its turn changes; strafing, it steps aside again every couple of seconds.)
+          if (adv !== t.advancing || (!t.cover && !t.strafe) || (t.strafe && (u.id + s.tick) % 120 === 0)) {
+            t.advancing = adv;
+            const c = coverNear(s, w, adv ? { x: t.pos.x + (him.x - t.pos.x) * 0.35, y: t.pos.y, z: t.pos.z + (him.z - t.pos.z) * 0.35 } : t.pos);
+            if (c) { t.cover = c; t.strafe = false; t.path = way(w, u.kind, t.pos, c); }
+            else { t.cover = undefined; t.strafe = true; t.path = [strafePoint(s, u, t.pos, him)]; }
+            t.i = 0; t.scan = 0;
+          }
+          walk(s, w, u);
+          continue;
+        } else { t.cover = undefined; t.strafe = false; }
         const end = t.path[t.path.length - 1];
         if (!t.cover && (!end || Math.hypot(end.x - u.seen.x, end.z - u.seen.z) > 2)) { t.path = way(w, u.kind, t.pos, u.seen); t.i = 0; t.scan = 0; t.visits = undefined; }
       } else if (t.cover && a < SIGHT.min) t.cover = undefined;
