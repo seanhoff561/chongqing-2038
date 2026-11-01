@@ -84,7 +84,9 @@ describe('knife, crowbar and takedowns (M4-20)', () => {
     hold(t.state, 'knife');
     run(t.state, t.world, 1, { pressed: LMB, buttons: LMB, pitch: -0.3 });
     expect(t.state.task).toBeNull();
-    expect(t.u.hp).toBeCloseTo(UNITS.humanoid.hp - MELEE.knife.damage * ZONES.humanoid.body);
+    // (On its armour, or on the rifle it holds across its chest at the low ready: M4-62.)
+    const lost = UNITS.humanoid.hp - (t.u.hp ?? 0);
+    expect([ZONES.humanoid.body, ZONES.humanoid.rifle].some(z => Math.abs(lost - MELEE.knife.damage * z) < 0.01), `${lost}`).toBe(true);
     // From behind but Engaged.
     const b = facing('humanoid', 1, 0, true);
     hold(b.state, 'knife');

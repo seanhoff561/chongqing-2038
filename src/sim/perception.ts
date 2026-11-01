@@ -10,7 +10,7 @@ import { SENSES, SIGHT, HEARING, THERMAL, SENSORS, type UnitKind } from '../data
 import { movement as M } from '../data/movement';
 import { raycast } from '../world/geom';
 import { lightAt, LAMP_LIGHT } from './light';
-import { daylight } from './clock';
+import { daylight, SCALE } from './clock';
 import { unitPose, isOff, type Pose } from './units';
 import { onUseId } from './use';
 import { LEAN } from './player';
@@ -155,6 +155,8 @@ export function stepHearing(s: SimState, w: World) {
       const S = SENSES[u.kind], ear = { x: at.x, y: at.y + Math.max(0.3, S.eye), z: at.z }, d = Math.hypot(e.x - ear.x, e.y + 0.5 - ear.y, e.z - ear.z), r = e.r * S.hear;
       if (d > r) continue;
       if (d > r * HEARING.occluded && raycast(w.index, e.x, e.y + 0.5, e.z, (ear.x - e.x) / d, (ear.y - e.y - 0.5) / d, (ear.z - e.z) / d, d - 0.1)) continue;
+      // Machine fire (its own or its fellows') tells it where the fight is, not where he is: a fresh sight of him stands.
+      if (e.kind === 'gunfire' && u.saw !== undefined && s.time - u.saw < HEARING.fresh * SCALE) continue;
       u.aware = Math.max(u.aware ?? 0, 0.35);
       u.seen = { x: e.x, y: e.y, z: e.z };
     }
