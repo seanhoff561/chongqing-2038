@@ -25,6 +25,8 @@ type V3 = { x: number; y: number; z: number };
 const CROWD = { main: 120, side: 300, squad: 3, sideMin: 50, sideR: 250, sides: 12, turretGap: 60 };
 /** How many colossi walk the city (U-050). */
 const GIANTS = { colossi: 3 };
+/** How many spider robots live in each district's sewers, and how far out from its centre (U-069). */
+const CRAWLERS = { per: 6, r: 450 };
 
 /** A building's middle. */
 const centre = (q: { corners: [number, number][] }) => ({ x: q.corners.reduce((a, c) => a + c[0], 0) / q.corners.length, z: q.corners.reduce((a, c) => a + c[1], 0) / q.corners.length });
@@ -217,7 +219,25 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
   if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out.concat(heavies, giants, lurkers(w, hides));
+  return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w));
+}
+
+/** Spider robots living in the sewers (M4-95, U-069): each up and down a run (its two legs, square to the map), a
+ *  handful in every district's sewers, day and night. */
+function sewerCrawlers(w: World): Patrol[] {
+  const runs = new Map<number, V3[]>(), out: Patrol[] = [], used = new Set<number>();
+  for (const f of w.features) if (f.kind === 'drain') (runs.get(f.group) ?? runs.set(f.group, []).get(f.group)!).push({ x: f.x, y: f.y, z: f.z });
+  for (const k of DISTRICTS) {
+    const L = GEO.landmarks[k];
+    let n = 0;
+    for (const [g, r] of runs) {
+      if (n >= CRAWLERS.per || used.has(g) || r.length !== 2 || Math.hypot(r[0].x - L.x, r[0].z - L.z) > CRAWLERS.r) continue;
+      used.add(g); n++;
+      const [a, b] = r;
+      out.push({ kind: 'under', unit: 'crawler', pts: [a, { x: b.x, y: a.y, z: a.z }, b], dwell: [6, 0, 6], hours: [0, 24] });
+    }
+  }
+  return out;
 }
 
 /** Where he doesn't look for them (M4-53, U-051): in each district a dozen machines that wait for an hour or three at a

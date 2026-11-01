@@ -49,13 +49,19 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
  *  down on the ground between bigger than the kind takes, so it goes straight there and not round by the streets. */
 function open(w: World, kind: UnitKind, a: V3, b: V3): boolean {
   const d = Math.hypot(b.x - a.x, b.z - a.z), g = w.ground;
-  if (!g || d > 30 || d < 0.1) return false;
+  if (d > 30 || d < 0.1) return false;
   const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
   if (raycast(w.index, a.x, a.y + 1, a.z, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L)) return false;
-  let y = heightAt(g, a.x, a.z);
+  // (The floor felt for under each step: a solid's top, or the ground's; underground, in a building or in the street.)
+  const floor = (x: number, z: number, near: number) => {
+    const h = raycast(w.index, x, near + 1, z, 0, -1, 0, 1 + STEP[kind] + 1), t = g ? heightAt(g, x, z) : null;
+    const s = h ? near + 1 - h.t : null;
+    return s !== null && (t === null || t < s || Math.abs(t - near) > Math.abs(s - near)) ? s : t;
+  };
+  let y = floor(a.x, a.z, a.y);
   if (y === null || Math.abs(y - a.y) > 0.3) return false;
   for (let k = 1, n = Math.ceil(d / 1.5); k <= n; k++) {
-    const q = heightAt(g, a.x + ((b.x - a.x) * k) / n, a.z + ((b.z - a.z) * k) / n);
+    const q = floor(a.x + ((b.x - a.x) * k) / n, a.z + ((b.z - a.z) * k) / n, y);
     if (q === null || Math.abs(q - y) > STEP[kind]) return false;
     y = q;
   }

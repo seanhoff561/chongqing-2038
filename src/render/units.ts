@@ -107,6 +107,8 @@ export class UnitView {
       if (lit !== this.lit[i]) { for (const id of ids) this.batch.setColorAt(id, LIGHT[lit]); this.lit[i] = lit; }
       Object.assign(a, { speed: u.dead || u.shut ? 0 : L.speed, phase: L.phase, aim: L.aim, crouch: L.crouch, t: u.dead || u.shut ? 0 : t + u.id, v: u.id });
       this.m.makeRotationY(p.yaw).setPosition(p.x, p.y, p.z);
+      // Half the sewers' spider robots cling upside down to the roof of the run (U-069).
+      if (u.kind === 'crawler' && u.id % 2 && !u.trip) this.m.multiply(this.s.makeTranslation(0, 1.85, 0)).multiply(this.s.makeRotationZ(Math.PI));
       // A tripwire's beam stretched to its far end.
       const to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;
       if (to) this.m.multiply(this.s.makeScale(1, 1, Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z)));

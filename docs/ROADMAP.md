@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 88 of 103 done
+## M4: 89 of 103 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -977,7 +977,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Fitting realistic textures on the things seen close: his sleeve (cloth weave, wear, seams), the guns and items (worn metal, grip stippling, wood grain, cardboard, plastic, labels), the machines (painted panels, seams, scuffs, grime)
   - Procedural (drawn at load), no new files to download; the frame rate holds
   - Screenshots: the sleeve and pistol close up, a machine close up
-- [ ] **M4-95** Spider robots in the sewers (U-069)
+- [x] **M4-95** Spider robots in the sewers (U-069)
   - Small spider robots live in the sewers and tunnels: they patrol them, cling to walls and ceilings, and hunt what comes down, fast and dangerous close
   - Sim test: spiders in every sewer district, they see and attack him underground; a screenshot of one on a tunnel wall
 - [x] **M4-96** Refilling water at running sinks (U-069)
