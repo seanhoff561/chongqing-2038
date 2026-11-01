@@ -32,6 +32,7 @@ import { stepSilent } from './silent';
 import { stepMelee } from './melee';
 import { stepChangeover } from './changeover';
 import { stepBreaks } from './breaks';
+import { stepStrike } from './strike';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
 import { stepRaid } from './raid';
@@ -81,6 +82,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepAlert(state, world);
   stepChangeover(state, world);
   stepBreaks(state, world);
+  stepStrike(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepConverge(state, world);

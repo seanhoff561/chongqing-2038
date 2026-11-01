@@ -40,7 +40,7 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
 
 /** Each kind's body as a standing cylinder about where it is: its bottom and top (from its pose) and radius. */
 const BODY: Record<UnitKind, [number, number, number]> = {
-  quadruped: [0, 1, 0.5], humanoid: [0, 1.9, 0.35], heavy: [0, 3.1, 0.9], drone: [-0.15, 0.15, 0.45], hunter: [-0.2, 0.2, 0.55], delivery: [0, 0.7, 0.45], carrier: [0, 1.8, 1],
+  quadruped: [0, 1, 0.5], humanoid: [0, 1.9, 0.35], heavy: [0, 3.1, 0.9], drone: [-0.15, 0.15, 0.45], hunter: [-0.2, 0.2, 0.55], fpv: [-0.1, 0.1, 0.3], bomber: [-0.2, 0.2, 0.55], delivery: [0, 0.7, 0.45], carrier: [0, 1.8, 1],
   camera: [-0.2, 0.2, 0.25], sweeper: [-0.2, 0.2, 0.25], lamppost: [-0.2, 0.2, 0.25], turret: [-0.5, 0.4, 0.5], pir: [-0.1, 0.1, 0.15], tripwire: [0, 0, 0], acoustic: [-0.2, 0.2, 0.2],
 };
 
@@ -68,7 +68,7 @@ export function aimAt(s: SimState, w: World, reach: number, spread = { yaw: 0, p
 export function zoneOf(kind: UnitKind, q: { x: number; y: number; z: number; yaw: number }, at: { x: number; y: number; z: number }, d: { x: number; y: number; z: number }) {
   const fx = Math.sin(q.yaw), fz = Math.cos(q.yaw), ly = at.y - q.y, lx = (at.x - q.x) * fz - (at.z - q.z) * fx, from = d.x * fx + d.z * fz;
   switch (kind) {
-    case 'drone': case 'hunter': return ly > 0.03 || Math.hypot(at.x - q.x, at.z - q.z) > 0.25 ? 'rotors' : 'body';
+    case 'drone': case 'hunter': case 'bomber': return ly > 0.03 || Math.hypot(at.x - q.x, at.z - q.z) > 0.25 ? 'rotors' : 'body';
     case 'quadruped': return d.y > 0.5 && ly < 0.6 ? 'battery' : ly < 0.5 ? 'legs' : from < -0.3 && ly > 0.6 ? 'head' : ly > 0.85 && Math.abs(lx) < 0.15 ? 'launcher' : 'body';
     case 'humanoid': return ly > 1.62 ? 'head' : ly < 0.65 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1 && ly < 1.5 ? 'battery' : from < -0.3 && ly > 1.0 && ly < 1.45 && Math.abs(lx) < 0.2 ? 'rifle' : 'body';
     case 'heavy': return ly > 2.6 ? 'head' : ly < 1.3 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1.7 && ly < 2.5 ? 'battery' : 'body';

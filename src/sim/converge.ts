@@ -42,7 +42,7 @@ export function stepConverge(s: SimState, w: World) {
   // The docks near him: one hunter now, one more every 20 s.
   w.docks.forEach((dk, i) => {
     if (Math.hypot(dk.x - to.x, dk.z - to.z) > CONVERGE.dock) return;
-    const mine = s.units.filter(u => u.reserve?.dock === i), last = Math.max(-Infinity, ...mine.filter(u => u.sent !== undefined && u.sent >= D.since).map(u => u.sent!));
+    const mine = s.units.filter(u => u.reserve?.dock === i && u.kind === 'hunter'), last = Math.max(-Infinity, ...mine.filter(u => u.sent !== undefined && u.sent >= D.since).map(u => u.sent!));
     const h = mine.find(fresh);
     if (h && (s.time - last) / SCALE >= CONVERGE.every) after(s, w, h, to);
   });

@@ -114,3 +114,11 @@ export function gunshot(a: Audio, gain: number, quiet = false) {
   a.noise(t, 0.06, gain, 'highpass', 1200, 0.7);
   a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine');
 }
+
+/** A strike drone coming (M4-47): the high, rising whine of its motors, louder the nearer it is. */
+export function whine(a: Audio, gain: number) {
+  if (!a.ready || gain < 0.01) return;
+  const t = a.ctx!.currentTime + 0.005;
+  a.tone(t, 0.45, 0.12 * gain, 520, 760, 'sawtooth');
+  a.tone(t, 0.45, 0.07 * gain, 1040, 1500, 'square');
+}

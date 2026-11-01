@@ -28,7 +28,7 @@ describe('convergence and escalation (M4-14)', () => {
     const [nearDog, farDog, nearDrone, farDrone] = state.units;
     const hunting = (u: Unit) => u.trip?.kind === 'hunt' && !u.trip.back;
     const out = (f: (u: Unit) => boolean) => state.units.filter(u => f(u) && u.trip).length;
-    const hunters = (dock: number) => out(u => u.reserve?.dock === dock), squad = (garage: number) => out(u => u.reserve?.garage === garage);
+    const hunters = (dock: number) => out(u => u.reserve?.dock === dock && u.kind === 'hunter'), squad = (garage: number) => out(u => u.reserve?.garage === garage);
     expect(state.units.filter(u => u.kind === 'hunter').length).toBe(2 * CONVERGE.perDock);
     // Until the camera has told the network, nothing moves.
     for (let i = 0; i < secs(5) && alertOf(state, 'yuzhong') !== 'engaged'; i++) { expect(hunters(0) + squad(0)).toBe(0); expect(hunting(nearDog)).toBe(false); run(state, world, 1); }

@@ -4,7 +4,7 @@
 // (parked at the beat's start otherwise). So sleeping skips time for free and he can learn exact timings. Movement
 // runs in real seconds, the hours on the game clock.
 import type { World, Patrol, Convoy } from '../world/world';
-import { UNITS, PHASE, COLUMN, SWEEP, DRONE, CONVERGE, ALIVE, type UnitKind } from '../data/units';
+import { UNITS, PHASE, COLUMN, SWEEP, DRONE, CONVERGE, STRIKE, ALIVE, type UnitKind } from '../data/units';
 import { makeRng, rand, hashString } from './rng';
 import { SCALE, hourOf, dayOf } from './clock';
 
@@ -22,6 +22,8 @@ export interface Unit {
   near?: number;
   /** one of a beat's crowd (M4-57): another group round its loop, or the rest of a pair or squad */
   mate?: boolean;
+  /** a kamikaze's point it's committed its dive to (M4-47) */
+  lock?: { x: number; y: number; z: number };
   /** which way he was going when it last saw him (M4-46: it follows on that way) */
   went?: { x: number; z: number };
   /** when it was last hit (M4-45: a drone jinks) */
@@ -124,6 +126,8 @@ export function createUnits(seed: number, w: World): Unit[] {
   w.patrols.forEach((p, i) => { if (i % 2) out.push({ id: out.length, kind: p.unit, patrol: i, phase: out[i].phase + timeline(p, UNITS[p.unit].patrol).T / 2, state: 'unaware', extra: true }); });
   // The reserves (M4-14): three hunter drones on each dock, a squad of two humanoids in each garage.
   w.docks.forEach((_, dock) => { for (let k = 0; k < CONVERGE.perDock; k++) out.push({ id: out.length, kind: 'hunter', patrol: -1, phase: 0, state: 'unaware', reserve: { dock } }); });
+  // And on each dock its strike drones (M4-47): kamikazes and a bomb dropper.
+  w.docks.forEach((_, dock) => { for (const [kind, n] of [['fpv', STRIKE.fpvs], ['bomber', STRIKE.bombers]] as const) for (let k = 0; k < n; k++) out.push({ id: out.length, kind, patrol: -1, phase: 0, state: 'unaware', reserve: { dock } }); });
   w.garages.forEach((_, garage) => { for (let k = 0; k < CONVERGE.squad; k++) out.push({ id: out.length, kind: 'humanoid', patrol: -1, phase: 0, state: 'unaware', reserve: { garage } }); });
   // The crowds (M4-57): the rest of each crowded beat's walkers, the groups spread round its loop, a group's members
   // walking a few metres apart.

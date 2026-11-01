@@ -219,6 +219,14 @@ function delivery(): Rig {
 
 // The drones: a white shell on four arms, a rotor at each tip (two blades, spun), a camera gimbal under with a lit
 // lens; the hunter bigger, ducted, its gun slung under it. Parts: body, four rotors.
+/** A strike drone (M4-47): a small X frame, its warhead slung under it, its camera ahead, four rotors spinning. */
+function fpv(): Rig {
+  const blade = part(box(0.22, 0.005, 0.025, 0, 0, 0, BLACK));
+  const parts = [part(box(0.38, 0.02, 0.04, 0, 0, 0, DARK, 0, 0, Math.PI / 4), box(0.38, 0.02, 0.04, 0, 0, 0, DARK, 0, 0, -Math.PI / 4), box(0.08, 0.05, 0.14, 0, 0.03, 0, GUN),
+    cyl(0.035, 0.18, 0, -0.05, 0.02, 0x4a5236, 'z'), box(0.02, 0.02, 0.02, 0, 0.05, 0.08, RED, 1)), blade, blade, blade, blade];
+  return { parts, pose: (a, m) => { at(m[0], null, 0, 0, 0, 0.3); [[0.13, 0.13], [-0.13, 0.13], [0.13, -0.13], [-0.13, -0.13]].forEach(([x, z], k) => at(m[1 + k], m[0], x, 0.03, z, 0, a.t * 60 * (k % 2 ? 1 : -1))); } };
+}
+
 function drone(hunter: boolean): Rig {
   const k = hunter ? 1.4 : 1, arm = 0.32 * k;
   const body = [box(0.36 * k, 0.12 * k, 0.42 * k, 0, 0, 0, WHITE), box(0.3 * k, 0.05 * k, 0.34 * k, 0, 0.08 * k, 0, PLATE), box(0.12, 0.02, 0.02, 0, 0, 0.21 * k, RED, 1),
@@ -239,7 +247,7 @@ function drone(hunter: boolean): Rig {
 
 /** Every kind's rig. (The smart lampposts' cameras are their props'.) */
 export const RIGS: Record<UnitKind, Rig> = {
-  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true),
+  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true),
   // A camera: its housing under a sun hood on a wall bracket, tipped down, the lens dark, its light red; a sweeper's
   // on a pan motor on a pole.
   camera: still(part(box(0.2, 0.15, 0.34, 0, 0, 0.12, WHITE, 0, 0.35), box(0.24, 0.03, 0.4, 0, 0.1, 0.14, PLATE, 0, 0.35), cyl(0.055, 0.04, 0, -0.06, 0.29, BLACK, 'z'),

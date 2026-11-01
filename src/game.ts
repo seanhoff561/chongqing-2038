@@ -16,7 +16,7 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
-import { beep, servo, radio, gunshot, siren } from './audio/moves';
+import { beep, servo, radio, gunshot, siren, whine } from './audio/moves';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -95,6 +95,7 @@ export class Game {
   readonly marks = new Marks();
   private grabAge = 0;
   private smokeIn = 0;
+  private whineIn = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
@@ -162,6 +163,13 @@ export class Game {
       let near = 12;
       for (const c of this.world.cameras) if (c.kind === 'camera' || c.kind === 'sweeper' || c.kind === 'lamppost') near = Math.min(near, Math.hypot(c.x - p.x, c.y - p.y - 1.6, c.z - p.z));
       if (near < 12) beep(this.audio, 0.12 * (1 - near / 12));
+    }
+    // A strike drone coming at him: its whine, louder as it nears (M4-47).
+    if ((this.whineIn -= dt) <= 0) {
+      this.whineIn = 0.4;
+      let near = 90;
+      for (const u of this.state.units) if ((u.kind === 'fpv' || u.kind === 'bomber') && u.trip && !u.dead) near = Math.min(near, Math.hypot(u.trip.pos.x - p.x, u.trip.pos.y - p.y, u.trip.pos.z - p.z));
+      if (near < 90) whine(this.audio, 1 - near / 90);
     }
     if ((this.servoIn -= dt) <= 0) {
       this.servoIn = 0.4;
