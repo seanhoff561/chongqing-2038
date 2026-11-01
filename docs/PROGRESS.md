@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-57 Many more machines: deadly main streets (U-051).
-Features done: 206 / 338 | Last done: M4-60
+Features done: 207 / 339 | Last done: M4-76
 <!-- /status -->
 
 ## Log
@@ -65,3 +65,4 @@ Features done: 206 / 338 | Last done: M4-60
 - M4-71 Take all and shift-click (U-054): take all, and shift-click moves an item straight across (U-054)
 - M4-68 Holding things like a person (U-052): holding things like a person: a shooter's pistol hold, draw, sway, bob, recoil and reload (U-052)
 - M4-60 Melee swings that land on anything (U-052): melee swings that land on anything: a machine, a wall or thing, or the air (U-052)
+- M4-76 Thumbs out of the pistol (U-056): the thumbs lie along the pistol instead of through it (U-056)

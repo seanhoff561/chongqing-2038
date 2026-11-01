@@ -168,9 +168,11 @@ export const HELD_AT = new THREE.Vector3(0, -0.03, -0.075);
  *  hand outward, whatever is held standing up through the fist), the pistol out in front at the lower right as a
  *  shooter holds it, the knife low with its point forward, the crowbar leant
  *  forward and across like a club. The forearms run down and away to elbows at his sides. */
-const HOLD = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
+const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; thumb?: number; lthumb?: number; lcurl?: number } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
+/** (A hold's thumbs, right and left, and the left hand's fingers, if not curled tight round the grip: the pistol's thumbs
+ *  lie forward along the frame and the left fingers wrap the right hand's, U-056.) */
 const HOLDS: Record<string, typeof HOLD> = {
-  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45) },
+  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, lthumb: 0.15, lcurl: 0.7 },
   knife: { pos: new THREE.Vector3(0.2, -0.22, -0.36), rot: new THREE.Euler(-0.9, 0.2, -1.3) },
   crowbar: { pos: new THREE.Vector3(0.2, -0.28, -0.36), rot: new THREE.Euler(-0.35, 0.1, -0.85) },
 };
@@ -190,7 +192,7 @@ export function poseFor(p: Player, i: number, readied: boolean, holding: string,
   // Riding a line (M3-52): both fists up round the hook or trolley over his head.
   if (p.mode === 'zip') return { curl: 0.9, thumb: 0.75, pos: P(0.07, 0.38, -0.22), rot: R(1.4, 0, 0) };
   const hold = HOLDS[holding] ?? HOLD;
-  if (holding && i === 1) return { curl: 0.95, thumb: 0.8, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: R_ELBOW };
+  if (holding && i === 1) return { curl: 0.95, thumb: hold.thumb ?? 0.8, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: R_ELBOW };
   // The left hand wraps the item at its support point: its fist centre (the mirror of HELD_AT) lands there; changing
   // a magazine it drops to his belt and comes back with the new one.
   if (holding && support) {
@@ -198,7 +200,7 @@ export function poseFor(p: Player, i: number, readied: boolean, holding: string,
     const fist = HELD_AT.clone().applyEuler(LEFT_ROT), pos = grip.sub(fist);
     const down = reload >= 0 ? Math.sin(Math.min(1, reload / 0.8) * Math.PI) : 0;
     if (down > 0) pos.add(new THREE.Vector3(-0.08, -0.3, 0.12).multiplyScalar(down));
-    return { curl: 0.85 - down * 0.3, thumb: 0.7, pos, rot: LEFT_ROT.clone(), elbow: L_ELBOW };
+    return { curl: (hold.lcurl ?? 0.85) - down * 0.3, thumb: hold.lthumb ?? 0.7, pos, rot: LEFT_ROT.clone(), elbow: L_ELBOW };
   }
   if (readied) return { curl: 0.1, thumb: 0.15, pos: P(0.16, -0.12, -0.38), rot: R(0.9, 0.15, 0.1) };
   // On his feet (U-007): hands low at his sides, forearms running down out of view, swinging with the stride,

@@ -76,7 +76,7 @@ const CAT_COLOR: Record<string, number> = { food: 0xb08a3a, drink: 0x5a8ab0, too
 
 // Where the left hand grips on two-handed items (model space); others get a fist stacked above the right one.
 const SUPPORT: Record<string, [number, number, number]> = {
-  crowbar: [-0.18, 0, 0], boltcutters: [-0.12, 0, -0.04], shotgun: [0, 0.05, -0.32], nailgun: [-0.07, 0, -0.15], pistol: [0.035, -0.05, 0.01],
+  crowbar: [-0.18, 0, 0], boltcutters: [-0.12, 0, -0.04], shotgun: [0, 0.05, -0.32], nailgun: [-0.07, 0, -0.15], pistol: [0.045, -0.072, 0.01],
   extinguisher: [0.1, -0.06, 0], oxygen: [0.12, -0.05, 0], grinder: [-0.12, 0, 0], ladder: [0.05, -0.2, 0], jerrycan: [0.05, -0.2, 0], carbattery: [0.06, -0.22, 0],
   binoculars: [0.09, 0, 0], water: [-0.09, 0, 0], riverwater: [-0.09, 0, 0], bottle: [-0.09, 0, 0],
 };
