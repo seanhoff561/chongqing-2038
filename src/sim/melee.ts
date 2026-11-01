@@ -1,6 +1,7 @@
-// His knife and crowbar (M4-20, DESIGN section 6). A blow (left mouse) lands on the machine he's looking at within
-// reach, on the place he aims at: a knife 40 (a patrol drone downed in one), a crowbar 55 but slower, ringing off the
-// metal 20 m round. Behind a quadruped or humanoid that isn't Engaged (within 1.5 m, in its rear 120 degrees), the
+// His knife and crowbar (M4-20, DESIGN section 6). A blow (left mouse) always swings (M4-60) and lands on the machine
+// he's looking at within reach, on the place he aims at: a knife 40 (a patrol drone downed in one), a crowbar 55 but
+// slower, ringing off the metal 20 m round; else on the wall or thing in reach (a clang off metal, a knock off concrete,
+// a thud off wood), else through the air. Behind a quadruped or humanoid that isn't Engaged (within 1.5 m, in its rear 120 degrees), the
 // knife's a takedown instead: held 2 s, it shuts the machine down, heard 6 m round; let go or move off and it breaks
 // free, Engaged.
 import { B, DT, type InputFrame, type SimState } from './types';
@@ -11,15 +12,28 @@ import { aimAt, hurtUnit } from './damage';
 import { unitPose, isOff, type Unit } from './units';
 import { resume } from './silent';
 import { SCALE } from './clock';
+import { eyeOf } from './player';
+import { raycast } from '../world/geom';
+import { MAT } from '../world/mats';
+
+const METAL: Set<number> = new Set([MAT.metal, MAT.tealMetal, MAT.facadeWorks, MAT.screen, MAT.lamp, MAT.cable]);
+const SOFT: Set<number> = new Set([MAT.wood, MAT.crate, MAT.soft, MAT.cloth, MAT.leaves, MAT.moss, MAT.grass, MAT.blossom]);
 
 function blow(s: SimState, w: World, kind: keyof typeof MELEE) {
   const p = s.player, M = MELEE[kind];
   if (p.swing > 0) return;
   p.swing = M.every;
   const hit = aimAt(s, w, M.reach);
-  if (!hit) return;
-  hurtUnit(s, w, hit.u, hit.zone, M.damage);
-  s.events.push({ t: 'noise', x: hit.at.x, y: hit.at.y, z: hit.at.z, r: M.noise, kind: kind === 'crowbar' ? 'crowbar' : 'knife' });
+  if (hit) {
+    hurtUnit(s, w, hit.u, hit.zone, M.damage);
+    s.events.push({ t: 'swing', kind, on: 'machine' }, { t: 'noise', x: hit.at.x, y: hit.at.y, z: hit.at.z, r: M.noise, kind: kind === 'crowbar' ? 'crowbar' : 'knife' });
+    return;
+  }
+  const e = eyeOf(p), d = { x: -Math.sin(p.yaw) * Math.cos(p.pitch), y: Math.sin(p.pitch), z: -Math.cos(p.yaw) * Math.cos(p.pitch) };
+  const h = raycast(w.index, e.x, e.y, e.z, d.x, d.y, d.z, M.reach);
+  if (!h) { s.events.push({ t: 'swing', kind, on: 'air' }); return; }
+  const mat = w.index.solids[h.id]?.mat ?? MAT.concrete, on = METAL.has(mat) ? 'metal' : SOFT.has(mat) ? 'soft' : 'hard';
+  s.events.push({ t: 'swing', kind, on }, { t: 'noise', x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, r: M.wall[on], kind: 'blow' });
 }
 
 /** The quadruped or humanoid he can take down from where he is, if any. */

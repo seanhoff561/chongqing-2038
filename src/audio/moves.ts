@@ -49,6 +49,15 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   bags: (a, t) => { a.noise(t, 0.6, 0.12, 'bandpass', 1400, 0.6, 600); a.noise(t + 0.5, 0.5, 0.1, 'bandpass', 1100, 0.6, 500); },
   drop: (a, t) => { a.noise(t, 0.08, 0.12, 'lowpass', 900); a.tone(t, 0.05, 0.05, 160, 90); },
   glass: (a, t) => { a.noise(t, 0.5, 0.45, 'highpass', 3500, 0.7, 7000); for (let i = 0; i < 5; i++) a.tone(t + 0.05 + i * 0.04, 0.06, 0.08, 3800 + i * 600, 3000, 'sine'); },
+  // Blows (M4-60): the swing's whoosh, then what it meets a beat later: a crowbar's clang off metal, knock off concrete,
+  // thud off wood; a knife's ring, scrape, or thunk.
+  whoosh: (a, t) => a.noise(t, 0.24, 0.13, 'bandpass', 600, 0.9, 2400),
+  'blow-crowbar-metal': (a, t) => { a.tone(t + 0.12, 0.7, 0.32, 1240, 1190, 'triangle'); a.tone(t + 0.12, 0.55, 0.16, 2950, 2900); a.noise(t + 0.12, 0.05, 0.4, 'highpass', 3000); },
+  'blow-crowbar-hard': (a, t) => { a.tone(t + 0.12, 0.12, 0.45, 190, 90); a.noise(t + 0.12, 0.16, 0.35, 'bandpass', 1500, 1, 600); a.tone(t + 0.12, 0.2, 0.08, 1700, 1600, 'triangle'); },
+  'blow-crowbar-soft': (a, t) => { a.tone(t + 0.12, 0.16, 0.45, 120, 65); a.noise(t + 0.12, 0.12, 0.3, 'lowpass', 600); },
+  'blow-knife-metal': (a, t) => { a.tone(t + 0.1, 0.3, 0.14, 3300, 3150); a.noise(t + 0.1, 0.12, 0.2, 'highpass', 4000); },
+  'blow-knife-hard': (a, t) => a.noise(t + 0.1, 0.26, 0.22, 'bandpass', 3600, 2, 2400),
+  'blow-knife-soft': (a, t) => { a.tone(t + 0.1, 0.07, 0.25, 320, 150); a.noise(t + 0.1, 0.06, 0.15, 'lowpass', 1200); },
   dyno: (a, t) => { a.tone(t, 0.1, 0.35, 130, 60, 'triangle'); breath(a, t, 0.14, 0.22, 800); },
 };
 

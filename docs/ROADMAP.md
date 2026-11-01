@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 48 of 77 done
+## M4: 49 of 77 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -836,7 +836,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-68** Holding things like a person (U-052)
   - The pistol is held as in a modern shooter's viewmodel: gripped in the right hand with the left wrapped under it, arms in from the lower right, raised to the sights to aim; the knife, crowbar and other tools held as a person holds them
   - Draw, idle sway, walking bob, firing recoil and reload motions; screenshots of each held item
-- [ ] **M4-60** Melee swings that land on anything (U-052)
+- [x] **M4-60** Melee swings that land on anything (U-052)
   - Left mouse with the knife or crowbar always swings, seen in the hands; the blow lands on what's in reach: a machine (as now), a wall or object (a clang or thud, a scrape), nothing (a whoosh)
   - A sim test swings at the air, a wall and a machine and gets each outcome
 - [ ] **M4-57** Many more machines: deadly main streets (U-051)

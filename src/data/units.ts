@@ -56,7 +56,12 @@ export type Weapon = keyof typeof WEAPONS;
 
 /** His blades and bars (DESIGN section 6, M4-20): damage a blow, reach, seconds between blows, how far a blow on a
  *  machine is heard; a takedown's reach, the rear arc it's made from (degrees), how long it takes, how far it's heard. */
-export const MELEE = { knife: { damage: 40, reach: 1.6, every: 0.5, noise: 4 }, crowbar: { damage: 55, reach: 1.9, every: 1.1, noise: 20 } };
+/** A blow (M4-20); one that lands on a wall or a thing instead is heard by what it hits (M4-60): metal, hard (concrete,
+ *  brick, tile, glass), soft (wood, crates, bags, cloth). */
+export const MELEE = {
+  knife: { damage: 40, reach: 1.6, every: 0.5, noise: 4, wall: { metal: 3, hard: 2, soft: 1 } },
+  crowbar: { damage: 55, reach: 1.9, every: 1.1, noise: 20, wall: { metal: 20, hard: 12, soft: 5 } },
+};
 export const TAKEDOWN = { reach: 1.5, rear: 120, time: 2, noise: 6 };
 
 /** A quadruped's tag launcher (DESIGN section 6, M4-22): a shot every 6 s at him out to 20 m (beyond its prod's

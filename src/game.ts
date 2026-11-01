@@ -222,6 +222,7 @@ export class Game {
     for (const e of this.state.events) {
       if (e.t === 'land') this.view.fp.landed(e.h);
       else if (e.t === 'sfx') playMove(this.audio, e.id);
+      else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }
       else if (e.t === 'fire') { gunshot(this.audio, 0.9); this.gun.fired(); }
       else if (e.t === 'open') this.inv.toggle(true);
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
