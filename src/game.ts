@@ -286,7 +286,9 @@ export class Game {
 
   private updatePrompt() {
     const s = this.state;
-    if (s.task) { const n = Math.round((s.task.t / s.task.dur) * 10); this.hud.setPrompt(`${'■'.repeat(n)}${'□'.repeat(10 - n)}`); return; }
+    // At work on something: the ring round the dot fills (U-051).
+    if (s.task) { this.hud.setProgress(s.task.t / s.task.dur); this.hud.setPrompt(''); return; }
+    this.hud.setProgress(-1);
     const it = s.target ? allInters(s, this.world).find(i => i.id === s.target) : null;
     // Hiding spots get a prompt like everything else he can use (U-021).
     const hide = !it && s.player.mode === 'ground' ? hideNear(this.world, s.player) : -1;

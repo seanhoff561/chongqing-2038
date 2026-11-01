@@ -4,13 +4,14 @@ import type { Inter } from '../world/world';
 import { onInteract } from './interact';
 import { grid, addItem } from './inventory';
 
+// (Quick, each at its own speed, U-051: a drawer's a flick, a car's boot a wrench.)
 export const CONTAINER = {
-  drawer: { w: 4, h: 3, time: 1.5, noise: 3 },
-  cabinet: { w: 5, h: 4, time: 2.0, noise: 4 },
-  locker: { w: 4, h: 6, time: 2.0, noise: 6 },
-  crate: { w: 6, h: 4, time: 2.5, noise: 5 },
-  fridge: { w: 4, h: 5, time: 1.5, noise: 4 },
-  car: { w: 6, h: 3, time: 3.0, noise: 6 },
+  drawer: { w: 4, h: 3, time: 0.4, noise: 3 },
+  cabinet: { w: 5, h: 4, time: 0.7, noise: 4 },
+  locker: { w: 4, h: 6, time: 0.9, noise: 6 },
+  crate: { w: 6, h: 4, time: 0.8, noise: 5 },
+  fridge: { w: 4, h: 5, time: 0.5, noise: 4 },
+  car: { w: 6, h: 3, time: 1.4, noise: 6 },
   stash: { w: 10, h: 8, time: 0, noise: 0 },
 } as const;
 export type ContainerType = keyof typeof CONTAINER;

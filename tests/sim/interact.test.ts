@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { CONTAINER } from '../../src/sim/containers';
 import { setup, run, floor, secs } from './helpers';
 import { B } from '../../src/sim/types';
 
@@ -18,8 +19,9 @@ describe('interaction system', () => {
     const { world: w, state } = world();
     run(state, w, 2, { pitch: -0.3 });
     run(state, w, 1, { pitch: -0.3, buttons: B.INTERACT, pressed: B.INTERACT });
-    expect(state.task?.dur).toBe(2.0);
-    run(state, w, secs(2.1), { pitch: -0.3, buttons: B.INTERACT });
+    // (Its time a cabinet's, quick since U-051.)
+    expect(state.task?.dur).toBe(CONTAINER.cabinet.time);
+    run(state, w, secs(CONTAINER.cabinet.time + 0.1), { pitch: -0.3, buttons: B.INTERACT });
     expect(state.openContainer).toBe('c1');
     expect(state.containers.c1.items.filter(i => i.id === 'noodles').length).toBe(2);
     expect(state.wstate.searched.c1).toBe(true);
@@ -28,7 +30,7 @@ describe('interaction system', () => {
     const { world: w, state } = world();
     run(state, w, 2, { pitch: -0.3 });
     run(state, w, 1, { pitch: -0.3, buttons: B.INTERACT, pressed: B.INTERACT });
-    run(state, w, secs(1), { pitch: -0.3, buttons: B.INTERACT });
+    run(state, w, secs(CONTAINER.cabinet.time / 2), { pitch: -0.3, buttons: B.INTERACT });
     run(state, w, 1, { pitch: -0.3 });
     expect(state.task).toBeNull();
     expect(state.openContainer).toBeNull();

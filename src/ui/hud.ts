@@ -1,18 +1,33 @@
-// The only on-screen interface during play: a centre dot, context prompts, the held item and subtitles.
+// The only on-screen interface during play: a centre dot, context prompts, the held item and subtitles; a ring round
+// the dot filling while he works at something (U-051).
 export class Hud {
   readonly root: HTMLDivElement;
   private prompt: HTMLDivElement;
   private held: HTMLDivElement;
+  private ring: SVGCircleElement;
+  private wrap: SVGSVGElement;
   readonly subs: HTMLDivElement;
 
   constructor() {
     this.root = document.createElement('div');
     this.root.id = 'hud';
-    this.root.innerHTML = `<div class="dot"></div><div class="prompt"></div><div class="held"></div><div class="subs"></div>`;
+    this.root.innerHTML = `<div class="dot"></div><svg class="ring" viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="15"/><circle class="fill" cx="20" cy="20" r="15" pathLength="1"/></svg><div class="prompt"></div><div class="held"></div><div class="subs"></div>`;
     document.body.appendChild(this.root);
     this.prompt = this.root.querySelector('.prompt')!;
     this.held = this.root.querySelector('.held')!;
     this.subs = this.root.querySelector('.subs')!;
+    this.wrap = this.root.querySelector('.ring')!;
+    this.ring = this.root.querySelector('.ring .fill')!;
+  }
+
+  private shown = -1;
+  /** The ring: how far along what he's doing (0..1), or hidden (below 0). */
+  setProgress(f: number) {
+    const v = f < 0 ? -1 : Math.round(Math.min(1, f) * 100) / 100;
+    if (v === this.shown) return;
+    this.shown = v;
+    this.wrap.style.display = v < 0 ? 'none' : 'block';
+    if (v >= 0) this.ring.style.strokeDashoffset = String(1 - v);
   }
 
   private queue: { html: string; secs: number }[] = [];

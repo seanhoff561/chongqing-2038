@@ -2,6 +2,10 @@ html, body { margin: 0; height: 100%; background: #07080a; overflow: hidden; fon
 canvas { display: block; }
 #hud { position: fixed; inset: 0; pointer-events: none; }
 #hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(230,225,210,0.7); border-radius: 50%; }
+#hud .ring { display: none; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; transform: rotate(-90deg); }
+#hud .ring circle { fill: none; stroke-width: 2.5; }
+#hud .ring .track { stroke: rgba(230,225,210,0.18); }
+#hud .ring .fill { stroke: rgba(235,230,215,0.9); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
 #hud .prompt { position: absolute; left: 50%; top: 56%; transform: translateX(-50%); font-size: 13px; color: rgba(230,225,210,0.85); text-shadow: 0 0 3px #000; }
 #hud .held { position: absolute; right: 18px; bottom: 14px; font-size: 12px; color: rgba(200,195,180,0.6); }
 #hud .subs { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); max-width: 70%; text-align: center; font-size: 18px; color: #eee; text-shadow: 0 0 4px #000, 0 0 2px #000; }
