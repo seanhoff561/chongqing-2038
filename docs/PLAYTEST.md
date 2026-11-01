@@ -196,3 +196,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-78: pistol attachments (U-058)
 - With ?dev=1, give yourself the pistol, a suppressor, the reflex sight, the 4x scope and an extended magazine. Drop each onto the pistol in the backpack: fitted, shown on the gun? Right-click the pistol: they come off. Fire suppressed: a muffled crack, and do nearby machines still hear it (they shouldn't past ~40 m)? Aim with the reflex sight and with the scope (the round 4x view): do they feel right? Reload with the extended magazine: 25 rounds.
+
+## M4-62 to M4-66: fights and falls (U-050, U-052)
+- Shoot a humanoid's rifle (two rounds from the front at chest height): does it stop firing, the rifle gone? Its head (blinded): gone? A drone's rotor: does it spin down, crash and blow up? Stay in a camera's sight 25 s: do kamikaze drones come (their whine), and can you dodge one by stepping aside late, or shoot it? Near a blast: thrown, tumbling, down a moment, then up? A heavy's rocket: seen and heard coming? Jump off something 9 m and 12 m: the wind rising, a stumble, then down on the ground?

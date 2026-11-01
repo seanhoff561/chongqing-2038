@@ -34,6 +34,7 @@ import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel, zoomOf } from './render/gunfeel';
 import { HeldMotion } from './render/viewmodel';
+import { windOf } from './sim/move';
 import { Marks } from './render/marks';
 import { SleepUI } from './ui/sleep-ui';
 import { DeathScreen } from './ui/death';
@@ -321,6 +322,8 @@ export class Game {
       this.rigged.userData.n = rigged.length;
     }
     this.audio.setUnderwater(wet);
+    // The wind in his ears falling (M4-66).
+    this.audio.setWind(this.state.player.mode === 'air' ? windOf(this.state.player.vel.y) : 0);
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);

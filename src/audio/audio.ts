@@ -46,6 +46,21 @@ export class Audio {
 
   get ready() { return !!this.ctx && this.ctx.state === 'running'; }
 
+  /** The wind in his ears as he falls (M4-66): 0 still to 1 at full speed, rising and brightening with it. */
+  private wind?: { gain: GainNode; band: BiquadFilterNode };
+  setWind(level: number) {
+    if (!this.ready) return;
+    const ctx = this.ctx!;
+    if (!this.wind) {
+      const src = ctx.createBufferSource(), band = ctx.createBiquadFilter(), gain = ctx.createGain();
+      src.buffer = this.noiseBuf; src.loop = true; band.type = 'bandpass'; band.Q.value = 0.7; gain.gain.value = 0;
+      src.connect(band).connect(gain).connect(this.bus.effects); src.start();
+      this.wind = { gain, band };
+    }
+    this.wind.gain.gain.setTargetAtTime(level * 0.5, ctx.currentTime, 0.08);
+    this.wind.band.frequency.setTargetAtTime(300 + level * 1500, ctx.currentTime, 0.08);
+  }
+
   /** Under water every sound comes dull and low; out of it, clear again at once. */
   setUnderwater(on: boolean) {
     if (this.ctx) this.muffle.frequency.value = on ? 500 : 22000;
