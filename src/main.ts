@@ -35,6 +35,8 @@ if (dev) new DevPanel(game);
 const save = q.get('scenario') ? null : readSave(localStorage);
 if (save) bootMenu(game, save);
 game.start();
+// Ctrl+W (crouching forward) would close the tab: while he plays, the browser asks first (U-059: no forced fullscreen).
+addEventListener('beforeunload', e => { if (document.pointerLockElement && !game.state.dead) e.preventDefault(); });
 // (Gone once the first frame is drawn.)
 requestAnimationFrame(() => requestAnimationFrame(() => { loading?.remove(); boot.ready = performance.now(); }));
 

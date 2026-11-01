@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057).
-Features done: 210 / 347 | Last done: M4-79
+Features done: 211 / 347 | Last done: M4-80
 <!-- /status -->
 
 ## Log
@@ -69,3 +69,4 @@ Features done: 210 / 347 | Last done: M4-79
 - M4-57 Many more machines: deadly main streets (U-051): many more machines: district main streets thick with pairs, squads, drones and junction turrets; side streets busy (U-051)
 - M4-59 Machines that move like they're alive (U-051): machines move like they're alive: drones search building faces and weave, walkers drift, stop and look (U-051)
 - M4-79 No muzzle flash; eating and drinking sounds (U-058): no muzzle flash; eating and drinking sounds (U-058)
+- M4-80 No automatic fullscreen (U-059): no automatic fullscreen; the page asks before Ctrl+W closes it mid-run (U-059)

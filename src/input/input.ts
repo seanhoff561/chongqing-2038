@@ -47,14 +47,13 @@ export class Input {
   }
 
   /**
-   * Capture the mouse. Ctrl is crouch (U-001) and Ctrl+W would close the tab, so ask for fullscreen and
-   * lock the keyboard where the browser allows it (D-014).
+   * Capture the mouse. Ctrl is crouch (U-001) and Ctrl+W would close the tab: in fullscreen (his choice, F11; never
+   * forced, U-059) the keyboard's locked where the browser allows it (D-014), and otherwise the page asks before it's
+   * left while he plays (the beforeunload guard in main.ts).
    */
   capture() {
     const el = this.el;
-    const lock = () => { (navigator as Navigator & { keyboard?: { lock?: (k?: string[]) => Promise<void> } }).keyboard?.lock?.().catch(() => {}); };
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().then(lock, () => {});
-    else lock();
+    if (document.fullscreenElement) (navigator as Navigator & { keyboard?: { lock?: (k?: string[]) => Promise<void> } }).keyboard?.lock?.().catch(() => {});
     try { (el.requestPointerLock?.() as unknown as Promise<void> | undefined)?.catch?.(() => {}); } catch { /* not allowed without a gesture */ }
   }
 
