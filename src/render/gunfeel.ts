@@ -5,6 +5,8 @@ import * as THREE from 'three';
 
 /** The pistol's rear sight in model space, and where it comes to in the camera's aimed. */
 const SIGHT = new THREE.Vector3(-0.09, 0, 0.026), EYE = new THREE.Vector3(0, -0.004, -0.3), BARREL = new THREE.Vector3(0, 0, -1);
+/** Where the rear sight sits at the hip: out to the lower right, as a shooter's held (U-052). */
+const HIP = new THREE.Vector3(0.11, -0.09, -0.31), UP = new THREE.Vector3(0, 1, 0);
 
 export class GunFeel {
   /** 0 hip to 1 aimed, eased */
@@ -12,6 +14,7 @@ export class GunFeel {
   private kick = 0;
   private flash = 0;
   private q = new THREE.Quaternion();
+  private turn = new THREE.Quaternion();
   private v = new THREE.Vector3();
 
   fired() { this.kick = 1; this.flash = 0.05; }
@@ -29,15 +32,16 @@ export class GunFeel {
     const slide = held.getObjectByName('slide'), flash = held.getObjectByName('flash');
     if (slide) slide.position.z = -0.062 + 0.028 * Math.min(1, this.kick * 1.6);
     if (flash) { flash.visible = this.flash > 0; flash.rotation.z = Math.random() * Math.PI; }
-    // The barrel turned onto the view's axis (about the sight, held low at the hip); aimed, the sight at the eye.
+    // The barrel turned onto the view's axis, the muzzle turned in a touch at the hip (toward the middle of the view);
+    // the sight out at the lower right at the hip, at the eye aimed.
     held.updateWorldMatrix(true, false);
     const cam = group.parent!, inv = new THREE.Matrix4().copy(cam.matrixWorld).invert();
     const m = new THREE.Matrix4().multiplyMatrices(inv, held.matrixWorld), sight = SIGHT.clone().applyMatrix4(m);
     const barrel = BARREL.clone().transformDirection(m);
-    this.q.setFromUnitVectors(barrel, BARREL);
+    this.q.setFromUnitVectors(barrel, BARREL).premultiply(this.turn.setFromAxisAngle(UP, 0.18 * (1 - this.ads)));
     group.quaternion.copy(this.q);
     this.v.copy(sight).applyQuaternion(this.q);
-    group.position.copy(sight).lerp(EYE, this.ads).sub(this.v);
+    group.position.copy(HIP).lerp(EYE, this.ads).sub(this.v);
     // The kick: up at the muzzle and back.
     group.rotateX(0.16 * this.kick);
     group.position.z += 0.035 * this.kick;

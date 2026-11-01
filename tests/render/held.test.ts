@@ -9,7 +9,7 @@ describe('held items in both hands (M1-38, U-007)', () => {
     for (const id of ['crowbar', 'water', 'pistol', 'extinguisher', 'jerrycan']) {
       const s = supportPoint(id);
       expect(s, id).not.toBeNull();
-      const right = poseFor(p, 1, false, true, null, 0, s), left = poseFor(p, 0, false, true, null, 0, s);
+      const right = poseFor(p, 1, false, id, null, 0, s), left = poseFor(p, 0, false, id, null, 0, s);
       expect(left.pos.distanceTo(right.pos), id).toBeLessThan(0.35);
       expect(left.pos.x, id).toBeLessThan(right.pos.x);
     }
@@ -17,7 +17,7 @@ describe('held items in both hands (M1-38, U-007)', () => {
   it('small things stay in one hand and the left hand keeps its own pose', () => {
     for (const id of ['phone', 'painkillers', 'chocolate', 'knife', 'sdr']) expect(oneHanded(id), id).toBe(true);
     const g = { ...p, mode: 'ground' as const };
-    const left = poseFor(g, 0, false, true, null, 0, supportPoint('phone'));
-    expect(left).toEqual(poseFor(g, 0, false, false, null, 0, null));
+    const left = poseFor(g, 0, false, 'phone', null, 0, supportPoint('phone'));
+    expect(left).toEqual(poseFor(g, 0, false, '', null, 0, null));
   });
 });

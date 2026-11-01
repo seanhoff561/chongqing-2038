@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-68 Holding things like a person (U-052).
-Features done: 204 / 338 | Last done: M4-71
+**Status:** building M4. Next: M4-60 Melee swings that land on anything (U-052).
+Features done: 205 / 338 | Last done: M4-68
 <!-- /status -->
 
 ## Log
@@ -63,3 +63,4 @@ Features done: 204 / 338 | Last done: M4-71
 - M4-49 Quick opening, a circle filling (U-051): quick opening: a ring fills round the dot at each thing's own speed (U-051)
 - M4-70 Item pictures in the backpack (U-054): item pictures in the backpack, each drawn to its own footprint (U-054)
 - M4-71 Take all and shift-click (U-054): take all, and shift-click moves an item straight across (U-054)
+- M4-68 Holding things like a person (U-052): holding things like a person: a shooter's pistol hold, draw, sway, bob, recoil and reload (U-052)

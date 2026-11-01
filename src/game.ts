@@ -33,6 +33,7 @@ import { playMove } from './audio/moves';
 import { Hands3D, poseFor, gripPose, HELD_AT } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel } from './render/gunfeel';
+import { HeldMotion } from './render/viewmodel';
 import { SleepUI } from './ui/sleep-ui';
 import { DeathScreen } from './ui/death';
 import { Furniture } from './render/furniture';
@@ -84,7 +85,8 @@ export class Game {
   scenario!: Scenario;
   private heldId = '';
   private heldModel: THREE.Object3D | null = null;
-  private gun = new GunFeel();
+  readonly gun = new GunFeel();
+  readonly motion = new HeldMotion();
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
   private last = 0;
@@ -243,6 +245,8 @@ export class Game {
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
+    const task = this.state.task;
+    this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
     this.updatePrompt();
     this.updateHeld();
@@ -306,6 +310,7 @@ export class Game {
     if (!this.hands.ready || !this.hands.group.visible) return;
     const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;
     const readied = !held && findGrab(this.world, p) !== null;
+    const task = this.state.task, reload = task?.id === 'reload' ? task.t / task.dur : -1;
     // Faster easing while striding so the arm swing keeps up with the steps.
     const k = 1 - Math.exp(-(p.mode === 'ground' && p.onGround ? 26 : 14) * dt);
     // Keep free hands out of a wall right in front of him.
@@ -314,7 +319,7 @@ export class Game {
     const room = hit ? hit.t : 0.6;
     p.hands.forEach((h, i) => {
       const g = h.grip ? gripPose(cam, h.grip.x, h.grip.y, h.grip.z, h.grip.nx, h.grip.nz, i === 0 ? -1 : 1) : null;
-      const pose = poseFor(p, i, readied, !!held, g, this.view.fp.bob, support);
+      const pose = poseFor(p, i, readied, held?.id ?? '', g, this.view.fp.bob, support, reload);
       if (!g && -pose.pos.z > room - 0.12) pose.pos.z = -Math.max(0.12, room - 0.12);
       this.hands.setPose(i, pose, k);
     });

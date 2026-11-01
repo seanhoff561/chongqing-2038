@@ -184,3 +184,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-72 to M4-75: falls, kicks, chimneys, wall-runs (U-054, U-055)
 - Drop off a 6 m roof: unhurt, with the heavy landing sound? Jump at a wall and kick looking straight at it (a stall), then looking up (up it): does the difference feel right? Stand in a narrow gap and press Space: braced, low? Run at a building at an angle and jump, Space again: a wall-run, not a kick?
+
+## M4-68, M4-60: holding things, and blows (U-052)
+- Take out the pistol (1-5): does it come up from below and sit at the lower right like a shooter's, the slide's side showing? Walk, turn, aim (right mouse), fire and reload (R): do the bob, the lag behind the turn, the kick and the magazine change look like a person's hands? Take out the knife and the crowbar: held as you'd hold them? Swing (left mouse) at the air, a wall and a machine: the whoosh, then the clang, knock or thud, and the swing stopping short when it hits?
