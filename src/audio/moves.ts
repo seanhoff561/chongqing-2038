@@ -74,20 +74,24 @@ export function playMove(a: Audio, id: string) {
   f(a, a.ctx!.currentTime + 0.005);
 }
 
-/** A machine's beep (M4-07, U-038): a camera's, short and high, quieter the further off it is. */
-export function beep(a: Audio, gain: number) {
+/** A machine's beep (M4-07, U-038): a camera's, short and high, from where it hangs. */
+export function beep(a: Audio, gain: number, out?: AudioNode) {
   if (!a.ready || gain < 0.005) return;
   const t = a.ctx!.currentTime + 0.005;
-  a.tone(t, 0.05, gain, 3100, 3100, 'square');
-  a.tone(t + 0.09, 0.05, gain * 0.8, 3100, 3100, 'square');
+  a.tone(t, 0.05, gain, 3100, 3100, 'square', out);
+  a.tone(t + 0.09, 0.05, gain * 0.8, 3100, 3100, 'square', out);
 }
 
-/** A quadruped's servos (M4-09): a whining step, rising, louder nearer. */
-export function servo(a: Audio, gain: number) {
-  if (!a.ready || gain < 0.005) return;
-  const t = a.ctx!.currentTime + 0.005;
-  a.tone(t, 0.16, gain, 520, 880, 'sawtooth');
-  a.noise(t, 0.08, gain * 0.6, 'bandpass', 2200, 2);
+/** A walker's footfall (M4-33), where it lands: a humanoid's hard rubber pad; a quadruped's clank and the whine of its
+ *  servos (M4-09); the heavy's thud; the spider's sharp tap and hydraulic hiss; a colossus's boom, felt as much as heard. */
+export function footfall(a: Audio, kind: string, out: AudioNode, gain = 0.5) {
+  if (!a.ready) return;
+  const t = a.ctx!.currentTime + 0.005, g = gain;
+  if (kind === 'humanoid') { a.tone(t, 0.08, 0.3 * g, 110, 60, 'sine', out); a.noise(t, 0.05, 0.18 * g, 'bandpass', 900, 1.2, undefined, out); }
+  else if (kind === 'quadruped') { a.noise(t, 0.04, 0.25 * g, 'bandpass', 2600, 3, undefined, out); a.tone(t, 0.16, 0.2 * g, 520, 880, 'sawtooth', out); }
+  else if (kind === 'heavy') { a.tone(t, 0.3, 0.7 * g, 70, 35, 'sine', out); a.noise(t, 0.2, 0.3 * g, 'lowpass', 400, 1, undefined, out); a.tone(t + 0.05, 0.25, 0.12 * g, 300, 450, 'sawtooth', out); }
+  else if (kind === 'spider') { a.noise(t, 0.03, 0.4 * g, 'highpass', 2500, 1, undefined, out); a.tone(t, 0.06, 0.25 * g, 900, 500, 'triangle', out); a.noise(t + 0.04, 0.35, 0.12 * g, 'bandpass', 5000, 2, 3000, out); }
+  else { a.tone(t, 0.9, 0.9 * g, 48, 24, 'sine', out); a.noise(t, 0.6, 0.45 * g, 'lowpass', 220, 1, 90, out); a.tone(t + 0.1, 0.8, 0.1 * g, 180, 120, 'sawtooth', out); }
 }
 
 /** A humanoid calling the others (M4-10): a burst of radio static round a clipped two-tone, louder nearer. */
@@ -107,20 +111,12 @@ export function siren(a: Audio, gain: number) {
   a.tone(t + 1.3, 1.3, gain, 1150, 520, 'sawtooth');
 }
 
-/** A turret's round (M4-11): a hard crack and its thump, carried far. */
-export function gunshot(a: Audio, gain: number, quiet = false) {
+/** A round fired (M4-11): a hard crack and its thump, carried far (from where it was fired, for a machine's: M4-33). */
+export function gunshot(a: Audio, gain: number, quiet = false, out?: AudioNode) {
   if (!a.ready || gain < 0.005) return;
   const t = a.ctx!.currentTime + 0.005;
   // Suppressed (U-058): a muffled crack and the slide's clack, not the bang.
-  if (quiet) { a.noise(t, 0.05, gain * 0.35, 'bandpass', 1800, 1.2); a.tone(t, 0.06, gain * 0.25, 180, 90, 'sine'); a.noise(t + 0.03, 0.03, gain * 0.2, 'highpass', 3500); return; }
-  a.noise(t, 0.06, gain, 'highpass', 1200, 0.7);
-  a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine');
-}
-
-/** A strike drone coming (M4-47): the high, rising whine of its motors, louder the nearer it is. */
-export function whine(a: Audio, gain: number) {
-  if (!a.ready || gain < 0.01) return;
-  const t = a.ctx!.currentTime + 0.005;
-  a.tone(t, 0.45, 0.12 * gain, 520, 760, 'sawtooth');
-  a.tone(t, 0.45, 0.07 * gain, 1040, 1500, 'square');
+  if (quiet) { a.noise(t, 0.05, gain * 0.35, 'bandpass', 1800, 1.2, undefined, out); a.tone(t, 0.06, gain * 0.25, 180, 90, 'sine', out); a.noise(t + 0.03, 0.03, gain * 0.2, 'highpass', 3500, 1, undefined, out); return; }
+  a.noise(t, 0.06, gain, 'highpass', 1200, 0.7, undefined, out);
+  a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine', out);
 }

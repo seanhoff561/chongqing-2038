@@ -16,7 +16,8 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
-import { beep, servo, radio, gunshot, siren, whine } from './audio/moves';
+import { radio, gunshot, siren } from './audio/moves';
+import { MachineVoices } from './audio/machines';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -71,6 +72,8 @@ export class Game {
   readonly bodyFx: BodyFx;
   readonly inv: InventoryUI;
   readonly audio = new Audio();
+  /** the machines heard where they are (M4-33) */
+  readonly voices = new MachineVoices(this.audio);
   readonly hands: Hands3D;
   /** The inside of where he's hidden (M3-47). */
   readonly hideView = new HideView();
@@ -98,7 +101,6 @@ export class Game {
   private trailIn = 0;
   private grabAge = 0;
   private smokeIn = 0;
-  private whineIn = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
@@ -157,37 +159,18 @@ export class Game {
     this.view.scene.add(this.units.group);
   }
 
-  private beepIn = 0;
-  private servoIn = 0;
   private sirenIn = 0;
-  /** The machines' sounds near him: the cameras beep (M4-07, U-038), the nearest within 12 m every 2.5 s; the
-   *  quadrupeds' servos whine (M4-09), the nearest within 30 m at each stride. Louder nearer. */
+  /** The machines' sounds round him (M4-33: audio/machines.ts), and his district's siren while it's after him. */
   private machineSounds(dt: number) {
     const p = this.state.player.pos;
     // The alert shown where he is (M4-27): the boards on his district's alert, its siren while it's Engaged.
     const st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
     alarm.value = st === 'engaged' || st === 'searching' || st === 'heightened' ? 1 : 0;
     if ((this.sirenIn -= dt) <= 0) { this.sirenIn = 2.7; if (st === 'engaged') siren(this.audio, 0.1); }
-    if ((this.beepIn -= dt) <= 0) {
-      this.beepIn = 2.5;
-      let near = 12;
-      for (const c of this.world.cameras) if (c.kind === 'camera' || c.kind === 'sweeper' || c.kind === 'lamppost') near = Math.min(near, Math.hypot(c.x - p.x, c.y - p.y - 1.6, c.z - p.z));
-      if (near < 12) beep(this.audio, 0.12 * (1 - near / 12));
-    }
-    // A strike drone coming at him: its whine, louder as it nears (M4-47).
-    if ((this.whineIn -= dt) <= 0) {
-      this.whineIn = 0.4;
-      let near = 90;
-      for (const u of this.state.units) if ((u.kind === 'fpv' || u.kind === 'bomber') && u.trip && !u.dead) near = Math.min(near, Math.hypot(u.trip.pos.x - p.x, u.trip.pos.y - p.y, u.trip.pos.z - p.z));
-      if (near < 90) whine(this.audio, 1 - near / 90);
-    }
-    if ((this.servoIn -= dt) <= 0) {
-      this.servoIn = 0.4;
-      let near = 30;
-      for (const u of this.state.units) if (u.kind === 'quadruped') { const q = unitPose(this.world, u, this.state.time); if (q.active) near = Math.min(near, Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z)); }
-      if (near < 30) servo(this.audio, 0.2 * (1 - near / 30));
-    }
+    const cam = this.view.fp.cam;
+    this.voices.update(dt, this.state, this.world, cam.position, cam.getWorldDirection(this.look));
   }
+  private look = new THREE.Vector3();
 
   /** The draw distance: the scenario's, or the graphics preset's. With far stand-ins the whole city shows through
    *  aerial haze and the draw distance is the detail radius. */
@@ -261,7 +244,7 @@ export class Game {
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
-      else if (e.t === 'shot') { const d = Math.hypot(e.x - this.state.player.pos.x, e.y - this.state.player.pos.y, e.z - this.state.player.pos.z); if (d < 300) gunshot(this.audio, 0.5 * (1 - d / 300)); }
+      else if (e.t === 'shot') { const d = Math.hypot(e.x - this.state.player.pos.x, e.y - this.state.player.pos.y, e.z - this.state.player.pos.z); if (d < 400 && this.audio.ready) gunshot(this.audio, 0.9, false, this.audio.spot(e)); }
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
     if (this.state.dead) this.death.show();

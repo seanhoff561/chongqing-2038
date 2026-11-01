@@ -61,6 +61,32 @@ export class Audio {
     this.wind.band.frequency.setTargetAtTime(300 + level * 1500, ctx.currentTime, 0.08);
   }
 
+  /** His head for the 3D sounds (M4-33): where the camera is, facing where it looks. */
+  listen(at: { x: number; y: number; z: number }, fwd: { x: number; y: number; z: number }) {
+    const L = this.ctx!.listener, t = this.ctx!.currentTime;
+    if (L.positionX) {
+      L.positionX.setValueAtTime(at.x, t); L.positionY.setValueAtTime(at.y, t); L.positionZ.setValueAtTime(at.z, t);
+      L.forwardX.setValueAtTime(fwd.x, t); L.forwardY.setValueAtTime(fwd.y, t); L.forwardZ.setValueAtTime(fwd.z, t);
+      L.upX.setValueAtTime(0, t); L.upY.setValueAtTime(1, t); L.upZ.setValueAtTime(0, t);
+    } else { L.setPosition(at.x, at.y, at.z); L.setOrientation(fwd.x, fwd.y, fwd.z, 0, 1, 0); }
+  }
+
+  /** A place a sound comes from (M4-33): heard round his head, fading with distance (half at twice 5 m, and so on). */
+  panner(): PannerNode {
+    const p = this.ctx!.createPanner();
+    p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = 5; p.rolloffFactor = 1; p.maxDistance = 10000;
+    p.connect(this.bus.effects);
+    return p;
+  }
+
+  /** A one-off sound's place: a panner there, let go once the sound is over. */
+  spot(q: { x: number; y: number; z: number }, hold = 4): PannerNode {
+    const p = this.panner(), t = this.ctx!.currentTime;
+    if (p.positionX) { p.positionX.setValueAtTime(q.x, t); p.positionY.setValueAtTime(q.y, t); p.positionZ.setValueAtTime(q.z, t); } else p.setPosition(q.x, q.y, q.z);
+    setTimeout(() => p.disconnect(), hold * 1000);
+    return p;
+  }
+
   /** Under water every sound comes dull and low; out of it, clear again at once. */
   setUnderwater(on: boolean) {
     if (this.ctx) this.muffle.frequency.value = on ? 500 : 22000;
