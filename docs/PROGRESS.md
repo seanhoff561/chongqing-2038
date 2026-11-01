@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-82 No floor drawn over holes (U-060).
-Features done: 215 / 349 | Last done: M4-83
+**Status:** building M4. Next: M4-78 Pistol attachments: suppressor, extended magazine, sights (U-058).
+Features done: 216 / 349 | Last done: M4-82
 <!-- /status -->
 
 ## Log
@@ -74,3 +74,4 @@ Features done: 215 / 349 | Last done: M4-83
 - M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057): the crowbar held as before, no use message mid-swing, the thumb along the pistol's side clear of it, the hand in its sleeve (U-057, U-061)
 - M4-85 Every ring much faster (U-064): every ring much faster: opening, healing, takedowns, reloading and the rest (U-064)
 - M4-83 Smooth frame rate: what made it choppy, found and fixed (U-061): smoother frames: props built once and reused, near cells streamed in pieces, machines drawn from small pools (U-061, U-064)
+- M4-82 No floor drawn over holes (U-060): no floor drawn over holes: finishes with nothing under them aren't drawn (U-060)

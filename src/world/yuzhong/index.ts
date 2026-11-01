@@ -14,7 +14,7 @@ import { layout, doorPaths } from './layout';
 import { ruins } from './ruins';
 import { fill } from './fill';
 import { GEO } from '../geo';
-import { heightAt, type Heightfield } from '../heightfield';
+import { heightAt, rayGround, type Heightfield } from '../heightfield';
 import { buildGround, streets, onGround, WATER_Y, streetCells, type Street } from './ground';
 import { planLots, levelLots, markEnterable, oldQuarter, type Plan } from './lots';
 import { corners, rasterPoly, obbOverlap, type Obb } from './shapes';
@@ -238,8 +238,24 @@ export function buildYuzhong(): World {
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
   world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
   world.garages = placeGarages(world, home.at.spawn);
+  // No floor drawn over a hole (M4-82, U-060): a finish (a floor's tiles or boards, a roof's patch, moss, a puddle)
+  // with nothing under it to stand on, over most of it, isn't drawn: there's a hole there.
+  world.decor = world.decor.filter(s => !overNothing(world, s));
   world.links = net.links.concat(joins.flatMap(([i, j]) => { const rt = streetRoute(world.nav!, `link:${keys[i].name}-${keys[j].name}:street`, keys[i].at, keys[j].at); return rt ? [{ from: keys[i].name, to: keys[j].name, layer: 'street' as const, route: rt }] : []; }));
   return world;
+}
+
+/** Whether a thin finish lies over nothing: at three of its middle and four points in from its corners, nothing to
+ *  stand on within 0.35 m under it. */
+function overNothing(w: World, s: Solid) {
+  const e = s.rot ?? s, dx = e.x1 - e.x0, dz = e.z1 - e.z0;
+  if (s.y1 - s.y0 > 0.06 || dx * dz < 0.3) return false;
+  let open = 0;
+  for (const [u, v] of [[0.5, 0.5], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]]) {
+    const x = e.x0 + dx * u, z = e.z0 + dz * v;
+    if (!raycast(w.index, x, s.y1 + 0.05, z, 0, -1, 0, 0.4) && !rayGround(w.ground!, x, s.y1 + 0.05, z, 0, -1, 0, 0.4)) open++;
+  }
+  return open >= 3;
 }
 
 /** The streets to draw: a walkway's stretches inside a building (a passage through it) left out (U-031). */

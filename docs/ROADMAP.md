@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 58 of 88 done
+## M4: 59 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -858,7 +858,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Chimneying (bracing across a gap) has its own key, X, shown in the pause menu's keys; Space no longer starts it, so jumping in a narrow gap jumps
   - Pressed between two walls the right distance apart, standing or in the air, X braces him; pressed again or Space lets go as now
   - Sim tests: Space in a gap jumps without bracing; X braces from the ground and from the air
-- [ ] **M4-82** No floor drawn over holes (U-060)
+- [x] **M4-82** No floor drawn over holes (U-060)
   - Wherever the ground or a floor has a hole he can fall or climb through (shafts, manholes, grates' openings, stairwells, broken floors, ways down), no floor is drawn over it, and nothing drawn hides an opening that's really there
   - A check across the city's holes: at each, a ray down through what's drawn finds the same opening the sim has (nothing drawn within the hole); the cases found fixed; screenshots of a few
 - [ ] **M4-78** Pistol attachments: suppressor, extended magazine, sights (U-058)
