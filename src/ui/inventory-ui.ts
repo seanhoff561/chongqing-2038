@@ -9,6 +9,9 @@ import { item } from '../data/items';
 import { MODS } from '../data/units';
 import { icon } from './icons';
 
+/** What he can eat, drink or use from the backpack. */
+const USABLE = new Set(['food', 'drink', 'med']);
+
 const CELL = 44;
 
 export class InventoryUI {
@@ -31,6 +34,8 @@ export class InventoryUI {
     document.body.appendChild(this.tip);
     addEventListener('mousemove', e => this.move(e));
     addEventListener('mouseup', e => this.drop(e));
+    // F closes it, as Tab does (U-067); before the game takes the press.
+    addEventListener('keydown', e => { if (this.open && e.code === 'KeyF' && !e.repeat) { this.toggle(false); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
     addEventListener('keydown', e => {
       if (!this.open) return;
       if (e.code === 'KeyR' && this.drag) { this.drag.rot = !this.drag.rot; this.styleGhost(); }
@@ -109,8 +114,11 @@ export class InventoryUI {
         this.styleGhost();
         this.move(e);
       };
-      // Right-click on the pistol takes its attachments off (U-058).
-      div.oncontextmenu = e => { e.preventDefault(); if (ref === 'pack' && st.mods?.length) { this.game.input.cmds.push({ c: 'strip', uid: st.uid }); this.sig = ''; } };
+      // Right-click on the pistol takes its attachments off (U-058); on food, drink or medicine, or a double-click, he
+      // eats, drinks or uses it there and then (U-067).
+      const use = () => { if (ref === 'pack' && USABLE.has(item(st.id).cat)) { this.game.input.cmds.push({ c: 'use', uid: st.uid }); this.sig = ''; } };
+      div.oncontextmenu = e => { e.preventDefault(); if (ref === 'pack' && st.mods?.length) { this.game.input.cmds.push({ c: 'strip', uid: st.uid }); this.sig = ''; } else use(); };
+      div.ondblclick = use;
       div.onmouseenter = () => { this.hover = { uid: st.uid, from: ref }; this.showTip(st, div); };
       div.onmouseleave = () => { this.hover = null; this.tip.style.display = 'none'; };
       area.appendChild(div);

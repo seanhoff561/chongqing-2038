@@ -71,20 +71,24 @@ export class Audio {
     } else { L.setPosition(at.x, at.y, at.z); L.setOrientation(fwd.x, fwd.y, fwd.z, 0, 1, 0); }
   }
 
-  /** A place a sound comes from (M4-33): heard round his head, fading with distance (half at twice 5 m, and so on). */
-  panner(): PannerNode {
+  /** A place a sound comes from (M4-33): heard round his head, fading with distance (by `rolloff`: 1 is half at twice
+   *  5 m, and so on; the machines' own sounds fall off faster, U-067). */
+  panner(rolloff = 1): PannerNode {
     const p = this.ctx!.createPanner();
-    p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = 5; p.rolloffFactor = 1; p.maxDistance = 10000;
+    p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = 5; p.rolloffFactor = rolloff; p.maxDistance = 10000;
     p.connect(this.bus.effects);
     return p;
   }
 
-  /** A one-off sound's place: a panner there, let go once the sound is over. */
-  spot(q: { x: number; y: number; z: number }, hold = 4): PannerNode {
-    const p = this.panner(), t = this.ctx!.currentTime;
+  /** A one-off sound's place: a panner there, let go once the sound is over; heard through a wall (U-067), dull and
+   *  a third as loud. */
+  spot(q: { x: number; y: number; z: number }, hold = 4, rolloff = 1, walled = false): AudioNode {
+    const p = this.panner(rolloff), t = this.ctx!.currentTime;
     if (p.positionX) { p.positionX.setValueAtTime(q.x, t); p.positionY.setValueAtTime(q.y, t); p.positionZ.setValueAtTime(q.z, t); } else p.setPosition(q.x, q.y, q.z);
+    let into: AudioNode = p;
+    if (walled) { const lp = this.ctx!.createBiquadFilter(), g = this.ctx!.createGain(); lp.type = 'lowpass'; lp.frequency.value = 450; g.gain.value = 0.3; lp.connect(g).connect(p); into = lp; setTimeout(() => lp.disconnect(), hold * 1000); }
     setTimeout(() => p.disconnect(), hold * 1000);
-    return p;
+    return into;
   }
 
   /** Under water every sound comes dull and low; out of it, clear again at once. */

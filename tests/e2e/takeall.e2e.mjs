@@ -1,4 +1,5 @@
 // M4-71: shift-click moves an item straight across (backpack to the open stash, and back), 'take all' empties it.
+// U-067: food and drink used from the backpack with a right-click; F closes it.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=hideout&seed=1', 'takeall');
   await page.evaluate(`(() => { const g = window.__cq.game; Object.assign(g.state.player.pos, { x: 12.6, y: 0, z: 0.2 }); g.input.yaw = -2.75; g.input.pitch = -0.6; g.runFrames(5); })()`);
@@ -27,5 +28,15 @@ export default async function ({ open, fail, screenshot }) {
   ids = await page.evaluate('window.__cq.game.state.inv.pack.items.map(i => i.id).sort().join()');
   if (left !== 0 || ids !== 'bandage,bread,crowbar,firstaid,water') fail('takeall', `after take all: ${left} left, pack ${ids}`);
   await screenshot(page, 'takeall');
+  // U-067: right-click the water in the backpack and he drinks it; F closes the backpack.
+  const water = await page.evaluate(`(() => { const g = window.__cq.game, w = g.state.inv.pack.items.find(i => i.id === 'water'); return w && w.uid; })()`);
+  const wel = await page.$(`#inv .inv-item[data-uid="${water}"]`), wb = wel && await wel.boundingBox();
+  if (!wb) fail('takeall', 'no water in the backpack view');
+  else { await page.mouse.click(wb.x + 8, wb.y + 8, { button: 'right' }); await page.evaluate('window.__cq.runFrames(3)'); }
+  const drank = await page.evaluate(`!window.__cq.game.state.inv.pack.items.some(i => i.id === 'water')`);
+  if (!drank) fail('takeall', 'right-clicking the water did not drink it');
+  await page.keyboard.press('KeyF');
+  const shut = await page.evaluate(`getComputedStyle(document.getElementById('inv')).display === 'none'`);
+  if (!shut) fail('takeall', 'F did not close the backpack');
   await page.close();
 }

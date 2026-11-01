@@ -24,7 +24,8 @@ const CONTROLS: [string, string][] = [
   ['Left mouse, holding something', 'use it: fire, strike; the knife from behind a machine: a takedown (hold)'],
   ['Right mouse (hold) / R', 'aim a gun / reload'],
   ['1-5 / 0 or `', 'hotbar / empty hands'],
-  ['Tab / L / H', 'backpack / laptop / headlamp'],
+  ['Tab / L / H', 'backpack (F closes it too) / laptop / headlamp'],
+  ['Right-click or double-click in the backpack', 'eat, drink or use food, water and medicine; take attachments off a gun'],
   ['Esc', 'pause and settings'],
 ];
 

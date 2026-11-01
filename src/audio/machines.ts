@@ -9,18 +9,19 @@ import type { UnitKind } from '../data/units';
 import { unitPose, isOff, type Unit } from '../sim/units';
 import type { World } from '../world/world';
 import type { SimState } from '../sim/types';
+import { raycast } from '../world/geom';
 
 type V3 = { x: number; y: number; z: number };
 /** The speed of sound, m/s; how many rotors are heard at once; how far each kind is heard, m; how often the nearest are
  *  picked again, s. */
-const HEAR = { sound: 343, rotors: 6, rotor: 160, step: 45, giant: 140, walkers: 6, every: 0.4 };
+const HEAR = { sound: 343, rotors: 6, rotor: 110, step: 35, giant: 100, walkers: 6, every: 0.4, /** how fast their sounds fall off (U-067) */ rolloff: 2 };
 /** A rotor's note by kind: its blade hum (Hz) and how loud it is. */
-const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.35 }, hunter: { f: 190, gain: 0.45 }, fpv: { f: 430, gain: 0.6 }, bomber: { f: 110, gain: 0.6 } };
+const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.2 }, hunter: { f: 190, gain: 0.28 }, fpv: { f: 430, gain: 0.5 }, bomber: { f: 110, gain: 0.4 } };
 /** Metres between a walker's footfalls. */
 const STEP: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 0.7, colossus: 2.6, quadruped: 0.45 };
 const GIANT = new Set<UnitKind>(['heavy', 'spider', 'colossus']);
 
-type Voice = { osc: OscillatorNode; osc2: OscillatorNode; gain: GainNode; pan: PannerNode; u: Unit | null; f: number; d: number; /** how loud it's set to be */ g: number };
+type Voice = { osc: OscillatorNode; osc2: OscillatorNode; gain: GainNode; lp: BiquadFilterNode; pan: PannerNode; u: Unit | null; f: number; d: number; /** how loud it's set to be */ g: number };
 
 export class MachineVoices {
   private voices: Voice[] = [];
@@ -54,7 +55,7 @@ export class MachineVoices {
       const step = STEP[k.u.kind]!;
       if (k.run < step) continue;
       k.run %= step;
-      footfall(a, k.u.kind, a.spot(q), GIANT.has(k.u.kind) ? 1 : 0.5);
+      footfall(a, k.u.kind, a.spot(q, 4, HEAR.rolloff, walled(w, head, q, 1)), GIANT.has(k.u.kind) ? 1 : 0.5);
     }
     // The nearest camera within 12 m beeps every 2.5 s, from where it hangs.
     if ((this.beepIn -= dt) <= 0) {
@@ -90,13 +91,19 @@ export class MachineVoices {
     }
     const near = fly.sort((x, y) => x.d - y.d).slice(0, HEAR.rotors).map(f => f.u), t = this.a.ctx!.currentTime;
     // Voices whose machine is gone from the nearest fall silent; the free ones take the newcomers.
-    for (const v of this.voices) if (v.u && !near.includes(v.u)) { v.u = null; v.gain.gain.setTargetAtTime(0, t, 0.3); }
+    for (const v of this.voices) if (v.u && !near.includes(v.u)) { v.u = null; v.g = 0; v.gain.gain.setTargetAtTime(0, t, 0.3); }
+    // Through a wall or a roof a rotor is dull and a third as loud (U-067).
+    for (const v of this.voices) if (v.u) {
+      const shut = walled(w, head, unitPose(w, v.u, s.time), 0), r = ROTOR[v.u.kind]!;
+      v.g = r.gain * (shut ? 0.3 : 1); v.gain.gain.setTargetAtTime(v.g, t, 0.3); v.lp.frequency.setTargetAtTime(shut ? 450 : 20000, t, 0.2);
+    }
     for (const u of near) {
       if (this.voices.some(v => v.u === u)) continue;
       const v = this.voices.find(x => !x.u) ?? this.voice(), r = ROTOR[u.kind]!, q = unitPose(w, u, s.time);
       v.u = u; v.f = r.f * (0.94 + ((u.id * 37) % 13) / 100); v.d = Math.hypot(q.x - head.x, q.y - head.y, q.z - head.z);
       place(v.pan, q, t, true);
-      v.g = r.gain; v.gain.gain.setTargetAtTime(r.gain, t, 0.3);
+      const shut = walled(w, head, q, 0);
+      v.g = r.gain * (shut ? 0.3 : 1); v.gain.gain.setTargetAtTime(v.g, t, 0.3); v.lp.frequency.setValueAtTime(shut ? 450 : 20000, t);
     }
     const keep = new Map(this.walkers.map(k => [k.u, k]));
     this.walkers = walk.sort((x, y) => x.d - y.d).slice(0, HEAR.walkers).map(k => keep.get(k.u) ?? { u: k.u, at: null, run: 0 });
@@ -104,15 +111,22 @@ export class MachineVoices {
 
   /** A held rotor note: a buzzing saw and its beating octave through a band, panned. */
   private voice(): Voice {
-    const ctx = this.a.ctx!, osc = ctx.createOscillator(), osc2 = ctx.createOscillator(), band = ctx.createBiquadFilter(), gain = ctx.createGain(), pan = this.a.panner();
+    const ctx = this.a.ctx!, osc = ctx.createOscillator(), osc2 = ctx.createOscillator(), band = ctx.createBiquadFilter(), lp = ctx.createBiquadFilter(), gain = ctx.createGain(), pan = this.a.panner(HEAR.rolloff);
     osc.type = 'sawtooth'; osc2.type = 'square'; band.type = 'bandpass'; band.frequency.value = 900; band.Q.value = 0.6; gain.gain.value = 0;
     const lo = ctx.createGain(); lo.gain.value = 0.35;
-    osc.connect(band); osc2.connect(lo).connect(band); band.connect(gain).connect(pan);
+    lp.type = 'lowpass'; lp.frequency.value = 20000;
+    osc.connect(band); osc2.connect(lo).connect(band); band.connect(lp).connect(gain).connect(pan);
     osc.start(); osc2.start();
-    const v: Voice = { osc, osc2, gain, pan, u: null, f: 150, d: 0, g: 0 };
+    const v: Voice = { osc, osc2, gain, lp, pan, u: null, f: 150, d: 0, g: 0 };
     this.voices.push(v);
     return v;
   }
+}
+
+/** Whether something solid stands between his head and a machine (up `up` m from where it stands). */
+function walled(w: World, head: V3, q: V3, up: number): boolean {
+  const dx = q.x - head.x, dy = q.y + up - head.y, dz = q.z - head.z, d = Math.hypot(dx, dy, dz);
+  return d > 1 && !!raycast(w.index, head.x, head.y, head.z, dx / d, dy / d, dz / d, d - 1);
 }
 
 /** A panner moved to a place, smoothly (or at once). */
