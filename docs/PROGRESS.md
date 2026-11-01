@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057).
-Features done: 208 / 347 | Last done: M4-57
+Features done: 209 / 347 | Last done: M4-59
 <!-- /status -->
 
 ## Log
@@ -67,3 +67,4 @@ Features done: 208 / 347 | Last done: M4-57
 - M4-60 Melee swings that land on anything (U-052): melee swings that land on anything: a machine, a wall or thing, or the air (U-052)
 - M4-76 Thumbs out of the pistol (U-056): the thumbs lie along the pistol instead of through it (U-056)
 - M4-57 Many more machines: deadly main streets (U-051): many more machines: district main streets thick with pairs, squads, drones and junction turrets; side streets busy (U-051)
+- M4-59 Machines that move like they're alive (U-051): machines move like they're alive: drones search building faces and weave, walkers drift, stop and look (U-051)
