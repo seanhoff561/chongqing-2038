@@ -18,7 +18,7 @@ import { DT } from './types';
 type V3 = { x: number; y: number; z: number };
 /** How far up or down each kind steps without a stair: a quadruped's metre's jump; nothing climbs (M4-09). */
 const STEP: Record<UnitKind, number> = { quadruped: 1, humanoid: 0.5, heavy: 0.4, drone: 99, hunter: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
-export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200 };
+export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200, /** a changeover's handing over, s (M4-58) */ swap: 3 };
 
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
  *  step up or down (a quadruped's metre's jump, half a metre for the rest: none climbs), as far as nothing's in the
@@ -55,10 +55,12 @@ function walk(s: SimState, w: World, u: Unit) {
       if (t.cover) return;
       // Looking about, a slow sweep either way, 8 s (M4-04); then a humanoid goes through the hiding places near the
       // place one by one, looking briefly at each (M4-10).
-      const look = t.visits ? SQUAD.look : ALERT.scan;
+      const look = t.kind === 'swap' ? ALERT.swap : t.visits ? SQUAD.look : ALERT.scan;
       t.scan += DT;
       t.yaw += Math.sin((t.scan / look) * Math.PI * 4) * 0.03;
       if (t.scan >= look) {
+        // Changed over with a column's walker (M4-58): the one going back to the beat knows nothing of him.
+        if (t.kind === 'swap') { u.aware = 0; u.seen = undefined; u.saw = undefined; u.state = 'unaware'; t.back = true; t.path = way(w, u.kind, t.pos, t.left); t.i = 0; return; }
         if (u.kind === 'humanoid' && !t.visits) t.visits = searchSpots(w, t.pos);
         const next = t.visits?.shift();
         if (next) { t.path = way(w, u.kind, t.pos, next); t.i = 0; t.scan = 0; return; }

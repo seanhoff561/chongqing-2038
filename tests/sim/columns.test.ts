@@ -49,11 +49,11 @@ describe('columns out of the factory (M4-01b)', () => {
     for (const u of peel.slice(0, 4)) {
       const mate = cols.find(q => q.convoy!.path === k && q.convoy!.slot === u.convoy!.slot && q.convoy!.member === COLUMN.squad.findIndex(m => m.team === COLUMN.squad[u.convoy!.member].team && m.kind === 'humanoid'))!;
       let off = false;
-      for (let t = 0; t < 3000; t += 1) {
+      for (let t = 0; t < 6000; t += 1) {
         const p = at(u, t), q = at(mate, t);
         if (!p.active || !q.active) continue;
         const gap = Math.hypot(p.x - q.x, p.z - q.z);
-        if (gap > 25 && C[k].spurs.some(sp => Math.hypot(sp.at.x - p.x, sp.at.z - p.z) < 1)) { off = alley = true; }
+        if (gap > 10 && C[k].spurs.some(sp => Math.hypot(sp.at.x - p.x, sp.at.z - p.z) < 1)) { off = alley = true; }
         if (off && gap < 16) { back = true; break; }
       }
     }

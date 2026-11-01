@@ -30,6 +30,7 @@ import { stepConverge } from './converge';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
+import { stepChangeover } from './changeover';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
 import { stepRaid } from './raid';
@@ -77,6 +78,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepPlayer(state, world, input);
   stepSight(state, world);
   stepAlert(state, world);
+  stepChangeover(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepConverge(state, world);

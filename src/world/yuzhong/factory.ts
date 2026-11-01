@@ -17,7 +17,7 @@ import { minRect, points, rasterPoly, type Obb, type P2 } from './shapes';
 /** Hall cells (m), the longest and deepest hall in cells, the gap kept from the streets (m). */
 const CELL = 8, LONG = 7, DEEP = 5, CLEAR = 3;
 /** A gate's width, height and depth into its hall; gates at least this far apart; convoy paths this long. */
-const GATE_W = 10, GATE_H = 7, GATE_D = 8, GATE_GAP = 70, CONVOY = 320;
+const GATE_W = 10, GATE_H = 7, GATE_D = 8, GATE_GAP = 70;
 
 type V3 = { x: number; y: number; z: number };
 export interface Gate { x: number; y: number; z: number; nx: number; nz: number }
@@ -181,7 +181,7 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
     f.features.push({ kind: 'gate', x: mouth.x, y, z: mouth.z, group: f.gates.length, nx: n.nx, nz: n.nz });
     f.gates.push({ x: mouth.x, y, z: mouth.z, nx: n.nx, nz: n.nz });
     const road = face(u, out, y);
-    f.convoys.push(convoy(g, sts, [face(u, -GATE_D + 1, y), mouth, road], o));
+    f.convoys.push(convoy(g, sts, [face(u, -GATE_D + 1, y), mouth, road], f.gates.length));
   }
   for (const h of halls) rasterPoly([P(h.x0, h.z0), P(h.x1, h.z0), P(h.x1, h.z1), P(h.x0, h.z1)], 0, 0, g.cell, g.w, g.h, (i0, i1, j) => f.under.fill(1, j * g.w + i0, j * g.w + i1 + 1));
   f.solids = turn(local, o.yaw, o.cx, o.cz);
@@ -190,68 +190,46 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
   return f;
 }
 
-/** From inside a gate out onto the road it fronts, then along the roads (through the junctions, as straight on
- *  as they go) away from the factory, CONVOY metres, every 4 m at ground level. */
-function convoy(g: Heightfield, sts: Street[], start: V3[], o: Obb): V3[] {
+/** From inside a gate out onto the road it fronts, then along the roads by the shortest way to one of the city's exits
+ *  (M4-58, U-051): the head of a bridge or a tunnel, or a road running out at the city's edge, a different one for
+ *  each gate (the `k`th nearest past 300 m); on onto the bridge or into the tunnel 60 m, where it leaves the city.
+ *  Every 4 m, at ground level. */
+function convoy(g: Heightfield, sts: Street[], start: V3[], k: number): V3[] {
   const roads = sts.filter(st => ROAD.has(st.kind) && onGround(st) && st.pts.length > 1), from = start[start.length - 1];
-  let best = { d: Infinity, s: 0, i: 0, x: 0, z: 0 };
-  roads.forEach((st, si) => {
-    for (let i = 0; i + 1 < st.pts.length; i++) {
-      const [ax, az] = st.pts[i], [bx, bz] = st.pts[i + 1], l2 = (bx - ax) ** 2 + (bz - az) ** 2 || 1;
-      const t = Math.max(0, Math.min(1, ((from.x - ax) * (bx - ax) + (from.z - az) * (bz - az)) / l2)), x = ax + (bx - ax) * t, z = az + (bz - az) * t;
-      const d = Math.hypot(x - from.x, z - from.z);
-      if (d < best.d) best = { d, s: si, i, x, z };
-    }
-  });
-  /** Walk on from point i of road s toward step (+1 or -1) for `left` metres. */
-  const walk = (dir: 1 | -1): P2[] => {
-    const out: P2[] = [[best.x, best.z]];
-    let s = best.s, i = dir > 0 ? best.i + 1 : best.i, left = CONVOY * 2;
-    for (let hops = 0; hops < 12 && left > 0; hops++) {
-      const pts = roads[s].pts;
-      for (; i >= 0 && i < pts.length && left > 0; i += dir) {
-        const [px, pz] = out[out.length - 1];
-        left -= Math.hypot(pts[i][0] - px, pts[i][1] - pz);
-        out.push(pts[i]);
-      }
-      // At its end, on along whichever road from there turns least.
-      const [ex, ez] = out[out.length - 1], [qx, qz] = out[out.length - 2] ?? out[0], hx = ex - qx, hz = ez - qz, hl = Math.hypot(hx, hz) || 1;
-      let next: { s: number; i: number; dir: 1 | -1; bend: number } | null = null;
-      roads.forEach((st, si) => {
-        if (si === s) return;
-        st.pts.forEach(([x, z], vi) => {
-          if (Math.hypot(x - ex, z - ez) > 3) return;
-          for (const d of [1, -1] as const) {
-            const nb = st.pts[vi + d];
-            if (!nb) continue;
-            const dx = nb[0] - x, dz = nb[1] - z, bend = Math.acos(Math.max(-1, Math.min(1, (dx * hx + dz * hz) / ((Math.hypot(dx, dz) || 1) * hl))));
-            if (bend < 1.75 && (!next || bend < next.bend)) next = { s: si, i: vi + d, dir: d, bend };
-          }
-        });
-      });
-      if (!next) break;
-      ({ s, i, dir } = next as { s: number; i: number; dir: 1 | -1 });
-    }
-    // Not up a dead end and back: where it comes back past itself, the loop between is cut out; then CONVOY long.
-    for (let a = 0; a < out.length; a++) {
-      let run = 0;
-      for (let b = a + 1; b < out.length; b++) {
-        run += Math.hypot(out[b][0] - out[b - 1][0], out[b][1] - out[b - 1][1]);
-        if (run > 40 && Math.hypot(out[b][0] - out[a][0], out[b][1] - out[a][1]) < 8) { out.splice(a + 1, b - a - 1); break; }
-      }
-    }
-    for (let k = 1, run = 0; k < out.length; k++) {
-      run += Math.hypot(out[k][0] - out[k - 1][0], out[k][1] - out[k - 1][1]);
-      if (run > CONVOY) { out.length = k + 1; break; }
-    }
-    return out;
-  };
-  const ways = [walk(1), walk(-1)], far = (w: P2[]) => Math.hypot(w[w.length - 1][0] - o.cx, w[w.length - 1][1] - o.cz);
-  const way = far(ways[0]) >= far(ways[1]) ? ways[0] : ways[1];
-  const path = start.slice();
-  for (const [x, z] of way) {
-    const p = path[path.length - 1], n = Math.ceil(Math.hypot(x - p.x, z - p.z) / 4);
-    for (let k = 1; k <= n; k++) { const xx = p.x + ((x - p.x) * k) / n, zz = p.z + ((z - p.z) * k) / n; path.push({ x: xx, y: heightAt(g, xx, zz) ?? p.y, z: zz }); }
+  // The road graph: its points, a junction where two roads share one.
+  const key = (x: number, z: number) => `${Math.round(x)},${Math.round(z)}`, at = new Map<string, P2>(), nb = new Map<string, [string, number][]>();
+  for (const st of roads) for (let i = 1; i < st.pts.length; i++) {
+    const a = key(...st.pts[i - 1]), b = key(...st.pts[i]), d = Math.hypot(st.pts[i][0] - st.pts[i - 1][0], st.pts[i][1] - st.pts[i - 1][1]);
+    at.set(a, st.pts[i - 1]); at.set(b, st.pts[i]);
+    (nb.get(a) ?? nb.set(a, []).get(a)!).push([b, d]); (nb.get(b) ?? nb.set(b, []).get(b)!).push([a, d]);
   }
+  // The exits: road points at a bridge's or tunnel's end (and the way on along it), and dead ends at the edge.
+  const out = new Map<string, P2>();
+  for (const st of sts) if (ROAD.has(st.kind) && (st.bridge || st.tunnel) && st.pts.length > 1)
+    for (const [e, n] of [[0, 1], [st.pts.length - 1, -1]]) { const kk = key(...st.pts[e]); if (nb.has(kk)) out.set(kk, st.pts[e + n * Math.min(st.pts.length - 1, 3)] ?? st.pts[e]); }
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+  for (const [x, z] of at.values()) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); z0 = Math.min(z0, z); z1 = Math.max(z1, z); }
+  for (const [kk, n] of nb) { const [x, z] = at.get(kk)!; if (n.length === 1 && Math.min(x - x0, x1 - x, z - z0, z1 - z) < 150) out.set(kk, [x, z]); }
+  // The shortest ways out from the road nearest the gate.
+  let s0 = '', bd = Infinity;
+  for (const [kk, [x, z]] of at) { const d = Math.hypot(x - from.x, z - from.z); if (d < bd) { bd = d; s0 = kk; } }
+  const dist = new Map<string, number>([[s0, 0]]), prev = new Map<string, string>(), open: [number, string][] = [[0, s0]];
+  while (open.length) {
+    let m = 0;
+    for (let q = 1; q < open.length; q++) if (open[q][0] < open[m][0]) m = q;
+    const [d, u] = open[m]; open[m] = open[open.length - 1]; open.pop();
+    if (d > (dist.get(u) ?? Infinity) || d > 3000) continue;
+    for (const [v, w] of nb.get(u) ?? []) if (d + w < (dist.get(v) ?? Infinity)) { dist.set(v, d + w); prev.set(v, u); open.push([d + w, v]); }
+  }
+  const exits = [...out.keys()].filter(e => (dist.get(e) ?? Infinity) > 300 && dist.get(e)! < 3000).sort((a, b) => dist.get(a)! - dist.get(b)!);
+  const way: P2[] = [];
+  const end = exits.length ? exits[k % Math.min(exits.length, 4)] : null;
+  if (end) { for (let v: string | undefined = end; v; v = prev.get(v)) way.unshift(at.get(v)!); way.push(out.get(end)!); }
+  const path = start.slice();
+  way.forEach(([x, z], n) => {
+    const p = path[path.length - 1], steps = Math.ceil(Math.hypot(x - p.x, z - p.z) / 4), last = n === way.length - 1;
+    // (On along the bridge or into the tunnel at the head's height.)
+    for (let q = 1; q <= steps; q++) { const xx = p.x + ((x - p.x) * q) / steps, zz = p.z + ((z - p.z) * q) / steps; path.push({ x: xx, y: last ? p.y : heightAt(g, xx, zz) ?? p.y, z: zz }); }
+  });
   return path;
 }
