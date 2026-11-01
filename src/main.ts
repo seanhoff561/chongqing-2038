@@ -5,7 +5,7 @@ import { scenarios, scenarioByName } from './data/scenarios';
 import { DevPanel } from './dev/panel';
 import { applySettings } from './ui/settings';
 import { addItem } from './sim/inventory';
-import { readSave } from './sim/save';
+import { readSave, setAside } from './sim/save';
 import { bootMenu } from './ui/boot-menu';
 import { die } from './sim/body';
 import { CALIB } from './render/hands3d';
@@ -38,6 +38,8 @@ boot.view = performance.now();
 applySettings(game);
 if (dev) new DevPanel(game);
 if (saved) bootMenu(game, saved);
+// (A save that couldn't be read, set aside: said so, M9-05.)
+else if (setAside) game.hud.say(`上次的存档无法读取，已另存`, `Your last save couldn't be read (${setAside}): it's been set aside`);
 game.start();
 // Ctrl+W (crouching forward) would close the tab: while he plays, the browser asks first (U-059: no forced fullscreen).
 addEventListener('beforeunload', e => { if (document.pointerLockElement && !game.state.dead) e.preventDefault(); });

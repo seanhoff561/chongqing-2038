@@ -1352,7 +1352,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
   - His father's voicemail, friends' marks in the tunnels and Anna's first-night lines play once each per run
   - A sim test triggers each once
 
-## M9: 0 of 11 done
+## M9: 1 of 11 done
 
 M9 Balance and polish: difficulty, performance on budget, solvability proofs, a bug sweep, and the final playtest checklist.
 
@@ -1367,7 +1367,7 @@ M9 Balance and polish: difficulty, performance on budget, solvability proofs, a 
   - A slow sim test
 - [ ] **M9-04** Every scenario loads
   - The smoke test loads every scenario and reports no console errors
-- [ ] **M9-05** Save robustness
+- [x] **M9-05** Save robustness
   - Saves carry a version; a corrupt or old save is reported and set aside instead of crashing
   - A unit test covers it
 - [ ] **M9-06** Full run

@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 294 / 369 | Last done: M6-24
+Features done: 295 / 369 | Last done: M9-05
 <!-- /status -->
 
 ## Log
@@ -121,3 +121,4 @@ Features done: 294 / 369 | Last done: M6-24
 - M5-23b Roller shutters (split from M5-23): roller shutters on a quarter of the locked shopfronts, prised up with the crowbar to crawl under
 - M6-22, M6-27: the city's machines checked through a day; the river border
 - M6-24 Shelter sites across the city (U-013): shelter sites across the city, each with what its rooms hold to claim
+- M9-05 Save robustness: a save that can't be read is set aside and said so, not lost
