@@ -11,18 +11,18 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   humanoid: { patrol: 1.8, chase: 3.6, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 300, weapon: 'rifle' },
   // A street heavy (M4-26b, U-038): a 3 m walker on the main streets, heavily armoured, a rotary cannon on its arm.
   heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
-  drone: { patrol: 5, chase: 8, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 25 },
+  drone: { patrol: 3.5, chase: 6, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 25 },
   // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
   spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 4000, weapon: 'cannon' },
   colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
   heli: { patrol: 22, chase: 22, stairs: true, fly: 60, zh: '运兵直升机', en: 'Helicopter', hp: 2500 },
   crawler: { patrol: 2, chase: 4.5, stairs: true, fly: 0, zh: '蛛形无人机', en: 'Crawler drone', hp: 60, weapon: 'prod' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
-  hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
+  hunter: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
   // Strike drones (M4-47, U-050), kept on the docks and sent when a district's had him in sight too long: a kamikaze
   // FPV that dives at him and blows up, and a bomb dropper that drops grenades on him from above.
-  fpv: { patrol: 22, chase: 22, stairs: true, fly: 30, zh: '自杀无人机', en: 'Strike drone', hp: 10 },
-  bomber: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '投弹无人机', en: 'Bomb drone', hp: 35 },
+  fpv: { patrol: 16, chase: 16, stairs: true, fly: 30, zh: '自杀无人机', en: 'Strike drone', hp: 10 },
+  bomber: { patrol: 7, chase: 7, stairs: true, fly: 30, zh: '投弹无人机', en: 'Bomb drone', hp: 35 },
   delivery: { patrol: 2, chase: 2, stairs: false, fly: 0, zh: '配送机器人', en: 'Delivery robot', hp: 80 },
   carrier: { patrol: 1.6, chase: 1.6, stairs: false, fly: 0, zh: '运输机器人', en: 'Carrier', hp: 200 },
   camera: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '监控摄像头', en: 'Camera', hp: 20 },
@@ -37,11 +37,11 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
 /** Where a machine can be hit and what each place takes of a hit (DESIGN section 6, M4-19); the damage to a place that
  *  blinds it (its sensor head), immobilises it (each knee) or shuts it down (its battery). */
 export const ZONES: Record<UnitKind, Record<string, number>> = {
-  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 }, spider: { body: 0.05, head: 0.5 }, colossus: { body: 0.03, head: 0.4 }, heli: { body: 0.3, rotors: 0.6 }, crawler: { body: 1 },
-  quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5, launcher: 0.5 },
-  humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2, rifle: 0.5 },
-  heavy: { body: 0.05, head: 0.6, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
-  turret: { body: 0.05, head: 1, barrels: 0.5 },
+  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 }, spider: { body: 0.05, head: 2 }, colossus: { body: 0.03, head: 2 }, heli: { body: 0.3, rotors: 1.5 }, crawler: { body: 1 },
+  quadruped: { body: 0.2, head: 2.5, legs: 0.6, battery: 1.5, launcher: 0.5 },
+  humanoid: { body: 0.1, head: 3, kneeL: 0.8, kneeR: 0.8, battery: 2, rifle: 0.5 },
+  heavy: { body: 0.05, head: 2, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
+  turret: { body: 0.05, head: 2, barrels: 0.5 },
   delivery: { body: 1 }, carrier: { body: 0.3 },
   camera: { body: 1 }, sweeper: { body: 1 }, lamppost: { body: 1 }, pir: { body: 1 }, tripwire: { body: 1 }, acoustic: { body: 1 },
 };
@@ -50,7 +50,7 @@ export const ZONES: Record<UnitKind, Record<string, number>> = {
  *  brings a drone down out of the air. */
 export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number; weapon?: number; rotors?: number }>> = {
   quadruped: { head: 60, weapon: 20 }, humanoid: { head: 75, knee: 100, battery: 120, weapon: 20 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100, weapon: 25 },
-  drone: { rotors: 20 }, hunter: { rotors: 30 }, bomber: { rotors: 20 },
+  drone: { rotors: 20 }, hunter: { rotors: 30 }, bomber: { rotors: 20 }, heli: { rotors: 400 },
 };
 /** A downed drone's blast (M4-62): how far it hurts and how much at its heart, and how far it's heard. */
 export const CRASH = { reach: 4, damage: 35, noise: 60, /** a patrol drone's fall, heard (m) */ clatter: 15 };
@@ -63,11 +63,11 @@ export const SENSORS = { pir: { fov: 90, range: 10, motion: 0.5 } };
  *  next, damage a hit, how far it reaches (a turret sure within `sure`), its hit chance at best, how far it's heard;
  *  a prod's stun; whether a miss cracks past him (supersonic, M4-54). A rifle burst kills in seconds in the open (M4-54). */
 export const WEAPONS = {
-  turret: { burst: 1, every: 1 / 6, damage: 12, reach: 60, sure: 40, accuracy: 0.7, noise: 150, stun: 0, crack: true },
-  rifle: { burst: 3, every: 1, damage: 30, reach: 80, sure: 0, accuracy: 0.75, noise: 150, stun: 0, crack: true },
-  smg: { burst: 2, every: 0.8, damage: 8, reach: 35, sure: 35, accuracy: 0.4, noise: 100, stun: 0, crack: false },
-  cannon: { burst: 6, every: 2, damage: 30, reach: 100, sure: 0, accuracy: 0.45, noise: 250, stun: 0, crack: true },
-  prod: { burst: 1, every: 1.5, damage: 15, reach: 1.5, sure: 1.5, accuracy: 1, noise: 0, stun: 1, crack: false },
+  turret: { burst: 1, every: 1 / 4.5, damage: 12, reach: 60, sure: 40, accuracy: 0.7, noise: 150, stun: 0, crack: true },
+  rifle: { burst: 3, every: 1.3, damage: 30, reach: 80, sure: 0, accuracy: 0.75, noise: 150, stun: 0, crack: true },
+  smg: { burst: 2, every: 1.05, damage: 8, reach: 35, sure: 35, accuracy: 0.4, noise: 100, stun: 0, crack: false },
+  cannon: { burst: 6, every: 2.6, damage: 30, reach: 100, sure: 0, accuracy: 0.45, noise: 250, stun: 0, crack: true },
+  prod: { burst: 1, every: 1.8, damage: 15, reach: 1.5, sure: 1.5, accuracy: 1, noise: 0, stun: 1, crack: false },
 };
 export type Weapon = keyof typeof WEAPONS;
 

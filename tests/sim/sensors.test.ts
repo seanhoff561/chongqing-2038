@@ -4,6 +4,7 @@
 // hitting within 40 m and fewer on to 60, each hit 12 damage and a bleed; an acoustic sensor hears at twice the
 // radius. The city has them: turrets over the factory's gates, tripwires and acoustic sensors in the Grand Tunnel,
 // motion sensors in the shelters.
+import { WEAPONS } from '../../src/data/units';
 import { describe, it, expect } from 'vitest';
 import { setup, floor, run, secs, sprintJumpAt } from './helpers';
 import { getWorld } from '../../src/world/build';
@@ -53,7 +54,7 @@ describe('fixed sensors (M4-11)', () => {
     expect(crouch.state).toBe('engaged');
     expect(across(0, false).state).toBe('engaged');
   });
-  it('an Engaged turret that sees him fires: 6 rounds a second, hits hurt and bleed, fewer hit past 40 m', () => {
+  it('an Engaged turret that sees him fires: 4.5 rounds a second, hits hurt and bleed, fewer hit past 40 m', () => {
     const turret = (): Camera => ({ kind: 'turret', x: 0, y: 4, z: 0, yaw: 0 });
     // Behind it, it doesn't see him and doesn't fire.
     const back = sensed(turret(), { x: 0, z: -20 });
@@ -79,8 +80,9 @@ describe('fixed sensors (M4-11)', () => {
       return { n, hit: hit / n };
     };
     const near = rate(20), far = rate(54);
-    expect(near.n).toBeGreaterThanOrEqual(55);
-    expect(near.n).toBeLessThanOrEqual(61);
+    // (Its rate, 10 s of it: 4.5 rounds a second since U-089.)
+    expect(near.n).toBeGreaterThanOrEqual(Math.floor(10 / WEAPONS.turret.every) - 5);
+    expect(near.n).toBeLessThanOrEqual(Math.ceil(10 / WEAPONS.turret.every) + 1);
     expect(near.hit).toBeGreaterThan(0.55);
     expect(near.hit).toBeLessThan(0.85);
     expect(far.hit).toBeLessThan(0.35);

@@ -73,6 +73,11 @@ export function zoneOf(kind: UnitKind, q: { x: number; y: number; z: number; yaw
     case 'humanoid': return ly > 1.62 ? 'head' : ly < 0.65 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1 && ly < 1.5 ? 'battery' : from < -0.3 && ly > 1.0 && ly < 1.45 && Math.abs(lx) < 0.2 ? 'rifle' : 'body';
     case 'heavy': return ly > 2.6 ? 'head' : ly < 1.3 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1.7 && ly < 2.5 ? 'battery' : 'body';
     case 'turret': return from < -0.3 ? (lx > 0.12 ? 'barrels' : 'head') : 'body';
+    // The giants' weak spots (U-089): the spider's sensor cluster on top of its small body, the colossus's head; the
+    // helicopter's rotors over it.
+    case 'spider': return ly > 24.5 ? 'head' : 'body';
+    case 'colossus': return ly > 8 ? 'head' : 'body';
+    case 'heli': return ly > 1 ? 'rotors' : 'body';
     default: return 'body';
   }
 }

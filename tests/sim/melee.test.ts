@@ -31,7 +31,7 @@ describe('knife, crowbar and takedowns (M4-20)', () => {
     expect(MELEE.knife.damage).toBeGreaterThanOrEqual(UNITS.drone.hp / ZONES.drone.body);
   });
   it('hits harder with the crowbar but slower, and rings out', () => {
-    // A turret at head height 1.4 m in front, facing him: a blow lands on its sensor, whole.
+    // A turret at head height 1.4 m in front, facing him: a blow lands on its sensor (twice a blow's worth since U-089).
     const { world, state } = setup([floor(0, 100)], { x: 0, y: 0, z: 0, yaw: 0 }, { cameras: [{ kind: 'turret', x: 0, y: 1.5, z: -1.4, yaw: 0 }] });
     state.time = 12 * 3600; state.flags.god = true;
     const u = state.units[0];
@@ -39,15 +39,15 @@ describe('knife, crowbar and takedowns (M4-20)', () => {
     let noise = 0;
     const swing = () => run(state, world, 1, { pressed: LMB, buttons: LMB }, s => { noise = Math.max(noise, ...s.events.map(e => (e.t === 'noise' ? e.r : 0))); });
     swing();
-    expect(u.hp).toBeCloseTo(UNITS.turret.hp - MELEE.crowbar.damage);
+    expect(u.hp).toBeCloseTo(UNITS.turret.hp - MELEE.crowbar.damage * ZONES.turret.head);
     expect(noise).toBe(MELEE.crowbar.noise);
     // Again at once: it hasn't come back yet. After 1.1 s it has.
     run(state, world, secs(0.5));
     swing();
-    expect(u.hp).toBeCloseTo(UNITS.turret.hp - MELEE.crowbar.damage);
+    expect(u.hp).toBeCloseTo(UNITS.turret.hp - MELEE.crowbar.damage * ZONES.turret.head);
     run(state, world, secs(0.7));
     swing();
-    expect(u.hp).toBeCloseTo(UNITS.turret.hp - 2 * MELEE.crowbar.damage);
+    expect(u.hp).toBeCloseTo(UNITS.turret.hp - 2 * MELEE.crowbar.damage * ZONES.turret.head);
     expect(MELEE.crowbar.damage).toBeGreaterThan(MELEE.knife.damage);
   });
   it('takes a humanoid down from behind in a second, quietly; let go early and it breaks free', () => {

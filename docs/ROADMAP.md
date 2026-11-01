@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 93 of 104 done
+## M4: 94 of 104 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -1005,7 +1005,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Patrol data for Shibati, Jiaochangkou and the tunnels: cameras, lampposts, 2 drone docks, quadrupeds, humanoids, delivery robots
   - A sim test runs a full game day with no stuck units
   - U-038: the open is dangerous (streets, roofs, open air): drones and robots everywhere, a high chance of being seen; streets impassable by normal means; under ground, inside or in a nook on a building's side is where he's safe
-- [ ] **M4-101** Combat pass (U-089)
+- [x] **M4-101** Combat pass (U-089)
   - Every kind of machine can be shot and killed with the pistol (and the other weapons that fire), and every wreck can be searched for loot
   - Headshots (the head or the sensor cluster) do clearly more than body hits
   - The machines fire a little slower than now, and the drones fly a little slower

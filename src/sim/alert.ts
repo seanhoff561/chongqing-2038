@@ -130,7 +130,7 @@ export function stepAlert(s: SimState, w: World) {
     // (A reserve waits on its dock or in its garage until it's sent: M4-14, M4-47.)
     if (isOff(s, u) || (u.reserve && !u.trip)) continue;
     // (The helicopter flies where it's sent: M4-92, sim/heli.ts.)
-    if (u.kind === 'heli') { walk(s, w, u); continue; }
+    if (u.kind === 'heli') { if (u.trip) walk(s, w, u); continue; }
     const a = u.aware ?? 0;
     const was = u.state;
     // Engaged, it tells the network after its delay (M4-13, sim/district.ts).

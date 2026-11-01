@@ -48,14 +48,16 @@ describe('enemy fire and wounds (M4-18)', () => {
     for (const r of runs) { expect(r.n).toBeGreaterThan(0); expect(r.at4).toBe(true); }
     expect(runs.filter(r => r.made).length).toBeGreaterThanOrEqual(6);
   });
-  it("hits two rounds in five with a hunter drone's SMG, in bursts of two every 0.8 s", () => {
+  it("hits two rounds in five with a hunter drone's SMG, in bursts of two every 1.05 s", () => {
     const { world, state } = scene({ x: 0, z: 10 }, [standing('hunter', 0, 0, 8)]);
     const u = state.units[0];
     u.aware = 1.5;
     let n = 0, hit = 0;
     run(state, world, secs(20), {}, s => { n += shots(s); hit += s.events.filter(e => e.t === 'hurt' && e.cause === 'smg').length; s.body.hp = 100; });
-    expect(n).toBeGreaterThan(45);
-    expect(n).toBeLessThan(52);
+    // (Its bursts in 20 s: every 1.05 s since U-089.)
+    const per = (20 / WEAPONS.smg.every) * WEAPONS.smg.burst;
+    expect(n).toBeGreaterThan(per - 5);
+    expect(n).toBeLessThan(per + 3);
     expect(hit / n).toBeGreaterThan(WEAPONS.smg.accuracy - 0.15);
     expect(hit / n).toBeLessThan(WEAPONS.smg.accuracy + 0.15);
   });

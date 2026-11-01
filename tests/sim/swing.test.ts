@@ -5,7 +5,7 @@ import { setup, floor, run, LMB } from './helpers';
 import { addItem } from '../../src/sim/inventory';
 import { solid } from '../../src/world/geom';
 import { MAT } from '../../src/world/mats';
-import { MELEE } from '../../src/data/units';
+import { MELEE, ZONES } from '../../src/data/units';
 import type { SimState, SimEvent } from '../../src/sim/types';
 import type { Solid } from '../../src/world/geom';
 
@@ -50,6 +50,6 @@ describe('melee swings (M4-60)', () => {
   it('lands on a machine in reach', () => {
     const r = blow('crowbar', [], [{ kind: 'turret', x: 0, y: 1.5, z: -1.4, yaw: 0 }]);
     expect(r.swing).toMatchObject({ on: 'machine' });
-    expect(r.hit).toMatchObject({ t: 'hit', dmg: MELEE.crowbar.damage });
+    expect(r.hit).toMatchObject({ t: 'hit', dmg: MELEE.crowbar.damage * ZONES.turret.head });
   });
 });

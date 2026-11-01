@@ -42,9 +42,10 @@ describe('machine damage and weak points (M4-19)', () => {
   });
   it('blinds a quadruped with 60 to its sensor head: it sees nothing, but still hears', () => {
     const t = one('quadruped');
-    hurtUnit(t.state, t.world, t.u, 'head', 59);
+    // (A round to the head takes ZONES' share of its damage: U-089, 2.5 times it.)
+    hurtUnit(t.state, t.world, t.u, 'head', 59 / ZONES.quadruped.head);
     expect(t.u.blind).toBeFalsy();
-    hurtUnit(t.state, t.world, t.u, 'head', 2);
+    hurtUnit(t.state, t.world, t.u, 'head', 2 / ZONES.quadruped.head);
     expect(t.u.blind).toBe(true);
     t.u.aware = 0; t.u.state = 'unaware'; t.u.trip = undefined;
     run(t.state, t.world, secs(3));
