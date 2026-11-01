@@ -114,6 +114,8 @@ export class UnitView {
       // A tripwire's beam stretched to its far end.
       const to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;
       if (to) this.m.multiply(this.s.makeScale(1, 1, Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z)));
+      // A camera shot out (U-093) hangs off its mount, its light dead.
+      else if (u.dead && u.cam !== undefined) this.m.multiply(this.s.makeRotationX(0.95)).multiply(this.s.makeRotationZ(0.35));
       RIGS[u.kind].pose(a, this.parts);
       // Come apart (M4-62): a humanoid's sensor head shot off, its rifle shot out of its hands.
       if (u.kind === 'humanoid') { if (u.blind) this.parts[2].makeScale(0, 0, 0); if (u.disarmed) this.parts[11].makeScale(0, 0, 0); }

@@ -59,6 +59,18 @@ describe('combat (M4-101)', () => {
       expect(t.state.containers[wreck!.id].items.length, `${kind} wreck's parts`).toBeGreaterThan(0);
     }
   });
+  it('shoots a camera out: one round, and it watches no more (U-093)', () => {
+    const { world, state } = setup([floor(0, 100)], { x: 0, y: 0, z: 0, yaw: 0 }, { cameras: [{ kind: 'lamppost', x: 0, y: 4.4, z: -12, yaw: Math.PI }] });
+    state.time = 12 * 3600; state.flags.god = true;
+    addItem(state, state.inv.pack, 'pistol', 1, { charge: 15 });
+    state.inv.hotbar[0] = state.inv.pack.items.find(i => i.id === 'pistol')!.uid; state.inv.held = 1;
+    const u = state.units[0], pitch = Math.atan2(4.4 - 1.62, 12);
+    run(state, world, secs(0.3), { pitch, buttons: RMB });
+    run(state, world, 1, { pitch, pressed: LMB, buttons: LMB | RMB });
+    expect(u.dead).toBe(true);
+    run(state, world, secs(3));
+    expect(u.aware ?? 0).toBe(0);
+  });
   it('hits harder in the head; the machines fire slower and the drones fly slower than they did', () => {
     const hit = (at: number) => { const t = range('humanoid', 12); const hp = UNITS.humanoid.hp; kill(t, at, 1); return hp - (t.u.hp ?? hp); };
     expect(hit(1.75)).toBeGreaterThanOrEqual(10 * hit(0.9));

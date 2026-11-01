@@ -248,7 +248,8 @@ export class Game {
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
-      else if (e.t === 'pa') { const l = lineById.get(e.id)!, p = this.state.player.pos; this.hud.say(l.zh, l.en, SPEAKERS.pa[0]); announce(this.audio, l.zh, Math.hypot(e.x - p.x, e.y - p.y - 1.6, e.z - p.z), this.sound.env.where === 'indoors'); }
+      // (The street speakers: heard, not read: U-092.)
+      else if (e.t === 'pa') { const p = this.state.player.pos; announce(this.audio, e.id, e, Math.hypot(e.x - p.x, e.y - p.y - 1.6, e.z - p.z), this.sound.env.where === 'indoors'); }
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
