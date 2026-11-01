@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 83 of 101 done
+## M4: 84 of 101 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -953,7 +953,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - The squad comes in at the roof, down the stairwell, and sweeps the building floor by floor, every room; the helicopter circles with a searchlight while they do
   - Robot dogs and small spider drones go into the sewers, tunnels and underground ways near it at the same time
   - Sim test: the drop called when he goes into a building after being seen by three machines; the squad lands on its roof, goes down its stairs and visits every floor; dogs and spiders go underground near it; a screenshot of the helicopter over the roof
-- [ ] **M4-97** Faint, rare music (U-070)
+- [x] **M4-97** Faint, rare music (U-070)
   - Most of the time no music at all, only the quiet ambience; now and then, minutes apart, a short piece fades in: very faint, slow, sparse (soft piano-like notes over a cold synth pad, long reverb, no drums), futuristic and haunting, different by place, and fades away again
   - Much quieter than before: always well under the ambience and effects
   - Unit test: the music is silent most of the time and its pieces slow and sparse; the listening pass is in PLAYTEST

@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-97 Faint, rare music (U-070).
-Features done: 240 / 362 | Last done: M4-92
+**Status:** building M4. Next: M4-88 Rain realism pass (U-065).
+Features done: 241 / 362 | Last done: M4-97
 <!-- /status -->
 
 ## Log
@@ -99,3 +99,4 @@ Features done: 240 / 362 | Last done: M4-92
 - M4-90 Lootable things plain to see (U-066): lootable things plain to see: a floating mark over what's worth searching (U-066)
 - M4-91 Most street doors shut (U-066): most street doors shut: locked, chained, jammed or collapsed, each shown so (U-066)
 - M4-92 Helicopter troop drop (U-067): helicopter troop drop: seen and gone into a building, a squad dropped on its roof sweeps it floor by floor; dogs and crawlers into the sewers (U-067)
+- M4-97 Faint, rare music (U-070): faint, rare music: mostly silence, now and then a slow sparse piece fading in and away (U-070)
