@@ -17,9 +17,11 @@ export default async function ({ open, fail }) {
     // The walkers back on their beats, round him: their footfalls.
     U.forEach(u => { u.stop = undefined; });
     for (let i = 0; i < 120; i++) g.runFrames(1);
-    return { state: a.ctx?.state, one, three, n: fly.length };
+    return { state: a.ctx?.state, one, three, n: fly.length, hum: g.ambience.level.hum };
   })()`);
   if (r.state !== 'running') fail('audio', `the audio is ${r.state} after a click`);
+  // The city's ambience playing under it all (M4-51).
+  if (!(r.hum > 0)) fail('audio', 'no ambience');
   if (r.n < 3) fail('audio', `only ${r.n} flyers in the lineup`);
   if (!(r.one > 0)) fail('audio', `a drone overhead is silent (${r.one})`);
   if (!(r.three > r.one * 1.8)) fail('audio', `three drones (${r.three.toFixed(3)}) no louder than one (${r.one.toFixed(3)})`);

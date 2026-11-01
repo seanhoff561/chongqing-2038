@@ -18,6 +18,7 @@ import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
 import { radio, gunshot, siren } from './audio/moves';
 import { MachineVoices } from './audio/machines';
+import { Ambience, whereIs, type Where } from './audio/ambience';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -74,6 +75,9 @@ export class Game {
   readonly audio = new Audio();
   /** the machines heard where they are (M4-33) */
   readonly voices = new MachineVoices(this.audio);
+  readonly ambience = new Ambience(this.audio);
+  private env: { where: Where; covered: boolean } = { where: 'street', covered: false };
+  private envIn = 0;
   readonly hands: Hands3D;
   /** The inside of where he's hidden (M3-47). */
   readonly hideView = new HideView();
@@ -310,6 +314,9 @@ export class Game {
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
+    // The empty city's sound for where he is and the hour (M4-51), where he is looked at twice a second.
+    if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(this.world, cam, wet || this.under > 0.5); }
+    this.ambience.update(dt, { ...this.env, hour: (this.state.time / 3600) % 24, rain: this.state.weather.rain });
     this.view.setLamp(this.state.player.lamp);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
     this.machineSounds(dt);

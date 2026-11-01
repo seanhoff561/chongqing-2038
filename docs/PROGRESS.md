@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-51 The empty city's ambience (U-051).
-Features done: 230 / 349 | Last done: M4-50
+**Status:** building M4. Next: M4-52 Frightening machines (U-051).
+Features done: 231 / 349 | Last done: M4-51
 <!-- /status -->
 
 ## Log
@@ -89,3 +89,4 @@ Features done: 230 / 349 | Last done: M4-50
 - M4-48 Giant walkers (U-050): giant walkers: spider walkers and colossi on the streets, rigged and walking, and they see him (U-050)
 - M4-33 Audio engine and machine sounds: audio engine: the machines heard where they are, rotors with Doppler, footfalls, gunfire, more drones louder
 - M4-50 The sounds of things (U-051): the sounds of things: drawers slide, lockers clang, cabinets creak, crate lids scrape, bags rustle (U-051)
+- M4-51 The empty city's ambience (U-051): the empty city's ambience: hum, wind between towers, far machinery, a drone somewhere, real rain, by place and hour (U-051)

@@ -203,3 +203,7 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 ## M4-48 and M4-33: giants and the machines' sounds (U-050)
 - ?scenario=units: walk round the spider walker and the colossus. Creepy and huge enough, their legs believable? In the city (?scenario=yuzhong), find a colossus on a long main street: does it loom out of the haze?
 - With headphones: a drone flying past overhead, its rotor pitch dropping as it goes (Doppler) and the sound moving round your head? Three drones louder than one? The footfalls: a humanoid's pads, a quadruped's whining clank, the spider's tapping hiss, a colossus's boom you feel. Too loud, too quiet, or wrong anywhere?
+
+## M4-51: the empty city's ambience (U-051, U-052): a long tuning pass
+- With headphones, spend 15 minutes just walking: a street by day, the same street at night (dev clock), a rooftop, a narrow alley, a room, the underground. Does each sound different (roof windy and open, alley close, rooms and underground muffled and humming)? Is it calm enough to fall into a trance, never over the top? Any layer too loud, too quiet, or annoying when repeated (the far clanks, the passing drone, the hum's beat)?
+- In rain (dev weather): out in the street, on a roof (more ticks on metal), under an awning or overpass (dripping), indoors (dull, muffled). Does it sound like real rain?

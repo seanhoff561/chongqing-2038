@@ -92,6 +92,13 @@ export class Audio {
     if (this.ctx) this.muffle.frequency.value = on ? 500 : 22000;
   }
 
+  /** The shared noise, looping for good (a wind's, the rain's hiss). */
+  loop(): AudioBufferSourceNode {
+    const src = this.ctx!.createBufferSource();
+    src.buffer = this.noiseBuf; src.loop = true; src.start();
+    return src;
+  }
+
   /** A noise burst through a filter with an attack/decay envelope. */
   noise(at: number, dur: number, gain: number, type: BiquadFilterType, freq: number, q = 1, freqEnd?: number, out?: AudioNode) {
     const ctx = this.ctx!;
