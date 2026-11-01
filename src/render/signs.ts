@@ -5,7 +5,8 @@
 import * as THREE from 'three';
 import { canvasTexture, CJK } from './textures';
 import { mulberry } from './rand';
-import { night, alarm } from './materials';
+import { night } from './materials';
+import { BOARDS } from '../data/announce';
 import { Kit } from './propkit';
 import type { Prop } from '../world/world';
 
@@ -15,19 +16,14 @@ export const NAMES = ['火锅', '小面', '茶馆', '麻将', '理发', '药房'
 /** Slogans and notices for the red banners, the machines' and the city's. */
 export const SLOGANS = ['宵禁时间二十一点', '服从调度保持距离', '禁止聚集', '注意安全', '严禁烟火', '配合检查', '清除隐患', '人人有责', '系统维护中', '禁止通行',
   '营业中', '欢迎光临', '二十四小时', '限时特价', '旺铺招租', '拆'];
-/** The LED ticker's scrolling message. */
-const TICKER = '欢迎光临 ★ 营业时间 07:00—21:00 ★ 宵禁期间禁止外出 ★ 服从调度 ★ 电池回收 ★ ';
-/** What it runs instead while the district's after him (M4-27). */
-const ALERT = '警报 ★ 发现非法人员 ★ 原地不动 ★ 举报可获奖励 ★ ALERT ★ STAY WHERE YOU ARE ★ ';
-
 const S = 2048, V = 128, VH = 512, H = 512, HH = 128, Q = 128;
 /** Where each kind sits in the atlas: vertical names in two rows of 16 (0..1024), horizontal names then slogans in
- *  rows of 4 (1024..1792), QR codes in a row of 16 (1792..1920), the LED ticker's strip the atlas's width (1920..1984)
- *  and its alert strip under it (1984..2048). */
+ *  rows of 4 (1024..1792), QR codes in a row of 16 (1792..1920), and the LED tickers' four strips the atlas's width
+ *  (1920..2048: by day, the curfew, the alert, the search, M4-28). */
 const vSlot = (i: number) => ({ x: (i % 16) * V, y: Math.floor(i / 16) * VH, w: V, h: VH });
 const hSlot = (i: number) => ({ x: (i % 4) * H, y: 1024 + Math.floor(i / 4) * HH, w: H, h: HH });
 const qSlot = (i: number) => ({ x: (i % 16) * Q, y: 1792, w: Q, h: Q });
-const TY = 1920, TH = 64;
+const TY = 1920, TH = 32;
 
 function draw(g: CanvasRenderingContext2D) {
   g.clearRect(0, 0, S, S);
@@ -53,8 +49,8 @@ function draw(g: CanvasRenderingContext2D) {
   }
   // The ticker's message, squeezed a little so a whole number of them fills the strip and it scrolls round without
   // a seam (the atlas repeats across).
-  g.textAlign = 'left'; g.font = `bold 44px ${CJK}`;
-  for (const [text, y] of [[TICKER, TY], [ALERT, TY + TH]] as const) {
+  g.textAlign = 'left'; g.font = `bold 23px ${CJK}`;
+  for (const [text, y] of BOARDS.map(([, text], i) => [text, TY + i * TH] as const)) {
     const L = g.measureText(text).width, n = Math.max(1, Math.round(S / L));
     g.setTransform(S / (n * L), 0, 0, 1, 0, 0);
     for (let k = 0; k < n; k++) g.fillText(text, k * L, y + TH / 2 + 2);
@@ -71,6 +67,8 @@ const tex = () => {
 };
 
 let signMat: THREE.MeshPhongMaterial | null = null;
+/** Which strip the LED tickers run (src/data/announce BOARDS). */
+export const board = { value: 0 };
 const scroll = { value: 0 };
 /** Every sign's characters, one material: print (cloth, light-box faces, stickers) lit like anything else, and
  *  where a vertex's glow is 1 (neon, lit plaques) glowing in its tint too, by day a little, after dark full; at 2
@@ -80,14 +78,14 @@ export function signs() {
   const m = new THREE.MeshPhongMaterial({ map: tex(), emissive: 0xffffff, emissiveMap: tex(), emissiveIntensity: 0.4, vertexColors: true, alphaTest: 0.4, side: THREE.DoubleSide });
   m.onBeforeCompile = sh => {
     sh.uniforms.scroll = scroll;
-    sh.uniforms.alarm = alarm;
-    // (On alarm a ticker reads its alert strip, a row down the atlas, in red: a deep one, that stays red when the
-    // signs are bright at night rather than washing out to pink.)
-    sh.vertexShader = 'attribute float glow;\nuniform float scroll;\nuniform float alarm;\nvarying float vGlow;\n' + sh.vertexShader.replace('#include <color_vertex>', `#include <color_vertex>
+    sh.uniforms.board = board;
+    // (A ticker reads the strip for his district's alert and the hour (M4-28), the alert's and the search's in red: a
+    // deep one, that stays red when the signs are bright at night rather than washing out to pink.)
+    sh.vertexShader = 'attribute float glow;\nuniform float scroll;\nuniform float board;\nvarying float vGlow;\n' + sh.vertexShader.replace('#include <color_vertex>', `#include <color_vertex>
 vGlow = min(glow, 1.0);
-float led = step(1.5, glow), red = led * step(0.5, alarm);
-vMapUv += vec2(led * scroll, -red * ${TH / S});
-vEmissiveMapUv += vec2(led * scroll, -red * ${TH / S});
+float led = step(1.5, glow), strip = led * board, red = led * step(1.5, board);
+vMapUv += vec2(led * scroll, -strip * ${TH / S});
+vEmissiveMapUv += vec2(led * scroll, -strip * ${TH / S});
 vColor.rgb = mix(vColor.rgb, vec3(0.6, 0.02, 0.01), red);`);
     sh.fragmentShader = 'varying float vGlow;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive * vColor.rgb * vGlow;');
   };

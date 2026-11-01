@@ -2,6 +2,8 @@
 
 Newest first. D-### are my design calls where BRIEF.md is silent; U-### are director's notes.
 
+- D-114 (M4-28, U-053) The street speakers are the smart lampposts': every 2.5 real minutes, and within 4 s of his district's alert changing or the curfew starting (21:00 to 07:00), the line for the alert and hour (calm, curfew, alert, search, heightened; each kind's lines in turn) from the lamppost nearest him within 90 m, not when he's under the ground. The voice is the browser's own Mandarin speech (a woman's zh-CN voice where there is one), quieter the farther and dull indoors, after a synthesized two-tone chime that echoes off the blocks; no recordings (U-074), and with no Chinese voice the chime and the subtitle alone. The LED tickers run four strips: by day, the curfew, the alert and the search (red for the last two).
+
 - D-113 (U-075, U-079 fallout) A machine that walks right up to him (within 1 m, level with him) notices him whatever way it faces and however dark, unless he's hidden inside something: a dog sent to where he was seen walked onto his spot, stood in him and lost him. A new run's quiet start counts a beat near the start if any leg of it passes within 160 m, not just its stops (the sky drones' legs run long). Blocked stairwells are now solid, so the slower walkers (U-075) take longer to search a crate 100 m off; the search test waits longer for them.
 
 - U-080 Director: "also please make it so in the dev mode I can access any item in the game from my inventory like creative mode, this would help with testing a lot" Applied now: the ?dev=1 panel lists every item in the game, a 'give' button putting the chosen one in his backpack (a pistol or magazine loaded) and 'one of each' for all of them; what doesn't fit lands at his feet.

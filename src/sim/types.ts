@@ -55,6 +55,8 @@ export type SimEvent =
   | { t: 'msg'; text: string }
   /** a line of dialogue (src/data/dialogue) */
   | { t: 'say'; id: string }
+  /** the street speakers' announcement (M4-28), from the lamppost nearest him */
+  | { t: 'pa'; id: string; x: number; y: number; z: number }
   /** a humanoid calling the others (M4-10) */
   | { t: 'call'; x: number; y: number; z: number }
   /** a machine's gun fired (M4-11) */
@@ -110,6 +112,8 @@ export interface SimState {
   rockets?: { x: number; y: number; z: number; dx: number; dy: number; dz: number; t: number; by: 'heavy' | 'him' }[];
   /** grenades falling from a bomb drone (M4-47): where dropped, when, and the ground under */
   bombs?: { x: number; y: number; z: number; gy: number; t: number }[];
+  /** The street speakers (M4-28): when they next speak, what they last spoke of, how many lines they've said. */
+  pa?: { at: number; kind: import('../data/announce').PaKind; n: number };
   hive: { /** when each column last changed a walker over, and how many it has (M4-58) */ changes?: Record<number, number>; changeovers?: number; /** the helicopter drop under way (M4-92): the building, when called, what it's doing, when the sweep began; and when it was last called */ heli?: { plot: number; t: number; phase: 'fly' | 'sweep' | 'leave'; from?: number }; heliAt?: number; seen: { x: number; y: number; z: number; t: number }[]; districts: Record<string, import('./district').District>; lkp?: { x: number; y: number; z: number; t: number; hx: number; hz: number; ax: number; az: number };
     /** machines gone silent while aware (M4-17): where and when */
     silent: { x: number; y: number; z: number; t: number }[] };

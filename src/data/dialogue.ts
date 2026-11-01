@@ -1,8 +1,10 @@
 // Dialogue (BRIEF: src/data/dialogue; the full set comes with M8): each line its id, speaker, Chinese and English.
 // Spoken by public/audio/vo/<id>.mp3 when there is one; until then shown as subtitles.
+import { ANNOUNCE } from './announce';
+
 export interface Line { id: string; speaker: string; zh: string; en: string }
 
-export const SPEAKERS: Record<string, [string, string]> = { liguorong: ['李国荣', 'Li Guorong'], none: ['', ''] };
+export const SPEAKERS: Record<string, [string, string]> = { liguorong: ['李国荣', 'Li Guorong'], pa: ['广播', 'Speakers'], none: ['', ''] };
 
 /** The one voicemail on his father's phone, left the night of the attack (M3-19). */
 export const VOICEMAIL: Line[] = [
@@ -13,4 +15,4 @@ export const VOICEMAIL: Line[] = [
   { id: 'vm-05', speaker: 'none', zh: '（信号中断）', en: '(the line breaks up)' },
 ];
 
-export const lineById = new Map(VOICEMAIL.map(l => [l.id, l]));
+export const lineById = new Map([...VOICEMAIL, ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

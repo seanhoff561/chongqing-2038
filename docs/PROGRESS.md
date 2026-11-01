@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-28 Street speakers and announcements.
-Features done: 248 / 364 | Last done: M4-99
+**Status:** building M4. Next: M4-29 Machines in the first district.
+Features done: 249 / 364 | Last done: M4-28
 <!-- /status -->
 
 ## Log
@@ -109,3 +109,4 @@ Features done: 248 / 364 | Last done: M4-99
 - M4-95 Spider robots in the sewers (U-069): spider robots patrol the sewers, clinging to the roofs, and go for him
 - M4-87 Drones everywhere (U-065): drones everywhere, scanning roofs and gaps; shot down quietly, searched for scrap
 - M4-99 Realistic textures (U-073): realistic textures: sleeve cloth, worn metal and grips, cardboard and labels, machine plates
+- M4-28 Street speakers and announcements: street speakers and LED boards: the occupier's announcements by alert and hour

@@ -228,4 +228,7 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-97 and M4-88: faint music, real rain (U-070)
 - Play 20 minutes with headphones. Is it mostly silent with just the city's quiet sound, a faint slow piece only now and then (a few minutes apart), never loud? Does it feel like the reference (Breath of the Wild, but colder and more futuristic)?
-- In rain: does it sound like real rain now (it's a recording), quieter under cover with the gutters dripping, dull indoors? Not too loud?
+
+## M4-28: the street speakers (U-053)
+- Stand in a street near a lamppost for a few minutes, by day and after 21:00. Does a soft two-tone chime ring down the street and come back off the blocks, then a calm woman's voice in Mandarin (your browser's own Chinese voice: Chrome and Edge have one; if none, only the chime and subtitle)? Is it eerie, not annoying, at its volume?
+- Get seen, then hide: does the alert line come within seconds, then the search line ("Come out. We won't hurt you.")? Do the LED tickers switch strips (curfew by night, red alert and search)?

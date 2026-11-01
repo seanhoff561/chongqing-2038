@@ -16,6 +16,8 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
+import { announce } from './audio/pa';
+import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
 import { RaidLight } from './render/raidlight';
@@ -44,6 +46,7 @@ import { Furniture } from './render/furniture';
 import { Rain } from './render/rain';
 import { StatusIndicator } from './ui/status';
 import { lodRadius, alarm } from './render/materials';
+import { board } from './render/signs';
 import { districtOf } from './sim/district';
 import { PauseMenu } from './ui/pause';
 import { findGrab } from './sim/grip';
@@ -167,6 +170,8 @@ export class Game {
   private alarmBoards() {
     const p = this.state.player.pos, st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
     alarm.value = st === 'engaged' || st === 'searching' || st === 'heightened' ? 1 : 0;
+    // (And the LED boards' strip: by day, the curfew, the alert or the search: M4-28.)
+    board.value = boardOf(paKind(st ?? 'unaware', this.state.time / 3600));
   }
 
   /** The draw distance: the scenario's, or the graphics preset's. With far stand-ins the whole city shows through
@@ -241,6 +246,7 @@ export class Game {
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
+      else if (e.t === 'pa') { const l = lineById.get(e.id)!, p = this.state.player.pos; this.hud.say(l.zh, l.en, SPEAKERS.pa[0]); announce(this.audio, l.zh, Math.hypot(e.x - p.x, e.y - p.y - 1.6, e.z - p.z), this.sound.env.where === 'indoors'); }
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }

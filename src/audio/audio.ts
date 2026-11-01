@@ -94,7 +94,11 @@ export class Audio {
   }
 
   /** Every sound stopped (dead: U-077), or back. */
-  mute(on: boolean) { if (this.ctx) this.master.gain.setValueAtTime(on ? 0 : this.volumes.master, this.ctx.currentTime); }
+  mute(on: boolean) {
+    if (this.ctx) this.master.gain.setValueAtTime(on ? 0 : this.volumes.master, this.ctx.currentTime);
+    // (The street speakers' words too: M4-28.)
+    if (on && typeof speechSynthesis !== 'undefined') speechSynthesis.cancel();
+  }
 
   /** Under water every sound comes dull and low; out of it, clear again at once. */
   setUnderwater(on: boolean) {
