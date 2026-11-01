@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 59 of 88 done
+## M4: 60 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -861,7 +861,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-82** No floor drawn over holes (U-060)
   - Wherever the ground or a floor has a hole he can fall or climb through (shafts, manholes, grates' openings, stairwells, broken floors, ways down), no floor is drawn over it, and nothing drawn hides an opening that's really there
   - A check across the city's holes: at each, a ray down through what's drawn finds the same opening the sim has (nothing drawn within the hole); the cases found fixed; screenshots of a few
-- [ ] **M4-78** Pistol attachments: suppressor, extended magazine, sights (U-058)
+- [x] **M4-78** Pistol attachments: suppressor, extended magazine, sights (U-058)
   - A suppressor, an extended magazine and sights (a reflex sight, a 4x scope) are found as loot (the police station, the machines' guards) and fitted to the pistol in the backpack (dropped onto it) or taken off again; each shows on the gun
   - Suppressed, a shot is heard 40 m round instead of 150 and sounds a muffled crack; an extended magazine holds 25 rounds; aiming with the reflex sight is steadier, with the scope the view zooms 4x
   - Sim tests: the suppressed shot's noise radius, 25 rounds in the extended magazine, the scope's zoom; a screenshot of the fitted pistol

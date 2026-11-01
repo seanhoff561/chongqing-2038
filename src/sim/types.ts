@@ -36,7 +36,7 @@ export type SimEvent =
   | { t: 'land'; h: number; outcome: FallOutcome }
   | { t: 'hurt'; dmg: number; cause: string }
   /** he fired a gun (M4-21) */
-  | { t: 'fire'; id: string }
+  | { t: 'fire'; id: string; quiet?: boolean }
   /** he swung the knife or crowbar (M4-60), and on what it landed */
   | { t: 'swing'; kind: string; on: 'machine' | 'metal' | 'hard' | 'soft' | 'air' }
   /** he hit a machine (M4-19) */

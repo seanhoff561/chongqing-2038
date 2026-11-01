@@ -104,9 +104,11 @@ export function siren(a: Audio, gain: number) {
 }
 
 /** A turret's round (M4-11): a hard crack and its thump, carried far. */
-export function gunshot(a: Audio, gain: number) {
+export function gunshot(a: Audio, gain: number, quiet = false) {
   if (!a.ready || gain < 0.005) return;
   const t = a.ctx!.currentTime + 0.005;
+  // Suppressed (U-058): a muffled crack and the slide's clack, not the bang.
+  if (quiet) { a.noise(t, 0.05, gain * 0.35, 'bandpass', 1800, 1.2); a.tone(t, 0.06, gain * 0.25, 180, 90, 'sine'); a.noise(t + 0.03, 0.03, gain * 0.2, 'highpass', 3500); return; }
   a.noise(t, 0.06, gain, 'highpass', 1200, 0.7);
   a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine');
 }

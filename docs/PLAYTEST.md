@@ -193,3 +193,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-83: the frame rate (U-061)
 - Walk and run through Jiefangbei and Jiaochangkou by day and at night with the dev panel open (?dev=1): what frame rate does it hold, and what are the frame times (sim, render)? Any hitches as you move into new streets? Teleport somewhere: a moment's load, then smooth? Hold 144 fps or tell me where it drops and by how much.
+
+## M4-78: pistol attachments (U-058)
+- With ?dev=1, give yourself the pistol, a suppressor, the reflex sight, the 4x scope and an extended magazine. Drop each onto the pistol in the backpack: fitted, shown on the gun? Right-click the pistol: they come off. Fire suppressed: a muffled crack, and do nearby machines still hear it (they shouldn't past ~40 m)? Aim with the reflex sight and with the scope (the round 4x view): do they feel right? Reload with the extended magazine: 25 rounds.

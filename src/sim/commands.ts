@@ -10,6 +10,8 @@ export type Cmd =
   | { c: 'use'; uid: number }
   | { c: 'drop'; uid: number }
   | { c: 'quick'; from: string; uid: number }
+  | { c: 'fit'; uid: number; onto: number }
+  | { c: 'strip'; uid: number }
   | { c: 'takeall' }
   | { c: 'act'; name: string; arg?: string | number };
 

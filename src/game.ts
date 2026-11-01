@@ -23,7 +23,7 @@ import { BodyFx } from './render/body-fx';
 import { InventoryUI } from './ui/inventory-ui';
 import { heldStack } from './sim/use';
 import { item } from './data/items';
-import { PISTOL } from './data/units';
+import { MAGS } from './data/units';
 import { Audio } from './audio/audio';
 import { startRun, furnish } from './sim/run';
 import { teleport } from './sim/player';
@@ -32,7 +32,7 @@ import { syncWorld } from './sim/doors';
 import { playMove } from './audio/moves';
 import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
-import { GunFeel } from './render/gunfeel';
+import { GunFeel, zoomOf } from './render/gunfeel';
 import { HeldMotion } from './render/viewmodel';
 import { SleepUI } from './ui/sleep-ui';
 import { DeathScreen } from './ui/death';
@@ -87,6 +87,7 @@ export class Game {
   private shown: World | null = null;
   scenario!: Scenario;
   private heldId = '';
+  private heldKey = '';
   private heldModel: THREE.Object3D | null = null;
   readonly gun = new GunFeel();
   readonly motion = new HeldMotion();
@@ -230,7 +231,7 @@ export class Game {
       // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
       else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
       else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }
-      else if (e.t === 'fire') { gunshot(this.audio, 0.9); this.gun.fired(); }
+      else if (e.t === 'fire') { gunshot(this.audio, 0.9, e.quiet); this.gun.fired(); }
       else if (e.t === 'open') this.inv.toggle(true);
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
@@ -248,11 +249,15 @@ export class Game {
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
     const gun = this.heldId === 'pistol' ? this.heldModel : null;
     this.gun.aim(dt, !!gun && (this.input.mouse & B.AIM) !== 0 && !this.input.uiOpen);
-    this.view.fp.zoom = this.gun.ads;
+    this.view.fp.zoom = this.gun.ads * zoomOf(heldStack(this.state)?.mods);
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
+    // Aimed through the 4x scope (U-058): the view through it, the gun out of sight behind it.
+    const scoped = !!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1;
+    this.hud.setScope(scoped);
+    if (scoped) this.hands.group.visible = false;
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
@@ -338,13 +343,15 @@ export class Game {
   private updateHeld() {
     const st = heldStack(this.state), id = st?.id ?? '';
     // The pistol's rounds, and the rounds in his magazines (M4-21).
-    const rounds = id === 'pistol' ? ` ${st!.charge ?? 0} / ${this.state.inv.pack.items.filter(i => i.id === 'mag9').reduce((a, m) => a + m.n * (m.charge ?? PISTOL.mag), 0)}${this.state.task?.id === 'reload' ? ' reloading' : ''}` : '';
+    const rounds = id === 'pistol' ? ` ${st!.charge ?? 0} / ${this.state.inv.pack.items.filter(i => MAGS[i.id]).reduce((a, m) => a + m.n * (m.charge ?? MAGS[m.id]), 0)}${this.state.task?.id === 'reload' ? ' reloading' : ''}` : '';
     this.hud.setHeld(id ? `${item(id).zh} ${item(id).en}${rounds}` : '');
-    if (id === this.heldId || !this.hands.ready) return;
-    this.heldId = id;
+    // (Rebuilt when what's held or what's fitted to it changes: U-058.)
+    const key = `${id}:${st?.mods?.join() ?? ''}`;
+    if (key === this.heldKey || !this.hands.ready) return;
+    this.heldId = id; this.heldKey = key;
     const slot = this.hands.heldSlot(1);
     this.heldModel = null;
-    if (slot) { slot.clear(); if (id) { const m = itemModel(id); m.position.copy(heldAt(id)); slot.add(m); this.heldModel = m; } }
+    if (slot) { slot.clear(); if (id) { const m = itemModel(id, st?.mods); m.position.copy(heldAt(id)); slot.add(m); this.heldModel = m; } }
   }
 
   start() {

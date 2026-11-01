@@ -80,6 +80,12 @@ export const RAID = { from: 1, to: 4, warn: 10, sweep: 18, emp: 30, clear: 6, no
  *  heard and reaches, how long a reload takes; its spread in degrees (from the hip, aimed down the sights, more for each
  *  m/s he's moving, less crouched or lying), the aimed sway of his breathing (degrees), each shot's kick up (radians)
  *  and how fast that settles (a second). */
+/** The pistol's attachments (U-058): where each goes (one to a place), and what it does: the suppressor's shot heard
+ *  `noise` m round, a sight's aimed spread times `aim`, the scope's view at `zoom` times. The magazines' rounds. */
+export const MODS: Record<string, { slot: 'muzzle' | 'optic'; noise?: number; aim?: number; zoom?: number }> = {
+  suppressor: { slot: 'muzzle', noise: 40 }, reddot: { slot: 'optic', aim: 0.5 }, scope4x: { slot: 'optic', aim: 0.35, zoom: 4 },
+};
+export const MAGS: Record<string, number> = { mag9: 15, mag9x: 25 };
 export const PISTOL = { damage: 25, mag: 15, every: 0.15, noise: 150, reach: 150, reload: 1.3, spread: { hip: 2.5, aim: 0.6, move: 0.6, low: 0.7 }, sway: 0.4, kick: 0.035, settle: 6 };
 
 /** How long after a machine has him (Engaged) it tells the network (DESIGN section 5), real seconds: the wired

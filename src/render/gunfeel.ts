@@ -7,6 +7,10 @@ import * as THREE from 'three';
 const SIGHT = new THREE.Vector3(-0.09, 0, 0.026), EYE = new THREE.Vector3(0, -0.004, -0.3), BARREL = new THREE.Vector3(0, 0, -1);
 /** Where the rear sight sits at the hip: out to the lower right, as a shooter's held (U-052). */
 const HIP = new THREE.Vector3(0.11, -0.09, -0.31), UP = new THREE.Vector3(0, 1, 0);
+/** With a sight on the slide (U-058) the eye looks through it, higher than the iron sights. */
+const OPTIC = new THREE.Vector3(-0.118, 0, 0.0);
+/** How far a fitted sight zooms the aimed view (the view's zoom: 1 is the iron sights' 1.6x). */
+export const zoomOf = (mods?: string[]) => (mods?.includes('scope4x') ? (1 - 1 / 4) / 0.38 : 1);
 
 export class GunFeel {
   /** 0 hip to 1 aimed, eased */
@@ -32,7 +36,7 @@ export class GunFeel {
     // the sight out at the lower right at the hip, at the eye aimed.
     held.updateWorldMatrix(true, false);
     const cam = group.parent!, inv = new THREE.Matrix4().copy(cam.matrixWorld).invert();
-    const m = new THREE.Matrix4().multiplyMatrices(inv, held.matrixWorld), sight = SIGHT.clone().applyMatrix4(m);
+    const m = new THREE.Matrix4().multiplyMatrices(inv, held.matrixWorld), sight = (held.userData.optic ? OPTIC : SIGHT).clone().applyMatrix4(m);
     const barrel = BARREL.clone().transformDirection(m);
     this.q.setFromUnitVectors(barrel, BARREL).premultiply(this.turn.setFromAxisAngle(UP, 0.18 * (1 - this.ads)));
     group.quaternion.copy(this.q);

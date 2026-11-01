@@ -83,6 +83,11 @@ export const items: ItemDef[] = [
   I('knife', '小刀', 'Knife', 1, 2, 0.2, 'weapon', 'Melee and takedowns.', { uses: ['melee', 'takedown', 'cut-rope'] }),
   I('pistol', 'QSZ-92 手枪', 'QSZ-92 pistol', 2, 2, 0.8, 'weapon', 'Police sidearm. Loud.', { uses: ['shoot', 'shoot-sensor'] }),
   I('mag9', '9mm 弹匣', '9mm magazine', 1, 1, 0.3, 'ammo', '15 rounds.', { stack: 3 }),
+  // The pistol's attachments (U-058): dropped onto it in the backpack to fit, right-click it to take them off.
+  I('mag9x', '9mm 加长弹匣', 'Extended magazine', 1, 2, 0.45, 'ammo', '25 rounds. R loads it like any magazine.'),
+  I('suppressor', '消音器', 'Suppressor', 2, 1, 0.25, 'part', 'Screws on the muzzle: a shot heard 40 m off, not 150.', { uses: ['pistol-mod'] }),
+  I('reddot', '红点瞄准镜', 'Reflex sight', 1, 1, 0.1, 'part', 'Mounts on the slide: aimed, steadier.', { uses: ['pistol-mod'] }),
+  I('scope4x', '4倍瞄准镜', '4x scope', 2, 1, 0.35, 'part', 'Mounts on the slide: aimed, the view at 4x.', { uses: ['pistol-mod'] }),
   I('shotgun', '霰弹枪', 'Pump shotgun', 1, 4, 3.2, 'weapon', 'Close range. Very loud.', { uses: ['shoot', 'breach-lock'] }),
   I('shells', '霰弹', 'Shotgun shells', 1, 1, 0.25, 'ammo', 'Five shells.', { stack: 4 }),
   I('nails', '钉排', 'Nail strip', 1, 1, 0.2, 'ammo', '30 nails.', { stack: 4 }),

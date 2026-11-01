@@ -8,6 +8,9 @@ export interface Stack {
   made?: number;
   /** charges or battery percent for devices */
   charge?: number;
+  /** a pistol's attachments, and the magazine in it (U-058) */
+  mods?: string[];
+  mag?: string;
 }
 
 export interface Grid { w: number; h: number; items: Stack[] }

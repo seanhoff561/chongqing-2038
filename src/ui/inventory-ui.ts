@@ -6,6 +6,7 @@ import type { Game } from '../game';
 import type { Grid, Stack } from '../sim/inventory';
 import { dims, weight } from '../sim/inventory';
 import { item } from '../data/items';
+import { MODS } from '../data/units';
 import { icon } from './icons';
 
 const CELL = 44;
@@ -90,6 +91,7 @@ export class InventoryUI {
       const d = item(st.id);
       const div = document.createElement('div');
       div.className = `inv-item cat-${d.cat}`;
+      div.dataset.uid = String(st.uid);
       div.style.cssText = `left:${st.x * CELL + 1}px;top:${st.y * CELL + 1}px;width:${w * CELL - 3}px;height:${h * CELL - 3}px;background-image:url(${icon(st.id, st.rot)})`;
       const slot = this.game.state.inv.hotbar.indexOf(st.uid);
       // The picture, its name small in the corner (the English and the rest on hover).
@@ -107,6 +109,8 @@ export class InventoryUI {
         this.styleGhost();
         this.move(e);
       };
+      // Right-click on the pistol takes its attachments off (U-058).
+      div.oncontextmenu = e => { e.preventDefault(); if (ref === 'pack' && st.mods?.length) { this.game.input.cmds.push({ c: 'strip', uid: st.uid }); this.sig = ''; } };
       div.onmouseenter = () => { this.hover = { uid: st.uid, from: ref }; this.showTip(st, div); };
       div.onmouseleave = () => { this.hover = null; this.tip.style.display = 'none'; };
       area.appendChild(div);
@@ -126,7 +130,8 @@ export class InventoryUI {
 
   private showTip(st: Stack, anchor: HTMLElement) {
     const d = item(st.id), r = anchor.getBoundingClientRect();
-    this.tip.innerHTML = `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${this.tipExtra(st)}`;
+    const mods = st.mods?.length ? `<br>${st.mods.map(m => item(m).en).join(', ')} fitted (right-click: take off)` : st.id === 'pistol' ? '<br>Drop an attachment on it to fit it' : '';
+    this.tip.innerHTML = `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${mods}${this.tipExtra(st)}`;
     this.tip.style.cssText = `display:block;left:${r.right + 6}px;top:${r.top}px`;
   }
 
@@ -158,6 +163,10 @@ export class InventoryUI {
     this.drag = null;
     d.ghost.remove();
     const area = (document.elementsFromPoint(e.clientX, e.clientY).find(el => (el as HTMLElement).dataset?.ref) as HTMLElement | undefined);
+    // Dropped onto the pistol, an attachment's fitted (U-058).
+    const onto = document.elementsFromPoint(e.clientX, e.clientY).map(el => (el as HTMLElement).dataset?.uid).find(u => u && Number(u) !== d.uid);
+    const gun = onto ? this.game.state.inv.pack.items.find(x => x.uid === Number(onto)) : undefined, dragged = this.findStack(d.uid);
+    if (gun?.id === 'pistol' && dragged && MODS[dragged.id] && d.from === 'pack') { this.game.input.cmds.push({ c: 'fit', uid: d.uid, onto: gun.uid }); this.sig = ''; return; }
     if (area) {
       const r = area.getBoundingClientRect();
       const x = Math.floor((e.clientX - r.left) / CELL) - d.ox, y = Math.floor((e.clientY - r.top) / CELL) - d.oy;

@@ -18,7 +18,14 @@ export class Hud {
     this.subs = this.root.querySelector('.subs')!;
     this.wrap = this.root.querySelector('.ring')!;
     this.ring = this.root.querySelector('.ring .fill')!;
+    this.scope = document.createElement('div');
+    this.scope.className = 'scope';
+    this.root.appendChild(this.scope);
   }
+
+  /** Looking through the 4x scope (U-058): its round view and crosshair over the screen. */
+  private scope: HTMLDivElement;
+  setScope(on: boolean) { const v = on ? 'block' : 'none'; if (this.scope.style.display !== v) this.scope.style.display = v; }
 
   private shown = -1;
   /** The ring: how far along what he's doing (0..1), or hidden (below 0). */

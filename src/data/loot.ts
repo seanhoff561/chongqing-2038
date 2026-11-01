@@ -22,11 +22,11 @@ export const loot: Record<string, LootTable> = {
   workshop: { rolls: [1, 2], empty: 0.3, items: [
     { id: 'toolbox', w: 3 }, { id: 'foldcrate', w: 2 },
     { id: 'tape', w: 4 }, { id: 'rods', w: 3 }, { id: 'crowbar', w: 1 }, { id: 'clips', w: 2 }, { id: 'cable', w: 2 },
-    { id: 'scootercells', w: 2 }, { id: 'chalk', w: 1 }, { id: 'chalkblock', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] },
+    { id: 'scootercells', w: 2 }, { id: 'chalk', w: 1 }, { id: 'chalkblock', w: 1 }, { id: 'suppressor', w: 1 }, { id: 'reddot', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] },
   ] },
   car: { rolls: [0, 2], empty: 0.35, items: [
     { id: 'water', w: 4 }, { id: 'crackers', w: 2 }, { id: 'firstaid', w: 1 }, { id: 'tape', w: 2 }, { id: 'cable', w: 2 },
-    { id: 'extinguisher', w: 1 }, { id: 'energy', w: 2 }, { id: 'cloth', w: 2 },
+    { id: 'extinguisher', w: 1 }, { id: 'energy', w: 2 }, { id: 'cloth', w: 2 }, { id: 'mag9x', w: 1 }, { id: 'scope4x', w: 1 },
   ] },
   medicine: { rolls: [1, 2], empty: 0.2, items: [
     { id: 'bandage', w: 5, n: [1, 3] }, { id: 'painkillers', w: 4, n: [1, 3] }, { id: 'alcohol', w: 3 }, { id: 'tablets', w: 2, n: [2, 6] },

@@ -94,10 +94,29 @@ export function supportPoint(id: string): THREE.Vector3 | null {
   return new THREE.Vector3(-Math.min(0.25, Math.max(0.09, Math.max(d.w, d.h) * 0.04)), 0, 0);
 }
 
-/** The item model for a held item: a dedicated shape, or a box sized from its backpack footprint. */
-export function itemModel(id: string): THREE.Object3D {
+/** The pistol's attachments on it (U-058), in its model space (-x up, -z forward): a suppressor on the muzzle, a reflex
+ *  sight's housing and window on the slide, or a 4x scope on its mount; a sight marks the model (userData.optic) so the
+ *  aim looks through it. */
+function fit(gun: THREE.Object3D, mods: string[]) {
+  const scopeMat = M(0x1c1e20, 0.35, 0.5), lens = new THREE.MeshBasicMaterial({ color: 0x3a6a8a, transparent: true, opacity: 0.45 });
+  if (mods.includes('suppressor')) gun.add(cyl(0.016, 0.15, scopeMat, 'z', -0.07, 0, -0.24));
+  if (mods.includes('reddot')) {
+    gun.add(box(0.012, 0.03, 0.05, dark, -0.088, 0, 0.0), box(0.042, 0.004, 0.012, dark, -0.11, 0.013, -0.018), box(0.042, 0.004, 0.012, dark, -0.11, -0.013, -0.018), box(0.004, 0.026, 0.012, dark, -0.131, 0, -0.018));
+    gun.add(Object.assign(new THREE.Mesh(new THREE.PlaneGeometry(0.026, 0.038).rotateY(Math.PI / 2).rotateX(Math.PI / 2), lens), { position: new THREE.Vector3(-0.11, 0, -0.018) }));
+    gun.userData.optic = true;
+  }
+  if (mods.includes('scope4x')) {
+    gun.add(box(0.016, 0.012, 0.012, dark, -0.09, 0, -0.04), box(0.016, 0.012, 0.012, dark, -0.09, 0, 0.03), cyl(0.014, 0.17, scopeMat, 'z', -0.11, 0, -0.01), cyl(0.018, 0.03, scopeMat, 'z', -0.11, 0, -0.09), cyl(0.017, 0.03, scopeMat, 'z', -0.11, 0, 0.07));
+    gun.userData.optic = true;
+  }
+  return gun;
+}
+
+/** The item model for a held item: a dedicated shape, or a box sized from its backpack footprint; a pistol with its
+ *  attachments. */
+export function itemModel(id: string, mods?: string[]): THREE.Object3D {
   const make = models[id];
-  if (make) return make();
+  if (make) return id === 'pistol' && mods?.length ? fit(make(), mods) : make();
   const d = item(id);
   if (d.cat === 'key') return box(0.085, 0.054, 0.004, M(0xc8a840, 0.5, 0.3), 0.02, 0.02);
   const long = Math.max(d.w, d.h), short = Math.min(d.w, d.h);

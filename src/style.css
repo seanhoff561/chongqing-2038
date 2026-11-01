@@ -2,6 +2,8 @@ html, body { margin: 0; height: 100%; background: #07080a; overflow: hidden; fon
 canvas { display: block; }
 #hud { position: fixed; inset: 0; pointer-events: none; }
 #hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(230,225,210,0.7); border-radius: 50%; }
+#hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh),
+  linear-gradient(#000, #000) 50% 50% / 1px 66vh no-repeat, linear-gradient(#000, #000) 50% 50% / 66vh 1px no-repeat; }
 #hud .ring { display: none; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; transform: rotate(-90deg); }
 #hud .ring circle { fill: none; stroke-width: 2.5; }
 #hud .ring .track { stroke: rgba(230,225,210,0.18); }
