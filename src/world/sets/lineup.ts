@@ -16,7 +16,7 @@ export function buildLineup(): World {
     if (name) card(name, x, 14.5);
   });
   // The giants (U-050), out to the sides where there's room for them.
-  ([['spider', -26, '蜘蛛机甲 Spider walker'], ['colossus', 28, '巨型步行机 Colossus']] as [UnitKind, number, string][]).forEach(([unit, x, name]) => {
+  ([['spider', -40, '蜘蛛机甲 Spider walker'], ['colossus', 28, '巨型步行机 Colossus']] as [UnitKind, number, string][]).forEach(([unit, x, name]) => {
     patrols.push({ kind: 'street', unit, pts: [{ x, y: 0, z: -12 }, { x, y: 0, z: 12 }], dwell: [3, 3], hours: [0, 24] });
     card(name, x, 16);
   });

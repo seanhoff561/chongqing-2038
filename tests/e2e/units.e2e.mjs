@@ -19,7 +19,7 @@ export default async function ({ open, fail, screenshot }) {
   if (!aim) fail('units', 'the engaged humanoid is not aiming');
   await screenshot(page, 'units-pose');
   // The giants (M4-48): the spider walker and the colossus, each walking at him.
-  for (const [kind, d, up] of [['spider', 9, 0.1], ['colossus', 22, 0.3]]) {
+  for (const [kind, d, up] of [['spider', 34, 0.35], ['colossus', 22, 0.3]]) {
     await page.evaluate(`(() => {
       const g = window.__cq.game, u = g.state.units.find(u => u.kind === '${kind}'); u.stop = undefined;
       for (const o of g.state.units) if (o.kind !== '${kind}' && !o.stop) o.stop = { x: 55, y: 0, z: 55, yaw: 0, t: 0 };

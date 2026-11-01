@@ -18,7 +18,7 @@ const KINDS = Object.keys(RIGS) as UnitKind[];
 const LIGHT = { unaware: new THREE.Color(1, 1, 1), suspicious: new THREE.Color(1, 0.55, 0.08), engaged: new THREE.Color(1, 0.1, 0.06), out: new THREE.Color(0, 0, 0) };
 /** Their lights brighter after dark (U-050). */
 const BOOST = { value: 1 };
-const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 1.4, colossus: 2.6, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
+const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 6.3, colossus: 2.6, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
 
 /** How many of each kind can be drawn at once (M4-83): the nearest within NEAR get an instance set from their kind's
  *  pool, so the batch (and the matrices it uploads each frame) is sized to what's near him, not to the whole city. */

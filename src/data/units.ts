@@ -13,7 +13,7 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
   drone: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 40 },
   // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
-  spider: { patrol: 2.2, chase: 5, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 1400, weapon: 'smg' },
+  spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 4000, weapon: 'cannon' },
   colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
   hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
@@ -168,7 +168,7 @@ export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number;
   hunter: { fov: 100, pitch: 45, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 15, thermal: 30, hear: 0.8 },
   fpv: { fov: 90, pitch: 30, day: 40, night: 30, eye: 0, ir: 0, lamp: 0, thermal: 40, hear: 0.5 },
   bomber: { fov: 100, pitch: 60, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 0, thermal: 30, hear: 0.8 },
-  spider: { fov: 200, pitch: 20, day: 50, night: 35, eye: 3.2, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
+  spider: { fov: 200, pitch: 25, day: 70, night: 45, eye: 14, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
   colossus: { fov: 120, pitch: 30, day: 70, night: 40, eye: 9, ir: 0.3, lamp: 0, thermal: 45, hear: 1 },
   delivery: { fov: 120, pitch: 0, day: 18, night: 10, eye: 0.5, ir: 0, lamp: 0, thermal: 0, hear: 1 },
   carrier: { fov: 120, pitch: 0, day: 25, night: 15, eye: 1.2, ir: 0.3, lamp: 0, thermal: 0, hear: 1 },

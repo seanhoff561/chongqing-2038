@@ -2,7 +2,8 @@
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { createState } from '../../src/sim/sim';
-import { unitPose } from '../../src/sim/units';
+import { unitPose, type Unit } from '../../src/sim/units';
+import { visibility } from '../../src/sim/perception';
 import { teleport } from '../../src/sim/player';
 import { heightAt } from '../../src/world/heightfield';
 import { run, secs } from './helpers';
@@ -26,12 +27,17 @@ describe('giant walkers (M4-48)', () => {
         expect(Math.hypot(a.x - c.x, a.z - c.z)).toBeGreaterThan(1);
       }
     }
-    // He stands in the street ahead of one by day: it sees him.
+    // He stands in the street ahead of one by day, out in the open (not under a bridge or an overpass, U-068: the spider's
+    // eyes are 14 m up): it sees him.
     for (const kind of ['spider', 'colossus']) {
-      const u = giants.find(x => x.kind === kind)!, s2 = createState(1, w), v = s2.units.find(x => x.id === u.id)!;
+      const s2 = createState(1, w);
       s2.time = 12 * 3600; s2.flags.god = true; s2.flags.clear = true;
-      const q = unitPose(w, v, s2.time), ahead = 18;
-      teleport(s2.player, q.x + Math.sin(q.yaw) * ahead, (heightAt(w.ground!, q.x + Math.sin(q.yaw) * ahead, q.z + Math.cos(q.yaw) * ahead) ?? q.y) + 0.05, q.z + Math.cos(q.yaw) * ahead);
+      const ahead = 18, place = (v: Unit) => {
+        const q = unitPose(w, v, s2.time), x = q.x + Math.sin(q.yaw) * ahead, z = q.z + Math.cos(q.yaw) * ahead;
+        teleport(s2.player, x, (heightAt(w.ground!, x, z) ?? q.y) + 0.05, z);
+        return visibility(s2, w, v.kind, q) > 0.2;
+      };
+      const v = s2.units.find(x => !x.extra && x.kind === kind && place(x))!;
       run(s2, w, secs(3));
       expect(v.aware ?? 0, kind).toBeGreaterThanOrEqual(0.3);
     }
