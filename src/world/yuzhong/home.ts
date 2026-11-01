@@ -167,8 +167,11 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
   out.sites.push({ id: 'airraid', kind: 'cellar', x: out.at.mattress.x, y: floor, z: out.at.mattress.z, bed: 'airraid-mattress', table: null, containers: ['airraid-stash'], exits: 1, windows: 0, streetSides: 0 });
   // The alley's dressing: shop neon on both walls over the grate (a noodle bar's, a mahjong room's), its glow, a bin.
   const ux = -q.az, uz = q.ax, half = q.gap / 2;
-  ([[-1, '老巷小面', 1.1, 4], [1, '麻将 · 24小时', 0, 0.5]] as const).forEach(([k, text, w, h]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y: gy + 3.2, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: Math.atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
-  out.props.push({ kind: 'neonGlow', x: px + q.ax * 2, y: gy + 3, z: pz + q.az * 2, yaw: 0 });
+  // (Up the walls, U-054: the vertical one's top character on the second floor, under the lower roof; the mahjong
+  // room's over its door.)
+  const under = Math.min(plans[q.n].wall, plans[q.n + 1].wall) - 0.6;
+  ([[-1, '老巷小面', 1.1, 4, Math.min(gy + 7.6, under)], [1, '麻将 · 24小时', 0, 0.5, Math.min(gy + 4.4, under)]] as const).forEach(([k, text, w, h, y]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: Math.atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
+  out.props.push({ kind: 'neonGlow', x: px + q.ax * 2, y: gy + 4.5, z: pz + q.az * 2, yaw: 0 });
   out.props.push({ kind: 'trash', x: px + ux * (half - 0.5) - q.ax * 2.5, y: gy, z: pz + uz * (half - 0.5) - q.az * 2.5, yaw: yaw });
   // The way up: a drainpipe on a wall, 4 m along from the grate, from the alley to its roof.
   const tall = climbTo(plans, q, gy)!;

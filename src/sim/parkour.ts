@@ -145,8 +145,10 @@ export function kickOff(state: SimState, nx: number, nz: number) {
 export const tooFast = (p: Player) => Math.hypot(p.vel.x, p.vel.y, p.vel.z) > M.tear.speed;
 
 /**
- * The second Space in the air (U-004, U-020): facing the wall kicks up it, looking along it at speed starts a
- * wall-run, facing away kicks off the way he looks. Two wall moves per airtime; none when falling too fast.
+ * The second Space in the air (U-004, U-020): running along the wall at speed starts a wall-run the way he's going
+ * (unless he looks hard into the wall or away from it: U-055, it went by the camera alone and became kicks); facing the
+ * wall and looking up at it kicks up it (looking straight at it, only a stall against it: U-055); facing away kicks
+ * off the way he looks. Two wall moves per airtime; none when falling too fast.
  */
 export function airWall(state: SimState, world: World): boolean {
   const p = state.player, K = M.wallKick;
@@ -157,6 +159,18 @@ export function airWall(state: SimState, world: World): boolean {
   const into = -(hx * w.nx + hz * w.nz);
   const speed = Math.hypot(p.vel.x, p.vel.z);
   p.kicks++;
+  // Along the wall: how much of his run is across it rather than along it.
+  const across = speed > 1e-3 ? Math.abs(p.vel.x * w.nx + p.vel.z * w.nz) / speed : 1;
+  if (speed >= M.wallRun.minSpeed && across < K.runAcross && into < K.runInto && into > -K.runAway) {
+    let tx = -w.nz, tz = w.nx;
+    if (tx * p.vel.x + tz * p.vel.z < 0) { tx = -tx; tz = -tz; }
+    p.mode = 'wallrun';
+    p.wall = { nx: w.nx, nz: w.nz, t: 0, y: p.pos.y, id: -1 };
+    p.vel.x = tx * M.wallRun.speed; p.vel.z = tz * M.wallRun.speed; p.vel.y = M.wallRun.upSpeed;
+    sfx(state, 'wallrun');
+    return true;
+  }
+  if (into > 0.5 && p.pitch < K.upMin) return startCling(state, w.nx, w.nz);
   if (into > 0.5) {
     p.mode = 'wallclimb';
     p.wall = { nx: w.nx, nz: w.nz, t: 0, y: p.pos.y, id: -1 };

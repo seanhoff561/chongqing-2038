@@ -63,8 +63,8 @@ describe('limb injuries', () => {
     run(b.state, b.world, secs(1), { buttons: LMB });
     expect(e0 - b.state.player.endurance).toBeCloseTo(12, 0);
   });
-  it('a 9 m fall breaks a bone through the fall table', () => {
-    const { world, state } = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, 9, 10)], { x: 0, y: 9, z: 0, yaw: 0 });
+  it('an 11 m fall breaks a bone through the fall table (U-054: past 10 m)', () => {
+    const { world, state } = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, 11, 10)], { x: 0, y: 11, z: 0, yaw: 0 });
     run(state, world, secs(3), { my: 1 });
     expect(state.body.leg === 'fracture' || state.body.arm === 'fracture').toBe(true);
   });

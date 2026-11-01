@@ -50,3 +50,21 @@ describe('wall-run', () => {
   });
 });
 
+
+describe('wall-runs that start when meant (M4-75, U-055)', () => {
+  /** Sprinting along a long wall on his left 0.9 m off, he turns `deg` toward it, jumps, and Space again 8 ticks later,
+   *  looking where he runs. */
+  function runAt(deg: number) {
+    const yaw = (deg * Math.PI) / 180;
+    const r = setup([solid(-30, -1, -60, 30, 0, 60), solid(-1.2, 0, -60, -1.0, 6, 60)], { x: -0.1, y: 0, z: 40, yaw: 0 });
+    run(r.state, r.world, 3);
+    run(r.state, r.world, secs(1.5), { my: 1, yaw: 0, buttons: B.SPRINT });
+    run(r.state, r.world, 1, { my: 1, yaw, buttons: B.SPRINT | B.JUMP, pressed: B.JUMP });
+    run(r.state, r.world, 8, { my: 1, yaw, buttons: B.SPRINT });
+    run(r.state, r.world, 1, { my: 1, yaw, buttons: B.SPRINT | B.JUMP, pressed: B.JUMP });
+    return r.state.player.mode;
+  }
+  it('runs along the wall from any approach up to 35 degrees to it, looking where he runs', () => {
+    for (const deg of [5, 15, 25, 35]) expect(runAt(deg), `${deg} degrees`).toBe('wallrun');
+  });
+});

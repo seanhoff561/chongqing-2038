@@ -21,15 +21,10 @@ describe('movement sound cues (M1-31)', () => {
     const sl = setup([floor()]);
     run(sl.state, sl.world, secs(1.5), { my: 1, buttons: B.SPRINT });
     run(sl.state, sl.world, secs(1), { my: 1, buttons: B.CROUCH, pressed: B.CROUCH }, collect);
-    // Hard landing and roll.
-    for (const roll of [false, true]) {
-      const d = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, 5, 10)], { x: 0, y: 5, z: 0, yaw: 0 });
-      let pressed = false;
-      for (let i = 0; i < secs(4); i++) {
-        const near = roll && !pressed && !d.state.player.onGround && d.state.player.pos.y < 0.6 && d.state.player.vel.y < 0;
-        if (near) pressed = true;
-        run(d.state, d.world, 1, { my: 1, pressed: near ? B.CROUCH : 0 }, collect);
-      }
+    // A hard landing (2.5 m), and a big fall's (5 m: the roll's sound, kept with the roll gone, U-055).
+    for (const h of [2.5, 5]) {
+      const d = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, h, 10)], { x: 0, y: h, z: 0, yaw: 0 });
+      run(d.state, d.world, secs(4), { my: 1 }, collect);
     }
     // Vault and hop.
     for (const [h, b] of [[1.0, B.SPRINT], [1.0, 0]] as const) {

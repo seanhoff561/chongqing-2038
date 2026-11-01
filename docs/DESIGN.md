@@ -19,7 +19,7 @@ The director's brief (BRIEF.md) is the vision. This is the build design. Numbers
 | Jump (tap for a short hop, hold for full height); vault or hop onto waist-high things | Space |
 | Wall move in the air (kick off, wall-run, up-kick), push off from a hang, pump a swing | Space again |
 | Left hand / right hand: hold to grip what's under the reticle (empty hands only, U-007) | Left / right mouse |
-| Crouch (hold) / slide (while sprinting) / roll (just before landing) | Ctrl (or C) |
+| Crouch (hold) / slide (while sprinting) | Ctrl (or C) |
 | Crawl (toggle) | Z |
 | Interact / pick up / enter box (hold E for timed actions); hold E with nothing in view to sleep rough (U-013) | E |
 | Let go of everything | Q |
@@ -60,13 +60,13 @@ Parkour with the legs, climbing with the hands (U-002 to U-005). Player collisio
 | Bars and laches | no wall under the feet: he swings as a pendulum (head under the bar); Space pumps 1.6 m/s toward the camera, max 6.5 m/s; letting go keeps the swing velocity |
 | Grip endurance | 100; drains 6/s one hand, 2/s two, half on ladders, double with a splinted arm; at 0 the hands slip until it refills (30/s with free hands) |
 | Pipes and ladders | grabbable anywhere along their length: hand over hand |
-| Safe drops | 4 m; 7 m with a roll (Ctrl within 0.3 s before landing) |
+| Safe drops | 7 m (U-054: no roll; every fall lands as a roll did) |
 | Hide in box | E at a box, crate, dumpster or cabinet with an interior of 0.8 m or more: 0.6 s in, 0.5 s out |
 | Swimming | surface 1.4 m/s (sprint 2.2), dive with Ctrl, breath 40 s, then 8 HP/s; climbs out onto banks up to 0.6 m; wet for 120 game minutes |
 | Encumbrance | over 15 kg: sprint and jump -15%; over 25 kg: no sprint, no wall moves, no pulling up (lips up to 1.6 m only) |
 | Sound | every movement action has one fixed sound cue (U-004): steps by gait, jump, land, roll, vault, hop, slide, wall kick, wall-run step, cling, grab, two-hand catch, slip, release, pull-over, dyno, pump |
 
-**Fall outcomes** (h = fall height): no roll: h <= 4 nothing; 4-7 m: (h-4) x 8 damage, 40% sprain; 7-12 m: (h-4) x 10 damage and a broken bone; over 12 m: death. With a roll: h <= 7 nothing; 7-10 m: (h-7) x 8 damage, 40% sprain; above 10 m as without a roll. Chances use the run's seeded RNG.
+**Fall outcomes** (h = fall height; U-054 took the roll out and made every fall land as a rolled one did): h <= 7 nothing; 7-10 m: (h-7) x 8 damage, 40% sprain; 10-12 m: (h-4) x 10 damage and a broken bone; over 12 m: death. A soft landing (bags, bins, cardboard, an awning) halves h.
 
 **Building for the movement set.** The city gives every move a place (U-005): facades with sills 1.4-2.0 m apart that need push-offs, pipes for hand-over-hand climbs, bars, scaffolds and sign frames for swings and laches, cling walls beside gaps, run-up walls with lips at 3-3.8 m, glass and smooth render where nothing holds.
 
@@ -84,7 +84,7 @@ Measured from the sim (metres); generators and hand layouts read `src/data/envel
 | Run-up wall kick and grab (wall top) | 3.8 | 3.85 |
 | Wall-run (gap) | 12.7 | 13.3 |
 | Slide on the flat / down a 0.2 grade (from about 0.36 a slide never slows) | 5.97 / 13.36 | 6.63 / 14.84 |
-| Safe drop / with a roll | 3.6 / 6.3 | 4 / 7 |
+| Safe drop | 6.3 | 7 |
 | Safe drop onto bags, bins, cardboard / awnings, tarps | 7.2 / 7.2 | 8 / 8 |
 | Lache (bar spacing) | 6.05 | 6.2 |
 | Jump and two wall kicks in a 2 m chimney (lip) | 5.85 | 5.95 |

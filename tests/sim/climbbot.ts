@@ -16,6 +16,8 @@ export function climbPole(s: SimState, w: World, c: Climbable, stop = 0.3): bool
     const held = p.hands.map((h, i) => (h.grip ? bits[i] : 0)).reduce((a, b) => a | b, 0);
     aim(s, c.x + c.nx * 0.08, Math.min(c.y1 - 0.05, p.pos.y + 2.2), c.z + c.nz * 0.08);
     run(s, w, 2, { buttons: held | bits[hand] });
+    // (Hold of the top: done, before pulling on over it.)
+    if (p.hands.some(h => h.grip && h.grip.y >= c.y1 - stop)) return true;
     run(s, w, secs(1), { buttons: bits[hand], my: 1 });
     hand = 1 - hand;
   }

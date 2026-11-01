@@ -78,7 +78,9 @@ describe('steep ground is a wall (U-020, U-038)', () => {
     const steep = hill(Math.tan((80 * Math.PI) / 180)), p = steep.state.player;
     Object.assign(p.pos, { x: 0, y: 1.5, z: 0.3 });
     p.mode = 'air'; p.onGround = false;
-    run(steep.state, steep.world, 1, { pressed: B.JUMP, yaw: 0 });
+    // (Looking up it a little: U-055.)
+    p.pitch = 0.3;
+    run(steep.state, steep.world, 1, { pressed: B.JUMP, yaw: 0, pitch: 0.3 });
     expect(p.mode).toBe('wallclimb');
   });
 });

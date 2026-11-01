@@ -181,3 +181,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-43: brighter at night (U-050)
 - Walk Jiefangbei's streets at 23:00 (dev panel time): can you see where you're going on the lit streets without the headlamp, while alleys and corners stay dark enough to hide in? Do the lamp pools, signs and windows look right, not too much?
+
+## M4-72 to M4-75: falls, kicks, chimneys, wall-runs (U-054, U-055)
+- Drop off a 6 m roof: unhurt, with the heavy landing sound? Jump at a wall and kick looking straight at it (a stall), then looking up (up it): does the difference feel right? Stand in a narrow gap and press Space: braced, low? Run at a building at an angle and jump, Space again: a wall-run, not a kick?

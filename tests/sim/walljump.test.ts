@@ -25,11 +25,31 @@ describe('wall jump by camera direction (M1-30)', () => {
     expect(s.player.vel.x).toBeCloseTo(5.5 * Math.SQRT1_2, 1);
     expect(s.player.vel.z).toBeCloseTo(-5.5 * Math.SQRT1_2, 1);
   });
-  it('facing the wall kicks up it, never into it (U-020)', () => {
-    const s = kick(Math.PI / 2 + 0.3);
+  it('facing the wall and looking up a little kicks up it, never into it (U-020)', () => {
+    const s = kick(Math.PI / 2 + 0.3, 0.25);
     expect(s.player.mode).toBe('wallclimb');
     expect(s.player.vel.y).toBeGreaterThan(4);
     expect(s.player.vel.x).toBeGreaterThan(-1);
+  });
+  it('facing the wall looking straight at it only stalls him against it (U-055); looking up 20 degrees gains height', () => {
+    const top = (pitch: number) => {
+      const r = setup([floor(), solid(-1.2, 0, -40, -1.0, 10, 40)], { x: -0.5, y: 3, z: 0, yaw: Math.PI / 2 });
+      const p = r.state.player;
+      p.mode = 'air'; p.onGround = false; p.kicks = 0; p.pitch = pitch;
+      run(r.state, r.world, 1, { pressed: B.JUMP, yaw: Math.PI / 2, pitch });
+      const mode = p.mode;
+      let hi = p.pos.y;
+      for (let i = 0; i < 40; i++) { run(r.state, r.world, 1, { yaw: Math.PI / 2, pitch }); hi = Math.max(hi, p.pos.y); }
+      return { mode, gain: hi - 3 };
+    };
+    for (const pitch of [0, -0.3]) {
+      const s = top(pitch);
+      expect(s.mode, `pitch ${pitch}`).toBe('cling');
+      expect(s.gain, `pitch ${pitch}`).toBeLessThan(0.02);
+    }
+    const up = top(0.35);
+    expect(up.mode).toBe('wallclimb');
+    expect(up.gain).toBeGreaterThan(1);
   });
   it('looking up at the wall kicks up it', () => {
     const s = kick(Math.PI / 2, 0.8);

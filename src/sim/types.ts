@@ -9,7 +9,7 @@ export const DT = 1 / TICK_HZ;
 /** Button bits for InputFrame.buttons (held) and InputFrame.pressed (went down since the last tick). */
 export const B = {
   JUMP: 1, SPRINT: 2, CROUCH: 4, CRAWL: 8, INTERACT: 16, DROP: 32, USE: 64, AIM: 128,
-  RELOAD: 256, HEADLAMP: 512, LEAN_L: 1024, LEAN_R: 2048, ROLL: 4096,
+  RELOAD: 256, HEADLAMP: 512, LEAN_L: 1024, LEAN_R: 2048,
 } as const;
 
 export interface InputFrame {
@@ -31,7 +31,7 @@ export const emptyInput = (): InputFrame => ({ mx: 0, my: 0, yaw: 0, pitch: 0, b
 
 export type SimEvent =
   | { t: 'noise'; x: number; y: number; z: number; r: number; kind: string }
-  | { t: 'land'; h: number; roll: boolean; outcome: FallOutcome }
+  | { t: 'land'; h: number; outcome: FallOutcome }
   | { t: 'hurt'; dmg: number; cause: string }
   /** he fired a gun (M4-21) */
   | { t: 'fire'; id: string }

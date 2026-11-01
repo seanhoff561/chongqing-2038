@@ -38,7 +38,10 @@ export const movement = {
    *  a scrape heard this far (m) each stride. */
   chimney: { min: 0.6, max: 1.25, up: 0.7, down: 0.9, stride: 0.5, noise: 3 },
   /** second Space in the air near a wall, read from the camera (U-004) */
-  wallKick: { reach: 0.8, max: 2, upPitch: 0.45, upSpeed: 4.6, speed: 5.5, up: 3.4, pitchUp: 1.5, minAway: 0.35, alongMax: 0.5 },
+  // (upMin: looking up at least this much (rad) for a kick facing the wall to go up it; below it, a stall, U-055.)
+  // (A wall-run when his run's across the wall less than runAcross (sine of its angle to it), not looking into it more
+  // than runInto nor away more than runAway, U-055.)
+  wallKick: { reach: 0.8, max: 2, upMin: 0.12, runAcross: 0.64, runInto: 0.85, runAway: 0.6, upPitch: 0.45, upSpeed: 4.6, speed: 5.5, up: 3.4, pitchUp: 1.5, minAway: 0.35, alongMax: 0.5 },
   /** hand climbing (U-002): grips, reach, reeling, mantles over lips, dynos */
   grip: {
     rayReach: 1.6, heightReach: 2.2, lowest: 0.9, lowestCrouched: -0.3, lipDepth: 0.35, edgeBand: 0.4, pipeRadius: 0.3,
@@ -53,7 +56,8 @@ export const movement = {
     mousePull: 0.7, sideMax: 0.45, mouseSwing: 2.5, pump: 2.0, swingMax: 6.5, swingDamp: 0.15,
   },
   /** soft: the share of a drop that counts landing on something soft (bags, bins, an awning; U-024) */
-  falls: { safe: 4, rollSafe: 7, rollWindow: 0.3, lethal: 12, fractureFrom: 7, rollMax: 10, dmgPerM: 8, dmgPerMHigh: 10, sprainChance: 0.4, armChance: 0.2, soft: 0.5 },
+  // (Past hurtMax the damage counts from highFrom: a big fall hurts as it always did.)
+  falls: { safe: 7, hurtMax: 10, highFrom: 4, lethal: 12, dmgPerM: 8, dmgPerMHigh: 10, sprainChance: 0.4, armChance: 0.2, soft: 0.5 },
   /** minInner: the smallest space he fits curled up in (a car boot, lying down, is lower: minBoot) */
   hide: { enterTime: 0.6, exitTime: 0.5, minInner: 0.8, minBoot: 0.5, reach: 1.6 },
   swim: { float: 1.45, speed: 1.4, sprint: 2.2, dive: 1.2, breath: 40, drownDps: 8, wetMinutes: 120, climbOut: 0.6, floatDepth: 1.2 },

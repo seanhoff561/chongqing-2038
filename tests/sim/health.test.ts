@@ -17,11 +17,11 @@ describe('health, damage and death', () => {
     expect(s.player.mode).toBe('dead');
     expect(s.body.hp).toBe(0);
   });
-  it('a 9 m fall deals the table damage', () => {
-    const s = dropFrom(9);
+  it('an 11 m fall deals the table damage (U-054: (h-4) x 10 past 10 m)', () => {
+    const s = dropFrom(11);
     expect(s.dead).toBeNull();
-    expect(s.body.hp).toBeLessThanOrEqual(50.5);
-    expect(s.body.hp).toBeGreaterThan(44);
+    expect(s.body.hp).toBeLessThanOrEqual(30.5);
+    expect(s.body.hp).toBeGreaterThan(24);
     expect(s.body.leg === 'fracture' || s.body.arm === 'fracture').toBe(true);
   });
   it('god mode ignores damage', () => {

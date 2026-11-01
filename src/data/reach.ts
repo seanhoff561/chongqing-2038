@@ -9,7 +9,7 @@ export const REACH = {
   /** out of one window and in at another across the way, from the sill, standing */
   window: { across: E.standingJump.comfortable + 0.6, rise: 0.6 },
   /** down onto a roof (rolling): m down, m out */
-  drop: { down: E.safeDropRoll.comfortable, across: E.standingJump.comfortable },
+  drop: { down: E.safeDrop.comfortable, across: E.standingJump.comfortable },
   /** up onto a sill or a lip from a roof */
   climb: { up: E.mantleJump.comfortable },
   /** the grappling hook (M5-20): a ledge this far above, this far off */

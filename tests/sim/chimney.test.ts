@@ -1,17 +1,15 @@
-// M3-78 (U-043): chimneying. Braced across a gap 0.6 to 1.25 m wide with Space in the air, he works up a 6 m shaft
-// 0.8 m across and back down it, up a 40-degree sloped slot, and lets go with Space; a 1.6 m gap has nothing to
-// brace across.
+// M3-78 (U-043), M4-74 (U-055): chimneying. Braced across a gap 0.6 to 1.25 m wide with Space, standing in it or in
+// the air, his body as low as lying down, he works up a 6 m shaft 0.8 m across and back down it, up a 40-degree sloped
+// slot, and lets go with Space; a 1.6 m gap has nothing to brace across.
 import { describe, it, expect } from 'vitest';
 import { solid } from '../../src/world/geom';
 import { B } from '../../src/sim/types';
 import { setup, floor, run, secs } from './helpers';
 
-/** In a gap between walls `w` apart (along z), 6 m tall: jump, then Space at the top of the jump. */
+/** Standing in a gap between walls, Space (U-055: it braces him from the ground). */
 function braced(walls: ReturnType<typeof solid>[], x: number, z: number, yaw = 0) {
   const { state, world } = setup([floor(), ...walls], { x, y: 0, z, yaw });
   run(state, world, 3);
-  run(state, world, 1, { pressed: B.JUMP, buttons: B.JUMP });
-  run(state, world, secs(0.25));
   run(state, world, 1, { pressed: B.JUMP, buttons: B.JUMP });
   return { state, world };
 }
@@ -51,6 +49,15 @@ describe('chimneying (M3-78)', () => {
     run(state, world, secs(8), { my: 1, pitch: 0.7, yaw: -Math.PI / 2 });
     expect(state.player.pos.x).toBeGreaterThan(3);
     expect(state.player.pos.y).toBeGreaterThan(2.5);
+  });
+  it('braces from the air too, dropping into the shaft; braced, his body is as low as lying down (U-055)', () => {
+    const { state, world } = setup([floor(), ...shaft(0.8)], { x: 0, y: 4, z: 0, yaw: 0 });
+    state.player.mode = 'air'; state.player.onGround = false;
+    run(state, world, secs(0.2));
+    run(state, world, 1, { pressed: B.JUMP, buttons: B.JUMP });
+    expect(state.player.mode).toBe('chimney');
+    expect(state.player.posture).toBe('crawl');
+    expect(state.player.pos.y).toBeGreaterThan(2);
   });
   it('has nothing to brace across in a 1.6 m gap', () => {
     const { state } = braced(shaft(1.6), 0, 0);

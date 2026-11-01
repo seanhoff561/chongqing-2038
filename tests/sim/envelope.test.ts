@@ -149,16 +149,12 @@ function slide(grade: number) {
   return +(z0 - state.player.pos.z).toFixed(2);
 }
 
-/** Walk off a ledge h high onto concrete, or onto a 0.6 m heap of `mat`; Ctrl just before landing if `roll`. Unhurt? */
-function unhurt(h: number, roll: boolean, mat = -1) {
+/** Walk off a ledge h high onto concrete, or onto a 0.6 m heap of `mat`. Unhurt? */
+function unhurt(h: number, mat = -1) {
   const heap = mat < 0 ? [] : [solid(-2, 0, -12, 2, 0.6, -2, mat)];
   const { world, state } = setup([solid(-5, -1, -30, 5, 0, 30), solid(-5, 0, -2, 5, h, 10), ...heap], { x: 0, y: h, z: 0, yaw: 0 });
-  const p = state.player;
-  let pressed = false;
   for (let i = 0; i < secs(5); i++) {
-    const press = roll && !pressed && !p.onGround && p.pos.y < 0.6 && p.vel.y < 0;
-    if (press) pressed = true;
-    run(state, world, 1, { my: i < 60 ? 1 : 0, pressed: press ? B.CROUCH : 0 });
+    run(state, world, 1, { my: i < 60 ? 1 : 0 });
     const e = state.events.find(e => e.t === 'land' && e.h > 1) as Extract<SimEvent, { t: 'land' }> | undefined;
     if (e) return e.outcome.damage === 0 && !e.outcome.sprain;
   }
@@ -247,12 +243,11 @@ describe('the movement envelope (M3-50)', () => {
     matches('slideFlat', ninety(flat), flat);
     matches('slideDownhill', ninety(down), down);
   });
-  it('drops, rolls and soft landings', () => {
-    const safe = highest(h => unhurt(h, false), 2, 6), roll = highest(h => unhurt(h, true), 4, 9);
+  it('drops and soft landings', () => {
+    const safe = highest(h => unhurt(h), 4, 9);
     matches('safeDrop', ninety(safe), safe);
-    matches('safeDropRoll', ninety(roll), roll);
     // Onto a 0.6 m heap: the drop counts from its top.
-    const bags = +(highest(h => unhurt(h, false, MAT.soft), 4, 11) - 0.6).toFixed(2), awning = +(highest(h => unhurt(h, false, MAT.cloth), 4, 11) - 0.6).toFixed(2);
+    const bags = +(highest(h => unhurt(h, MAT.soft), 4, 16) - 0.6).toFixed(2), awning = +(highest(h => unhurt(h, MAT.cloth), 4, 16) - 0.6).toFixed(2);
     matches('softDropBags', ninety(bags), bags);
     matches('softDropAwning', ninety(awning), awning);
   });

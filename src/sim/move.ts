@@ -68,9 +68,6 @@ export function stepPlayer(state: SimState, world: World, input: InputFrame): vo
   // Stunned (M4-18): he can't move for it.
   if (p.stun > 0) { p.stun = Math.max(0, p.stun - DT); input = { ...input, mx: 0, my: 0, buttons: 0, pressed: 0 }; }
   if (p.mode === 'noclip') p.mode = 'air';
-  p.crouchAge += DT;
-  // The roll: crouch pressed just before landing, or the roll key (U-050) pressed then or held as he lands.
-  if (!p.onGround && ((input.pressed & B.CROUCH) || (input.buttons & B.ROLL))) p.crouchAge = 0;
   // Empty hands reaching for a line take it (M3-52).
   if ((p.mode === 'air' || p.mode === 'ground') && (input.pressed & B.USE) && state.inv.held === 0 && tryZip(state, world)) return;
   stepHands(state, world, input);
@@ -187,6 +184,8 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   }
   // Jump.
   let jumped = false;
+  // Standing in a narrow gap, Space braces him across it (U-055).
+  if (p.onGround && (input.pressed & B.JUMP) && p.posture !== 'crawl' && tryChimney(state, world, input, true)) return;
   if (p.onGround && (input.pressed & B.JUMP) && groundParkour(state, world, input, Math.min(M.mantle.hop, L.maxMantle))) return;
   if ((p.onGround || p.coyote > 0) && (input.pressed & B.JUMP) && p.posture === 'stand' && L.jumpScale > 0) {
     // Off a slope he leaves along it (U-028): the rise of the ground under his feet along his stride adds to the
@@ -293,27 +292,24 @@ function land(state: SimState, idx: SolidIndex) {
   const under = query(idx, p.pos.x - 0.3, p.pos.z - 0.3, p.pos.x + 0.3, p.pos.z + 0.3).map(i => idx.solids[i]);
   const soft = under.some(s => (s.mat === MAT.soft || s.mat === MAT.cloth) && Math.abs(s.y1 - p.pos.y) < 0.1 && xzHit(s, p.pos.x - 0.3, p.pos.z - 0.3, p.pos.x + 0.3, p.pos.z + 0.3));
   const h = (p.fallFrom - p.pos.y) * (soft ? M.falls.soft : 1);
-  const roll = p.crouchAge <= M.falls.rollWindow;
-  const outcome = fallOutcome(h, roll, () => rand(state.rng));
-  state.events.push({ t: 'land', h, roll, outcome });
+  // No roll (U-054): every fall is taken as a rolled one was.
+  const outcome = fallOutcome(h, () => rand(state.rng));
+  state.events.push({ t: 'land', h, outcome });
   if (h > M.noise.landMinH) noise(state, M.noise.land, 'land');
-  if (h > 0.4) sfx(state, roll && h > 1 ? 'roll' : h > M.noise.landMinH ? 'land-hard' : 'land');
-  if (roll && h > 1) { p.posture = 'crouch'; p.vel.x *= 0.6; p.vel.z *= 0.6; }
+  // (A big fall's landing keeps the roll's sound, U-055.)
+  if (h > 0.4) sfx(state, h > 3 ? 'roll' : h > M.noise.landMinH ? 'land-hard' : 'land');
   p.fallFrom = p.pos.y;
 }
 
-/** DESIGN section 3: what a fall of h metres does, with or without a roll. */
-export function fallOutcome(h: number, roll: boolean, rnd: () => number): FallOutcome {
+/** DESIGN section 3: what a fall of h metres does (U-054: as a rolled fall was, every time): nothing to 7 m, eased
+ *  damage and maybe a sprain to 10 m, past that broken bones, past 12 m death. */
+export function fallOutcome(h: number, rnd: () => number): FallOutcome {
   const F = M.falls;
   const o: FallOutcome = { damage: 0, sprain: false, fracture: false, arm: false, lethal: false };
   if (h > F.lethal) { o.lethal = true; o.damage = 999; return o; }
-  if (roll && h <= F.rollMax) {
-    if (h > F.rollSafe) { o.damage = (h - F.rollSafe) * F.dmgPerM; o.sprain = rnd() < F.sprainChance; }
-    return o;
-  }
   if (h <= F.safe) return o;
-  if (h <= F.fractureFrom) { o.damage = (h - F.safe) * F.dmgPerM; o.sprain = rnd() < F.sprainChance; return o; }
-  o.damage = (h - F.safe) * F.dmgPerMHigh;
+  if (h <= F.hurtMax) { o.damage = (h - F.safe) * F.dmgPerM; o.sprain = rnd() < F.sprainChance; return o; }
+  o.damage = (h - F.highFrom) * F.dmgPerMHigh;
   o.fracture = true;
   o.arm = rnd() < F.armChance;
   return o;

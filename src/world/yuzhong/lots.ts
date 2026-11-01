@@ -82,6 +82,9 @@ const rowGap = (r: Rng) => {
 };
 /** How far the street outside may lean from a building's floor for a landing to level it off. */
 const LANDING = 1.2;
+/** How far down one roof may step to the next and still be a way on: 4 m, the safe drop when the roofs were laid out
+ *  (kept so, U-053: the map is frozen though falls now hurt less, U-054). */
+const ROOF_DROP = 4;
 const MAIN = new Set(['trunk', 'primary', 'secondary', 'tertiary', 'unclassified', 'residential', 'living_street', 'service', 'pedestrian']);
 
 interface Seg { ax: number; az: number; bx: number; bz: number; half: number; s: Street }
@@ -344,7 +347,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
   // A second pass with every neighbour known: a flexible building with no neighbour's roof in jumping range from
   // its own (a running jump across, a safe drop down) moves to a neighbour's roof it can meet (level, or up
   // to a floor above it), the one nearest its own height (U-032: the low fillers don't pull the tall ones down).
-  const top = (p: Plan) => p.wall + 0.6, reach = (a: Plan, b: Plan) => top(a) - top(b) >= -0.5 && top(a) - top(b) <= E.safeDrop.max;
+  const top = (p: Plan) => p.wall + 0.6, reach = (a: Plan, b: Plan) => top(a) - top(b) >= -0.5 && top(a) - top(b) <= ROOF_DROP;
   for (let pass = 0; pass < 3; pass++) for (const a of plans) {
     if (!a.flex || a.far) continue;
     const [x0, z0, x1, z1] = bounds(a.obb, 7), nbs = [...placed.near(x0, z0, x1, z1)].filter(b => b !== a && !b.far && b.kind !== 'tower' && obbOverlap(a.obb, b.obb, E.runningJump.comfortable / 2) && !obbOverlap(a.obb, b.obb, 0.25));

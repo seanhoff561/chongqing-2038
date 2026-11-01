@@ -28,14 +28,12 @@ export const ENVELOPE = {
   slideFlat: { comfortable: 5.97, max: 6.63 },
   /** Distance slid from a sprint down a 0.2 grade (from about 0.36 a slide never slows: it runs to the bottom). */
   slideDownhill: { comfortable: 13.36, max: 14.84 },
-  /** Highest ledge he walks off without harm. */
-  safeDrop: { comfortable: 3.6, max: 4 },
-  /** Highest ledge he walks off without harm, rolling (Ctrl just before landing). */
-  safeDropRoll: { comfortable: 6.3, max: 7 },
+  /** Highest ledge he walks off without harm (U-054: every fall as a rolled one was). */
+  safeDrop: { comfortable: 6.3, max: 7 },
   /** Highest drop onto rubbish bags, bins or cardboard (MAT.soft) without harm. */
-  softDropBags: { comfortable: 7.2, max: 8 },
+  softDropBags: { comfortable: 12.6, max: 14 },
   /** Highest drop onto an awning or a tarp (MAT.cloth) without harm. */
-  softDropAwning: { comfortable: 7.2, max: 8 },
+  softDropAwning: { comfortable: 12.6, max: 14 },
   /** Spacing of two bars 2.15 m up crossed by pumping a swing on one and letting go on the way up to catch the other. */
   lache: { comfortable: 6.05, max: 6.2 },
   /** Highest lip taken between walls 2 m apart: a jump, a kick off each wall looking up and ahead, a grab, W. */

@@ -33,6 +33,7 @@ import { stepMelee } from './melee';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
 import { stepRaid } from './raid';
+import { stepTreat } from './meds';
 
 /** Saves of another version are dropped: 9 since the hive remembers where it saw him (M4-04); 8 since the machines
  *  walk their beats (M4-01). */
@@ -85,6 +86,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepMelee(state, world, input);
   stepGun(state, input);
   stepTag(state);
+  stepTreat(state);
   stepTrack(state);
   stepRaid(state, world);
   stepLamp(state, input);
