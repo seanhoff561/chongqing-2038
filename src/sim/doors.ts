@@ -1,5 +1,6 @@
-// Doors: open and close with E; their collision solid switches with them. Locked doors need their key; a locked
-// or jammed one is forced with E held, loudly, and a chained one holds (M3-36). Windows' glass breaks out the same.
+// Doors: open and close with E; their collision solid switches with them. Locked doors need their key; a lock is
+// forced with the crowbar and a jammed door shouldered, held and loud; a chain is prised or cut with the crowbar or
+// bolt cutters; a collapsed doorway holds (M3-36, U-066). Windows' glass breaks out the same.
 import type { SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { onInteract } from './interact';
@@ -20,7 +21,7 @@ export function syncWorld(s: SimState, w: World) {
 }
 
 /** Seconds to force a lock (M3-36): a lock wrenched out, a jammed door shouldered. */
-const FORCE: Record<string, number> = { locked: 1.6, jammed: 1 };
+const FORCE: Record<string, number> = { locked: 1.6, jammed: 1, chained: 2.2 };
 const lockOf = (s: SimState, it: Inter) => (s.wstate.unlocked?.[it.id] ? undefined : (it.data?.lock as string | undefined));
 
 function swing(s: SimState, w: World, it: Inter, loud = false) {
@@ -43,11 +44,14 @@ onInteract('door', {
     if (s.wstate.open[it.id]) return null;
     const key = it.data?.key as string | undefined;
     if (key && !s.wstate.unlocked?.[it.id] && !has(s.inv.pack, key)) return 'locked';
-    // A chain through the handles: bolt cutters' work (M5-25).
-    if (lockOf(s, it) === 'chained') return 'chained shut';
+    const lock = lockOf(s, it);
+    if (lock === 'collapsed') return 'collapsed: rubble fills the doorway';
+    // A chain through the handles: the crowbar prises it, bolt cutters cut it; a lock is wrenched out with the crowbar.
+    if (lock === 'chained' && !has(s.inv.pack, 'crowbar') && !has(s.inv.pack, 'boltcutters')) return 'chained shut: a crowbar or bolt cutters would do it';
+    if (lock === 'locked' && !key && !has(s.inv.pack, 'crowbar')) return 'locked: a crowbar would force it';
     return null;
   },
-  // A locked or jammed door is forced: held, and loud.
+  // A locked, jammed or chained door is forced: held, and loud.
   dur: (s, it) => (s.wstate.open[it.id] ? 0 : FORCE[lockOf(s, it) ?? ''] ?? 0),
   done: (s, w, it) => swing(s, w, it, true),
   now: (s, w, it) => swing(s, w, it),

@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 81 of 99 done
+## M4: 82 of 99 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -944,7 +944,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-90** Lootable things plain to see (U-066)
   - What he can search or pick up is obvious: an outline or glow on it and a small mark when he looks its way, near enough; searched and empty, it goes plain again
   - E2e: a lootable container and a dropped item are marked in a screenshot, a searched-empty one is not
-- [ ] **M4-91** Most street doors shut (U-066)
+- [x] **M4-91** Most street doors shut (U-066)
   - Most doors at street level are chained shut, locked or collapsed (each shown so: a chain and padlock, a lock, rubble across it); only a few in each block open freely
   - Locked ones open to a key or the crowbar (forcing is loud), chained ones to the crowbar or bolt cutters, collapsed ones not at all
   - Sim test: share of street doors open freely under a quarter in every district, each other kind present; screenshots of each

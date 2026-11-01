@@ -1,19 +1,20 @@
-// Ways in and out (M3-36, U-014, U-034): doors and windows and what holds them. A door is a leaf drawn as a prop,
-// its collision a hidden solid its interactable switches: open (no leaf), shut, locked or jammed (forced with E
-// held, loudly), chained (bolt cutters, M5-25). A window is broken in (open), glazed (the glass broken out with E
-// held, loudly) or barred.
+// Ways in and out (M3-36, U-014, U-034, U-066): doors and windows and what holds them. A door is a leaf drawn as a
+// prop, its collision a hidden solid its interactable switches: open (no leaf), shut, locked (forced with the crowbar,
+// loudly, or its key), jammed (shouldered, loudly), chained (the crowbar or bolt cutters) or collapsed (rubble heaped
+// in the doorway: no way through). A window is broken in (open), glazed (the glass broken out with E held, loudly)
+// or barred.
 import { MAT } from '../mats';
 import { rand, type Rng } from '../../sim/rng';
-import type { Solid } from '../geom';
+import { turn, type Solid } from '../geom';
 import type { Fabric } from './buildings';
 
-export type Lock = 'open' | 'shut' | 'locked' | 'jammed' | 'chained';
+export type Lock = 'open' | 'shut' | 'locked' | 'jammed' | 'chained' | 'collapsed';
 export type Glazing = 'open' | 'glass' | 'barred';
 
-/** A lock by weights for open, shut, locked, jammed and chained. */
-export function roll(r: Rng, w: [number, number, number, number, number]): Lock {
+/** A lock by weights for open, shut, locked, jammed, chained (and collapsed). */
+export function roll(r: Rng, w: number[]): Lock {
   let q = rand(r) * w.reduce((a, b) => a + b, 0);
-  for (const [i, k] of (['open', 'shut', 'locked', 'jammed', 'chained'] as const).entries()) if ((q -= w[i]) < 0) return k;
+  for (const [i, k] of (['open', 'shut', 'locked', 'jammed', 'chained', 'collapsed'] as const).entries()) if ((q -= w[i] ?? 0) < 0) return k;
   return 'shut';
 }
 
@@ -23,7 +24,24 @@ export function door(id: string, box: Solid, hinge: [number, number], dir: [numb
   if (lock === 'open') return;
   box.mat = MAT.hidden; box.part = id;
   out.solids.push(box);
-  out.props.push({ kind: 'door', x: hinge[0], y: box.y0, z: hinge[1], yaw: Math.atan2(-dir[1], dir[0]), w, h: box.y1 - box.y0, d: 0.05, text: id });
+  // Collapsed: no leaf, the doorway heaped with broken concrete and a fallen beam across it (laid along the doorway's
+  // own width, in its own frame, turned with it if it's turned).
+  if (lock === 'collapsed') {
+    const R = box.rot, e = R ?? box, h = box.y1 - box.y0, long = e.x1 - e.x0 > e.z1 - e.z0, mu = long ? (e.z0 + e.z1) / 2 : (e.x0 + e.x1) / 2;
+    const [a0, a1] = long ? [e.x0, e.x1] : [e.z0, e.z1], put = (u0: number, u1: number, v: number, y0: number, y1: number, mat: number) => {
+      const q: Solid = long ? { x0: u0, x1: u1, z0: mu - v, z1: mu + v, y0, y1, mat, ramp: 0, low: 0 } : { x0: mu - v, x1: mu + v, z0: u0, z1: u1, y0, y1, mat, ramp: 0, low: 0 };
+      out.decor.push(R ? turn([q], Math.atan2(R.s, R.c), R.px, R.pz)[0] : q);
+    };
+    for (let i = 0; i < 4; i++) put(a0 + ((a1 - a0) * i) / 4 - 0.1, a0 + ((a1 - a0) * (i + 1)) / 4 + 0.1, 0.3 + ((i * 37) % 10) / 40, box.y0, box.y0 + h * (0.45 + ((i * 53) % 10) / 25), MAT.rubble);
+    put(a0 - 0.1, a1 + 0.1, 0.12, box.y0 + h * 0.62, box.y0 + h * 0.62 + 0.25, MAT.concrete);
+  } else {
+    const yaw = Math.atan2(-dir[1], dir[0]), mx = hinge[0] + (dir[0] * w) / 2, mz = hinge[1] + (dir[1] * w) / 2, y = box.y0 + 1.0;
+    out.props.push({ kind: 'door', x: hinge[0], y: box.y0, z: hinge[1], yaw, w, h: box.y1 - box.y0, d: 0.05, text: id });
+    // What holds it, plain to see (U-066), gone when it's forced: a chain wound across it and its padlock; a lock's
+    // hasp and padlock.
+    if (lock === 'chained') for (const [dy, cw, ch] of [[0, w * 0.85, 0.05], [0.12, w * 0.7, 0.04], [-0.1, 0.09, 0.12]]) out.props.push({ kind: 'chain', x: mx, y: y + dy, z: mz, yaw, w: cw, h: ch, d: 0.16, text: id });
+    if (lock === 'locked') for (const [dy, cw, ch] of [[0, 0.22, 0.05], [-0.07, 0.07, 0.09]]) out.props.push({ kind: 'chain', x: mx - dir[0] * w * 0.38, y: y + dy, z: mz - dir[1] * w * 0.38, yaw, w: cw, h: ch, d: 0.12, text: id });
+  }
   out.inter.push({ id, kind: 'door', x: hinge[0] + (dir[0] * w) / 2, y: box.y0 + 1.1, z: hinge[1] + (dir[1] * w) / 2, r: 0.9, zh: label[0], en: label[1], data: lock === 'shut' ? { part: id } : { part: id, lock } });
 }
 

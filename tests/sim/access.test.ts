@@ -12,6 +12,7 @@ import { B } from '../../src/sim/types';
 import { inside } from '../../src/world/yuzhong/shapes';
 import type { Inter } from '../../src/world/world';
 import { run, secs, aim } from './helpers';
+import { addItem } from '../../src/sim/inventory';
 
 const w = getWorld('yuzhong'), near = w.plots.filter(p => !p.far);
 const rooms = w.features.filter(f => f.kind.startsWith('inside:'));
@@ -69,7 +70,7 @@ describe('buildings as puzzles (M3-36)', () => {
     expect(panes.length).toBeGreaterThan(barred.length);
   });
 
-  it('a shut door opens with E; a chained one refuses him; a locked one is forced with E held, loudly', () => {
+  it('a shut door opens with E; a chained one refuses him; a locked one refuses him bare-handed and is forced with the crowbar, held, loudly (U-066)', () => {
     const at = (lock: string) => {
       for (const it of doors.filter(i => lockOf(i) === lock && /\.(d|street)\d+$/.test(i.id))) { const s = before(it); if (s) return { s, it }; }
       throw new Error(`no ${lock} door to stand at`);
@@ -83,6 +84,9 @@ describe('buildings as puzzles (M3-36)', () => {
     const locked = at('locked');
     run(locked.s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT });
     expect(locked.s.wstate.open[locked.it.id]).toBeFalsy();
+    expect(locked.s.task).toBeNull();
+    addItem(locked.s, locked.s.inv.pack, 'crowbar', 1);
+    run(locked.s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT });
     let loud = 0;
     for (let t = 0; t < secs(4.3); t++) { run(locked.s, w, 1, { buttons: B.INTERACT }); for (const e of locked.s.events) if (e.t === 'noise') loud = Math.max(loud, (e as { r: number }).r); }
     expect(locked.s.wstate.open[locked.it.id]).toBe(true);

@@ -13,6 +13,8 @@ import { basement } from './basement';
 import type { Lot, Fabric } from './buildings';
 
 const HUT = 2.6;
+/** A street door's odds (U-066: few open freely): open, shut, locked, jammed, chained, collapsed. */
+const STREET_DOOR = [0.04, 0.08, 0.36, 0.1, 0.26, 0.16];
 
 /** Room for the core and a room beside it, a whole number of floors, not too tall to climb on foot. */
 export function canEnter(l: Lot): boolean {
@@ -52,7 +54,7 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
     cut(B(lobby[0], base, lobby[1], lobby[2], base + FLOOR - SLAB, lobby[3], 0));
     const doorCut = B(U - 0.01, base, doorV - 0.8, U + WALL + 0.05, base + 2.2, doorV + 0.8, 0);
     cut(doorCut);
-    door(nid('street'), B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), at(U + WALL / 2, doorV - 0.8), alongZ ? [1, 0] : [0, 1], 1.6, roll(r, [0.1, 0.25, 0.4, 0.15, 0.1]), out);
+    door(nid('street'), B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), at(U + WALL / 2, doorV - 0.8), alongZ ? [1, 0] : [0, 1], 1.6, roll(r, STREET_DOOR), out);
     // Landings at each floor, flights between, each two invisible ramps under visible steps (thin, so the flight
     // above leaves headroom): lane A rises along +u to the far landing, lane B comes back to the next floor's.
     const flight = (u0: number, v0: number, u1: number, v1: number, low: number, up: boolean) => {

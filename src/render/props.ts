@@ -269,7 +269,7 @@ export function buildProps(props: Prop[], share = 1): THREE.Group {
   const g = new THREE.Group(), big = new ChunkMerger(), small = new ChunkMerger(), swing: Prop[] = [];
   for (const p of props) {
     if (!keep(p, share)) continue;
-    if (p.kind === 'door' || p.kind === 'pane') { swing.push(p); continue; }
+    if (p.kind === 'door' || p.kind === 'pane' || p.kind === 'chain') { swing.push(p); continue; }
     const b = builders[p.kind];
     const o = b ? b(p) : libProp(p);
     if (!o) continue;
@@ -331,7 +331,8 @@ function swingers(props: Prop[]): THREE.InstancedMesh[] {
   for (const ps of chunks.values()) {
     const door = ps[0].kind === 'door';
     // A unit slab: a door's from its hinge along +x, a pane's about its middle; each scaled to its size.
-    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(door ? 0.5 : 0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
+    // (A chain or padlock goes like a pane when the door's forced: U-066.)
+    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(door ? 0.5 : 0, 0.5, 0), material(door ? MAT.metal : ps[0].kind === 'chain' ? MAT.concrete : MAT.glass), ps.length);
     const place = (i: number, a: number) => {
       const p = ps[i];
       m.makeTranslation(p.x, p.y, p.z).multiply(q.makeRotationY(p.yaw + a)).multiply(sc.makeScale(p.w!, p.h!, p.d ?? (door ? 0.06 : 0.03)));
@@ -370,4 +371,4 @@ function swingers(props: Prop[]): THREE.InstancedMesh[] {
   return out;
 }
 
-export const propKinds = () => Object.keys(builders).concat(libKinds(), ['door', 'pane']);
+export const propKinds = () => Object.keys(builders).concat(libKinds(), ['door', 'pane', 'chain']);
