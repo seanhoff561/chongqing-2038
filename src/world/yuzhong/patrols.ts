@@ -201,7 +201,35 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
   if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out.concat(heavies);
+  return out.concat(heavies, lurkers(w, hides));
+}
+
+/** Where he doesn't look for them (M4-53, U-051): in each district a dozen machines that wait for an hour or three at a
+ *  time somewhere out of the way, at hours of their own through the day: just inside a room he might step into,
+ *  inside a building's door at the foot of its stairs, on its roof, in an alley behind the bins; still, their heads
+ *  turning. */
+function lurkers(w: World, hides: V3[]): Patrol[] {
+  const out: Patrol[] = [], near = (x: number, z: number, k: string) => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 300;
+  /** A machine waiting at a spot, facing `yaw`, `n`th of its kind in the district: its hours from n. */
+  const wait = (unit: Patrol['unit'], at: V3, yaw: number, n: number) => {
+    const from = (n * 7 + Math.floor(at.x + at.z)) % 24, long = 1 + (n % 3);
+    out.push({ kind: 'lurk', unit, pts: [at, { ...at, x: at.x + 0.01 }], dwell: [600, 600], hours: [from, (from + long) % 24], look: { 0: yaw, 1: yaw } });
+  };
+  for (const k of DISTRICTS) {
+    const rooms = w.features.filter(f => f.kind.startsWith('inside:') && near(f.x, f.z, k));
+    rooms.filter((_, i) => i % Math.max(1, Math.floor(rooms.length / 3)) === 0).slice(0, 3).forEach((f, n) => {
+      const l = Math.hypot(f.nx ?? 0, f.nz ?? 0) || 1, nx = (f.nx ?? 0) / l, nz = (f.nz ?? 1) / l;
+      wait(n % 2 ? 'quadruped' : 'humanoid', { x: f.x + nx * 1.5, y: f.y, z: f.z + nz * 1.5 }, Math.atan2(-nx, -nz), n);
+    });
+    const lots = w.plots.filter(p => !p.far && p.route && p.route.length > 2 && near(p.route[0].x, p.route[0].z, k));
+    lots.filter((_, i) => i % Math.max(1, Math.floor(lots.length / 3)) === 0).slice(0, 3).forEach((p, n) => {
+      const [door, foot] = p.route!, top = p.route![p.route!.length - 1];
+      wait('humanoid', foot, Math.atan2(door.x - foot.x, door.z - foot.z), n + 3);
+      wait(n % 2 ? 'drone' : 'quadruped', n % 2 ? { ...top, y: top.y + 1.6 } : top, (n * 2.1) % 6.28, n + 6);
+    });
+    hides.filter(h => near(h.x, h.z, k)).filter((_, i) => i % 7 === 3).slice(0, 3).forEach((h, n) => wait('quadruped', { x: h.x + 1.2, y: h.y, z: h.z }, -Math.PI / 2, n + 9));
+  }
+  return out;
 }
 
 /** Where a column's pair peels off (M4-01b): beside the bins in alleys within 20 m of its way, one every 150 m or so,

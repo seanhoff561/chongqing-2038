@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-53 Machines where he doesn't expect them (U-051).
-Features done: 218 / 349 | Last done: M4-58
+**Status:** building M4. Next: M4-45 Combat AI (U-050).
+Features done: 219 / 349 | Last done: M4-53
 <!-- /status -->
 
 ## Log
@@ -77,3 +77,4 @@ Features done: 218 / 349 | Last done: M4-58
 - M4-82 No floor drawn over holes (U-060): no floor drawn over holes: finishes with nothing under them aren't drawn (U-060)
 - M4-78 Pistol attachments: suppressor, extended magazine, sights (U-058): pistol attachments: suppressor, extended magazine, reflex sight and 4x scope (U-058)
 - M4-58 Columns go somewhere; patrols change over (U-051): the columns march to the city's exits and leave by them; street walkers change over with them (U-051)
+- M4-53 Machines where he doesn't expect them (U-051): machines where he doesn't expect them: in rooms, at the foot of stairs, on roofs, in alleys (U-051)
