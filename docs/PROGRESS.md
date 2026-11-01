@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-86 Synth music by place (U-065).
-Features done: 233 / 356 | Last done: M4-54
+Features done: 234 / 356 | Last done: M4-55
 <!-- /status -->
 
 ## Log
@@ -92,3 +92,4 @@ Features done: 233 / 356 | Last done: M4-54
 - M4-51 The empty city's ambience (U-051): the empty city's ambience: hum, wind between towers, far machinery, a drone somewhere, real rain, by place and hour (U-051)
 - M4-52 Frightening machines (U-051): frightening machines: an eye on him heard before it notices, the notice and the lock, servos grinding close, the city mad at high alert and slow to calm (U-051)
 - M4-54 Gunfire quick, deadly and real (U-051): gunfire quick, deadly and real: lethal bursts, the crack of misses, the report late, dulled by distance and walls, echoing (U-051); the sound wiring for breath, the raid siren and the music rides along
+- M4-55 His breath and heartbeat (U-051): his breath and heartbeat: spent, hurt or terrified he breathes hard and his heart pounds (U-051)
