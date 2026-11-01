@@ -1,10 +1,12 @@
 // The backpack (Tab) and an open container side by side. Drag to move (out of the grids drops it), R rotates while dragging,
-// 1-5 over an item binds it to the hotbar. Moves go to the sim as commands.
+// shift-click moves it straight across, 'take all' empties the container into the backpack, 1-5 over an item binds it to
+// the hotbar. Moves go to the sim as commands.
 import { hideoutList } from '../sim/shelter';
 import type { Game } from '../game';
 import type { Grid, Stack } from '../sim/inventory';
 import { dims, weight } from '../sim/inventory';
 import { item } from '../data/items';
+import { icon } from './icons';
 
 const CELL = 44;
 
@@ -70,6 +72,13 @@ export class InventoryUI {
     const p = document.createElement('div');
     p.className = 'inv-panel';
     p.innerHTML = `<div class="inv-title">${title}<span>${note}</span></div>`;
+    if (ref !== 'pack' && g.items.length) {
+      const all = document.createElement('button');
+      all.className = 'inv-takeall';
+      all.textContent = '全拿 Take all';
+      all.onclick = () => { this.game.input.cmds.push({ c: 'takeall' }); this.sig = ''; };
+      p.querySelector('.inv-title span')!.appendChild(all);
+    }
     const area = document.createElement('div');
     area.className = 'inv-grid';
     area.dataset.ref = ref;
@@ -81,11 +90,14 @@ export class InventoryUI {
       const d = item(st.id);
       const div = document.createElement('div');
       div.className = `inv-item cat-${d.cat}`;
-      div.style.cssText = `left:${st.x * CELL + 1}px;top:${st.y * CELL + 1}px;width:${w * CELL - 3}px;height:${h * CELL - 3}px`;
+      div.style.cssText = `left:${st.x * CELL + 1}px;top:${st.y * CELL + 1}px;width:${w * CELL - 3}px;height:${h * CELL - 3}px;background-image:url(${icon(st.id, st.rot)})`;
       const slot = this.game.state.inv.hotbar.indexOf(st.uid);
-      div.innerHTML = `<b>${d.zh}</b><i>${d.en}</i>${st.n > 1 ? `<u>${st.n}</u>` : ''}${slot >= 0 && ref === 'pack' ? `<s>${slot + 1}</s>` : ''}`;
+      // The picture, its name small in the corner (the English and the rest on hover).
+      div.innerHTML = `<b>${d.zh}</b>${st.n > 1 ? `<u>${st.n}</u>` : ''}${slot >= 0 && ref === 'pack' ? `<s>${slot + 1}</s>` : ''}`;
       div.onmousedown = e => {
         e.preventDefault();
+        // Shift-click: straight across to the other side (M4-71).
+        if (e.shiftKey) { if (this.game.state.openContainer) { this.game.input.cmds.push({ c: 'quick', from: ref, uid: st.uid }); this.sig = ''; } return; }
         const r = div.getBoundingClientRect();
         const ghost = div.cloneNode(true) as HTMLDivElement;
         ghost.classList.add('ghost');
@@ -125,6 +137,7 @@ export class InventoryUI {
     const [w, h] = dims({ id: st.id, rot: this.drag.rot });
     this.drag.ghost.style.width = `${w * CELL - 3}px`;
     this.drag.ghost.style.height = `${h * CELL - 3}px`;
+    this.drag.ghost.style.backgroundImage = `url(${icon(st.id, this.drag.rot)})`;
     if (this.drag.rot !== st.rot) { const t = this.drag.ox; this.drag.ox = this.drag.oy; this.drag.oy = t; }
   }
 

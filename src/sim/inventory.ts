@@ -74,6 +74,24 @@ export function moveStack(from: Grid, to: Grid, uid: number, x: number, y: numbe
   return true;
 }
 
+/** Move a stack across to another grid, topping up alike stacks there first, the rest wherever it fits: shift-click and
+ *  'take all' (M4-71). False if none of it went. */
+export function quickMove(from: Grid, to: Grid, uid: number): boolean {
+  const s = from.items.find(o => o.uid === uid);
+  if (!s || from === to) return false;
+  const max = itemById.get(s.id)?.stack ?? 1, n0 = s.n;
+  if (max > 1) for (const o of to.items) {
+    if (o.id !== s.id || o.n >= max || o.charge !== s.charge) continue;
+    const k = Math.min(s.n, max - o.n);
+    o.n += k; s.n -= k;
+    if (s.n <= 0) { takeStack(from, uid); return true; }
+  }
+  const spot = findSpot(to, s.id);
+  if (!spot) return s.n < n0;
+  takeStack(from, uid); to.items.push(s); Object.assign(s, spot);
+  return true;
+}
+
 /** Remove n of an item id from a grid (largest stacks first). Returns how many were removed. */
 export function consume(g: Grid, id: string, n = 1): number {
   let got = 0;

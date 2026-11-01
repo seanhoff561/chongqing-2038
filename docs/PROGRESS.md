@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-70 Item pictures in the backpack (U-054).
-Features done: 202 / 338 | Last done: M4-49
+**Status:** building M4. Next: M4-71 Take all and shift-click (U-054).
+Features done: 203 / 338 | Last done: M4-70
 <!-- /status -->
 
 ## Log
@@ -61,3 +61,4 @@ Features done: 202 / 338 | Last done: M4-49
 - M4-56 Rain without the splash particles (U-051): rain without the splash particles (U-051)
 - M4-69 A chalk bag, not climbing gloves (U-053): a chalk bag in place of climbing gloves: chalked hands hang twice as long until the chalk runs out (U-053)
 - M4-49 Quick opening, a circle filling (U-051): quick opening: a ring fills round the dot at each thing's own speed (U-051)
+- M4-70 Item pictures in the backpack (U-054): item pictures in the backpack, each drawn to its own footprint (U-054)

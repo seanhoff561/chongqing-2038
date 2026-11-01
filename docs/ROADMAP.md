@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 45 of 77 done
+## M4: 46 of 77 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -826,7 +826,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-49** Quick opening, a circle filling (U-051)
   - Opening, searching and working things is quick: a circle fills round the crosshair at each thing's own speed (a drawer fast, a locked cabinet slower), instead of the bar
   - Each kind's time set in data; a sim test checks a drawer opens well under a second and harder things take longer; a screenshot of the circle
-- [ ] **M4-70** Item pictures in the backpack (U-054)
+- [x] **M4-70** Item pictures in the backpack (U-054)
   - Every item shows a picture in the grid drawn to its own footprint (a 1x3 crowbar long, a 2x2 kit square), turned with it, readable at a glance
   - A screenshot of a full backpack
 - [ ] **M4-71** Take all and shift-click (U-054)
