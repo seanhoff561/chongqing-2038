@@ -2,8 +2,7 @@ html, body { margin: 0; height: 100%; background: #07080a; overflow: hidden; fon
 canvas { display: block; }
 #hud { position: fixed; inset: 0; pointer-events: none; }
 #hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(230,225,210,0.7); border-radius: 50%; }
-#hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh),
-  linear-gradient(#000, #000) 50% 50% / 1px 66vh no-repeat, linear-gradient(#000, #000) 50% 50% / 66vh 1px no-repeat; }
+#hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh); }
 #hud .ring { display: none; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; transform: rotate(-90deg); }
 #hud .ring circle { fill: none; stroke-width: 2.5; }
 #hud .ring .track { stroke: rgba(230,225,210,0.18); }
@@ -51,9 +50,14 @@ canvas { display: block; }
 #death .d-sum { font-size: 12px; color: #6f6a5d; margin-bottom: 14px; }
 #death button { font: inherit; font-size: 13px; background: #0d0d0d; color: #b9b19a; border: 1px solid #333; padding: 6px 14px; cursor: pointer; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-#pause { position: fixed; inset: 0; background: rgba(5,6,7,0.86); display: flex; align-items: flex-start; justify-content: center; gap: 28px; padding-top: 12vh; z-index: 15; }
+#pause { position: fixed; inset: 0; background: rgba(5,6,7,0.86); display: flex; align-items: flex-start; justify-content: center; gap: 28px; padding-top: 6vh; z-index: 15; overflow-y: auto; }
 #pause .pz-col { display: flex; flex-direction: column; gap: 4px; width: 280px; }
 #pause .pz-row { display: flex; gap: 4px; }
+#pause .pz-slide { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #c8c0a8; }
+#pause .pz-slide input { width: 120px; }
+#pause .pz-binds div { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #c8c0a8; }
+#pause .pz-binds button { min-width: 96px; padding: 2px 6px; }
+#pause select { background: #1b1d20; color: #ddd; border: 1px solid #444; padding: 4px; }
 #pause .pz-row button { flex: 1; text-align: center; padding: 5px 4px; }
 #pause button.on { border-color: #c9a64a; color: #e8dcb8; }
 #pause .pz-credit { margin-top: auto; font-size: 10px; opacity: 0.6; }

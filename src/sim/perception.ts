@@ -91,6 +91,8 @@ export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose): num
   const S = SENSES[kind], eye = { x: at.x, y: at.y + S.eye, z: at.z }, range = rangeOf(s, kind), p = s.player.pos;
   const d = Math.hypot(p.x - eye.x, p.y + 1 - eye.y, p.z - eye.z);
   if (d > range || s.player.mode === 'dead') return 0;
+  // Walked right up to him (not hidden in something), it can't miss him.
+  if (s.player.posture !== 'hidden' && Math.hypot(p.x - at.x, p.z - at.z) < SIGHT.touch && Math.abs(p.y - at.y) < 1.5) return 1;
   // The cone's axis: the way it faces, pitched down for a drone.
   const pc = Math.cos((S.pitch * Math.PI) / 180), ax = Math.sin(at.yaw) * pc, ay = -Math.sin((S.pitch * Math.PI) / 180), az = Math.cos(at.yaw) * pc, half = Math.cos((S.fov * Math.PI) / 360);
   let seen = 0;

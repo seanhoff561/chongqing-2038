@@ -38,7 +38,7 @@ describe('helicopter drop (M4-92)', () => {
     let under = 0;
     // (He steps out of their way: off to a roof far off, so they sweep without finding him.)
     teleport(s.player, roof.x + 400, roof.y + 50, roof.z + 400);
-    for (let i = 0; i < 180; i++) {
+    for (let i = 0; i < 330; i++) {
       run(s, w, secs(1));
       for (const u of squad) { const q = unitPose(w, u, s.time); down.forEach((p, k) => { if (Math.hypot(q.x - p.x, q.z - p.z) < 2.5 && Math.abs(q.y - p.y) < 1.5) seen.add(k); }); }
       for (const u of dogs) { const q = unitPose(w, u, s.time); if (u.trip && q.y < roof.y - (route[route.length - 1].y - route[0].y) - 2) under++; }

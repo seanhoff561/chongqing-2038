@@ -170,7 +170,10 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
   // (Up the walls, U-054: the vertical one's top character on the second floor, under the lower roof; the mahjong
   // room's over its door.)
   const under = Math.min(plans[q.n].wall, plans[q.n + 1].wall) - 0.6;
-  ([[-1, '老巷小面', 1.1, 4, Math.min(gy + 7.6, under)], [1, '麻将 · 24小时', 0, 0.5, Math.min(gy + 4.4, under)]] as const).forEach(([k, text, w, h, y]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: Math.atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
+  // (The vertical one hangs down from its top, four characters 1.05 apart: its letters sized to fit between 2.6 m up
+  // and the lower roof, and never into the ground, U-079.)
+  const vTop = Math.min(gy + 7.6, under), vw = Math.min(1.1, Math.max(0.5, (vTop - gy - 2.6) / (3 * 1.05 + 1))), vy = Math.max(vTop, gy + 2.6 + vw * (3 * 1.05 + 1) - vw / 2);
+  ([[-1, '老巷小面', vw, vw * 3.6, vy], [1, '麻将 · 24小时', 0, 0.5, Math.max(gy + 2.8, Math.min(gy + 4.4, under))]] as const).forEach(([k, text, w, h, y]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: Math.atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
   out.props.push({ kind: 'neonGlow', x: px + q.ax * 2, y: gy + 4.5, z: pz + q.az * 2, yaw: 0 });
   out.props.push({ kind: 'trash', x: px + ux * (half - 0.5) - q.ax * 2.5, y: gy, z: pz + uz * (half - 0.5) - q.az * 2.5, yaw: yaw });
   // The way up: a drainpipe on a wall, 4 m along from the grate, from the alley to its roof.

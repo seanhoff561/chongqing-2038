@@ -15,7 +15,7 @@ const w = getWorld('yuzhong'), T = (n: string) => w.teleports.find(t => t.name =
 
 describe('quadrupeds (M4-09)', () => {
   it('walks its beat at 3 m/s and chases at 8, taking stairs and a metre\'s jump', () => {
-    expect([UNITS.quadruped.patrol, UNITS.quadruped.chase]).toEqual([3, 8]);
+    expect([UNITS.quadruped.patrol, UNITS.quadruped.chase]).toEqual([1.8, 5]); // (slower since U-075: he can outrun one sprinting)
     expect(w.nav!.adj.some(a => a.some(e => e[2] === NAV.jump))).toBe(true);
     const up = navPath(w.nav!, foot('Shibati bottom'), foot('Shibati top'), 'quadruped')!;
     expect(up.kinds.includes(NAV.stairs)).toBe(true);
@@ -24,14 +24,15 @@ describe('quadrupeds (M4-09)', () => {
     const s = createState(1, w), dog = s.units.find(u => u.kind === 'quadruped' && u.patrol >= 0)!;
     s.flags.clear = true; s.flags.god = true; s.time = 12 * 3600;
     const way = navPath(w.nav!, foot('Shibati bottom'), foot('Shibati top'), 'quadruped')!.pts;
-    // He runs up the stair at 6 m/s; it starts after him 25 m behind, the hive passing on where he is (M4-13).
+    // He jogs up the stair at 4 m/s (sprinting he'd outrun it since U-075); it starts after him 25 m behind, the hive
+    // passing on where he is (M4-13).
     const behind = way[Math.max(0, 0)], start = { x: behind.x, y: behind.y, z: behind.z };
     teleport(s.player, way[6].x, way[6].y + 0.05, way[6].z);
     Object.assign(dog, { state: 'engaged', aware: 1.2, seen: { ...s.player.pos }, trip: { kind: 'look', path: [], i: 0, pos: start, yaw: 0, scan: 0, back: false, left: start, leftAt: s.time } });
     let k = 6, f = 0, gap = Infinity, climbed = 0, y0 = unitPose(w, dog, s.time).y;
     for (let t = 0; t < 60 * 90 && k < way.length - 1; t++) {
-      // Along his way at 6 m/s.
-      f += 6 / 60;
+      // Along his way at 4 m/s.
+      f += 4 / 60;
       while (k < way.length - 1 && f >= Math.hypot(way[k + 1].x - way[k].x, way[k + 1].z - way[k].z)) { f -= Math.hypot(way[k + 1].x - way[k].x, way[k + 1].z - way[k].z); k++; }
       const a = way[k], b = way[Math.min(way.length - 1, k + 1)], L = Math.hypot(b.x - a.x, b.z - a.z) || 1, g = Math.min(1, f / L);
       teleport(s.player, a.x + (b.x - a.x) * g, a.y + (b.y - a.y) * g + 0.05, a.z + (b.z - a.z) * g);

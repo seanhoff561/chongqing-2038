@@ -39,11 +39,21 @@ export function door(id: string, box: Solid, hinge: [number, number], dir: [numb
     out.props.push({ kind: 'door', x: hinge[0], y: box.y0, z: hinge[1], yaw, w, h: box.y1 - box.y0, d: 0.05, text: id });
     // What holds it, plain to see (U-066), gone when it's forced: a chain wound across it and its padlock; a lock's
     // hasp and padlock.
-    // (Through the door and out both faces, a padlock hanging on each side: seen from inside as from out, U-072.)
-    const n: [number, number] = [-dir[1], dir[0]], put = (u: number, dy: number, off: number, cw: number, ch: number, cd: number) =>
-      out.props.push({ kind: 'chain', x: mx + dir[0] * u + n[0] * off, y: y + dy, z: mz + dir[1] * u + n[1] * off, yaw, w: cw, h: ch, d: cd, text: id });
-    if (lock === 'chained') { put(0, 0, 0, w * 0.9, 0.06, 0.22); put(0, 0.14, 0, w * 0.75, 0.05, 0.2); for (const off of [-0.12, 0.12]) put(0, -0.12, off, 0.1, 0.13, 0.05); }
-    if (lock === 'locked') { put(w * 0.36, 0, 0, 0.24, 0.06, 0.16); for (const off of [-0.1, 0.1]) put(w * 0.36, -0.09, off, 0.08, 0.1, 0.045); }
+    // What holds it, on both faces (U-072), gone when it's forced. Chained: a chain of links (rings, every other one
+    // turned) run across each face and a padlock hanging where its ends meet. Locked: a handle on each face, a padlock
+    // hanging from it (U-079).
+    const n: [number, number] = [-dir[1], dir[0]], put = (kind: string, u: number, dy: number, off: number, cw: number, ch: number, cd: number, turn = 0) =>
+      out.props.push({ kind, x: mx + dir[0] * u + n[0] * off, y: y + dy, z: mz + dir[1] * u + n[1] * off, yaw: yaw + turn, w: cw, h: ch, d: cd, text: id });
+    for (const off of [-0.045, 0.045]) {
+      if (lock === 'chained') {
+        for (let k = 0, u = -w * 0.42; u <= w * 0.42; u += 0.05, k++) put('chain', u, 0.02 * Math.cos(u * 6), off, 0.065, 0.04, 0.012, k % 2 ? Math.PI / 2 : 0);
+        put('padlock', 0, -0.08, off * 1.4, 0.05, 0.06, 0.022); put('chain', 0, -0.035, off * 1.4, 0.034, 0.04, 0.008);
+      }
+      if (lock === 'locked') {
+        put('padlock', w * 0.4, 0.04, off * 1.2, 0.12, 0.022, 0.03);
+        put('chain', w * 0.4, -0.02, off * 1.8, 0.03, 0.04, 0.008); put('padlock', w * 0.4, -0.065, off * 1.8, 0.045, 0.055, 0.02);
+      }
+    }
   }
   out.inter.push({ id, kind: 'door', x: hinge[0] + (dir[0] * w) / 2, y: box.y0 + 1.1, z: hinge[1] + (dir[1] * w) / 2, r: 0.9, zh: label[0], en: label[1], data: lock === 'shut' ? { part: id } : { part: id, lock } });
 }

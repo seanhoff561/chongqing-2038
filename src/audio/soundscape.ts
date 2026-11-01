@@ -1,12 +1,12 @@
 // Everything he hears of the world round him, put together each frame: the empty city's ambience and music for where
-// he is (M4-51, M4-86), the machines where they are (M4-33), their dread (M4-52), gunfire as it carries (M4-54), his own breath
-// and heartbeat (M4-55), and a raid's siren (M4-63).
+// he is (M4-51, M4-86), the machines where they are (M4-33), their dread (M4-52), gunfire as it carries (M4-54), his
+// heartbeat when badly hurt (M4-55), and a raid's siren (M4-63).
 import * as THREE from 'three';
 import type { Audio } from './audio';
 import { MachineVoices } from './machines';
 import { Ambience, whereIs, type Where } from './ambience';
 import { Dread } from './dread';
-import { Breath } from './breath';
+import { Heart } from './heart';
 import { Music } from './music';
 import { machineShot, echo } from './gunfire';
 import { gunshot, raidSiren } from './moves';
@@ -14,14 +14,11 @@ import { raycast } from '../world/geom';
 import type { World } from '../world/world';
 import type { SimEvent, SimState } from '../sim/types';
 
-/** The ways he holds on and climbs, hard work all. */
-const CLIMBING = new Set(['grip', 'cling', 'wallclimb', 'wallrun', 'chimney']);
-
 export class Soundscape {
   readonly voices: MachineVoices;
   readonly ambience: Ambience;
   readonly dread: Dread;
-  readonly breath: Breath;
+  readonly heart: Heart;
   readonly music: Music;
   /** where he is, looked at twice a second, and whether there's cover over him */
   env: { where: Where; covered: boolean; height: number } = { where: 'street', covered: false, height: 0 };
@@ -37,7 +34,7 @@ export class Soundscape {
     this.voices = new MachineVoices(a);
     this.ambience = new Ambience(a);
     this.dread = new Dread(a);
-    this.breath = new Breath(a);
+    this.heart = new Heart(a);
     this.music = new Music(a);
   }
 
@@ -45,16 +42,15 @@ export class Soundscape {
   update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean) {
     const head = cam.position;
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
-    this.ambience.update(dt, { ...this.env, hour: (s.time / 3600) % 24, rain: s.weather.rain });
+    this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24 });
     // The music for where he is (M4-86): high up, in the streets, underground.
     this.music.update(this.env.where, this.env.height);
     this.voices.update(dt, s, w, head, cam.getWorldDirection(this.fwd));
     this.dread.update(dt, s, w, head, this.voices.nearest(head));
     // The raid breaking in on him: its siren, loud, through the 10 s (M4-63).
     if (s.raid && (this.raidIn -= dt) <= 0) { this.raidIn = 0.8; raidSiren(this.a); this.raidSirens++; }
-    // His own breath and heart (M4-55): spent, or badly hurt (U-077).
-    const p = s.player;
-    this.breath.update(dt, p.endurance, s.body.hp, Math.hypot(p.vel.x, p.vel.z), CLIMBING.has(p.mode));
+    // His heart when he's badly hurt (M4-55, U-077).
+    this.heart.update(s.body.hp);
   }
 
   /** His pistol fired: its report, and unsuppressed, its echoes off what's round him. */

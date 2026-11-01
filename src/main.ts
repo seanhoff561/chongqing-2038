@@ -3,6 +3,7 @@ import { Game } from './game';
 import { unitPose } from './sim/units';
 import { scenarios, scenarioByName } from './data/scenarios';
 import { DevPanel } from './dev/panel';
+import { applySettings } from './ui/settings';
 import { addItem } from './sim/inventory';
 import { readSave } from './sim/save';
 import { bootMenu } from './ui/boot-menu';
@@ -31,6 +32,8 @@ boot.world = performance.now();
 await stage('铺设街道 · Raising the streets');
 const game = new Game({ scenario: q.get('scenario') ?? 'run', seed, dev });
 boot.view = performance.now();
+// The player's settings put back: volumes, sensitivity, keys (U-079).
+applySettings(game);
 if (dev) new DevPanel(game);
 const save = q.get('scenario') ? null : readSave(localStorage);
 if (save) bootMenu(game, save);

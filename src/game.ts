@@ -281,6 +281,7 @@ export class Game {
     // Aimed through the 4x scope (U-058): the view through it, the gun out of sight behind it.
     const scoped = !!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1;
     this.hud.setScope(scoped);
+    this.hud.setAiming(!!gun && this.gun.ads > 0.5);
     if (scoped) this.hands.group.visible = false;
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });

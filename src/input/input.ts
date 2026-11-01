@@ -2,11 +2,32 @@
 import { B, emptyInput, type InputFrame } from '../sim/types';
 import type { Cmd } from '../sim/commands';
 
-const KEYS: Record<string, number> = {
-  Space: B.JUMP, ShiftLeft: B.SPRINT, ShiftRight: B.SPRINT, KeyC: B.CROUCH, ControlLeft: B.CROUCH, ControlRight: B.CROUCH,
-  // (Q lets go hanging on, and leans left on his feet: U-032.)
-  KeyZ: B.CRAWL, KeyF: B.INTERACT, KeyQ: B.DROP | B.LEAN_L, KeyE: B.LEAN_R, KeyR: B.RELOAD, KeyH: B.HEADLAMP, KeyX: B.CHIMNEY, KeyB: B.SLEEP,
-};
+/** What he can do from the keyboard, rebindable in the settings (U-079): its buttons (none for walking) and its keys
+ *  as they come. (Q lets go hanging on, and leans left on his feet: U-032.) */
+export const ACTIONS: { id: string; label: string; bits: number; keys: string[] }[] = [
+  { id: 'forward', label: '前 Forward', bits: 0, keys: ['KeyW'] }, { id: 'back', label: '后 Back', bits: 0, keys: ['KeyS'] },
+  { id: 'left', label: '左 Left', bits: 0, keys: ['KeyA'] }, { id: 'right', label: '右 Right', bits: 0, keys: ['KeyD'] },
+  { id: 'jump', label: '跳 Jump', bits: B.JUMP, keys: ['Space'] }, { id: 'sprint', label: '跑 Sprint', bits: B.SPRINT, keys: ['ShiftLeft', 'ShiftRight'] },
+  { id: 'crouch', label: '蹲 Crouch', bits: B.CROUCH, keys: ['KeyC', 'ControlLeft', 'ControlRight'] }, { id: 'crawl', label: '爬 Crawl', bits: B.CRAWL, keys: ['KeyZ'] },
+  { id: 'interact', label: '互动 Interact', bits: B.INTERACT, keys: ['KeyF'] }, { id: 'letgo', label: '放手/左探 Let go, lean left', bits: B.DROP | B.LEAN_L, keys: ['KeyQ'] },
+  { id: 'leanR', label: '右探 Lean right', bits: B.LEAN_R, keys: ['KeyE'] }, { id: 'reload', label: '装弹 Reload', bits: B.RELOAD, keys: ['KeyR'] },
+  { id: 'lamp', label: '头灯 Headlamp', bits: B.HEADLAMP, keys: ['KeyH'] }, { id: 'chimney', label: '撑墙 Chimney', bits: B.CHIMNEY, keys: ['KeyX'] },
+  { id: 'sleep', label: '睡觉 Sleep rough', bits: B.SLEEP, keys: ['KeyB'] },
+];
+/** Each action's keys just now. */
+export const binds: Record<string, string[]> = Object.fromEntries(ACTIONS.map(a => [a.id, [...a.keys]]));
+let KEYS: Record<string, number> = {};
+/** The keys' buttons, from the bindings. */
+function rebuild() { KEYS = {}; for (const a of ACTIONS) if (a.bits) for (const k of binds[a.id]) KEYS[k] = (KEYS[k] ?? 0) | a.bits; }
+rebuild();
+/** Bind an action to a key (taking it off any other action it was on). */
+export function bindKey(id: string, code: string) {
+  for (const a of ACTIONS) binds[a.id] = binds[a.id].filter(k => k !== code);
+  binds[id] = [code];
+  rebuild();
+}
+/** The bindings back to how they come. */
+export function resetKeys() { for (const a of ACTIONS) binds[a.id] = [...a.keys]; rebuild(); }
 
 export class Input {
   yaw = 0;
@@ -75,9 +96,9 @@ export class Input {
   /** The frame for the next tick; clears edge-triggered state. */
   frame(): InputFrame {
     const f = emptyInput();
-    const h = (k: string) => (this.held.has(k) ? 1 : 0);
-    f.my = h('KeyW') - h('KeyS');
-    f.mx = h('KeyD') - h('KeyA');
+    const any = (id: string) => (binds[id].some(k => this.held.has(k)) ? 1 : 0);
+    f.my = any('forward') - any('back');
+    f.mx = any('right') - any('left');
     f.yaw = this.yaw;
     f.pitch = this.pitch;
     f.buttons = this.buttons | this.mouse;

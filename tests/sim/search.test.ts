@@ -76,7 +76,8 @@ describe('search (M4-15)', () => {
     run(state, world, secs(1));
     expect(state.player.mode).toBe('hidden');
     let searched = false, found = -1;
-    for (let i = 0; i < secs(140) && found < 0; i++) {
+    // (The quadruped walks rather than runs since U-075: 100 m off, it takes a while to come.)
+    for (let i = 0; i < secs(240) && found < 0; i++) {
       run(state, world, 1);
       if (alertOf(state, 'yuzhong') === 'searching') searched = true;
       if (searched && alertOf(state, 'yuzhong') === 'engaged') found = i;

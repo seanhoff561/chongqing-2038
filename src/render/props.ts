@@ -269,7 +269,7 @@ export function buildProps(props: Prop[], share = 1): THREE.Group {
   const g = new THREE.Group(), big = new ChunkMerger(), small = new ChunkMerger(), swing: Prop[] = [];
   for (const p of props) {
     if (!keep(p, share)) continue;
-    if (p.kind === 'door' || p.kind === 'pane' || p.kind === 'chain') { swing.push(p); continue; }
+    if (p.kind === 'door' || p.kind === 'pane' || p.kind === 'chain' || p.kind === 'padlock') { swing.push(p); continue; }
     const b = builders[p.kind];
     const o = b ? b(p) : libProp(p);
     if (!o) continue;
@@ -324,15 +324,15 @@ export function smallProps(props: Prop[], share = 1): THREE.Mesh[] {
 /** Doors and window panes (M3-36), thousands of them: one instanced mesh of each per 64 m chunk, culled with the
  *  city's chunks and drawn only near; a door swings open (its slab turned about its hinge) and a pane goes when its
  *  interactable's world state opens. */
-function swingers(props: Prop[]): THREE.InstancedMesh[] {
+function swingers(props: Prop[]): THREE.Mesh[] {
   const chunks = new Map<string, Prop[]>();
-  for (const p of props) { const k = `${p.kind}:${Math.floor(p.x / 64)},${Math.floor(p.z / 64)}`; (chunks.get(k) ?? chunks.set(k, []).get(k)!).push(p); }
-  const out: THREE.InstancedMesh[] = [], m = new THREE.Matrix4(), q = new THREE.Matrix4(), sc = new THREE.Matrix4(), zero = new THREE.Matrix4().makeScale(0, 0, 0);
+  for (const p of props) { const k = `${p.kind === 'chain' || p.kind === 'padlock' ? 'lock' : p.kind}:${Math.floor(p.x / 64)},${Math.floor(p.z / 64)}`; (chunks.get(k) ?? chunks.set(k, []).get(k)!).push(p); }
+  const out: THREE.Mesh[] = [], m = new THREE.Matrix4(), q = new THREE.Matrix4(), sc = new THREE.Matrix4(), zero = new THREE.Matrix4().makeScale(0, 0, 0);
   for (const ps of chunks.values()) {
+    if (ps[0].kind === 'chain' || ps[0].kind === 'padlock') { out.push(locks(ps)); continue; }
     const door = ps[0].kind === 'door';
     // A unit slab: a door's from its hinge along +x, a pane's about its middle; each scaled to its size.
-    // (A chain or padlock goes like a pane when the door's forced: U-066.)
-    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(door ? 0.5 : 0, 0.5, 0), material(door ? MAT.metal : ps[0].kind === 'chain' ? MAT.concrete : MAT.glass), ps.length);
+    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(door ? 0.5 : 0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
     const place = (i: number, a: number) => {
       const p = ps[i];
       m.makeTranslation(p.x, p.y, p.z).multiply(q.makeRotationY(p.yaw + a)).multiply(sc.makeScale(p.w!, p.h!, p.d ?? (door ? 0.06 : 0.03)));
@@ -371,4 +371,33 @@ function swingers(props: Prop[]): THREE.InstancedMesh[] {
   return out;
 }
 
-export const propKinds = () => Object.keys(builders).concat(libKinds(), ['door', 'pane', 'chain']);
+/** A chunk's chains (rings) and padlocks (blocks) on chained and locked doors (U-066, U-079), merged into one mesh
+ *  (one draw for the lot); a door's go when it's forced, their corners pulled to one point. */
+function locks(ps: Prop[]): THREE.Mesh {
+  const ring = new THREE.TorusGeometry(0.5, 0.17, 4, 8).translate(0, 0.5, 0).toNonIndexed(), block = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0).toNonIndexed();
+  const m = new THREE.Matrix4(), q = new THREE.Matrix4(), sc = new THREE.Matrix4(), from = [0];
+  const parts = ps.map(p => {
+    const g = (p.kind === 'chain' ? ring : block).clone().applyMatrix4(m.makeTranslation(p.x, p.y, p.z).multiply(q.makeRotationY(p.yaw)).multiply(sc.makeScale(p.w!, p.h!, p.d ?? 0.03)));
+    from.push(from[from.length - 1] + g.getAttribute('position').count);
+    return g;
+  });
+  const mesh = new THREE.Mesh(mergeGeometries(parts)!, material(MAT.concrete)), pos = mesh.geometry.getAttribute('position') as THREE.BufferAttribute, rest = (pos.array as Float32Array).slice();
+  mesh.geometry.computeBoundingSphere();
+  mesh.userData.chunk = { x: ps[0].x, z: ps[0].z };
+  mesh.userData.detail = true;
+  const gone = new Uint8Array(ps.length);
+  ticking.push((_t, open) => {
+    if (!mesh.visible || !mesh.parent?.visible) return;
+    let moved = false;
+    for (let i = 0; i < ps.length; i++) {
+      const o = +!!open[ps[i].text!];
+      if (o === gone[i]) continue;
+      gone[i] = o; moved = true;
+      for (let k = from[i]; k < from[i + 1]; k++) { const j = o ? from[i] * 3 : k * 3; pos.setXYZ(k, rest[j], rest[j + 1], rest[j + 2]); }
+    }
+    if (moved) pos.needsUpdate = true;
+  });
+  return mesh;
+}
+
+export const propKinds = () => Object.keys(builders).concat(libKinds(), ['door', 'pane', 'chain', 'padlock']);

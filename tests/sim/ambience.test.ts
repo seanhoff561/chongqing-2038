@@ -1,13 +1,13 @@
 // M4-51 (U-051, U-052): the empty city's ambience changes with where he is (street, roof, alley, underground, indoors)
-// and the hour; rain on the street and roofs, dripping under cover, muffled indoors.
+// and the hour, muffled indoors and underground (no rain sound since U-079).
 import { describe, it, expect } from 'vitest';
 import { mix, whereIs } from '../../src/audio/ambience';
 import { setup, floor } from './helpers';
 import { solid } from '../../src/world/geom';
 
 describe('ambience (M4-51)', () => {
-  it('changes with where he is, the hour and the rain', () => {
-    const at = (where: Parameters<typeof mix>[0]['where'], hour = 12, rain = 0, covered = false) => mix({ where, hour, rain, covered });
+  it('changes with where he is and the hour', () => {
+    const at = (where: Parameters<typeof mix>[0]['where'], hour = 12) => mix({ where, hour });
     expect(at('roof').far).toBeGreaterThan(at('street').far);
     expect(at('alley').far).toBeLessThan(at('street').far);
     expect(at('under').muffle).toBeLessThan(2000);
@@ -16,12 +16,6 @@ describe('ambience (M4-51)', () => {
     expect(at('under').drone).toBe(0);
     // By night the far machinery thins.
     expect(at('street', 2).far).toBeLessThan(at('street', 12).far);
-    // Rain: hiss and ticks out in it (most on a roof), dripping under cover, muffled indoors, nothing underground.
-    expect(at('street', 12, 1).rain).toBe(1);
-    expect(at('roof', 12, 1).ticks).toBeGreaterThan(at('street', 12, 1).ticks);
-    expect(at('street', 12, 1, true).drips).toBeGreaterThan(at('street', 12, 1).drips);
-    expect(at('indoors', 12, 1).rain).toBeLessThan(at('street', 12, 1).rain);
-    expect(at('under', 12, 1).rain).toBe(0);
   });
   it('knows a street, a roof, an alley, a room and the underground', () => {
     const { world } = setup([

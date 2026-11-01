@@ -4,6 +4,9 @@
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { districtOf } from '../../src/sim/district';
+import { createState } from '../../src/sim/sim';
+import { teleport } from '../../src/sim/player';
+import { run } from './helpers';
 
 describe('blocked stairways and drowned sewers (M4-94)', () => {
   it('blocks stairwells part-way and drowns and plugs the sewers', () => {
@@ -18,5 +21,20 @@ describe('blocked stairways and drowned sewers (M4-94)', () => {
     expect((count('sump') + count('flood')) / runs).toBeGreaterThan(0.35);
     expect(count('plug')).toBeGreaterThan(0);
     expect(count('plug') / runs).toBeLessThan(0.2);
+  });
+  it('really blocks a stairwell: walking up its way from the blocked floor gets him no higher (U-079)', () => {
+    const w = getWorld('yuzhong'), lot = w.plots.find(p => !p.far && p.blocked !== undefined && p.route && p.route.length > 8)!, route = lot.route!;
+    const k = lot.blocked!, y0 = route[3 + 4 * k].y, s = createState(1, w);
+    s.flags.god = true;
+    teleport(s.player, route[3 + 4 * k].x, y0 + 0.05, route[3 + 4 * k].z);
+    let top = y0;
+    // Up the next flights' points one by one, a minute on each at most (jumping as he goes, in case a step would do).
+    for (const pt of route.slice(4 + 4 * k, 8 + 4 * k)) for (let i = 0; i < 60 * 15; i++) {
+      const p = s.player, dx = pt.x - p.pos.x, dz = pt.z - p.pos.z;
+      if (Math.hypot(dx, dz) < 0.3) break;
+      run(s, w, 1, { my: 1, yaw: Math.atan2(-dx, -dz), buttons: i % 40 === 0 ? 1 : 0, pressed: i % 40 === 0 ? 1 : 0 });
+      top = Math.max(top, p.pos.y);
+    }
+    expect(top - y0).toBeLessThan(1.5);
   });
 });

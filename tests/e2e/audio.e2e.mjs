@@ -25,10 +25,10 @@ export default async function ({ open, fail }) {
     h.state = 'engaged'; h.aware = 1.5; d0.alert = 1; for (let i = 0; i < 200; i++) g.runFrames(1);
     // Hurt and hunted (M4-55): his breath and heart loud.
     g.state.flags.god = true; g.state.body.hp = 10; for (let i = 0; i < 30; i++) g.runFrames(1);
-    const br = g.sound.breath.level;
-    // Rain plays (synthesised: U-074).
+    const heart = g.sound.heart.level;
+    // In rain (no rain sound since U-079), nothing breaks.
     g.state.weather.rain = 1; for (let i = 0; i < 10; i++) g.runFrames(1); g.state.weather.rain = 0;
-    return { state: a.ctx?.state, one, three, n: fly.length, far: g.sound.ambience.level.far, alert: d0.alert, heart: br.heart, track: g.sound.music.track };
+    return { state: a.ctx?.state, one, three, n: fly.length, far: g.sound.ambience.level.far, alert: d0.alert, heart, track: g.sound.music.track };
   })()`);
   if (r.state !== 'running') fail('audio', `the audio is ${r.state} after a click`);
   // The city's ambience playing under it all (M4-51).

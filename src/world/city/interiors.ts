@@ -77,22 +77,18 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
       flight(CORE.near, CORE.lane, mid, CORE_W, y + (3 * FLOOR) / 4, false);
     }
     out.solids.push(B(0, wall - SLAB, 0, CORE.near, wall, CORE_W, MAT.concrete));
-    // Blocked part-way up, two in five (U-069): at a floor above the first, the flight up from it heaped to the
-    // ceiling with fallen concrete, or a steel grille welded across its foot. (Up from there another way, or not.)
+    // Blocked part-way up, two in five (U-069): at a floor above the first, the stairwell from its landing to the next
+    // floor filled with fallen concrete, both flights and the half landing between, to the slab over it, so there's no
+    // way past it (U-079: a heap on one flight could be gone round). (Up from there another way, or not.)
     // (Its own dice, so the rooms carved after come out as they always did: the map is frozen, U-053. A set piece's
     // stairwell, one asked for, stays open.)
     const sb = makeRng(hashString(`stairs:${l.id}`));
     if (core !== true && n >= 3 && rand(sb) < STAIR_BLOCK) {
       const kb = 1 + randInt(sb, n - 2), y = base + kb * FLOOR;
       l.blocked = kb;
-      if (rand(sb) < 0.6) {
-        out.solids.push(B(CORE.near, y, 0, CORE.near + 1.5, y + FLOOR - SLAB, CORE.lane, MAT.rubble));
-        for (let i = 0; i < 3; i++) out.decor.push(B(CORE.near + 1.5, y, i * CORE.lane / 3, CORE.near + 1.9 + rand(sb) * 0.6, y + 0.3 + rand(sb) * 0.6, (i + 1) * CORE.lane / 3, MAT.rubble));
-      } else {
-        out.solids.push(B(CORE.near - 0.03, y, 0, CORE.near + 0.03, y + FLOOR - SLAB, CORE.lane, MAT.hidden));
-        for (let v = 0.06; v < CORE.lane; v += 0.13) out.decor.push(B(CORE.near - 0.015, y, v, CORE.near + 0.015, y + FLOOR - SLAB, v + 0.025, MAT.metal));
-        for (const yy of [y + 0.05, y + 1.1, y + FLOOR - SLAB - 0.08]) out.decor.push(B(CORE.near - 0.02, yy, 0, CORE.near + 0.02, yy + 0.04, CORE.lane, MAT.metal));
-      }
+      out.solids.push(B(CORE.near, y, 0, CORE_L, y + FLOOR - SLAB, CORE_W, MAT.rubble));
+      // Its face to the landing broken up: chunks spilled out onto it.
+      for (let i = 0; i < 4; i++) out.decor.push(B(CORE.near - 0.4 - rand(sb) * 0.5, y, (i * CORE_W) / 4, CORE.near, y + 0.3 + rand(sb) * 0.7, ((i + 1) * CORE_W) / 4, MAT.rubble));
     }
     // Roof hut over the shaft, its door onto the roof beside the near landing: locked as a rule, a lock to break.
     const hut = [

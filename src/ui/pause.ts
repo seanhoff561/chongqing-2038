@@ -4,6 +4,7 @@
 import type { Game } from '../game';
 import { teleport } from '../sim/player';
 import type { Preset } from '../render/view';
+import { settingsHTML, wireSettings } from './settings';
 import { deleteSave } from '../sim/save';
 
 const CONTROLS: [string, string][] = [
@@ -82,17 +83,20 @@ export class PauseMenu {
   private render() {
     const g = this.game, gym = g.scenario.name === 'gym';
     const left = gym
-      ? `<div class="pz-h">训练场区域 Gym areas</div>` +
-        g.world.teleports.map((t, i) => `<button data-tp="${i}">${t.name}</button>`).join('') +
+      ? `<div class="pz-h">训练场区域 Gym areas</div><select class="pz-tp"><option value="">-</option>${g.world.teleports.map((t, i) => `<option value="${i}">${t.name}</option>`).join('')}</select>` +
         `<button data-a="game">回到游戏 Back to the game</button>`
       : `<button data-a="gym">运动训练场 Movement gym</button>` +
         (g.scenario.run ? `<div class="pz-note">Leaves this run; your last sleep is saved.</div>` : '');
     const newRun = this.confirmNew ? `<button data-a="newrun" class="on">确定？ Sure? This run is lost</button>` : `<button data-a="newrun">新的一局 New run</button>`;
     const cur = g.view.preset;
     const quality = `<div class="pz-h">画质 Graphics</div><div class="pz-row">${(['low', 'medium', 'high'] as const).map(p => `<button data-preset="${p}"${p === cur ? ' class="on"' : ''}>${{ low: '低 Low', medium: '中 Medium', high: '高 High' }[p]}</button>`).join('')}</div>`;
-    this.el.innerHTML = `<div class="pz-col"><div class="pz-title">暂停 PAUSED</div><button data-a="resume">继续 Resume</button>${left}${newRun}${quality}<div class="pz-note pz-credit">Map data © OpenStreetMap contributors (ODbL). Elevation: SRTM via Terrain Tiles.</div></div>
+    this.el.innerHTML = `<div class="pz-col"><div class="pz-title">暂停 PAUSED</div><button data-a="resume">继续 Resume</button>${left}${newRun}${quality}${settingsHTML(g)}<div class="pz-note pz-credit">Map data © OpenStreetMap contributors (ODbL). Elevation: SRTM via Terrain Tiles.</div></div>
       <div class="pz-col pz-keys"><div class="pz-h">操作 Controls</div>${CONTROLS.map(([k, a]) => `<div><b>${k}</b><span>${a}</span></div>`).join('')}</div>`;
-    this.el.querySelectorAll<HTMLButtonElement>('button').forEach(b => { b.onclick = () => this.act(b.dataset); });
+    this.el.querySelectorAll<HTMLButtonElement>('button:not([data-bind]):not([data-keys])').forEach(b => { b.onclick = () => this.act(b.dataset); });
+    // (The gym's areas a dropdown, not a long list: U-079.)
+    const tp = this.el.querySelector<HTMLSelectElement>('.pz-tp');
+    if (tp) tp.onchange = () => { if (tp.value) this.act({ tp: tp.value }); };
+    wireSettings(g, this.el, () => this.render());
   }
 
   private act(d: DOMStringMap) {

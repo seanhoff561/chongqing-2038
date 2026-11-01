@@ -49,7 +49,12 @@ export function quietStart(s: SimState, w: World) {
     const p = u.patrol >= 0 ? w.patrols[u.patrol] : undefined, c = u.cam !== undefined ? w.cameras[u.cam] : undefined, near = (q: { x: number; z: number }) => Math.hypot(q.x - at.x, q.z - at.z) < QUIET.r;
     // (And the columns marching through, the hunters on the docks round it, the cameras and sensors, dark for now.)
     const col = u.convoy ? w.convoys?.[u.convoy.path] : undefined, dock = u.reserve?.dock !== undefined ? w.docks[u.reserve.dock] : undefined;
-    if ((p && p.pts.some(near)) || (c && near(c)) || (col && col.pts.some(near)) || (dock && near(dock))) u.quiet = until;
+    // A beat counts if any leg of it passes near, not just its stops (a sky drone's legs run long).
+    const leg = (pts: { x: number; z: number }[]) => pts.some((a, i) => {
+      const b = pts[(i + 1) % pts.length], dx = b.x - a.x, dz = b.z - a.z, f = Math.max(0, Math.min(1, ((at.x - a.x) * dx + (at.z - a.z) * dz) / (dx * dx + dz * dz || 1)));
+      return near({ x: a.x + dx * f, z: a.z + dz * f });
+    });
+    if ((p && leg(p.pts)) || (c && near(c)) || (col && col.pts.some(near)) || (dock && near(dock))) u.quiet = until;
   }
 }
 

@@ -1,5 +1,6 @@
 // Movement sound cues (U-004): every parkour action has one fixed, recognisable sound.
 import type { Audio } from './audio';
+import { playRecorded } from './samples';
 
 type Play = (a: Audio, t: number) => void;
 
@@ -91,6 +92,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
 export function playMove(a: Audio, id: string) {
   const f = MOVE_SOUNDS[id];
   if (!f || !a.ready) return;
+  // (The grab as recorded, the one recording kept: U-079.)
+  if (playRecorded(a, id)) return;
   f(a, a.ctx!.currentTime + 0.005);
 }
 

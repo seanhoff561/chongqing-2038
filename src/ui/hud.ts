@@ -23,9 +23,11 @@ export class Hud {
     this.root.appendChild(this.scope);
   }
 
-  /** Looking through the 4x scope (U-058): its round view and crosshair over the screen. */
+  /** Looking through the 4x scope (U-058): its round view over the screen (no crosshair: U-079). */
   private scope: HTMLDivElement;
   setScope(on: boolean) { const v = on ? 'block' : 'none'; if (this.scope.style.display !== v) this.scope.style.display = v; }
+  /** Aiming down the sights or through the scope: the centre dot gone (U-079). */
+  setAiming(on: boolean) { const d = this.root.querySelector<HTMLDivElement>('.dot')!, v = on ? 'none' : ''; if (d.style.display !== v) d.style.display = v; }
 
   private shown = -1;
   /** The ring: how far along what he's doing (0..1), or hidden (below 0). */

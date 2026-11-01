@@ -12,7 +12,7 @@ const CHAIN = (f: string) => f === 'thumb'
 
 /** Finger curl 0 (straight) to 1 (fist) and thumb curl; where the hand sits in camera space and how it's turned; where
  *  its elbow is, if the forearm runs off at an angle to the hand (holding a gun: U-052), else straight back from it. */
-export interface HandPose { curl: number; thumb: number; pos: THREE.Vector3; rot: THREE.Euler; elbow?: THREE.Vector3; /** the thumb moved out from the palm (metres along the back of the hand's axis), clear of a pistol's side (U-061) */ thumbOut?: number; /** the whole thumb swung about that axis at its root (rad): forward along a pistol's frame, under its slide (U-071) */ thumbSwing?: number }
+export interface HandPose { curl: number; thumb: number; pos: THREE.Vector3; rot: THREE.Euler; elbow?: THREE.Vector3; /** the thumb moved out from the palm (metres along the back of the hand's axis), clear of a pistol's side (U-061) */ thumbOut?: number; /** the whole thumb swung about that axis at its root (rad): forward along a pistol's frame, under its slide (U-071) */ thumbSwing?: number; /** the index finger's own curl, if not the others' (U-079: round a pistol's trigger) */ index?: number }
 
 interface Hand {
   pivot: THREE.Group;
@@ -26,6 +26,8 @@ interface Hand {
   out: number;
   /** the thumb swung at its root about outAxis (rad) */
   swing: number;
+  /** the index finger's own curl, or -1 for the others' */
+  index: number;
   bones: Map<string, THREE.Object3D>;
   rest: Map<string, { p: THREE.Vector3; q: THREE.Quaternion }>;
   side: number;
@@ -100,7 +102,7 @@ export class Hands3D {
       this.group.add(pivot);
       const curlAxis = L.clone().multiplyScalar(side * CALIB.flip);
       const thumbAxis = F.clone().multiplyScalar(side * CALIB.flip * CALIB.thumbMix).add(L.clone().multiplyScalar(side * CALIB.flip * (1 - CALIB.thumbMix))).normalize();
-      this.hands[i] = { pivot, curlAxis, thumbAxis, outAxis: Bk.clone().normalize(), out: 0, swing: 0, bones, rest, along, side, curl: 0.3, thumb: 0.3, held, cuff, arm: BACK.clone() };
+      this.hands[i] = { pivot, curlAxis, thumbAxis, outAxis: Bk.clone().normalize(), out: 0, swing: 0, index: -1, bones, rest, along, side, curl: 0.3, thumb: 0.3, held, cuff, arm: BACK.clone() };
       if (++loaded === 2) this.ready = true;
     }, undefined, () => { /* missing model: no hands */ }));
   }
@@ -112,7 +114,7 @@ export class Hands3D {
       const names = CHAINS[f], pts = SCRATCH_P, qs = SCRATCH_Q;
       names.forEach((n, j) => { const r = h.rest.get(n)!; pts[j].copy(r.p); qs[j].copy(r.q); });
       const thumb = f === 'thumb';
-      const amount = thumb ? h.thumb : h.curl;
+      const amount = thumb ? h.thumb : f === 'index-finger' && h.index >= 0 ? h.index : h.curl;
       const angles = thumb ? THUMB_ANGLES : FINGER_ANGLES;
       const axis = thumb ? h.thumbAxis : h.curlAxis;
       for (let k = 0; k < angles.length; k++) {
@@ -144,6 +146,7 @@ export class Hands3D {
     h.thumb += (pose.thumb - h.thumb) * k;
     h.out += ((pose.thumbOut ?? 0) - h.out) * k;
     h.swing += ((pose.thumbSwing ?? 0) - h.swing) * k;
+    h.index = pose.index === undefined ? -1 : h.index < 0 ? pose.index : h.index + (pose.index - h.index) * k;
     h.pivot.position.lerp(pose.pos, k);
     tmpQ.setFromEuler(pose.rot);
     h.pivot.quaternion.slerp(tmpQ, k);
@@ -185,13 +188,13 @@ export const heldAt = (id: string) => (HOLDS[id]?.seat ? HELD_AT.clone().add(HOL
 /** How each thing is held (U-052), the right hand's place and turn in camera space: a handshake grip (the back of the
  *  hand outward, whatever is held standing up through the fist), the pistol out in front at the lower right as a
  *  shooter holds it, the knife low with its point forward. The forearms run down and away to elbows at his sides. */
-const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; curl?: number; thumb?: number; thumbOut?: number; thumbSwing?: number; lthumb?: number; lcurl?: number; seat?: THREE.Vector3 } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
+const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; curl?: number; thumb?: number; thumbOut?: number; thumbSwing?: number; index?: number; lthumb?: number; lcurl?: number; seat?: THREE.Vector3 } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
 /** (A hold's fingers and thumbs, right and left, if not curled tight round the grip, and where the item sits in the fist
  *  if not at HELD_AT: the pistol's thumb forward along the frame's side, moved
  *  out from the palm so it's clear of the gun (U-061), the left hand's fingers wrapping the right's: U-056, U-057, fitted by
  *  tests/e2e/thumbs.e2e.mjs.) */
 const HOLDS: Record<string, typeof HOLD> = {
-  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, thumbOut: -0.013, thumbSwing: -0.8, lthumb: 0.15, lcurl: 0.7 },
+  pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, thumbOut: -0.013, thumbSwing: -0.8, index: 0.75, lthumb: 0.15, lcurl: 0.7 },
   knife: { pos: new THREE.Vector3(0.2, -0.22, -0.36), rot: new THREE.Euler(-0.9, 0.2, -1.3) },
 };
 const LEFT_ROT = new THREE.Euler(0.25, -0.6, 1.35);
@@ -212,7 +215,7 @@ export function poseFor(p: Player, i: number, readied: boolean, holding: string,
   const hold = HOLDS[holding] ?? HOLD;
   // (Only the holds of their own bend the forearms toward the elbows; the rest are held as they always were, U-057.)
   const own = holding in HOLDS;
-  if (holding && i === 1) return { curl: hold.curl ?? 0.95, thumb: hold.thumb ?? 0.8, thumbOut: hold.thumbOut, thumbSwing: hold.thumbSwing, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: own ? R_ELBOW : undefined };
+  if (holding && i === 1) return { curl: hold.curl ?? 0.95, thumb: hold.thumb ?? 0.8, thumbOut: hold.thumbOut, thumbSwing: hold.thumbSwing, index: hold.index, pos: hold.pos.clone(), rot: hold.rot.clone(), elbow: own ? R_ELBOW : undefined };
   // The left hand wraps the item at its support point: its fist centre (the mirror of HELD_AT) lands there; changing
   // a magazine it drops to his belt and comes back with the new one.
   if (holding && support) {

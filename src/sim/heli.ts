@@ -14,7 +14,7 @@ type V3 = { x: number; y: number; z: number };
 /** How many machines must have seen him, within how long (s); how high it hovers over the roof and how wide it
  *  circles (m); the longest sweep and the shortest time before it comes again (s); how far round the building the
  *  dogs and crawlers search underground (m). */
-export const HELI = { seen: 3, within: 30, hover: 18, circle: 16, sweep: 180, again: 600, under: 300, /** s a floor's landing is looked over */ look: 3 };
+export const HELI = { seen: 3, within: 30, hover: 18, circle: 16, sweep: 330, again: 600, under: 300, /** s a floor's landing is looked over */ look: 3 };
 
 /** The enterable building he's inside, if any: in its footprint, under its roof. */
 export function buildingAt(w: World, at: V3): number {

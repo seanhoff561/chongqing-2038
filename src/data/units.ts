@@ -200,6 +200,7 @@ export const HEARING = { occluded: 0.6, /** real s a sight of him outweighs mach
  *  falls at DECAY a second otherwise; how much each posture and each way of moving shows. */
 export const SIGHT = {
   rate: 2.5, min: 0.04, decay: 0.15, /** how much faster it climbs in a Heightened district (M4-16) */ heightened: 1.3,
+  /** within this far (m) of him, level with him, a machine bumps into him whichever way it faces, however dark */ touch: 1,
   posture: { stand: 1, crouch: 0.55, crawl: 0.3, hang: 0.8, hidden: 0 },
   motion: { still: 0.4, crawl: 0.45, crouch: 0.6, jog: 0.85, fast: 1 },
 };

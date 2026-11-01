@@ -1,4 +1,4 @@
-// M4-10 (U-031): humanoids. 2.5 m/s walking, 4.5 running, stairs only (no jumps), armoured and armed; and they hunt
+// M4-10 (U-031): humanoids. 1.8 m/s walking, 3.6 running (U-075; were 2.5 and 4.5), stairs only (no jumps), armoured and armed; and they hunt
 // him like soldiers: calling each other, coming round from the sides, getting behind cover, going through the
 // hiding places where he was one by one.
 import { describe, it, expect } from 'vitest';
@@ -23,10 +23,10 @@ function world(patrols: Patrol[], more: Solid[] = [], hides: HideSpot[] = []) {
 const at = (g: ReturnType<typeof world>, i: number) => unitPose(g.world, g.state.units[i], g.state.time);
 
 describe('humanoids (M4-10)', () => {
-  it('walks at 2.5 m/s to look and runs at 4.5 fighting him; stairs but no jumps; armoured and armed', () => {
+  it('walks at 1.8 m/s to look and runs at 3.6 fighting him (U-075); stairs but no jumps; armoured and armed', () => {
     // (Its armour is its body's hit zone, M4-19.)
-    expect([UNITS.humanoid.patrol, UNITS.humanoid.chase, UNITS.humanoid.hp, ZONES.humanoid.body, UNITS.humanoid.weapon]).toEqual([2.5, 4.5, 300, 0.1, 'rifle']);
-    for (const [aware, speed] of [[0.4, 2.5], [1.2, 4.5]] as const) {
+    expect([UNITS.humanoid.patrol, UNITS.humanoid.chase, UNITS.humanoid.hp, ZONES.humanoid.body, UNITS.humanoid.weapon]).toEqual([1.8, 3.6, 300, 0.1, 'rifle']); // (slower since U-075)
+    for (const [aware, speed] of [[0.4, 1.8], [1.2, 3.6]] as const) {
       const g = world([post(0, -60)]), u = g.state.units[0];
       teleport(g.state.player, 0, 0, 200);
       Object.assign(u, { aware, seen: { x: 0, y: 0, z: 40 } });
