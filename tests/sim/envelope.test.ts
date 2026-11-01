@@ -213,7 +213,7 @@ function jumpBackGrab(d: number, late: number, low: number) {
   run(state, world, 3);
   for (let i = 0; i < secs(3) && p.pos.z - 0.25 > -2.2; i++) run(state, world, 1, { my: 1 });
   run(state, world, 15 + late, { my: 1, pressed: B.JUMP, buttons: B.JUMP });
-  run(state, world, 29 + late, { pressed: B.JUMP, buttons: B.JUMP, yaw: 0, pitch: 0 });
+  run(state, world, 29 + late, { pressed: B.JUMP, buttons: B.JUMP, yaw: 0, pitch: 0.3 }); // (Looking up it a little to kick up it: U-055.)
   run(state, world, 1, { pressed: B.JUMP, buttons: B.JUMP, yaw: Math.PI, pitch: 1.5 });
   for (let i = 0; i < secs(1.5) && p.mode !== 'grip' && !p.onGround; i++) { aim(state, 0, 2.9 - low, -3 + d); run(state, world, 1, { buttons: LMB | RMB }); }
   return standsAt(state, world, 3, { buttons: LMB | RMB, my: 1 });

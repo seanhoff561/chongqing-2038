@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-73 Wall kick by where he looks (U-055).
-Features done: 195 / 338 | Last done: M4-72
+**Status:** building M4. Next: M4-74 Chimneying low, from the ground (U-055).
+Features done: 196 / 338 | Last done: M4-73
 <!-- /status -->
 
 ## Log
@@ -54,3 +54,4 @@ Features done: 195 / 338 | Last done: M4-72
 - M4-43 Brighter lights at night (U-050): brighter lights at night: lamp pools, windows, signs, machine lights (U-050)
 - M4-44 Every item use answers (U-050): every item use answers: an effect or why not (U-050)
 - M4-72 No roll: every fall lands as a roll did (U-054): the roll removed, every fall as safe as a roll was; the big-fall sound kept (U-054, U-055)
+- M4-73 Wall kick by where he looks (U-055): a wall kick looking straight at the wall stalls; look up to climb it (U-055)
