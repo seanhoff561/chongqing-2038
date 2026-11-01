@@ -194,7 +194,7 @@ export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number;
 /** Thermal sight at night (DESIGN section 5): his heat shows as full light within a unit's thermal range, a tenth
  *  of it under a mylar blanket, three tenths wet, none deeper than a metre in water. */
 export const THERMAL = { mylar: 0.1, wet: 0.3, deep: 1 };
-export const HEARING = { occluded: 0.6, /** real s a sight of him outweighs machine fire heard */ fresh: 5, hostile: new Set(['pistol', 'shotgun', 'grenade', 'firecrackers', 'explosion', 'gunfire']) };
+export const HEARING = { occluded: 0.6, /** real s a sight of him outweighs machine fire heard */ fresh: 5, /** a noise heard this far off or further (m) scares a delivery robot off its route (M4-34), and how far it goes */ scare: 40, flee: 30, hostile: new Set(['pistol', 'shotgun', 'grenade', 'firecrackers', 'explosion', 'gunfire']) };
 
 /** Seeing him (DESIGN section 5): awareness climbs at RATE x visibility a second while he's visible at all (MIN),
  *  falls at DECAY a second otherwise; how much each posture and each way of moving shows. */

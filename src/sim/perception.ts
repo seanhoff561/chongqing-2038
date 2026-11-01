@@ -16,6 +16,7 @@ import { onUseId } from './use';
 import { LEAN } from './player';
 import { remember } from './hive';
 import { heightened, districtOf } from './district';
+import { leave } from './alert';
 
 type V3 = { x: number; y: number; z: number };
 
@@ -159,6 +160,12 @@ export function stepHearing(s: SimState, w: World) {
       if (d > r * HEARING.occluded && raycast(w.index, e.x, e.y + 0.5, e.z, (ear.x - e.x) / d, (ear.y - e.y - 0.5) / d, (ear.z - e.z) / d, d - 0.1)) continue;
       // Machine fire (its own or its fellows') tells it where the fight is, not where he is: a fresh sight of him stands.
       if (e.kind === 'gunfire' && u.saw !== undefined && s.time - u.saw < HEARING.fresh * SCALE) continue;
+      // A delivery robot doesn't look into a loud noise (a firecracker, a shot): it's scared off its route, away from
+      // it, and back to its round after (M4-34).
+      if (u.kind === 'delivery') {
+        if (e.r >= HEARING.scare && !u.trip) { const dx = at.x - e.x, dz = at.z - e.z, l = Math.hypot(dx, dz) || 1; leave(s, w, u, 'look', { x: at.x + (dx / l) * HEARING.flee, y: at.y, z: at.z + (dz / l) * HEARING.flee }); }
+        continue;
+      }
       u.aware = Math.max(u.aware ?? 0, 0.35);
       u.seen = { x: e.x, y: e.y, z: e.z };
     }
