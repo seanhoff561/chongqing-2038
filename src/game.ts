@@ -19,6 +19,7 @@ import { lineById, SPEAKERS } from './data/dialogue';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
 import { RaidLight } from './render/raidlight';
+import { LootMarks } from './render/lootmarks';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -77,6 +78,8 @@ export class Game {
   readonly sound = new Soundscape(this.audio);
   /** red light flashing round the chamber while a raid breaks in (M4-63) */
   readonly raidLight = new RaidLight();
+  /** a mark over what he can loot (M4-90) */
+  readonly loot = new LootMarks();
   readonly hands: Hands3D;
   /** The inside of where he's hidden (M3-47). */
   readonly hideView = new HideView();
@@ -118,7 +121,7 @@ export class Game {
     this.input = new Input(this.view.renderer.domElement);
     this.sky = new Sky(this.view);
     this.hands = new Hands3D(this.view.fp.cam);
-    this.view.scene.add(this.raidLight.light);
+    this.view.scene.add(this.raidLight.light, this.loot.group);
     this.view.scene.add(this.hideView.group);
     this.underwater = new Underwater(this.view);
     this.rigged.userData.n = 0;
@@ -309,6 +312,7 @@ export class Game {
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
     this.view.setLamp(this.state.player.lamp);
     this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
+    this.loot.update(this.state, this.world, this.view.fp.cam.position, this.state.tick / 60);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
     // What he hears of the city and its machines (audio/soundscape.ts).
     this.alarmBoards();

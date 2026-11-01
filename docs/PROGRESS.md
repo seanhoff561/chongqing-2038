@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-90 Lootable things plain to see (U-066).
-Features done: 237 / 360 | Last done: M4-89
+**Status:** building M4. Next: M4-91 Most street doors shut (U-066).
+Features done: 238 / 360 | Last done: M4-90
 <!-- /status -->
 
 ## Log
@@ -96,3 +96,4 @@ Features done: 237 / 360 | Last done: M4-89
 - M4-63 The raid wakes him to sirens (U-052): the raid wakes him to sirens and red light flashing round the chamber (U-052)
 - M4-86 Synth music by place (U-065): synth music by place: a calm windy track high up, a grounded one in the streets, a deep one underground, slow beats (U-065)
 - M4-89 Stairwells and trapdoors seen through (U-066): stairwells and trapdoors seen through: no floor drawn over them (U-066)
+- M4-90 Lootable things plain to see (U-066): lootable things plain to see: a floating mark over what's worth searching (U-066)
