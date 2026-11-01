@@ -222,3 +222,10 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 ## M4-86: synth music by place (U-065)
 - With headphones, listen in the street (the grounded track: warm bass, soft beat, electric piano), up on a high roof (the calm, windy one: pads and a slow echoing arpeggio, no drums) and underground (the deep one: echoing chords, sub bass, slow four on the floor, drips). Melodic and relaxing, a little haunting? The cross-fade as you climb up or go down: smooth? Any part grating, too loud against the effects, or too repetitive after 10 minutes?
 - Keys (U-066): B (hold) lies down to sleep rough; Esc opens and closes the pause and settings menu.
+
+## M4-92: the helicopter drop (U-067)
+- Get seen by three or more machines, then duck into an enterable building. Does the helicopter come in loud over the roofs, hover and circle with its light, and a squad come down the stairs floor by floor? Can you slip out a window, the back, or down while they sweep? Do dogs and small spider drones turn up in the sewers nearby?
+
+## M4-97 and M4-88: faint music, real rain (U-070)
+- Play 20 minutes with headphones. Is it mostly silent with just the city's quiet sound, a faint slow piece only now and then (a few minutes apart), never loud? Does it feel like the reference (Breath of the Wild, but colder and more futuristic)?
+- In rain: does it sound like real rain now (it's a recording), quieter under cover with the gutters dripping, dull indoors? Not too loud?

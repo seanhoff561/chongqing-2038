@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 82 of 99 done
+## M4: 83 of 101 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -948,11 +948,23 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Most doors at street level are chained shut, locked or collapsed (each shown so: a chain and padlock, a lock, rubble across it); only a few in each block open freely
   - Locked ones open to a key or the crowbar (forcing is loud), chained ones to the crowbar or bolt cutters, collapsed ones not at all
   - Sim test: share of street doors open freely under a quarter in every district, each other kind present; screenshots of each
-- [ ] **M4-92** Helicopter troop drop (U-067)
+- [x] **M4-92** Helicopter troop drop (U-067)
   - Seen by several machines at once and then gone into a building, he brings a helicopter: it flies in loud over the roofs, hovers over that building and drops a squad of humanoids onto its roof by rope
   - The squad comes in at the roof, down the stairwell, and sweeps the building floor by floor, every room; the helicopter circles with a searchlight while they do
   - Robot dogs and small spider drones go into the sewers, tunnels and underground ways near it at the same time
   - Sim test: the drop called when he goes into a building after being seen by three machines; the squad lands on its roof, goes down its stairs and visits every floor; dogs and spiders go underground near it; a screenshot of the helicopter over the roof
+- [ ] **M4-97** Faint, rare music (U-070)
+  - Most of the time no music at all, only the quiet ambience; now and then, minutes apart, a short piece fades in: very faint, slow, sparse (soft piano-like notes over a cold synth pad, long reverb, no drums), futuristic and haunting, different by place, and fades away again
+  - Much quieter than before: always well under the ambience and effects
+  - Unit test: the music is silent most of the time and its pieces slow and sparse; the listening pass is in PLAYTEST
+- [ ] **M4-88** Rain realism pass (U-065)
+  - The rain sounds quiet and real, never loud or annoying: a soft hiss, drops on metal and awnings sparse and low, dripping under cover, dull indoors
+  - No darkening or sheen filter laid over buildings and the ground in rain
+  - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain
+  - The rain is a real recording of rain (freely licensed, its source in docs/CREDITS.md), louder out in it, dull indoors, with the dripping under cover (U-070)
+- [ ] **M4-98** Recorded sounds (U-070)
+  - Where good freely licensed recordings exist, the game's sounds are real recordings rather than synthesised: footsteps, doors, glass, gunfire, impacts, water, wind (their sources and licences listed in docs/CREDITS.md)
+  - Each recording loads and plays; a missing one falls back to the synthesised sound
 - [ ] **M4-93** Eldritch walkers (U-069)
   - The giant walkers look less like spiders and more like eldritch horrors: taller than they are wide, all white, a small main body held high on many giant jointed legs that make up most of them
   - A few different variations (leg count, body shape, how they stand and step), each street giant one of them
@@ -972,10 +984,6 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Easy to shoot down, and one shot down quietly does not tell the whole network: only machines that see or hear it go to look
   - A downed drone can be searched for scrap (rotors, a radio module, a camera module, a battery pack)
   - Sim test: drone count and their spread over roofs and gaps between buildings; one shot down with the suppressed pistol alerts no distant machines; its wreck yields scrap
-- [ ] **M4-88** Rain realism pass (U-065)
-  - The rain sounds quiet and real, never loud or annoying: a soft hiss, drops on metal and awnings sparse and low, dripping under cover, dull indoors
-  - No darkening or sheen filter laid over buildings and the ground in rain
-  - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain
 - [x] **M4-54** Gunfire quick, deadly and real (U-051)
   - Machine fire is fast and lethal: rounds arrive at once, a burst kills in seconds in the open
   - It sounds like real gunfire: the crack of rounds passing close, the report and its echo off the buildings, distance and walls changing it

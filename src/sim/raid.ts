@@ -46,7 +46,7 @@ function squad(s: SimState, w: World, at: V3) {
   if (!w.garages.length) return [];
   let g = 0;
   w.garages.forEach((q, i) => { if (Math.hypot(q.x - at.x, q.z - at.z) < Math.hypot(w.garages[g].x - at.x, w.garages[g].z - at.z)) g = i; });
-  const out = s.units.filter(u => u.reserve?.garage === g && !isOff(s, u));
+  const out = s.units.filter(u => u.reserve?.garage === g && !u.reserve.drop && !isOff(s, u));
   out.forEach((u, k) => {
     const home = unitPose(w, u, s.time), pos = { x: at.x + (k - 0.5) * 0.8, y: at.y, z: at.z };
     u.trip = { kind: 'hunt', path: [pos], i: 0, pos, yaw: 0, scan: 0, back: false, left: { x: home.x, y: home.y, z: home.z }, leftAt: s.time };

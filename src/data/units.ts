@@ -1,6 +1,6 @@
 // The machines that move (DESIGN section 7): how fast each kind goes on its beat and when chasing, whether it takes
 // stairs, how high it flies, and the hours its beats keep by default. Speeds in real metres a second.
-export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' | 'fpv' | 'bomber' | 'spider' | 'colossus' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
+export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' | 'fpv' | 'bomber' | 'spider' | 'colossus' | 'heli' | 'crawler' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
 /** The machines that stay where they're put (M4-07, M4-11). */
 export const STATIC = new Set<UnitKind>(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
@@ -15,6 +15,8 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
   spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 4000, weapon: 'cannon' },
   colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
+  heli: { patrol: 22, chase: 22, stairs: true, fly: 60, zh: '运兵直升机', en: 'Helicopter', hp: 2500 },
+  crawler: { patrol: 3, chase: 7, stairs: true, fly: 0, zh: '蛛形无人机', en: 'Crawler drone', hp: 60, weapon: 'prod' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
   hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
   // Strike drones (M4-47, U-050), kept on the docks and sent when a district's had him in sight too long: a kamikaze
@@ -35,7 +37,7 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
 /** Where a machine can be hit and what each place takes of a hit (DESIGN section 6, M4-19); the damage to a place that
  *  blinds it (its sensor head), immobilises it (each knee) or shuts it down (its battery). */
 export const ZONES: Record<UnitKind, Record<string, number>> = {
-  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 }, spider: { body: 0.05, head: 0.5 }, colossus: { body: 0.03, head: 0.4 },
+  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 }, spider: { body: 0.05, head: 0.5 }, colossus: { body: 0.03, head: 0.4 }, heli: { body: 0.3, rotors: 0.6 }, crawler: { body: 1 },
   quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5, launcher: 0.5 },
   humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2, rifle: 0.5 },
   heavy: { body: 0.05, head: 0.6, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
@@ -105,7 +107,7 @@ export const PISTOL = { damage: 25, mag: 15, every: 0.15, noise: 150, reach: 150
 
 /** How long after a machine has him (Engaged) it tells the network (DESIGN section 5), real seconds: the wired
  *  sensors at once nearly, the cameras in a second, the walkers slowest. */
-export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, fpv: 1, bomber: 1, spider: 2, colossus: 2, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5, heavy: 2 };
+export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, fpv: 1, bomber: 1, spider: 2, colossus: 2, heli: 1, crawler: 1.5, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5, heavy: 2 };
 /** How far into the districts next to his the network's word of him goes (DESIGN section 5), metres. */
 export const SPREAD = 300;
 
@@ -113,6 +115,8 @@ export const SPREAD = 300;
  *  machines on the ground go to it, the drones fly to it, and the docks launch hunters (one at once, one more every
  *  20 s while the district is Engaged, three a dock at most); how long Engaged before the district's garage sends its
  *  squad of two humanoids. */
+/** The troop helicopter's team (M4-92), held in a garage until it's called. */
+export const DROP: [UnitKind, number][] = [['heli', 1], ['humanoid', 4], ['quadruped', 3], ['crawler', 3]];
 export const CONVERGE = { ground: 250, fly: 400, dock: 500, every: 20, perDock: 3, squadAfter: 45, squad: 2 };
 /** Strike drones (M4-47): on each dock, kamikazes and a bomb dropper; sent once a district's been Engaged `after` s (a
  *  kamikaze every `every` s from the nearest dock within `dock` m) and the bomb dropper after `bomberAfter`; a kamikaze
@@ -170,6 +174,8 @@ export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number;
   bomber: { fov: 100, pitch: 60, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 0, thermal: 30, hear: 0.8 },
   spider: { fov: 200, pitch: 25, day: 70, night: 45, eye: 14, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
   colossus: { fov: 120, pitch: 30, day: 70, night: 40, eye: 9, ir: 0.3, lamp: 0, thermal: 45, hear: 1 },
+  heli: { fov: 140, pitch: 55, day: 90, night: 70, eye: -1, ir: 0.3, lamp: 20, thermal: 60, hear: 0.4 },
+  crawler: { fov: 220, pitch: 0, day: 25, night: 18, eye: 0.3, ir: 0.5, lamp: 0, thermal: 20, hear: 1.5 },
   delivery: { fov: 120, pitch: 0, day: 18, night: 10, eye: 0.5, ir: 0, lamp: 0, thermal: 0, hear: 1 },
   carrier: { fov: 120, pitch: 0, day: 25, night: 15, eye: 1.2, ir: 0.3, lamp: 0, thermal: 0, hear: 1 },
   // The cameras (M4-07): fixed ones over doors and at junctions, sweepers at plazas and gates, the smart lampposts'.

@@ -20,7 +20,7 @@ import { DT } from './types';
 type V3 = { x: number; y: number; z: number };
 /** How far up or down each kind steps without a stair: a quadruped's jump, a humanoid over a low wall (M4-46, a
  *  person's agility); nothing climbs (M4-09). */
-const STEP: Record<UnitKind, number> = { quadruped: 1.5, humanoid: 1.1, heavy: 0.4, drone: 99, hunter: 99, fpv: 99, bomber: 99, spider: 0.6, colossus: 1, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
+const STEP: Record<UnitKind, number> = { quadruped: 1.5, humanoid: 1.1, heavy: 0.4, drone: 99, hunter: 99, fpv: 99, bomber: 99, spider: 0.6, colossus: 1, heli: 99, crawler: 1.2, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
 export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200, /** a changeover's handing over, s (M4-58) */ swap: 3 };
 
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
@@ -123,6 +123,8 @@ export function stepAlert(s: SimState, w: World) {
   for (const u of s.units) {
     // (A reserve waits on its dock or in its garage until it's sent: M4-14, M4-47.)
     if (isOff(s, u) || (u.reserve && !u.trip)) continue;
+    // (The helicopter flies where it's sent: M4-92, sim/heli.ts.)
+    if (u.kind === 'heli') { walk(s, w, u); continue; }
     const a = u.aware ?? 0;
     const was = u.state;
     // Engaged, it tells the network after its delay (M4-13, sim/district.ts).

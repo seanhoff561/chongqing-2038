@@ -16,7 +16,7 @@ type V3 = { x: number; y: number; z: number };
  *  picked again, s. */
 const HEAR = { sound: 343, rotors: 6, rotor: 110, step: 35, giant: 100, walkers: 6, every: 0.4, /** how fast their sounds fall off (U-067) */ rolloff: 2 };
 /** A rotor's note by kind: its blade hum (Hz) and how loud it is. */
-const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.2 }, hunter: { f: 190, gain: 0.28 }, fpv: { f: 430, gain: 0.5 }, bomber: { f: 110, gain: 0.4 } };
+const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.2 }, hunter: { f: 190, gain: 0.28 }, fpv: { f: 430, gain: 0.5 }, bomber: { f: 110, gain: 0.4 }, heli: { f: 62, gain: 0.9 } };
 /** Metres between a walker's footfalls. */
 const STEP: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 0.7, colossus: 2.6, quadruped: 0.45 };
 const GIANT = new Set<UnitKind>(['heavy', 'spider', 'colossus']);

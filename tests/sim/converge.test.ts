@@ -63,6 +63,6 @@ describe('convergence and escalation (M4-14)', () => {
     expect(w.garages.length).toBe(6);
     for (const g of w.garages) expect(Math.hypot(g.x - home.x, g.z - home.z)).toBeGreaterThan(150);
     expect(s.units.filter(u => u.kind === 'hunter' && u.reserve?.dock !== undefined).length).toBe(w.docks.length * CONVERGE.perDock);
-    expect(s.units.filter(u => u.kind === 'humanoid' && u.reserve?.garage !== undefined).length).toBe(w.garages.length * CONVERGE.squad);
+    expect(s.units.filter(u => u.kind === 'humanoid' && u.reserve?.garage !== undefined && !u.reserve.drop).length).toBe(w.garages.length * CONVERGE.squad);
   });
 });

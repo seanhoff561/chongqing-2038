@@ -27,6 +27,7 @@ import { stepAlert } from './alert';
 import { stepFire } from './fire';
 import { stepDistricts } from './district';
 import { stepConverge } from './converge';
+import { stepHeli } from './heli';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
@@ -88,6 +89,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepSilent(state, world);
   stepDistricts(state, world);
   stepConverge(state, world);
+  stepHeli(state, world);
   stepSearch(state, world);
   stepFire(state, world);
   stepHeld(state, world, input);

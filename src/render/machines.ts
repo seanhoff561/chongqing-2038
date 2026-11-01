@@ -221,10 +221,10 @@ function delivery(): Rig {
 // lens; the hunter bigger, ducted, its gun slung under it. Parts: body, four rotors.
 /** A giant spider walker (M4-48, U-050, U-068): building-sized, its broad white armoured body slung 13 m up between eight
  *  thick legs, a head crowded with red eyes; its legs step in two alternating sets, each foot reached by its knee
- *  bending high over it. In the hive's white, like the rest of them. */
-const SPIDER = 4.5;
-function spider(): Rig {
-  const K = SPIDER, b = (w: number, h: number, d: number, x: number, y: number, z: number, c: number, glow = 0) => box(w * K, h * K, d * K, x * K, y * K, z * K, c, glow);
+ *  bending high over it. In the hive's white, like the rest of them. At K 0.22, the crawler drones (M4-92) that
+ *  scuttle through the sewers, a metre across. */
+function spider(K: number): Rig {
+  const b = (w: number, h: number, d: number, x: number, y: number, z: number, c: number, glow = 0) => box(w * K, h * K, d * K, x * K, y * K, z * K, c, glow);
   const upper = part(b(0.28, 3.2, 0.28, 0, -1.6, 0, WHITE), b(0.34, 1.1, 0.34, 0, -0.65, 0, PLATE), cyl(0.24 * K, 0.4 * K, 0, 0, 0, DARK, 'x'));
   const lower = part(b(0.2, 3.6, 0.2, 0, -1.8, 0, WHITE), b(0.25, 1.2, 0.27, 0, -0.7, 0, PLATE), cyl(0.14 * K, 0.3 * K, 0, -3.6 * K, 0, DARK, 'y'), cyl(0.18 * K, 0.34 * K, 0, 0, 0, DARK, 'x'));
   const parts = [
@@ -302,9 +302,27 @@ function drone(hunter: boolean): Rig {
   };
 }
 
+/** The troop helicopter (M4-92): a white fuselage with a dark canopy, a tail boom and fin, skids, a searchlight lit
+ *  under its nose; its main rotor's four blades and its tail rotor spinning. Parts: body, rotor, tail rotor. */
+function heli(): Rig {
+  const body = part(box(2.2, 2.2, 5.5, 0, 0, 0, WHITE), box(2.0, 1.2, 1.6, 0, 0.3, 3.2, DARK, 0, -0.2), box(0.5, 0.6, 6.5, 0, 0.4, -5.8, WHITE), box(0.12, 1.8, 1.2, 0, 1.2, -8.8, PLATE),
+    box(1.6, 0.1, 0.6, 0, 0.5, -8.6, PLATE), box(0.12, 0.12, 5, -1.1, -1.6, 0.3, DARK), box(0.12, 0.12, 5, 1.1, -1.6, 0.3, DARK), box(0.1, 0.6, 0.1, -1.1, -1.3, 1.6, DARK), box(0.1, 0.6, 0.1, 1.1, -1.3, 1.6, DARK),
+    box(0.1, 0.6, 0.1, -1.1, -1.3, -1, DARK), box(0.1, 0.6, 0.1, 1.1, -1.3, -1, DARK), cyl(0.3, 0.5, 0, 1.35, 0, DARK), cyl(0.25, 0.3, 0, -1.2, 2.6, EYE, 'y', 1), box(0.3, 0.06, 0.1, 0, -0.3, 2.78, RED, 1));
+  const rotor = part(box(13, 0.08, 0.4, 0, 0, 0, BLACK), box(0.4, 0.08, 13, 0, 0, 0, BLACK), cyl(0.35, 0.3, 0, 0, 0, DARK));
+  const tail = part(box(0.06, 2.2, 0.25, 0, 0, 0, BLACK), box(0.06, 0.25, 2.2, 0, 0, 0, BLACK));
+  return {
+    parts: [body, rotor, tail],
+    pose: (a, m) => {
+      at(m[0], null, 0, Math.sin(a.t * 0.9) * 0.15, 0, 0.1 * Math.min(1, a.speed / 20));
+      at(m[1], m[0], 0, 1.7, 0, 0, a.t * 31);
+      at(m[2], m[0], 0.32, 1.2, -8.8, a.t * 47, 0, 0);
+    },
+  };
+}
+
 /** Every kind's rig. (The smart lampposts' cameras are their props'.) */
 export const RIGS: Record<UnitKind, Rig> = {
-  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: spider(), colossus: colossus(),
+  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: spider(4.5), colossus: colossus(), crawler: spider(0.22), heli: heli(),
   // A camera: its housing under a sun hood on a wall bracket, tipped down, the lens dark, its light red; a sweeper's
   // on a pan motor on a pole.
   camera: still(part(box(0.2, 0.15, 0.34, 0, 0, 0.12, WHITE, 0, 0.35), box(0.24, 0.03, 0.4, 0, 0.1, 0.14, PLATE, 0, 0.35), cyl(0.055, 0.04, 0, -0.06, 0.29, BLACK, 'z'),

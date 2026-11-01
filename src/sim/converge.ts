@@ -50,5 +50,5 @@ export function stepConverge(s: SimState, w: World) {
   if ((s.time - D.since) / SCALE < CONVERGE.squadAfter || !w.garages.length) return;
   let g = 0;
   w.garages.forEach((q, i) => { if (Math.hypot(q.x - to.x, q.z - to.z) < Math.hypot(w.garages[g].x - to.x, w.garages[g].z - to.z)) g = i; });
-  for (const u of s.units) if (u.reserve?.garage === g && fresh(u)) after(s, w, u, to);
+  for (const u of s.units) if (u.reserve?.garage === g && !u.reserve.drop && fresh(u)) after(s, w, u, to);
 }
