@@ -16,9 +16,10 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
-import { radio, gunshot, siren } from './audio/moves';
+import { radio, gunshot } from './audio/moves';
 import { MachineVoices } from './audio/machines';
 import { Ambience, whereIs, type Where } from './audio/ambience';
+import { Dread } from './audio/dread';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -76,6 +77,7 @@ export class Game {
   /** the machines heard where they are (M4-33) */
   readonly voices = new MachineVoices(this.audio);
   readonly ambience = new Ambience(this.audio);
+  readonly dread = new Dread(this.audio);
   private env: { where: Where; covered: boolean } = { where: 'street', covered: false };
   private envIn = 0;
   readonly hands: Hands3D;
@@ -163,16 +165,16 @@ export class Game {
     this.view.scene.add(this.units.group);
   }
 
-  private sirenIn = 0;
-  /** The machines' sounds round him (M4-33: audio/machines.ts), and his district's siren while it's after him. */
+  /** The machines' sounds round him (M4-33: audio/machines.ts; M4-52: audio/dread.ts) and the alert boards. */
   private machineSounds(dt: number) {
     const p = this.state.player.pos;
-    // The alert shown where he is (M4-27): the boards on his district's alert, its siren while it's Engaged.
+    // The alert shown where he is (M4-27): the boards on his district's alert.
     const st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
     alarm.value = st === 'engaged' || st === 'searching' || st === 'heightened' ? 1 : 0;
-    if ((this.sirenIn -= dt) <= 0) { this.sirenIn = 2.7; if (st === 'engaged') siren(this.audio, 0.1); }
     const cam = this.view.fp.cam;
     this.voices.update(dt, this.state, this.world, cam.position, cam.getWorldDirection(this.look));
+    // And the machines frightening him: watched, noticed, hunted; the city mad at high alert (M4-52).
+    this.dread.update(dt, this.state, this.world, cam.position, this.voices.nearest(cam.position));
   }
   private look = new THREE.Vector3();
 

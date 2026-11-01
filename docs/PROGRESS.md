@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-52 Frightening machines (U-051).
-Features done: 231 / 349 | Last done: M4-51
+**Status:** building M4. Next: M4-54 Gunfire quick, deadly and real (U-051).
+Features done: 232 / 349 | Last done: M4-52
 <!-- /status -->
 
 ## Log
@@ -90,3 +90,4 @@ Features done: 231 / 349 | Last done: M4-51
 - M4-33 Audio engine and machine sounds: audio engine: the machines heard where they are, rotors with Doppler, footfalls, gunfire, more drones louder
 - M4-50 The sounds of things (U-051): the sounds of things: drawers slide, lockers clang, cabinets creak, crate lids scrape, bags rustle (U-051)
 - M4-51 The empty city's ambience (U-051): the empty city's ambience: hum, wind between towers, far machinery, a drone somewhere, real rain, by place and hour (U-051)
+- M4-52 Frightening machines (U-051): frightening machines: an eye on him heard before it notices, the notice and the lock, servos grinding close, the city mad at high alert and slow to calm (U-051)

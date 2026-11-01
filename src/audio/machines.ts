@@ -64,6 +64,13 @@ export class MachineVoices {
     }
   }
 
+  /** The nearest walker heard, where it is. */
+  nearest(head: V3): V3 | null {
+    let best: V3 | null = null, bd = Infinity;
+    for (const k of this.walkers) if (k.at) { const d = Math.hypot(k.at.x - head.x, k.at.y - head.y, k.at.z - head.z); if (d < bd) { bd = d; best = k.at; } }
+    return best;
+  }
+
   /** How loud the rotors are just now at his head, all together (more drones, louder). */
   level() {
     return this.voices.reduce((t, v) => t + (v.u ? v.g * falloff(v.pan, v.d) : 0), 0);

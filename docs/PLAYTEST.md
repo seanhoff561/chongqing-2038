@@ -207,3 +207,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 ## M4-51: the empty city's ambience (U-051, U-052): a long tuning pass
 - With headphones, spend 15 minutes just walking: a street by day, the same street at night (dev clock), a rooftop, a narrow alley, a room, the underground. Does each sound different (roof windy and open, alley close, rooms and underground muffled and humming)? Is it calm enough to fall into a trance, never over the top? Any layer too loud, too quiet, or annoying when repeated (the far clanks, the passing drone, the hum's beat)?
 - In rain (dev weather): out in the street, on a roof (more ticks on metal), under an awning or overpass (dripping), indoors (dull, muffled). Does it sound like real rain?
+
+## M4-52: frightening machines (U-051)
+- With headphones, let a humanoid or a camera slowly make you out from the dark: do you hear its eye on you (a low throb and a thin whine from its direction) before it notices? The notice (a ratchet and a rising ping) and the lock (a shriek and a blow): sudden and frightening, not silly? Stand 3 m from a walker: is the servo grind loud and nasty? Get a district fully engaged: sirens, broadcasts, a swarm and a march far off; then hide: does the city stay on edge for a minute or two before calming?
