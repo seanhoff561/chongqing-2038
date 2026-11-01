@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 95 of 104 done
+## M4: 96 of 104 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -1016,7 +1016,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-31** Core loop end to end
   - Boot, set up a shelter (claim a bed), leave, get engaged, die, death screen, new run; and leave, loot a container, return clean, sleep, save (U-013)
   - A browser test drives both through the dev hook
-- [ ] **M4-32** Pursuit escapes in the first district
+- [x] **M4-32** Pursuit escapes in the first district
   - Scripted escapes for three pursuits (a drone tail on the stairs, a quadruped chase in the alleys, a camera spot at Jiaochangkou) break contact and the search ends without finding him
   - The pursuits load as ?scenario=pursuit-*
 - [ ] **M4-34** Delivery robots
@@ -1031,13 +1031,19 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 1 of 35 done
+## M5: 1 of 36 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
 - [x] **M5-17** Healing items
   - Bandage, tourniquet, splint, painkillers and first-aid kit behave as in DESIGN section 4 with use times
   - Sim tests cover each
+- [ ] **M5-35** Building types (U-091)
+  - Buildings come in types rolled for each run: residential (about 70%, the current homes), office (about 25%), military (about 5%, rare, high security), and a few others; each like the current interiors but with its own wallpaper and floors, room sizes and furniture
+  - Each type has its own loot pools: the rarer the type, the better its loot (offices: electronics and tools; military: weapons, ammunition, armour and the better technology), so a lucky early find can give him better technology
+  - Military buildings are high security: more of their doors locked, cameras or sensors at their entrances
+  - Fewer chained and locked street doors than now, overall
+  - Sim test: over a run the types come out near their shares and differ between runs; each type's rooms and loot differ; a military building's loot is better than a home's
 - [ ] **M5-01** Laptop shell
   - L opens Anna's laptop over the view without pausing; at night its glow adds 0.5 light at his position
   - The laptop battery drains while open (2 game hours) and charges at a powered shelter

@@ -17,6 +17,7 @@ import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
 import { announce } from './audio/pa';
+import { startPursuit } from './sim/pursuit';
 import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
@@ -156,6 +157,7 @@ export class Game {
     const sp = sc.spawn ?? this.world.teleports.find(t => t.name === sc.at);
     if (sp) teleport(this.state.player, sp.x, sp.y, sp.z);
     this.state.player.yaw = this.input.yaw = sp?.yaw ?? this.world.spawn.yaw;
+    if (sc.pursuit) startPursuit(this.state, this.world, sc.pursuit);
     this.input.pitch = 0;
     this.prev = { ...this.state.player.pos };
     this.sky.overcast = sc.overcast ?? 0;

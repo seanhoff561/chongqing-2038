@@ -56,9 +56,16 @@ export function aimAt(s: SimState, w: World, reach: number, spread = { yaw: 0, p
     if (u.dead || u.kind === 'tripwire' || (u.reserve && !u.trip)) continue;
     const q = unitPose(w, u, s.time), [y0, y1, r] = BODY[u.kind];
     if (!q.active && !u.stop) continue;
-    const t = ((q.x - e.x) * d.x + (q.z - e.z) * d.z) / h2, x = e.x + d.x * t, y = e.y + d.y * t, z = e.z + d.z * t;
-    if (t < 0 || t > reach + r || Math.hypot(x - q.x, z - q.z) > r || y < q.y + y0 || y > q.y + y1 || (best && t >= best.t)) continue;
-    best = { u, t, zone: zoneOf(u.kind, q, { x, y, z }, d), at: { x, y, z } };
+    // Where the ray enters its body's cylinder: within its radius of its axis (a quadratic along the ray's level run),
+    // and between its bottom and top (straight up or down at it too: a drone overhead, U-089).
+    const ox = e.x - q.x, oz = e.z - q.z, b = ox * d.x + oz * d.z, c = ox * ox + oz * oz - r * r, disc = b * b - h2 * c;
+    if (disc < 0) continue;
+    const sq = Math.sqrt(disc), lo = Math.abs(d.y) > 1e-9 ? [(q.y + y0 - e.y) / d.y, (q.y + y1 - e.y) / d.y].sort((m, n) => m - n) : (e.y >= q.y + y0 && e.y <= q.y + y1 ? [-Infinity, Infinity] : [1, 0]);
+    const t = Math.max((-b - sq) / h2, lo[0], 0), out = Math.min((-b + sq) / h2, lo[1]);
+    if (t > out || t > reach + r || (best && t >= best.t)) continue;
+    // (Which place it meets judged halfway through the body, where the machine itself is; the mark where it went in.)
+    const m = (t + out) / 2, at = { x: e.x + d.x * t, y: e.y + d.y * t, z: e.z + d.z * t };
+    best = { u, t, zone: zoneOf(u.kind, q, { x: e.x + d.x * m, y: e.y + d.y * m, z: e.z + d.z * m }, d), at };
   }
   if (best && raycast(w.index, e.x, e.y, e.z, d.x, d.y, d.z, Math.max(0, best.t - 0.4))) return null;
   return best;
@@ -77,7 +84,7 @@ export function zoneOf(kind: UnitKind, q: { x: number; y: number; z: number; yaw
     // helicopter's rotors over it.
     case 'spider': return ly > 24.5 ? 'head' : 'body';
     case 'colossus': return ly > 8 ? 'head' : 'body';
-    case 'heli': return ly > 1 ? 'rotors' : 'body';
+    case 'heli': return ly > 0.7 ? 'rotors' : 'body';
     default: return 'body';
   }
 }
