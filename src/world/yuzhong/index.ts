@@ -238,24 +238,48 @@ export function buildYuzhong(): World {
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
   world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
   world.garages = placeGarages(world, home.at.spawn);
-  // No floor drawn over a hole (M4-82, U-060): a finish (a floor's tiles or boards, a roof's patch, moss, a puddle)
-  // with nothing under it to stand on, over most of it, isn't drawn: there's a hole there.
-  world.decor = world.decor.filter(s => !overNothing(world, s));
+  // No floor drawn over a hole (M4-82, U-060, U-066): a finish (a floor's tiles or boards, a roof's patch, moss, a
+  // puddle) is drawn only where there's something under it to stand on: not over a stairwell, a trapdoor or a hole.
+  world.decor = world.decor.flatMap(s => overSomething(world, s));
   world.links = net.links.concat(joins.flatMap(([i, j]) => { const rt = streetRoute(world.nav!, `link:${keys[i].name}-${keys[j].name}:street`, keys[i].at, keys[j].at); return rt ? [{ from: keys[i].name, to: keys[j].name, layer: 'street' as const, route: rt }] : []; }));
   return world;
 }
 
-/** Whether a thin finish lies over nothing: at three of its middle and four points in from its corners, nothing to
- *  stand on within 0.35 m under it. */
-function overNothing(w: World, s: Solid) {
-  const e = s.rot ?? s, dx = e.x1 - e.x0, dz = e.z1 - e.z0;
-  if (s.y1 - s.y0 > 0.06 || dx * dz < 0.3) return false;
-  let open = 0;
-  for (const [u, v] of [[0.5, 0.5], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]]) {
-    const x = e.x0 + dx * u, z = e.z0 + dz * v;
-    if (!raycast(w.index, x, s.y1 + 0.05, z, 0, -1, 0, 0.4) && !rayGround(w.ground!, x, s.y1 + 0.05, z, 0, -1, 0, 0.4)) open++;
-  }
-  return open >= 3;
+/** A thin finish cut to where there's something to stand on under it: looked at every metre or so across it (in its
+ *  own frame, turned with its building; every half metre on a small one), each spot open if nothing solid lies within
+ *  0.35 m under it (a hatch's lid or
+ *  a door is a way through, not a floor); what's left drawn in strips. */
+function overSomething(w: World, s: Solid): Solid[] {
+  const R = s.rot, e = R ?? s, dx = e.x1 - e.x0, dz = e.z1 - e.z0;
+  if (s.y1 - s.y0 > 0.06 || dx * dz < 0.3) return [s];
+  // (Every half metre on a small one, so a manhole under a patch of grime still shows.)
+  const cell = dx * dz < 8 ? 0.5 : 1, nu = Math.max(1, Math.round(dx / cell)), nv = Math.max(1, Math.round(dz / cell)), solid = (u: number, v: number) => {
+    let x = e.x0 + (dx * (u + 0.5)) / nu, z = e.z0 + (dz * (v + 0.5)) / nv;
+    if (R) { const lx = x - R.px, lz = z - R.pz; x = R.px + lx * R.c - lz * R.s; z = R.pz + lx * R.s + lz * R.c; }
+    const h = raycast(w.index, x, s.y1 + 0.05, z, 0, -1, 0, 0.4);
+    return (h && !w.index.solids[h.id]?.part) || !!rayGround(w.ground!, x, s.y1 + 0.05, z, 0, -1, 0, 0.4);
+  };
+  const grid = Array.from({ length: nv }, (_, v) => Array.from({ length: nu }, (_, u) => solid(u, v)));
+  if (grid.every(r => r.every(Boolean))) return [s];
+  // (Each strip looked at once more across its width, so one straddling a hole's edge mostly over it goes too.)
+  const held = (q: Solid) => { const f = q.rot ?? q, a = f.x1 - f.x0, b = f.z1 - f.z0; return [[0.5, 0.5], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]].filter(([u, v]) => {
+    let x = f.x0 + a * u, z = f.z0 + b * v;
+    if (q.rot) { const T = q.rot, lx = x - T.px, lz = z - T.pz; x = T.px + lx * T.c - lz * T.s; z = T.pz + lx * T.s + lz * T.c; }
+    return !raycast(w.index, x, q.y1 + 0.05, z, 0, -1, 0, 0.4) && !rayGround(w.ground!, x, q.y1 + 0.05, z, 0, -1, 0, 0.4);
+  }).length < 3; };
+  const out: Solid[] = [], yaw = R ? Math.atan2(R.s, R.c) : 0;
+  grid.forEach((row, v) => {
+    for (let u = 0; u < nu; u++) {
+      if (!row[u]) continue;
+      let k = u;
+      while (k + 1 < nu && row[k + 1]) k++;
+      const piece: Solid = { ...s, rot: undefined, x0: e.x0 + (dx * u) / nu, x1: e.x0 + (dx * (k + 1)) / nu, z0: e.z0 + (dz * v) / nv, z1: e.z0 + (dz * (v + 1)) / nv };
+      delete piece.rot;
+      out.push(...(R ? turn([piece], yaw, R.px, R.pz) : [piece]).filter(held));
+      u = k;
+    }
+  });
+  return out;
 }
 
 /** The streets to draw: a walkway's stretches inside a building (a passage through it) left out (U-031). */

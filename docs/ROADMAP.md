@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 79 of 95 done
+## M4: 80 of 99 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -938,7 +938,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - The ambience is melodic and relaxing to listen to, still a little haunting, not low and unnerving: synth/electronic music with a slow beat (nothing fast)
   - Tracks for where he is: a calm, windy one high up, a grounded one in the streets, another underground and in the sewers; they cross-fade as he moves between them
   - Sim/unit test: each place picks its track and the tempo stays slow; e2e: it plays without errors; the listening pass is in PLAYTEST
-- [ ] **M4-89** Stairwells and trapdoors seen through (U-066)
+- [x] **M4-89** Stairwells and trapdoors seen through (U-066)
   - No floor tile, finish or slab is drawn over a stairwell, a trapdoor or any opening in the apartments' floors: he sees down and up through them
   - Sim/render test: every stair and trapdoor opening in the city has nothing drawn across it; a screenshot looking down a stairwell
 - [ ] **M4-90** Lootable things plain to see (U-066)
@@ -953,6 +953,20 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - The squad comes in at the roof, down the stairwell, and sweeps the building floor by floor, every room; the helicopter circles with a searchlight while they do
   - Robot dogs and small spider drones go into the sewers, tunnels and underground ways near it at the same time
   - Sim test: the drop called when he goes into a building after being seen by three machines; the squad lands on its roof, goes down its stairs and visits every floor; dogs and spiders go underground near it; a screenshot of the helicopter over the roof
+- [ ] **M4-93** Eldritch walkers (U-069)
+  - The giant walkers look less like spiders and more like eldritch horrors: taller than they are wide, all white, a small main body held high on many giant jointed legs that make up most of them
+  - A few different variations (leg count, body shape, how they stand and step), each street giant one of them
+  - Screenshots of each variation walking
+- [ ] **M4-94** Blocked stairways and drowned sewers (U-069)
+  - Stairways are blocked part-way more often (rubble, a fallen slab, a welded grille), so a building often can't be climbed all the way by its stairs
+  - Sewer and tunnel passages blocked more often too, and many more of them flooded (wading or swimming, some full to the roof)
+  - Sim test: the share of stairways and sewer passages blocked and flooded per district; the ways round still exist
+- [ ] **M4-95** Spider robots in the sewers (U-069)
+  - Small spider robots live in the sewers and tunnels: they patrol them, cling to walls and ceilings, and hunt what comes down, fast and dangerous close
+  - Sim test: spiders in every sewer district, they see and attack him underground; a screenshot of one on a tunnel wall
+- [ ] **M4-96** Refilling water at running sinks (U-069)
+  - A few sinks still run (some in each district, kitchens and washrooms): at one, F refills his water bottles, a sound of running water
+  - Sim test: an empty bottle refilled at a running sink and not at a dry one
 - [ ] **M4-87** Drones everywhere (U-065)
   - Many more drones over the whole city, flying over buildings and between them, not fast, stopping to scan things (rooftops, windows, alleys) as they go
   - Easy to shoot down, and one shot down quietly does not tell the whole network: only machines that see or hear it go to look

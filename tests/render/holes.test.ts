@@ -15,7 +15,9 @@ describe('no floor over holes (M4-82)', () => {
       if (s.y1 - s.y0 > 0.06 || dx * dz < 0.3) continue;
       finishes++;
       const open = [[0.5, 0.5], [0.2, 0.2], [0.8, 0.2], [0.2, 0.8], [0.8, 0.8]].filter(([u, v]) => {
-        const x = e.x0 + dx * u, z = e.z0 + dz * v;
+        // (A turned finish's corners are in its own frame: M4-89 found this sampled the wrong place.)
+        let x = e.x0 + dx * u, z = e.z0 + dz * v;
+        if (s.rot) { const R = s.rot, lx = x - R.px, lz = z - R.pz; x = R.px + lx * R.c - lz * R.s; z = R.pz + lx * R.s + lz * R.c; }
         return !raycast(w.index, x, s.y1 + 0.05, z, 0, -1, 0, 0.4) && !rayGround(w.ground!, x, s.y1 + 0.05, z, 0, -1, 0, 0.4);
       }).length;
       if (open >= 3) bad.push(`${((e.x0 + e.x1) / 2).toFixed(0)},${s.y1.toFixed(1)},${((e.z0 + e.z1) / 2).toFixed(0)}`);
