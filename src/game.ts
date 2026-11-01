@@ -34,6 +34,7 @@ import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel, zoomOf } from './render/gunfeel';
 import { HeldMotion } from './render/viewmodel';
+import { Marks } from './render/marks';
 import { SleepUI } from './ui/sleep-ui';
 import { DeathScreen } from './ui/death';
 import { Furniture } from './render/furniture';
@@ -91,6 +92,7 @@ export class Game {
   private heldModel: THREE.Object3D | null = null;
   readonly gun = new GunFeel();
   readonly motion = new HeldMotion();
+  readonly marks = new Marks();
   private grabAge = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
@@ -111,6 +113,7 @@ export class Game {
     this.rigged.userData.n = 0;
     this.view.scene.add(this.rigged);
     this.view.scene.add(this.furniture.group);
+    this.view.scene.add(this.marks.group);
     this.rain = new Rain(this.view.scene);
     this.bodyFx = new BodyFx(this.view.renderer.domElement);
     this.inv = new InventoryUI(this);
@@ -182,8 +185,9 @@ export class Game {
     this.applyDraw();
   }
 
-  /** Switch scenario in place, keeping fullscreen: '' is the game, resumed from its ironman save if there is one. */
+  /** Switch scenario in place: '' is the game, resumed from its ironman save if there is one. */
   switchTo(name: string) {
+    this.marks.clear();
     const sc = scenarioByName(name) ?? scenarios.find(x => x.run)!;
     const save = sc.run ? readSave(localStorage) : null;
     if (save) this.loadSave(save);
@@ -228,6 +232,7 @@ export class Game {
     for (const e of this.state.events) {
       if (e.t === 'land') this.view.fp.landed(e.h);
       else if (e.t === 'sfx') playMove(this.audio, e.id);
+      else if (e.t === 'mark') this.marks.add(e);
       // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
       else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
       else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }
@@ -254,6 +259,7 @@ export class Game {
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
+    this.marks.update(dt);
     // Aimed through the 4x scope (U-058): the view through it, the gun out of sight behind it.
     const scoped = !!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1;
     this.hud.setScope(scoped);

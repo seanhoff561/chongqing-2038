@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 63 of 88 done
+## M4: 64 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -893,7 +893,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Drones in a fight keep moving: they circle and strafe him at a stand-off, change height and jink when shot at, never hanging still over him
   - Humanoids in a fight move like soldiers: to cover and between covers, flanking, one suppressing while another advances, strafing when caught in the open
   - Sim tests: an engaged drone's position over 10 s keeps changing and stays off the point over his head; humanoids under fire move between covers and flank
-- [ ] **M4-61** The marks of damage (U-052)
+- [x] **M4-61** The marks of damage (U-052)
   - Rounds and blows leave marks: bullet holes and chips in walls, scrapes from the crowbar, dents and sparks on metal and on machines, each where it hit
   - The marks stay (up to a cap, oldest gone first); screenshots of a wall and a machine after a fight
 - [ ] **M4-62** Machines that break apart (U-052)

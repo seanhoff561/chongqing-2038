@@ -10,6 +10,12 @@ import { eyeOf } from './player';
 import { unitPose, isOff, type Unit } from './units';
 import type { UnitKind } from '../data/units';
 import { raycast } from '../world/geom';
+import { rayGround } from '../world/heightfield';
+import { MAT } from '../world/mats';
+
+/** What a surface is made of, for the sound of a blow and the mark a round leaves (M4-60, M4-61). */
+export const METAL: Set<number> = new Set([MAT.metal, MAT.tealMetal, MAT.facadeWorks, MAT.screen, MAT.lamp, MAT.cable]);
+export const SOFT: Set<number> = new Set([MAT.wood, MAT.crate, MAT.soft, MAT.cloth, MAT.leaves, MAT.moss, MAT.grass, MAT.blossom]);
 
 export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: number) {
   if (u.dead) return;
@@ -66,4 +72,16 @@ export function zoneOf(kind: UnitKind, q: { x: number; y: number; z: number; yaw
     case 'turret': return from < -0.3 ? 'head' : 'body';
     default: return 'body';
   }
+}
+
+/** Where a round along his look (thrown off by `spread`) meets the world, there being no machine in its way: the point,
+ *  the surface's normal and what it's made of (M4-61). */
+export function surfaceAt(s: SimState, w: World, reach: number, spread = { yaw: 0, pitch: 0 }) {
+  const p = s.player, yaw = p.yaw + spread.yaw, pitch = p.pitch + spread.pitch, e = eyeOf(p);
+  const d = { x: -Math.sin(yaw) * Math.cos(pitch), y: Math.sin(pitch), z: -Math.cos(yaw) * Math.cos(pitch) };
+  const a = raycast(w.index, e.x, e.y, e.z, d.x, d.y, d.z, reach), g = w.ground ? rayGround(w.ground, e.x, e.y, e.z, d.x, d.y, d.z, reach) : null;
+  const h = a && (!g || a.t <= g.t) ? a : g;
+  if (!h) return null;
+  const mat = h === a ? w.index.solids[a.id]?.mat ?? MAT.concrete : MAT.asphalt;
+  return { x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, nx: h.nx, ny: h.ny, nz: h.nz, on: (METAL.has(mat) ? 'metal' : SOFT.has(mat) ? 'soft' : 'hard') as 'metal' | 'hard' | 'soft' };
 }

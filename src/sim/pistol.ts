@@ -9,7 +9,7 @@ import { PISTOL, MODS, MAGS } from '../data/units';
 import type { Stack } from './inventory';
 import './mods';
 import { onUseId, heldStack } from './use';
-import { aimAt, hurtUnit } from './damage';
+import { aimAt, hurtUnit, surfaceAt } from './damage';
 import { addItem } from './inventory';
 import { rand } from './rng';
 
@@ -30,7 +30,11 @@ onUseId('pistol', (s, w, st, input) => {
   // Thrown off his look by the spread (about a bell curve), his breathing's sway aimed, and the kick so far.
   const aimed = (input.buttons & B.AIM) !== 0, sp = spreadOf(s, aimed, st), bell = () => (rand(s.rng) + rand(s.rng) + rand(s.rng) - 1.5) / 1.5;
   const t = s.time / 3600, sway = aimed ? PISTOL.sway * RAD : 0;
-  const hit = aimAt(s, w, PISTOL.reach, { yaw: bell() * sp * RAD + Math.sin(t * 9.1) * sway, pitch: bell() * sp * RAD + Math.sin(t * 6.3) * sway * 0.6 + p.kick });
+  const off = { yaw: bell() * sp * RAD + Math.sin(t * 9.1) * sway, pitch: bell() * sp * RAD + Math.sin(t * 6.3) * sway * 0.6 + p.kick }, hit = aimAt(s, w, PISTOL.reach, off);
+  // Where it went: sparks off the machine it hit, or its mark on the wall or ground (M4-61).
+  const at = hit ? null : surfaceAt(s, w, PISTOL.reach, off);
+  if (hit) s.events.push({ t: 'mark', x: hit.at.x, y: hit.at.y, z: hit.at.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
+  else if (at) s.events.push({ t: 'mark', ...at, kind: 'bullet' });
   p.kick += PISTOL.kick;
   const quiet = st.mods?.includes('suppressor') ?? false;
   s.events.push({ t: 'noise', x: p.pos.x, y: p.pos.y + 1.4, z: p.pos.z, r: quiet ? MODS.suppressor.noise! : PISTOL.noise, kind: 'pistol' }, { t: 'fire', id: 'pistol', quiet });

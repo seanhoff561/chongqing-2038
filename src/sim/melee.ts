@@ -15,9 +15,7 @@ import { SCALE } from './clock';
 import { eyeOf } from './player';
 import { raycast } from '../world/geom';
 import { MAT } from '../world/mats';
-
-const METAL: Set<number> = new Set([MAT.metal, MAT.tealMetal, MAT.facadeWorks, MAT.screen, MAT.lamp, MAT.cable]);
-const SOFT: Set<number> = new Set([MAT.wood, MAT.crate, MAT.soft, MAT.cloth, MAT.leaves, MAT.moss, MAT.grass, MAT.blossom]);
+import { METAL, SOFT } from './damage';
 
 function blow(s: SimState, w: World, kind: keyof typeof MELEE) {
   const p = s.player, M = MELEE[kind];
@@ -26,14 +24,16 @@ function blow(s: SimState, w: World, kind: keyof typeof MELEE) {
   const hit = aimAt(s, w, M.reach);
   if (hit) {
     hurtUnit(s, w, hit.u, hit.zone, M.damage);
-    s.events.push({ t: 'swing', kind, on: 'machine' }, { t: 'noise', x: hit.at.x, y: hit.at.y, z: hit.at.z, r: M.noise, kind: kind === 'crowbar' ? 'crowbar' : 'knife' });
+    s.events.push({ t: 'swing', kind, on: 'machine' }, { t: 'noise', x: hit.at.x, y: hit.at.y, z: hit.at.z, r: M.noise, kind: kind === 'crowbar' ? 'crowbar' : 'knife' },
+      { t: 'mark', x: hit.at.x, y: hit.at.y, z: hit.at.z, nx: 0, ny: 1, nz: 0, kind: kind === 'crowbar' ? 'scrape' : 'cut', on: 'machine' });
     return;
   }
   const e = eyeOf(p), d = { x: -Math.sin(p.yaw) * Math.cos(p.pitch), y: Math.sin(p.pitch), z: -Math.cos(p.yaw) * Math.cos(p.pitch) };
   const h = raycast(w.index, e.x, e.y, e.z, d.x, d.y, d.z, M.reach);
   if (!h) { s.events.push({ t: 'swing', kind, on: 'air' }); return; }
   const mat = w.index.solids[h.id]?.mat ?? MAT.concrete, on = METAL.has(mat) ? 'metal' : SOFT.has(mat) ? 'soft' : 'hard';
-  s.events.push({ t: 'swing', kind, on }, { t: 'noise', x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, r: M.wall[on], kind: 'blow' });
+  s.events.push({ t: 'swing', kind, on }, { t: 'noise', x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, r: M.wall[on], kind: 'blow' },
+    { t: 'mark', x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, nx: h.nx, ny: h.ny, nz: h.nz, kind: kind === 'crowbar' ? 'scrape' : 'cut', on });
 }
 
 /** The quadruped or humanoid he can take down from where he is, if any. */

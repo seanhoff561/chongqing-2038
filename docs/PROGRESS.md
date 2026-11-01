@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-61 The marks of damage (U-052).
-Features done: 220 / 349 | Last done: M4-45
+**Status:** building M4. Next: M4-62 Machines that break apart (U-052).
+Features done: 221 / 349 | Last done: M4-61
 <!-- /status -->
 
 ## Log
@@ -79,3 +79,4 @@ Features done: 220 / 349 | Last done: M4-45
 - M4-58 Columns go somewhere; patrols change over (U-051): the columns march to the city's exits and leave by them; street walkers change over with them (U-051)
 - M4-53 Machines where he doesn't expect them (U-051): machines where he doesn't expect them: in rooms, at the foot of stairs, on roofs, in alleys (U-051)
 - M4-45 Combat AI (U-050): combat AI: drones circle and jink at a stand-off, humanoids bound between covers by turns and strafe in the open (U-050)
+- M4-61 The marks of damage (U-052): the marks of damage: bullet holes, pocks, scrapes, sparks and grit (U-052)
