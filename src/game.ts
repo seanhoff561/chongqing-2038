@@ -7,7 +7,7 @@ import { hideNear } from './sim/hide';
 import { lineInReach } from './sim/zip';
 import { createState, step } from './sim/sim';
 import { B, DT, type SimState, type Vec3 } from './sim/types';
-import { GAME_PER_TICK } from './sim/clock';
+import { GAME_PER_TICK, SCALE } from './sim/clock';
 import type { World } from './world/world';
 import { getWorld } from './world/build';
 import { scenarioByName, scenarios, type Scenario } from './data/scenarios';
@@ -23,7 +23,7 @@ import { BodyFx } from './render/body-fx';
 import { InventoryUI } from './ui/inventory-ui';
 import { heldStack } from './sim/use';
 import { item } from './data/items';
-import { MAGS } from './data/units';
+import { MAGS, UNITS } from './data/units';
 import { Audio } from './audio/audio';
 import { startRun, furnish } from './sim/run';
 import { teleport } from './sim/player';
@@ -94,6 +94,7 @@ export class Game {
   readonly motion = new HeldMotion();
   readonly marks = new Marks();
   private grabAge = 0;
+  private smokeIn = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
@@ -260,6 +261,21 @@ export class Game {
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
     this.marks.update(dt);
+    // Hurt machines near him smoke and spark (M4-62).
+    if ((this.smokeIn -= dt) <= 0) {
+      this.smokeIn = 0.25;
+      const c = this.view.fp.cam.position;
+      for (const u of this.state.units) {
+        if (u.patrol < 0 && !u.convoy && !u.reserve) continue;
+        const hurt = u.disarmed || u.blind || (u.hp ?? UNITS[u.kind].hp) < UNITS[u.kind].hp * 0.5;
+        if (!hurt || (u.dead && this.state.time - (u.stop?.t ?? 0) > 120 * SCALE)) continue;
+        const q = unitPose(this.world, u, this.state.time);
+        if (Math.hypot(q.x - c.x, q.z - c.z) > 50) continue;
+        const h = u.kind === 'humanoid' ? 1.5 : u.kind === 'quadruped' ? 0.8 : 0.1;
+        this.marks.puff(q.x, q.y + h, q.z);
+        if (Math.random() < 0.3) this.marks.add({ t: 'mark', x: q.x, y: q.y + h, z: q.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
+      }
+    }
     // Aimed through the 4x scope (U-058): the view through it, the gun out of sight behind it.
     const scoped = !!gun && this.gun.ads > 0.85 && zoomOf(heldStack(this.state)?.mods) > 1;
     this.hud.setScope(scoped);

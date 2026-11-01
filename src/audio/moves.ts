@@ -49,6 +49,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   bags: (a, t) => { a.noise(t, 0.6, 0.12, 'bandpass', 1400, 0.6, 600); a.noise(t + 0.5, 0.5, 0.1, 'bandpass', 1100, 0.6, 500); },
   drop: (a, t) => { a.noise(t, 0.08, 0.12, 'lowpass', 900); a.tone(t, 0.05, 0.05, 160, 90); },
   glass: (a, t) => { a.noise(t, 0.5, 0.45, 'highpass', 3500, 0.7, 7000); for (let i = 0; i < 5; i++) a.tone(t + 0.05 + i * 0.04, 0.06, 0.08, 3800 + i * 600, 3000, 'sine'); },
+  // A drone crashing and blowing up (M4-62): a crack, the boom, debris rattling down.
+  boom: (a, t) => { a.noise(t, 0.05, 0.6, 'highpass', 1500); a.tone(t, 0.6, 0.7, 70, 30); a.noise(t, 0.9, 0.45, 'lowpass', 500); a.noise(t + 0.3, 0.6, 0.12, 'bandpass', 2500, 1, 1200); },
   // Eating and drinking (U-058): a wrapper's rustle and chewing, a few bites; a bottle's gulps, swallowed.
   eat: (a, t) => { a.noise(t, 0.25, 0.08, 'bandpass', 3000, 1.2, 4500); for (let i = 0; i < 5; i++) { a.noise(t + 0.35 + i * 0.32, 0.12, 0.16, 'bandpass', 1300, 1.5, 700); a.tone(t + 0.36 + i * 0.32, 0.08, 0.05, 140, 90); } },
   drink: (a, t) => { for (let i = 0; i < 4; i++) { a.tone(t + 0.15 + i * 0.42, 0.13, 0.22, 230, 120); a.noise(t + 0.15 + i * 0.42, 0.1, 0.07, 'bandpass', 800, 2, 400); } a.noise(t + 1.9, 0.25, 0.06, 'lowpass', 900); },

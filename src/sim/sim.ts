@@ -31,6 +31,7 @@ import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
 import { stepChangeover } from './changeover';
+import { stepBreaks } from './breaks';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
 import { stepRaid } from './raid';
@@ -79,6 +80,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepSight(state, world);
   stepAlert(state, world);
   stepChangeover(state, world);
+  stepBreaks(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepConverge(state, world);

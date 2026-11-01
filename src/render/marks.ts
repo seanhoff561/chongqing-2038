@@ -31,6 +31,8 @@ export class Marks {
   private sparks: THREE.Points;
   private vel = new Float32Array(SPARKS * 3);
   private life = new Float32Array(SPARKS);
+  /** smoke rises where sparks fall */
+  private rise = new Uint8Array(SPARKS);
   private next = 0;
   private m = new THREE.Matrix4();
   private q = new THREE.Quaternion();
@@ -68,10 +70,22 @@ export class Marks {
       const i = this.next++ % SPARKS, sp = metal ? 3 + Math.random() * 3 : 1 + Math.random();
       pos.setXYZ(i, e.x, e.y, e.z);
       this.vel[i * 3] = (n.x + (Math.random() - 0.5) * 1.6) * sp; this.vel[i * 3 + 1] = (n.y + Math.random() * 0.8) * sp; this.vel[i * 3 + 2] = (n.z + (Math.random() - 0.5) * 1.6) * sp;
-      this.life[i] = metal ? 0.35 : 0.5;
+      this.life[i] = metal ? 0.35 : 0.5; this.rise[i] = 0;
       if (metal) col.setXYZ(i, 1, 0.75, 0.3); else col.setXYZ(i, 0.45, 0.43, 0.4);
     }
     pos.needsUpdate = col.needsUpdate = count > 0;
+  }
+
+  /** A puff of smoke off a hurt machine (M4-62): a few grey motes rising and drifting. */
+  puff(x: number, y: number, z: number) {
+    const pos = this.sparks.geometry.getAttribute('position') as THREE.BufferAttribute, col = this.sparks.geometry.getAttribute('color') as THREE.BufferAttribute;
+    for (let k = 0; k < 4; k++) {
+      const i = this.next++ % SPARKS;
+      pos.setXYZ(i, x + (Math.random() - 0.5) * 0.3, y, z + (Math.random() - 0.5) * 0.3);
+      this.vel[i * 3] = (Math.random() - 0.5) * 0.3; this.vel[i * 3 + 1] = 0.5 + Math.random() * 0.4; this.vel[i * 3 + 2] = (Math.random() - 0.5) * 0.3;
+      this.life[i] = 1.4; this.rise[i] = 1; col.setXYZ(i, 0.22, 0.22, 0.22);
+    }
+    pos.needsUpdate = col.needsUpdate = true;
   }
 
   /** A new run: the old marks gone. */
@@ -85,7 +99,7 @@ export class Marks {
       if (this.life[i] <= 0) continue;
       live = true;
       this.life[i] -= dt;
-      this.vel[i * 3 + 1] -= 9.8 * dt;
+      if (!this.rise[i]) this.vel[i * 3 + 1] -= 9.8 * dt;
       pos.setXYZ(i, pos.getX(i) + this.vel[i * 3] * dt, pos.getY(i) + this.vel[i * 3 + 1] * dt, pos.getZ(i) + this.vel[i * 3 + 2] * dt);
       if (this.life[i] <= 0) col.setXYZ(i, 0, 0, 0);
     }

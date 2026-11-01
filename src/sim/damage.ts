@@ -25,6 +25,9 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
   if (B.head && (hits.head ?? 0) >= B.head) u.blind = true;
   if (B.knee) { const broken = +((hits.kneeL ?? 0) >= B.knee) + +((hits.kneeR ?? 0) >= B.knee); if (broken) u.limp = true; if (broken === 2) u.lame = true; }
   if (B.battery && (hits.battery ?? 0) >= B.battery) u.shut = true;
+  // Its weapon out of action; a drone brought down, spinning out to crash (M4-62).
+  if (B.weapon && (hits.rifle ?? hits.launcher ?? hits.barrels ?? 0) >= B.weapon) { u.disarmed = true; u.aim = false; }
+  if (B.rotors && (hits.rotors ?? 0) >= B.rotors && !u.crash) crash(s, w, u);
   if (u.hp <= 0) u.dead = true;
   s.events.push({ t: 'hit', id: u.id, zone, dmg: d });
   u.hurtAt = s.time;
@@ -66,10 +69,10 @@ export function zoneOf(kind: UnitKind, q: { x: number; y: number; z: number; yaw
   const fx = Math.sin(q.yaw), fz = Math.cos(q.yaw), ly = at.y - q.y, lx = (at.x - q.x) * fz - (at.z - q.z) * fx, from = d.x * fx + d.z * fz;
   switch (kind) {
     case 'drone': case 'hunter': return ly > 0.03 || Math.hypot(at.x - q.x, at.z - q.z) > 0.25 ? 'rotors' : 'body';
-    case 'quadruped': return d.y > 0.5 && ly < 0.6 ? 'battery' : ly < 0.5 ? 'legs' : from < -0.3 && ly > 0.6 ? 'head' : 'body';
-    case 'humanoid': return ly > 1.62 ? 'head' : ly < 0.65 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1 && ly < 1.5 ? 'battery' : 'body';
+    case 'quadruped': return d.y > 0.5 && ly < 0.6 ? 'battery' : ly < 0.5 ? 'legs' : from < -0.3 && ly > 0.6 ? 'head' : ly > 0.85 && Math.abs(lx) < 0.15 ? 'launcher' : 'body';
+    case 'humanoid': return ly > 1.62 ? 'head' : ly < 0.65 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1 && ly < 1.5 ? 'battery' : from < -0.3 && ly > 1.0 && ly < 1.45 && Math.abs(lx) < 0.2 ? 'rifle' : 'body';
     case 'heavy': return ly > 2.6 ? 'head' : ly < 1.3 ? (lx < 0 ? 'kneeL' : 'kneeR') : from > 0.3 && ly > 1.7 && ly < 2.5 ? 'battery' : 'body';
-    case 'turret': return from < -0.3 ? 'head' : 'body';
+    case 'turret': return from < -0.3 ? (lx > 0.12 ? 'barrels' : 'head') : 'body';
     default: return 'body';
   }
 }
@@ -84,4 +87,13 @@ export function surfaceAt(s: SimState, w: World, reach: number, spread = { yaw: 
   if (!h) return null;
   const mat = h === a ? w.index.solids[a.id]?.mat ?? MAT.concrete : MAT.asphalt;
   return { x: e.x + d.x * h.t, y: e.y + d.y * h.t, z: e.z + d.z * h.t, nx: h.nx, ny: h.ny, nz: h.nz, on: (METAL.has(mat) ? 'metal' : SOFT.has(mat) ? 'soft' : 'hard') as 'metal' | 'hard' | 'soft' };
+}
+
+/** A drone hit in a rotor (M4-62): it loses lift and drops, spinning, drifting on the way it was going, to the first
+ *  thing under it; it can't see or act on the way down (sim/breaks.ts blows it up when it lands). */
+function crash(s: SimState, w: World, u: Unit) {
+  const p = unitPose(w, u, s.time), down = raycast(w.index, p.x, p.y - 0.3, p.z, 0, -1, 0, 300), g = w.ground ? rayGround(w.ground, p.x, p.y - 0.3, p.z, 0, -1, 0, 300) : null;
+  const t = Math.min(down?.t ?? 300, g?.t ?? 300);
+  u.crash = { t: s.time, x: p.x, y: p.y, z: p.z, yaw: p.yaw, gy: p.y - 0.3 - (t >= 300 ? 0 : t) };
+  u.trip = undefined; u.aware = 0;
 }

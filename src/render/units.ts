@@ -111,6 +111,8 @@ export class UnitView {
       const to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;
       if (to) this.m.multiply(this.s.makeScale(1, 1, Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z)));
       RIGS[u.kind].pose(a, this.parts);
+      // Come apart (M4-62): a humanoid's sensor head shot off, its rifle shot out of its hands.
+      if (u.kind === 'humanoid') { if (u.blind) this.parts[2].makeScale(0, 0, 0); if (u.disarmed) this.parts[11].makeScale(0, 0, 0); }
       ids.forEach((id, j) => this.batch.setMatrixAt(id, this.part.multiplyMatrices(this.m, this.parts[j])));
       shown++;
     });

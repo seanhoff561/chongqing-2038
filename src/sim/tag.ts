@@ -15,7 +15,7 @@ import type { Pose, Unit } from './units';
 /** Every tick, for a quadruped that's after him (fire.ts): its launcher. */
 export function launcher(s: SimState, w: World, u: Unit, at: Pose, d: number) {
   u.tagIn = Math.max(0, (u.tagIn ?? 0) - DT);
-  if (u.tagIn > 0 || (u.id + s.tick) % 6 || d <= TAG.near || d > TAG.reach || u.blind || visibility(s, w, u.kind, at) < SIGHT.min) return;
+  if (u.tagIn > 0 || (u.id + s.tick) % 6 || d <= TAG.near || d > TAG.reach || u.blind || u.disarmed || visibility(s, w, u.kind, at) < SIGHT.min) return;
   u.tagIn = TAG.every;
   s.events.push({ t: 'noise', x: at.x, y: at.y + 0.8, z: at.z, r: TAG.noise, kind: 'tag' });
   if (rand(s.rng) >= TAG.chance) return;

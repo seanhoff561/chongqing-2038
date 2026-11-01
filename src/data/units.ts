@@ -29,14 +29,22 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
  *  blinds it (its sensor head), immobilises it (each knee) or shuts it down (its battery). */
 export const ZONES: Record<UnitKind, Record<string, number>> = {
   drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 },
-  quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5 },
-  humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2 },
+  quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5, launcher: 0.5 },
+  humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2, rifle: 0.5 },
   heavy: { body: 0.05, head: 0.6, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
-  turret: { body: 0.05, head: 1 },
+  turret: { body: 0.05, head: 1, barrels: 0.5 },
   delivery: { body: 1 }, carrier: { body: 0.3 },
   camera: { body: 1 }, sweeper: { body: 1 }, lamppost: { body: 1 }, pir: { body: 1 }, tripwire: { body: 1 }, acoustic: { body: 1 },
 };
-export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number }>> = { quadruped: { head: 60 }, humanoid: { head: 75, knee: 100, battery: 120 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100 } };
+/** What breaks (M4-19, M4-62): the damage at a place that blinds it, lames it, shuts it down, puts its weapon out of
+ *  action (a humanoid's rifle shot out of its hands, a quadruped's launcher wrecked, a turret's barrels bent), or
+ *  brings a drone down out of the air. */
+export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number; weapon?: number; rotors?: number }>> = {
+  quadruped: { head: 60, weapon: 20 }, humanoid: { head: 75, knee: 100, battery: 120, weapon: 20 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100, weapon: 25 },
+  drone: { rotors: 20 }, hunter: { rotors: 30 },
+};
+/** A downed drone's blast (M4-62): how far it hurts and how much at its heart, and how far it's heard. */
+export const CRASH = { reach: 4, damage: 35, noise: 60 };
 
 /** The fixed sensors (M4-11, DESIGN section 7): a motion sensor's cone and reach and the movement it notices (his
  *  speed times how his posture shows him, so a crawl slides under it). */

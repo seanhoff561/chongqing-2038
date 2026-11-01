@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-62 Machines that break apart (U-052).
-Features done: 221 / 349 | Last done: M4-61
+**Status:** building M4. Next: M4-46 Relentless pursuit (U-050).
+Features done: 222 / 349 | Last done: M4-62
 <!-- /status -->
 
 ## Log
@@ -80,3 +80,4 @@ Features done: 221 / 349 | Last done: M4-61
 - M4-53 Machines where he doesn't expect them (U-051): machines where he doesn't expect them: in rooms, at the foot of stairs, on roofs, in alleys (U-051)
 - M4-45 Combat AI (U-050): combat AI: drones circle and jink at a stand-off, humanoids bound between covers by turns and strafe in the open (U-050)
 - M4-61 The marks of damage (U-052): the marks of damage: bullet holes, pocks, scrapes, sparks and grit (U-052)
+- M4-62 Machines that break apart (U-052): machines that come apart: rifles shot out, heads off, drones downed and blowing up, hurt machines smoking (U-052)

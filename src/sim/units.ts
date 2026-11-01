@@ -24,6 +24,9 @@ export interface Unit {
   mate?: boolean;
   /** when it was last hit (M4-45: a drone jinks) */
   hurtAt?: number;
+  /** its weapon out of action (M4-62); a drone falling out of the air: when and where it was hit, and the ground under it */
+  disarmed?: boolean;
+  crash?: { t: number; x: number; y: number; z: number; yaw: number; gy: number };
   /** a walker out only while its district is Heightened (M4-16), and whether it's out (or an idle camera on) */
   extra?: boolean;
   on?: boolean;
@@ -67,7 +70,7 @@ export interface Unit {
 }
 
 /** Whether a machine is out just now (M4-13). */
-export const isOff = (s: { time: number }, u: Unit) => !!u.dead || !!u.shut || (u.off !== undefined && s.time < u.off);
+export const isOff = (s: { time: number }, u: Unit) => !!u.dead || !!u.shut || !!u.crash || (u.off !== undefined && s.time < u.off);
 
 /** A trip off the beat: the way there (or back), how far along it, where it is and faces, the look-about left there,
  *  and where and when it left its beat. */
@@ -191,6 +194,8 @@ const keeps = ([a, b]: [number, number], h: number) => (a <= b ? h >= a && h < b
 /** Where an Unaware unit is at a game time, and facing which way (its +z: yaw from +z toward +x). Columns march at
  *  all hours. */
 export function unitPose(w: World, u: Unit, time: number): Pose {
+  // Falling out of the air (M4-62): dropping, spinning, drifting on, to the ground under it.
+  if (u.crash && !u.dead) { const c = u.crash, f = (time - c.t) / SCALE; return { x: c.x + Math.sin(c.yaw) * 3 * Math.min(f, 2), y: Math.max(c.gy, c.y - 4.9 * f * f), z: c.z + Math.cos(c.yaw) * 3 * Math.min(f, 2), yaw: c.yaw + 14 * f, active: true }; }
   // Out, it stays where it stopped (M4-17); immobilised, where it stands (M4-19).
   if (u.stop) return { x: u.stop.x, y: u.stop.y, z: u.stop.z, yaw: u.stop.yaw, active: !isOff({ time }, u) };
   if (u.trip) return { ...u.trip.pos, yaw: u.trip.yaw, active: true };
