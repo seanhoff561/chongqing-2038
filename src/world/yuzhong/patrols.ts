@@ -9,6 +9,7 @@ import { DWELL, ALIVE } from '../../data/units';
 import type { World, Patrol, Camera } from '../world';
 import { heightAt } from '../heightfield';
 import { GEO } from '../geo';
+import { navPath } from '../../sim/nav';
 
 /** The districts given beats of their own, the streets those run, and the side streets beats break off along. */
 const DISTRICTS = ['jiefangbei', 'jiaochangkou', 'shibati', 'xiaoshizi', 'hongyadong', 'chaotianmen'];
@@ -22,7 +23,7 @@ type V3 = { x: number; y: number; z: number };
  *  main streets were): on a main street a pair every `main` metres round its beat (a squad of three on each district's
  *  longest), on a side street one walker every `side` metres; side streets within `sideR` of a district's centre and
  *  longer than `sideMin`, up to `sides` of them a district; a turret on the lamppost at each main junction there. */
-const CROWD = { main: 120, side: 300, squad: 3, sideMin: 50, sideR: 250, sides: 12, turretGap: 60 };
+const CROWD = { main: 120, side: 300, squad: 3, sideMin: 50, sideR: 250, sides: 12, turretGap: 60, /** the steepest a side street a delivery robot takes may be */ wheels: 0.12 };
 /** How many colossi walk the city (U-050). */
 const GIANTS = { colossi: 3 };
 /** How many spider robots live in each district's sewers, and how far out from its centre (U-069). */
@@ -69,6 +70,79 @@ function straight(w: World, a: V3, b: V3) {
   return !!down && Math.abs(down.t - 1) < 0.6;
 }
 
+/** Whether a walker can walk straight from a to b: straight (above), no steeper than a stair, and floor under its
+ *  line every 4 m. */
+function walkable(w: World, a: V3, b: V3) {
+  // (No steeper than a stair, 0.8 up a metre along, and its middle looked under at least.)
+  const run = Math.hypot(b.x - a.x, b.z - a.z);
+  if (Math.abs(b.y - a.y) > 0.8 * run + 0.5 || !straight(w, a, b)) return false;
+  const n = Math.max(2, Math.floor(run / 4));
+  for (let k = 1; k < n; k++) {
+    const f = k / n, x = a.x + (b.x - a.x) * f, y = a.y + (b.y - a.y) * f, z = a.z + (b.z - a.z) * f, h = raycast(w.index, x, y + 1.5, z, 0, -1, 0, 3);
+    if (!h) return false;
+  }
+  return true;
+}
+
+/** A walker's spot out of anything solid it's sunk into (a plaza's or a podium's deck over the ground the street was
+ *  drawn on): up to the first clear height within 4 m, on the floor there; else as it was. */
+function lift(w: World, q: V3): V3 {
+  const body = (y: number) => overlaps(w.index, { x0: q.x - 0.15, y0: y + 0.3, z0: q.z - 0.15, x1: q.x + 0.15, y1: y + 1.5, z1: q.z + 0.15 });
+  if (!body(q.y)) return q;
+  for (let dy = 0.25; dy <= 4; dy += 0.25) if (!body(q.y + dy)) { const h = raycast(w.index, q.x, q.y + dy + 0.3, q.z, 0, -1, 0, dy + 0.6); return { ...q, y: h ? q.y + dy + 0.3 - h.t : q.y + dy }; }
+  return q;
+}
+
+/** A spot set down on the floor under it (within 2.5 m). */
+const onFloor = (w: World, q: V3) => { const h = raycast(w.index, q.x, q.y + 1.5, q.z, 0, -1, 0, 4); return h ? { ...q, y: q.y + 1.5 - h.t } : q; };
+
+/** Of a walker's line, the longest stretch it can walk: each point clear of anything, each step between them open
+ *  (where a street as drawn runs into a block's base, or a route underground cuts through the rock at a bend, the beat
+ *  stops short of it). Its first and last index, or null if there's none. */
+function longest(w: World, line: V3[]): [number, number] | null {
+  const ok = line.map(q => !overlaps(w.index, { x0: q.x - 0.15, y0: q.y + 0.3, z0: q.z - 0.15, x1: q.x + 0.15, y1: q.y + 1.5, z1: q.z + 0.15 }));
+  let best: [number, number] = [0, -1];
+  for (let i = 0; i < line.length;) {
+    if (!ok[i]) { i++; continue; }
+    let j = i;
+    while (j + 1 < line.length && ok[j + 1] && clear(w, line[j], line[j + 1], 1)) j++;
+    if (j - i > best[1] - best[0]) best = [i, j];
+    i = j + 1;
+  }
+  return best[1] > best[0] ? best : null;
+}
+
+/** A walker's way along points (underground), set down every 5 m and cut to its longest walkable stretch. */
+function walkedLine(w: World, r: V3[]): V3[] {
+  const line: V3[] = [];
+  r.forEach((q, i) => {
+    if (i) { const a = r[i - 1], n = Math.floor(Math.hypot(q.x - a.x, q.z - a.z) / 5); for (let k = 1; k < n; k++) line.push(onFloor(w, { x: a.x + ((q.x - a.x) * k) / n, y: a.y + ((q.y - a.y) * k) / n, z: a.z + ((q.z - a.z) * k) / n })); }
+    line.push(q);
+  });
+  const b = longest(w, line);
+  return b ? line.slice(b[0], b[1] + 1) : [];
+}
+
+/** A flyer's beat with every leg through something (a tower in its way) taken over the top instead: up 6 m over the
+ *  highest roof under the leg, across, and down again (M4-29). */
+function flyOver(w: World, p: Patrol): Patrol {
+  const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
+  // (A stop inside something, a street running under a building, is held over its roof instead.)
+  const top = (x: number, z: number) => { const h = raycast(w.index, x, 600, z, 0, -1, 0, 600); return h ? 600 - h.t : -Infinity; };
+  const stops = p.pts.map(q => (overlaps(w.index, { x0: q.x - 0.3, y0: q.y - 0.3, z0: q.z - 0.3, x1: q.x + 0.3, y1: q.y + 0.3, z1: q.z + 0.3 }) ? { ...q, y: top(q.x, q.z) + 6 } : q));
+  stops.forEach((q, i) => {
+    const a = stops[i - 1];
+    if (a && !clear(w, a, q, 0)) {
+      let y = Math.max(a.y, q.y);
+      for (let k = 0, n = Math.max(2, Math.ceil(Math.hypot(q.x - a.x, q.z - a.z) / 8)); k <= n; k++) y = Math.max(y, top(a.x + ((q.x - a.x) * k) / n, a.z + ((q.z - a.z) * k) / n) + 6);
+      pts.push({ ...a, y }, { ...q, y }); dwell.push(0, 0);
+    }
+    pts.push(q); dwell.push(p.dwell[i]);
+    if (p.look?.[i] !== undefined) look[pts.length - 1] = p.look[i];
+  });
+  return { ...p, pts, dwell, ...(p.look ? { look } : {}) };
+}
+
 export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[] {
   // The bins and crates to look behind: the alleys' and the streets' (their hiding spots, M3-47).
   const hides = w.hides.filter(h => h.kind === 'crate' || h.kind === 'dumpster' || h.kind === 'drum').map(h => ({ x: (h.inner.x0 + h.inner.x1) / 2, y: h.inner.y0, z: (h.inner.z0 + h.inner.z1) / 2 }));
@@ -82,11 +156,11 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       const d = Math.hypot(q.x - h.x, q.z - h.z);
       if (d > 15 || d < 1.5) continue;
       const by = { x: h.x + ((q.x - h.x) / d) * 1.2, y: h.y, z: h.z + ((q.z - h.z) / d) * 1.2 };
-      if (straight(w, q, by)) return [by];
+      if (walkable(w, q, by)) return [by];
     }
     return null;
   };
-  const toDoor = (q: V3): V3[] | null => { for (const [door, inside] of doors) if (Math.hypot(door.x - q.x, door.z - q.z) < 20 && straight(w, q, door) && straight(w, door, inside)) return [door, inside]; return null; };
+  const toDoor = (q: V3): V3[] | null => { for (const [door, inside] of doors) if (Math.hypot(door.x - q.x, door.z - q.z) < 20 && walkable(w, q, door) && walkable(w, door, inside)) return [door, inside]; return null; };
   // The districts' own beats (M4-57): every main street within 300 m of their centres walked by pairs, a squad on the
   // longest, a drone over it; and their side streets within 250 m by walkers on their own. (A street's stretch is
   // walked once, by the first district to take it.)
@@ -130,7 +204,12 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
     if (long && len(long) > 200) colossi.push(long);
     // A drone up and down it, day and night, 16 m over the street.
     if (long) district.push({ kind: 'drone', unit: 'drone', pts: long.map(q => ({ ...q, y: q.y + 16 })), dwell: long.map(() => 0), hours: [0, 24], crowd: { n: 2, size: 1 } });
-    for (const r of stretches(SIDE_ONLY, CROWD.sideR, CROWD.sideMin).slice(0, CROWD.sides)) district.push(beat(r, 'quadruped', CROWD.side, 1));
+    // (Its flattest side street, gentle enough for wheels, a delivery robot's: M4-29, M4-34.)
+    const sides = stretches(SIDE_ONLY, CROWD.sideR, CROWD.sideMin).slice(0, CROWD.sides);
+    // (Its steepest over any 8 m of it: close-set points make a bump look like a cliff.)
+    const grade = (r: V3[]) => Math.max(0, ...r.map((a, i) => { let d = 0, j = i; while (j + 1 < r.length && d < 8) { d += Math.hypot(r[j + 1].x - r[j].x, r[j + 1].z - r[j].z); j++; } return d >= 8 ? Math.abs(r[j].y - a.y) / d : 0; }));
+    const flat = sides.filter(r => grade(r) <= CROWD.wheels).sort((a, b) => grade(a) - grade(b))[0];
+    for (const r of sides) district.push(r === flat ? { kind: 'street', unit: 'delivery', pts: r, dwell: r.map((_, i) => (i === 0 || i === r.length - 1 ? DWELL.end : 0)), hours: [0, 24] } : beat(r, 'quadruped', CROWD.side, 1));
   }
   // And the three longest main streets in the city each walked by a colossus (U-050), slow, nine metres tall.
   for (const r of colossi.sort((a, b) => len(b) - len(a)).slice(0, GIANTS.colossi)) giants.push(giant(r, 'colossus', 3));
@@ -161,14 +240,32 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
     // Flat and long: a delivery robot's (no stairs, no detours). Otherwise quadrupeds and humanoids by turns. (The
     // districts' crowded beats are the patrols' own.)
     const steep = p.pts.slice(1).some((q, i) => Math.abs(q.y - p.pts[i].y) > 0.06 * Math.hypot(q.x - p.pts[i].x, q.z - p.pts[i].z) + 0.2);
-    if (!steep && p.pts.length > 2 && !p.crowd) return { ...p, unit: 'delivery' };
-    const unit = street++ % 2 ? 'humanoid' : 'quadruped', pts: V3[] = [], dwell: number[] = [];
-    // (Looked along every 10 m or so for a side street.)
+    const wheels = (!steep && p.pts.length > 2 && !p.crowd) || p.unit === 'delivery';
+    const unit: Patrol['unit'] = wheels ? 'delivery' : street++ % 2 ? 'humanoid' : 'quadruped', pts: V3[] = [], dwell: number[] = [];
+    // (Looked along every 5 m or so for a side street, and set down on the ground there.)
     const line: V3[] = [], rest: number[] = [];
+    // (Walked, not flown, M4-29: a leg that's no straight walk, a wall in the way or no ground at its end, goes the way
+    // the nav graph takes this walker; and every point along it set down on the floor under it.)
     p.pts.forEach((q, i) => {
-      if (i) { const a = p.pts[i - 1], n = Math.floor(Math.hypot(q.x - a.x, q.z - a.z) / 10); for (let k = 1; k < n; k++) { line.push({ x: a.x + ((q.x - a.x) * k) / n, y: a.y + ((q.y - a.y) * k) / n, z: a.z + ((q.z - a.z) * k) / n }); rest.push(0); } }
+      if (i) {
+        const a = p.pts[i - 1], via = walkable(w, a, q) || !w.nav ? [] : navPath(w.nav, a, q, unit)?.pts ?? [];
+        let from = a;
+        for (const m of [...via, q]) {
+          const n = Math.floor(Math.hypot(m.x - from.x, m.z - from.z) / 5);
+          for (let k = 1; k < n; k++) { line.push(onFloor(w, { x: from.x + ((m.x - from.x) * k) / n, y: from.y + ((m.y - from.y) * k) / n, z: from.z + ((m.z - from.z) * k) / n })); rest.push(0); }
+          if (m !== q) { line.push(m); rest.push(0); }
+          from = m;
+        }
+      }
       line.push(q); rest.push(p.dwell[i]);
     });
+    for (let i = 0; i < line.length; i++) line[i] = lift(w, line[i]);
+    const best = longest(w, line);
+    if (!best) return { ...p, unit, hours: [0, 0] as [number, number] }; // (none at all: it never goes out)
+    line.splice(best[1] + 1); line.splice(0, best[0]); rest.splice(best[1] + 1); rest.splice(0, best[0]);
+    rest[0] ||= DWELL.end; rest[rest.length - 1] ||= DWELL.end;
+    // (A delivery robot keeps to its street, no stops or turnings off.)
+    if (wheels) return { ...p, unit, pts: line, dwell: rest };
     let since = 60, spurs = 0, looked = 0;
     const look: Record<number, number> = {};
     line.forEach((q, i) => {
@@ -196,7 +293,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
             let from = q;
             for (let j = k, run = 0; j >= 0 && j < side.pts.length && run < 60; j += dir) {
               const [x, z] = side.pts[j], v = { x, y: heightAt(g, x, z) ?? q.y, z };
-              if (!straight(w, from, v)) break;
+              if (Math.hypot(v.x - from.x, v.z - from.z) > 25 || !walkable(w, from, v)) break;
               run += Math.hypot(v.x - from.x, v.z - from.z); walk.push(v); from = v;
               const t = go(from);
               if (t) return [...walk, ...t];
@@ -214,14 +311,16 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       pts.push(q); dwell.push(0);
       since = 0; spurs++;
     });
-    return { ...p, unit, pts, dwell, look };
+    // (Its turnings off, into alleys and doors, set down out of anything too.)
+    return { ...p, unit, pts: pts.map(q => lift(w, q)), dwell, look };
   });
   // Under the ground: the underground city's route end to end, and the Grand Tunnel from the friends' stub to the
   // metro's, a long wait at the metro end.
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
-  if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
+  const way = walkedLine(w, under);
+  if (way.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: way, dwell: way.map((_, i) => (i === 0 || i === way.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w), skyDrones(w));
+  return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w), skyDrones(w)).map(p => (p.unit === 'drone' ? flyOver(w, p) : p));
 }
 
 /** Drones everywhere (M4-87, U-065): a dozen more in each district, slow, wandering a loop of their own over the roofs
@@ -263,9 +362,11 @@ function sewerCrawlers(w: World): Patrol[] {
     let n = 0;
     for (const [g, r] of runs) {
       if (n >= CRAWLERS.per || used.has(g) || r.length !== 2 || Math.hypot(r[0].x - L.x, r[0].z - L.z) > CRAWLERS.r) continue;
+      // Straight along it if it runs straight, else round its corner, whichever way is open (not through the rock).
+      const [a, b] = r, way = [[a, b], [a, { x: b.x, y: a.y, z: a.z }, b], [a, { x: a.x, y: a.y, z: b.z }, b]].find(ps => ps.every((q, i) => !i || clear(w, ps[i - 1], q, 0.3)));
+      if (!way) continue;
       used.add(g); n++;
-      const [a, b] = r;
-      out.push({ kind: 'under', unit: 'crawler', pts: [a, { x: b.x, y: a.y, z: a.z }, b], dwell: [6, 0, 6], hours: [0, 24] });
+      out.push({ kind: 'under', unit: 'crawler', pts: way, dwell: way.map((_, i) => (i === 0 || i === way.length - 1 ? 6 : 0)), hours: [0, 24] });
     }
   }
   return out;
@@ -279,6 +380,8 @@ function lurkers(w: World, hides: V3[]): Patrol[] {
   const out: Patrol[] = [], near = (x: number, z: number, k: string) => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 300;
   /** A machine waiting at a spot, facing `yaw`, `n`th of its kind in the district: its hours from n. */
   const wait = (unit: Patrol['unit'], at: V3, yaw: number, n: number) => {
+    // (Nowhere it would stand inside a wall, a stair's fill or a bin: M4-29.)
+    if (unit !== 'drone' && overlaps(w.index, { x0: at.x - 0.15, y0: at.y + 0.3, z0: at.z - 0.15, x1: at.x + 0.15, y1: at.y + 1.5, z1: at.z + 0.15 })) return;
     const from = (n * 7 + Math.floor(at.x + at.z)) % 24, long = 1 + (n % 3);
     out.push({ kind: 'lurk', unit, pts: [at, { ...at, x: at.x + 0.01 }], dwell: [600, 600], hours: [from, (from + long) % 24], look: { 0: yaw, 1: yaw } });
   };
@@ -294,7 +397,11 @@ function lurkers(w: World, hides: V3[]): Patrol[] {
       wait('humanoid', foot, Math.atan2(door.x - foot.x, door.z - foot.z), n + 3);
       wait(n % 2 ? 'drone' : 'quadruped', n % 2 ? { ...top, y: top.y + 1.6 } : top, (n * 2.1) % 6.28, n + 6);
     });
-    hides.filter(h => near(h.x, h.z, k)).filter((_, i) => i % 7 === 3).slice(0, 3).forEach((h, n) => wait('quadruped', { x: h.x + 1.2, y: h.y, z: h.z }, -Math.PI / 2, n + 9));
+    hides.filter(h => near(h.x, h.z, k)).filter((_, i) => i % 7 === 3).slice(0, 3).forEach((h, n) => {
+      // Beside the bins, on whichever side there's room, looking out from them.
+      const by = [[1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]].map(([dx, dz]) => ({ x: h.x + dx, y: h.y, z: h.z + dz })).find(q => !overlaps(w.index, { x0: q.x - 0.15, y0: q.y + 0.3, z0: q.z - 0.15, x1: q.x + 0.15, y1: q.y + 1.5, z1: q.z + 0.15 }));
+      if (by) wait('quadruped', by, Math.atan2(by.x - h.x, by.z - h.z), n + 9);
+    });
   }
   return out;
 }

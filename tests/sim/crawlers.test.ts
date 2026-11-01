@@ -18,8 +18,8 @@ describe('spider robots in the sewers (M4-95)', () => {
     // He's down a run, a few metres ahead of one.
     const s = createState(1, w), { i } = beats[0], u = s.units.find(x => x.patrol === i && !x.extra)!;
     s.flags.clear = true; s.time = 12 * 3600;
-    const q = unitPose(w, u, s.time), p = w.patrols[i].pts, ahead = p.find(t => Math.hypot(t.x - q.x, t.z - q.z) > 4) ?? p[2], d = Math.hypot(ahead.x - q.x, ahead.z - q.z);
-    const at = { x: q.x + ((ahead.x - q.x) / d) * 4, y: q.y, z: q.z + ((ahead.z - q.z) / d) * 4 };
+    // (Ahead of it the way it faces, along its run.)
+    const q = unitPose(w, u, s.time), at = { x: q.x + Math.sin(q.yaw) * 4, y: q.y, z: q.z + Math.cos(q.yaw) * 4 };
     teleport(s.player, at.x, at.y + 0.05, at.z);
     let hurt = 0;
     run(s, w, secs(12), {}, st => { hurt += st.events.filter(e => e.t === 'hurt' && e.cause === 'prod').length; st.body.hp = 100; });

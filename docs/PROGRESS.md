@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-29 Machines in the first district.
-Features done: 249 / 364 | Last done: M4-28
+**Status:** building M4. Next: M4-101 Combat pass (U-089).
+Features done: 250 / 365 | Last done: M4-29
 <!-- /status -->
 
 ## Log
@@ -110,3 +110,4 @@ Features done: 249 / 364 | Last done: M4-28
 - M4-87 Drones everywhere (U-065): drones everywhere, scanning roofs and gaps; shot down quietly, searched for scrap
 - M4-99 Realistic textures (U-073): realistic textures: sleeve cloth, worn metal and grips, cardboard and labels, machine plates
 - M4-28 Street speakers and announcements: street speakers and LED boards: the occupier's announcements by alert and hour
+- M4-29 Machines in the first district: the first district's machines walk real ground all day: rerouted beats, drones over towers, delivery robots
