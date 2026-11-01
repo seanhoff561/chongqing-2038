@@ -1031,7 +1031,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 36 of 38 done
+## M5: 37 of 38 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
@@ -1114,7 +1114,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
 - [x] **M5-23** Crowbar prying
   - Pry doors (not secure ones), shutters, vent covers, crates and scooter batteries with a 20 m noise and a duration
   - A sim test covers it
-- [ ] **M5-23b** Roller shutters (split from M5-23)
+- [x] **M5-23b** Roller shutters (split from M5-23)
   - Some ground-floor shopfronts have roller shutters pulled down; the crowbar prises one up enough to crawl under, with a duration and a 20 m noise
   - A sim test covers it
 - [x] **M5-24** Locks, keys, lockpicks and keycards

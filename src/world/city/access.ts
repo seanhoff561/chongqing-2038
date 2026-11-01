@@ -59,6 +59,14 @@ export function door(id: string, box: Solid, hinge: [number, number], dir: [numb
   out.inter.push({ id, kind: 'door', x: hinge[0] + (dir[0] * w) / 2, y: box.y0 + 1.1, z: hinge[1] + (dir[1] * w) / 2, r: 0.9, zh: label[0], en: label[1], data: lock === 'shut' ? { part: id } : { part: id, lock } });
 }
 
+/** A street door made a roller shutter (M5-23b): pulled down and locked over a shopfront, drawn by itself
+ *  (render/shutters.ts) in place of the door's leaf and its padlock, prised up with the crowbar. */
+export function shutter(out: Fabric, id: string) {
+  for (let i = out.props.length - 1; i >= Math.max(0, out.props.length - 40); i--) if (out.props[i].text === id) out.props.splice(i, 1);
+  const it = out.inter.find(q => q.id === id);
+  if (it) { it.data = { ...it.data, shutter: true }; it.zh = '卷帘门'; it.en = 'Roller shutter'; }
+}
+
 /** A window opening's state: `box` fills it (made hidden): its glass to break out, or bars across it running along
  *  `dir`, centred at `c`. */
 export function glaze(id: string, box: Solid, c: [number, number], dir: [number, number], w: number, state: Glazing, out: Fabric) {

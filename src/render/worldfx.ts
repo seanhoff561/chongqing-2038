@@ -1,6 +1,6 @@
 // What's moving in the world round him that isn't a machine or him (M4-62, M4-65, M5-14, M5-19 to M5-22): rockets in
 // flight trailing smoke, hurt machines smoking and sparking, what's thrown and its clouds, what he's rigged, and the
-// chain-link fences (cut or not).
+// chain-link fences (cut or not) and the roller shutters near him.
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
 import type { World } from '../world/world';
@@ -11,12 +11,14 @@ import { SCALE } from '../sim/clock';
 import { ThrowFx } from './throwfx';
 import { Rigs } from './rigs';
 import { Fences } from './fences';
+import { Shutters } from './shutters';
 
 export class WorldFx {
   private rockets: THREE.Group[] = [];
   private throwFx: ThrowFx;
   private rigs: Rigs;
   private fences: Fences;
+  private shutters: Shutters;
   private trailIn = 0;
   private smokeIn = 0;
 
@@ -31,6 +33,7 @@ export class WorldFx {
     this.throwFx = new ThrowFx(scene);
     this.rigs = new Rigs(scene);
     this.fences = new Fences(scene);
+    this.shutters = new Shutters(scene);
   }
 
   /** Every frame: `held` what's in his hand, `aiming` the right mouse held, `cam` where he looks from. */
@@ -41,6 +44,7 @@ export class WorldFx {
     this.throwFx.update(s, w, held, aiming);
     this.rigs.update(s);
     this.fences.update(s, w);
+    this.shutters.update(s, w, cam);
     // Hurt machines near him smoke and spark (M4-62).
     if ((this.smokeIn -= dt) > 0) return;
     this.smokeIn = 0.25;

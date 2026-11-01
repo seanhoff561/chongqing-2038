@@ -7,7 +7,7 @@ import { sides } from './climb';
 import { MAT } from '../mats';
 import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
 import { FLOOR, WALL, SLAB, CORE, CORE_L, CORE_W } from './rooms';
-import { door, roll } from './access';
+import { door, roll, shutter } from './access';
 import { TYPES } from './types';
 import { puzzle } from './puzzle';
 import { basement } from './basement';
@@ -58,7 +58,10 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
     cut(B(lobby[0], base, lobby[1], lobby[2], base + FLOOR - SLAB, lobby[3], 0));
     const doorCut = B(U - 0.01, base, doorV - 0.8, U + WALL + 0.05, base + 2.2, doorV + 0.8, 0);
     cut(doorCut);
-    door(nid('street'), B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), at(U + WALL / 2, doorV - 0.8), alongZ ? [1, 0] : [0, 1], 1.6, roll(r, TYPES[l.type ?? 'residential'].door), out);
+    const sid = nid('street'), sbox = B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), sat = at(U + WALL / 2, doorV - 0.8), lock = roll(r, TYPES[l.type ?? 'residential'].door);
+    door(sid, sbox, sat, alongZ ? [1, 0] : [0, 1], 1.6, lock, out);
+    // A quarter of the locked ones a shopfront's roller shutter, pulled down and locked (M5-23b).
+    if (lock === 'locked' && hashString(`shutter:${sid}`) % 4 === 0) shutter(out, sid);
     // Landings at each floor, flights between, each two invisible ramps under visible steps (thin, so the flight
     // above leaves headroom): lane A rises along +u to the far landing, lane B comes back to the next floor's.
     const flight = (u0: number, v0: number, u1: number, v1: number, low: number, up: boolean) => {

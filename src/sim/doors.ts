@@ -17,8 +17,20 @@ export const doorSolid = (it: Inter) => it.data?.solid as number;
 export function syncWorld(s: SimState, w: World) {
   for (const it of w.inter) {
     if (it.kind !== 'door' && it.kind !== 'window' && it.kind !== 'grate' && it.kind !== 'rubble' && it.kind !== 'fence') continue;
+    if (it.data?.shutter) { raiseShutter(s, w, it); continue; }
     if (doorSolid(it) >= 0) w.index.off[doorSolid(it)] = s.wstate.open[it.id] ? 1 : 0;
   }
+}
+
+/** A roller shutter (M5-23b): prised up with the crowbar, slowly and loudly, enough to crawl under (its solid starting
+ *  that far off the ground); bent, it goes no further and won't come down. */
+export const SHUTTER = { pry: 3.5, gap: 0.7, noise: 20 };
+function raiseShutter(s: SimState, w: World, it: Inter) {
+  const b = w.index.solids[doorSolid(it)];
+  if (!b) return;
+  const y0 = ((it.data!.y0 as number | undefined) ??= b.y0);
+  b.y0 = y0 + (s.wstate.open[it.id] ? SHUTTER.gap : 0);
+  w.index.off[doorSolid(it)] = 0;
 }
 
 /** Seconds to shoulder a jammed door (M3-36), or prise one nailed shut (M5-18); locks and chains: locks.ts. */
@@ -44,6 +56,7 @@ function swing(s: SimState, w: World, it: Inter, loud = false) {
 
 onInteract('door', {
   can: (s, it) => {
+    if (it.data?.shutter) return s.wstate.open[it.id] ? 'prised up: crawl under it' : has(s.inv.pack, 'crowbar') ? null : 'a roller shutter, locked down: prise it up with a crowbar';
     if (s.wstate.open[it.id]) return null;
     const lock = lockOf(s, it);
     if (lock === 'collapsed') return 'collapsed';
@@ -55,11 +68,18 @@ onInteract('door', {
   },
   // Forced, picked or cloned: held; forced is loud.
   dur: (s, it) => {
+    if (it.data?.shutter) return SHUTTER.pry;
     if (s.wstate.open[it.id]) return 0;
     const lock = lockOf(s, it), way = lockWay(s, it, lock);
     return lock === 'jammed' || lock === 'pinned' ? FORCE[lock] : typeof way === 'string' ? 0 : way.secs;
   },
   done: (s, w, it) => {
+    if (it.data?.shutter) {
+      s.wstate.open[it.id] = true;
+      raiseShutter(s, w, it);
+      s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: SHUTTER.noise, kind: 'force' }, { t: 'msg', text: 'shutter prised up: crawl under' });
+      return;
+    }
     const lock = lockOf(s, it), way = lockWay(s, it, lock), quiet = typeof way !== 'string' && !way.loud && lock !== 'jammed' && lock !== 'pinned';
     if (typeof way !== 'string') lockDone(s, it, way.how);
     swing(s, w, it, !quiet);
