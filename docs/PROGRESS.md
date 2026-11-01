@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-98 Recorded sounds (U-070).
-Features done: 242 / 362 | Last done: M4-88
+**Status:** building M4. Next: M4-93 Eldritch walkers (U-069).
+Features done: 243 / 362 | Last done: M4-98
 <!-- /status -->
 
 ## Log
@@ -101,3 +101,4 @@ Features done: 242 / 362 | Last done: M4-88
 - M4-92 Helicopter troop drop (U-067): helicopter troop drop: seen and gone into a building, a squad dropped on its roof sweeps it floor by floor; dogs and crawlers into the sewers (U-067)
 - M4-97 Faint, rare music (U-070): faint, rare music: mostly silence, now and then a slow sparse piece fading in and away (U-070)
 - M4-88 Rain realism pass (U-065): rain realism: a real rain recording, dripping gutters under cover, finer fainter streaks, no wet filter (U-065, U-070)
+- M4-98 Recorded sounds (U-070): recorded sounds: footsteps, doors, glass, impacts and gunfire from freely licensed recordings (U-070)

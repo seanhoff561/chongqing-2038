@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 85 of 101 done
+## M4: 86 of 101 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -962,7 +962,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - No darkening or sheen filter laid over buildings and the ground in rain
   - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain
   - The rain is a real recording of rain (freely licensed, its source in docs/CREDITS.md), louder out in it, dull indoors, with the dripping under cover (U-070)
-- [ ] **M4-98** Recorded sounds (U-070)
+- [x] **M4-98** Recorded sounds (U-070)
   - Where good freely licensed recordings exist, the game's sounds are real recordings rather than synthesised: footsteps, doors, glass, gunfire, impacts, water, wind (their sources and licences listed in docs/CREDITS.md)
   - Each recording loads and plays; a missing one falls back to the synthesised sound
 - [ ] **M4-93** Eldritch walkers (U-069)

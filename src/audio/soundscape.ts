@@ -10,6 +10,7 @@ import { Breath } from './breath';
 import { Music } from './music';
 import { machineShot, echo } from './gunfire';
 import { gunshot, raidSiren } from './moves';
+import { loadSamples, samplesLoaded, playSample } from './samples';
 import { raycast } from '../world/geom';
 import type { World } from '../world/world';
 import type { SimEvent, SimState } from '../sim/types';
@@ -42,6 +43,7 @@ export class Soundscape {
   /** Every frame, his head the camera; under the ground or the water. */
   update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean) {
     const head = cam.position;
+    loadSamples(this.a);
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
     this.ambience.update(dt, { ...this.env, hour: (s.time / 3600) % 24, rain: s.weather.rain });
     // The music for where he is (M4-86): high up, in the streets, underground.
@@ -55,9 +57,12 @@ export class Soundscape {
     this.breath.update(dt, p.endurance, s.body.hp, this.dread.alert, Math.hypot(p.vel.x, p.vel.z), CLIMBING.has(p.mode));
   }
 
+  /** How many recordings have loaded (M4-98). */
+  get recorded() { return samplesLoaded(); }
+
   /** His pistol fired: its report, and unsuppressed, its echoes off what's round him. */
   fired(quiet: boolean) {
-    gunshot(this.a, 0.9, quiet);
+    if (quiet || !playSample(this.a, 'pistol')) gunshot(this.a, 0.9, quiet);
     if (!quiet && this.a.ready) echo(this.a, this.env.where, 0.25, this.a.ctx!.currentTime);
   }
 

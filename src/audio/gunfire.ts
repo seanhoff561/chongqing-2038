@@ -4,6 +4,7 @@
 // towers answering a roof, the long roll of a tunnel, a room's short ring.
 import type { Audio } from './audio';
 import type { Where } from './ambience';
+import { playSample } from './samples';
 
 type V3 = { x: number; y: number; z: number };
 /** Each place's echoes: seconds after the report, and how loud. */
@@ -31,8 +32,8 @@ export function machineShot(a: Audio, at: V3, d: number, crack: boolean, walls: 
   const lp = a.ctx!.createBiquadFilter();
   lp.type = 'lowpass'; lp.frequency.value = r.cutoff; lp.connect(a.spot(at, r.delay + 3));
   const T = t + r.delay;
-  a.noise(T, 0.08, 0.9 * r.gain, 'highpass', 900, 0.7, undefined, lp);
-  a.tone(T, 0.2, 0.7 * r.gain, 120, 45, 'sine', lp);
+  // The report as recorded (M4-98), or made up if the recording isn't there.
+  if (!playSample(a, 'rifle', lp, r.delay, r.gain)) { a.noise(T, 0.08, 0.9 * r.gain, 'highpass', 900, 0.7, undefined, lp); a.tone(T, 0.2, 0.7 * r.gain, 120, 45, 'sine', lp); }
   echo(a, where, (0.6 * r.gain * 5) / Math.max(5, d), T, Math.min(r.cutoff, 2000));
 }
 
