@@ -23,6 +23,8 @@ type V3 = { x: number; y: number; z: number };
  *  longest), on a side street one walker every `side` metres; side streets within `sideR` of a district's centre and
  *  longer than `sideMin`, up to `sides` of them a district; a turret on the lamppost at each main junction there. */
 const CROWD = { main: 120, side: 300, squad: 3, sideMin: 50, sideR: 250, sides: 12, turretGap: 60 };
+/** How many colossi walk the city (U-050). */
+const GIANTS = { colossi: 3 };
 
 /** A building's middle. */
 const centre = (q: { corners: [number, number][] }) => ({ x: q.corners.reduce((a, c) => a + c[0], 0) / q.corners.length, z: q.corners.reduce((a, c) => a + c[1], 0) / q.corners.length });
@@ -84,10 +86,18 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   // The districts' own beats (M4-57): every main street within 300 m of their centres walked by pairs, a squad on the
   // longest, a drone over it; and their side streets within 250 m by walkers on their own. (A street's stretch is
   // walked once, by the first district to take it.)
-  const district: Patrol[] = [], heavies: Patrol[] = [], taken = new Set<string>();
+  const district: Patrol[] = [], heavies: Patrol[] = [], giants: Patrol[] = [], taken = new Set<string>();
   const len = (r: V3[]) => r.slice(1).reduce((a, q, i) => a + Math.hypot(q.x - r[i].x, q.z - r[i].z), 0);
   const beat = (r: V3[], unit: Patrol['unit'], every: number, size: number): Patrol =>
     ({ kind: 'street', unit, pts: r, dwell: r.map((_, i) => (i === 0 || i === r.length - 1 ? DWELL.end : 0)), hours: [0, 24], crowd: { n: Math.max(1, Math.round((2 * len(r)) / every)), size } });
+  const colossi: V3[][] = [];
+  /** A street's line with a point every 10 m on the ground, so a giant's feet keep to it over the rises. */
+  const along = (r: V3[]) => r.flatMap((q, i) => {
+    if (!i) return [q];
+    const a = r[i - 1], n = Math.max(1, Math.round(Math.hypot(q.x - a.x, q.z - a.z) / 10));
+    return Array.from({ length: n }, (_, k) => { const x = a.x + ((q.x - a.x) * (k + 1)) / n, z = a.z + ((q.z - a.z) * (k + 1)) / n; return { x, y: heightAt(g, x, z) ?? q.y, z }; });
+  });
+  const giant = (r: V3[], unit: Patrol['unit'], wait: number): Patrol => { const pts = along(r); return { kind: 'street', unit, pts, dwell: pts.map((_, i) => (i === 0 || i === pts.length - 1 ? DWELL.end * wait : 0)), hours: [0, 24] }; };
   for (const k of DISTRICTS) {
     const L = GEO.landmarks[k];
     /** The district's stretches of these kinds of street within r of its centre, not yet taken, longest first. */
@@ -110,10 +120,16 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
     // A street heavy (U-038) up and down the longest, day and night: too big for alleys and doors, it keeps to the road.
     const long = mains[0];
     if (long && len(long) > 120) heavies.push({ kind: 'street', unit: 'heavy', pts: long, dwell: long.map((_, i) => (i === 0 || i === long.length - 1 ? DWELL.end * 2 : 0)), hours: [0, 24] });
+    // A giant spider (U-050) picking its way up and down the next longest, day and night, keeping to the road.
+    const next = mains[1];
+    if (next && len(next) > 80) giants.push(giant(next, 'spider', 2));
+    if (long && len(long) > 200) colossi.push(long);
     // A drone up and down it, day and night, 16 m over the street.
     if (long) district.push({ kind: 'drone', unit: 'drone', pts: long.map(q => ({ ...q, y: q.y + 16 })), dwell: long.map(() => 0), hours: [0, 24], crowd: { n: 2, size: 1 } });
     for (const r of stretches(SIDE_ONLY, CROWD.sideR, CROWD.sideMin).slice(0, CROWD.sides)) district.push(beat(r, 'quadruped', CROWD.side, 1));
   }
+  // And the three longest main streets in the city each walked by a colossus (U-050), slow, nine metres tall.
+  for (const r of colossi.sort((a, b) => len(b) - len(a)).slice(0, GIANTS.colossi)) giants.push(giant(r, 'colossus', 3));
   let street = 0;
   const out = base.concat(district).map((p): Patrol => {
     // A drone drops into an alley now and then, to 6 m over the bins, hangs there, and climbs back to its line. It
@@ -201,7 +217,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   const under = w.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group).map(f => ({ x: f.x, y: f.y, z: f.z }));
   if (under.length > 1) out.push({ kind: 'under', unit: 'quadruped', pts: under, dwell: under.map((_, i) => (i === 0 || i === under.length - 1 ? DWELL.end * 3 : 0)), hours: [0, 24] });
   out.push({ kind: 'under', unit: 'humanoid', pts: tunnel, dwell: [DWELL.end, DWELL.tunnel], hours: [0, 24] });
-  return out.concat(heavies, lurkers(w, hides));
+  return out.concat(heavies, giants, lurkers(w, hides));
 }
 
 /** Where he doesn't look for them (M4-53, U-051): in each district a dozen machines that wait for an hour or three at a

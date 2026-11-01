@@ -10,6 +10,7 @@ import type { World } from '../world/world';
 import { UNITS, SIGHT, STATIC, BROADCAST, type UnitKind } from '../data/units';
 import { navPath } from './nav';
 import { raycast } from '../world/geom';
+import { heightAt } from '../world/heightfield';
 import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint } from './combat';
@@ -19,7 +20,7 @@ import { DT } from './types';
 type V3 = { x: number; y: number; z: number };
 /** How far up or down each kind steps without a stair: a quadruped's jump, a humanoid over a low wall (M4-46, a
  *  person's agility); nothing climbs (M4-09). */
-const STEP: Record<UnitKind, number> = { quadruped: 1.5, humanoid: 1.1, heavy: 0.4, drone: 99, hunter: 99, fpv: 99, bomber: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
+const STEP: Record<UnitKind, number> = { quadruped: 1.5, humanoid: 1.1, heavy: 0.4, drone: 99, hunter: 99, fpv: 99, bomber: 99, spider: 0.6, colossus: 1, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
 export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200, /** a changeover's handing over, s (M4-58) */ swap: 3 };
 
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
@@ -34,6 +35,7 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
     const p = navPath(w.nav, a, b, 'street');
     return p ? [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }] : [top];
   }
+  if (open(w, kind, a, b)) return [b];
   const p = w.nav ? navPath(w.nav, a, b, kind) : null;
   if (!p) return Math.abs(b.y - a.y) <= STEP[kind] ? [b] : [];
   const end = p.pts[p.pts.length - 1], d = Math.hypot(b.x - end.x, b.y - end.y, b.z - end.z);
@@ -41,6 +43,23 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
   // On to the point, or as near it as it gets (up to a crate a hiding place is in: M4-15).
   const hit = raycast(w.index, end.x, end.y + 0.5, end.z, (b.x - end.x) / d, (b.y - end.y) / d, (b.z - end.z) / d, d), f = hit ? (hit.t - 0.3) / d : 1;
   return [...p.pts.slice(1), ...(f > 0 ? [{ x: end.x + (b.x - end.x) * f, y: end.y + (b.y - end.y) * f, z: end.z + (b.z - end.z) * f }] : [])];
+}
+
+/** Close by over open ground (across a divided road, a square): nothing in the way at body height and no step up or
+ *  down on the ground between bigger than the kind takes, so it goes straight there and not round by the streets. */
+function open(w: World, kind: UnitKind, a: V3, b: V3): boolean {
+  const d = Math.hypot(b.x - a.x, b.z - a.z), g = w.ground;
+  if (!g || d > 30 || d < 0.1) return false;
+  const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
+  if (raycast(w.index, a.x, a.y + 1, a.z, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L)) return false;
+  let y = heightAt(g, a.x, a.z);
+  if (y === null || Math.abs(y - a.y) > 0.3) return false;
+  for (let k = 1, n = Math.ceil(d / 1.5); k <= n; k++) {
+    const q = heightAt(g, a.x + ((b.x - a.x) * k) / n, a.z + ((b.z - a.z) * k) / n);
+    if (q === null || Math.abs(q - y) > STEP[kind]) return false;
+    y = q;
+  }
+  return Math.abs(y - b.y) < 0.3;
 }
 
 export function leave(s: SimState, w: World, u: Unit, kind: Trip['kind'], to: V3) {

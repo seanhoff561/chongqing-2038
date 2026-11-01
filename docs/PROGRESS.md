@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-48 Giant walkers (U-050).
-Features done: 227 / 349 | Last done: M4-66
+**Status:** building M4. Next: M4-33 Audio engine and machine sounds.
+Features done: 228 / 349 | Last done: M4-48
 <!-- /status -->
 
 ## Log
@@ -86,3 +86,4 @@ Features done: 227 / 349 | Last done: M4-66
 - M4-64 Knocked down (U-052): knocked down: blasts throw him off his feet, he lands, lies a moment and gets up (U-052)
 - M4-65 Rocket launchers (U-052): rocket launchers: the heavies fire rockets, and he can find and fire one (U-052)
 - M4-66 Falls that feel like falls (U-052): falls that feel like falls: wind rising with the speed, the view's pull, a stumble or down after a big one (U-052)
+- M4-48 Giant walkers (U-050): giant walkers: spider walkers and colossi on the streets, rigged and walking, and they see him (U-050)

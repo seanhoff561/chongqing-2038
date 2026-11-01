@@ -12,6 +12,10 @@ export function canTake(kind: UnitKind | 'street', e: [number, number, number], 
   if (kind === 'street') return e[2] === NAV.street || e[2] === NAV.stairs;
   // A metre's jump: a quadruped's only (M4-09).
   if (e[2] === NAV.jump) return kind === 'quadruped';
+  // The giants (U-050) are too big for alleys, doors and rooms: the colossus keeps to the roads, the spider to the
+  // roads and the city's stairs.
+  if (kind === 'colossus') return e[2] === NAV.street;
+  if (kind === 'spider') return e[2] === NAV.street || e[2] === NAV.stairs;
   if (kind === 'delivery' || kind === 'carrier') return e[2] === NAV.street && Math.abs(to.y - from.y) <= 0.15 * e[1] + 0.1;
   return true;
 }

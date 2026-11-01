@@ -199,3 +199,7 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-62 to M4-66: fights and falls (U-050, U-052)
 - Shoot a humanoid's rifle (two rounds from the front at chest height): does it stop firing, the rifle gone? Its head (blinded): gone? A drone's rotor: does it spin down, crash and blow up? Stay in a camera's sight 25 s: do kamikaze drones come (their whine), and can you dodge one by stepping aside late, or shoot it? Near a blast: thrown, tumbling, down a moment, then up? A heavy's rocket: seen and heard coming? Jump off something 9 m and 12 m: the wind rising, a stumble, then down on the ground?
+
+## M4-48 and M4-33: giants and the machines' sounds (U-050)
+- ?scenario=units: walk round the spider walker and the colossus. Creepy and huge enough, their legs believable? In the city (?scenario=yuzhong), find a colossus on a long main street: does it loom out of the haze?
+- With headphones: a drone flying past overhead, its rotor pitch dropping as it goes (Doppler) and the sound moving round your head? Three drones louder than one? The footfalls: a humanoid's pads, a quadruped's whining clank, the spider's tapping hiss, a colossus's boom you feel. Too loud, too quiet, or wrong anywhere?

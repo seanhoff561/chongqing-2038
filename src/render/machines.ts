@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { UnitKind } from '../data/units';
 
-const WHITE = 0xdfe2e5, PLATE = 0xf4f5f6, DARK = 0x2a2d32, BLACK = 0x111316, GUN = 0x34373c, EYE = 0xd8ecff, RED = 0xff3020;
+const WHITE = 0xdfe2e5, GREY = 0x5d6268, PLATE = 0xf4f5f6, DARK = 0x2a2d32, BLACK = 0x111316, GUN = 0x34373c, EYE = 0xd8ecff, RED = 0xff3020;
 
 function paint(g: THREE.BufferGeometry, color: number, glow: number) {
   const g2 = g.index ? g.toNonIndexed() : g, n = g2.attributes.position.count, c = new THREE.Color(color), col = new Float32Array(n * 3);
@@ -219,6 +219,60 @@ function delivery(): Rig {
 
 // The drones: a white shell on four arms, a rotor at each tip (two blades, spun), a camera gimbal under with a lit
 // lens; the hunter bigger, ducted, its gun slung under it. Parts: body, four rotors.
+/** A giant spider walker (M4-48, U-050): a broad armoured body slung 3 m up between eight long legs, a head crowded
+ *  with red eyes; its legs step in two alternating sets, each foot reached by its knee bending high over it. */
+function spider(): Rig {
+  // (Gunmetal, thin-legged: nothing like the hive's clean white walkers.)
+  const upper = part(box(0.2, 3.2, 0.2, 0, -1.6, 0, GREY), box(0.24, 1.0, 0.24, 0, -0.6, 0, GUN), cyl(0.18, 0.34, 0, 0, 0, BLACK, 'x')), lower = part(box(0.11, 3.6, 0.11, 0, -1.8, 0, BLACK), box(0.16, 1.0, 0.18, 0, -0.6, 0, GREY), cyl(0.07, 0.25, 0, -3.6, 0, BLACK, 'y'));
+  const parts = [
+    part(box(2.4, 1.2, 3.4, 0, 0, 0, GREY), box(2.0, 0.3, 2.8, 0, 0.7, 0, GUN), box(2.6, 0.4, 1.2, 0, -0.5, 0, DARK), cyl(0.3, 1.4, 0, 0.9, -0.6, GUN, 'z'), box(0.4, 0.05, 0.05, 0, -0.4, -1.72, RED, 1)),
+    part(box(1.2, 0.8, 0.9, 0, 0, 0.4, GUN), ...[-0.35, -0.12, 0.12, 0.35].flatMap(x => [box(0.1, 0.1, 0.05, x, 0.12, 0.86, RED, 1), box(0.08, 0.08, 0.05, x * 0.8, -0.1, 0.86, RED, 1)]), cyl(0.06, 0.8, 0.4, -0.3, 0.9, GUN, 'z'), cyl(0.06, 0.8, -0.4, -0.3, 0.9, GUN, 'z')),
+    ...Array.from({ length: 8 }, () => [upper, lower]).flat(),
+  ];
+  const s = new THREE.Vector3(), t = new THREE.Vector3(), pole = new THREE.Vector3();
+  return {
+    parts,
+    pose: (a, m) => {
+      const A = Math.min(1, a.speed / 2) * 0.9, bob = Math.abs(Math.sin(a.phase)) * 0.08 * A;
+      at(m[0], null, 0, 3.0 + bob, 0);
+      at(m[1], m[0], 0, 0.1, 1.9, 0.06 * Math.sin(a.t * 0.8), 0.3 * Math.sin(a.t * 0.37));
+      for (let k = 0; k < 8; k++) {
+        const side = k < 4 ? -1 : 1, j = k % 4, z0 = 1.2 - j * 0.8, ph = a.phase + ((j + (side > 0 ? 1 : 0)) % 2) * Math.PI;
+        s.set(side * 1.1, 0, z0); t.set(side * 4.0, -3.0 + Math.max(0, Math.cos(ph)) * 0.6 * A, z0 * 1.7 + Math.sin(ph) * 0.9 * A); pole.set(side * 3.2, 3.5, z0);
+        reach(m[2 + k * 2], m[3 + k * 2], m[0], s, t, pole, 3.2, 3.6);
+      }
+    },
+  };
+}
+
+/** A colossus (M4-48): a walking machine 9 m tall, long-legged and thin, its arms hanging, a small head with a red bar of
+ *  light turning slowly as it goes. */
+function colossus(): Rig {
+  const limb = (l: number, w: number, c: number) => part(box(w, l, w, 0, -l / 2, 0, c), cyl(w * 0.7, w * 1.3, 0, 0, 0, DARK, 'x'));
+  const parts = [
+    part(box(1.6, 0.8, 0.9, 0, 0, 0, DARK), box(1.8, 0.4, 1.0, 0, 0.3, 0, GREY)),
+    part(box(1.2, 3.0, 0.8, 0, 1.5, 0, GREY), box(1.6, 0.9, 1.0, 0, 2.7, 0, GUN), box(0.5, 1.4, 0.3, 0, 1.6, -0.5, DARK), cyl(0.2, 0.6, 0, 3.1, 0, DARK)),
+    part(box(0.7, 0.6, 0.8, 0, 0.3, 0.1, GREY), box(0.6, 0.08, 0.05, 0, 0.32, 0.52, RED, 1), box(0.2, 0.4, 0.2, 0, 0.75, -0.1, DARK)),
+    limb(2.4, 0.3, GREY), limb(2.2, 0.24, DARK), limb(2.4, 0.3, GREY), limb(2.2, 0.24, DARK),
+    limb(2.6, 0.45, GREY), limb(2.6, 0.36, DARK), limb(2.6, 0.45, GREY), limb(2.6, 0.36, DARK),
+  ];
+  return {
+    parts,
+    pose: (a, m) => {
+      const A = Math.min(1, a.speed / 1.2) * 0.4, sw = Math.sin(a.phase), bob = -Math.abs(Math.cos(a.phase)) * 0.15 * A;
+      at(m[0], null, 0, 5.2 + bob, 0);
+      at(m[1], m[0], 0, 0.3, 0, 0.05);
+      at(m[2], m[1], 0, 3.4, 0.1, 0.1, 0.5 * Math.sin(a.t * 0.3));
+      [-1, 1].forEach((side, i) => {
+        at(m[3 + i * 2], m[1], side * 0.9, 2.9, 0, -sw * side * A * 0.6, 0, side * 0.12);
+        at(m[4 + i * 2], m[3 + i * 2], 0, -2.4, 0, -0.35);
+        at(m[7 + i * 2], m[0], side * 0.55, 0, 0, sw * side * A);
+        at(m[8 + i * 2], m[7 + i * 2], 0, -2.6, 0, Math.max(0, -sw * side) * A * 1.4);
+      });
+    },
+  };
+}
+
 /** A strike drone (M4-47): a small X frame, its warhead slung under it, its camera ahead, four rotors spinning. */
 function fpv(): Rig {
   const blade = part(box(0.22, 0.005, 0.025, 0, 0, 0, BLACK));
@@ -247,7 +301,7 @@ function drone(hunter: boolean): Rig {
 
 /** Every kind's rig. (The smart lampposts' cameras are their props'.) */
 export const RIGS: Record<UnitKind, Rig> = {
-  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true),
+  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: spider(), colossus: colossus(),
   // A camera: its housing under a sun hood on a wall bracket, tipped down, the lens dark, its light red; a sweeper's
   // on a pan motor on a pole.
   camera: still(part(box(0.2, 0.15, 0.34, 0, 0, 0.12, WHITE, 0, 0.35), box(0.24, 0.03, 0.4, 0, 0.1, 0.14, PLATE, 0, 0.35), cyl(0.055, 0.04, 0, -0.06, 0.29, BLACK, 'z'),

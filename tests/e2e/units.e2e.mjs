@@ -4,7 +4,7 @@
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=units&seed=1', 'units');
   const kinds = await page.evaluate(`[...new Set(window.__cq.game.state.units.map(u => u.kind))].sort().join()`);
-  for (const k of ['acoustic', 'camera', 'carrier', 'delivery', 'drone', 'heavy', 'humanoid', 'hunter', 'pir', 'quadruped', 'sweeper', 'tripwire', 'turret']) if (!kinds.includes(k)) fail('units', `no ${k} in the lineup`);
+  for (const k of ['acoustic', 'camera', 'carrier', 'delivery', 'drone', 'heavy', 'humanoid', 'hunter', 'pir', 'quadruped', 'spider', 'colossus', 'sweeper', 'tripwire', 'turret']) if (!kinds.includes(k)) fail('units', `no ${k} in the lineup`);
   await page.evaluate(`(() => { const g = window.__cq.game; g.runFrames(80); g.input.pitch = -0.1; g.runFrames(1); })()`);
   await screenshot(page, 'units-lineup');
   const aim = await page.evaluate(`(() => {
@@ -18,5 +18,15 @@ export default async function ({ open, fail, screenshot }) {
   })()`);
   if (!aim) fail('units', 'the engaged humanoid is not aiming');
   await screenshot(page, 'units-pose');
+  // The giants (M4-48): the spider walker and the colossus, each walking at him.
+  for (const [kind, d, up] of [['spider', 9, 0.1], ['colossus', 22, 0.3]]) {
+    await page.evaluate(`(() => {
+      const g = window.__cq.game, u = g.state.units.find(u => u.kind === '${kind}'); u.stop = undefined;
+      for (const o of g.state.units) if (o.kind !== '${kind}' && !o.stop) o.stop = { x: 55, y: 0, z: 55, yaw: 0, t: 0 };
+      const q = window.__cq.unitPose(g.world, u, g.state.time); Object.assign(g.state.player.pos, { x: q.x - 3, y: 0, z: q.z + ${d} }); g.input.yaw = Math.atan2(-3, ${d}); g.input.pitch = ${up};
+      g.state.flags.god = true; g.runFrames(30);
+    })()`);
+    await screenshot(page, `units-${kind}`);
+  }
   await page.close();
 }

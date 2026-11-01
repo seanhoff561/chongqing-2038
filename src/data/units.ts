@@ -1,6 +1,6 @@
 // The machines that move (DESIGN section 7): how fast each kind goes on its beat and when chasing, whether it takes
 // stairs, how high it flies, and the hours its beats keep by default. Speeds in real metres a second.
-export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' | 'fpv' | 'bomber' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
+export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' | 'fpv' | 'bomber' | 'spider' | 'colossus' | 'delivery' | 'carrier' | 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic';
 /** The machines that stay where they're put (M4-07, M4-11). */
 export const STATIC = new Set<UnitKind>(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
@@ -12,6 +12,9 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   // A street heavy (M4-26b, U-038): a 3 m walker on the main streets, heavily armoured, a rotary cannon on its arm.
   heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
   drone: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 40 },
+  // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
+  spider: { patrol: 2.2, chase: 5, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 1400, weapon: 'smg' },
+  colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
   hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
   // Strike drones (M4-47, U-050), kept on the docks and sent when a district's had him in sight too long: a kamikaze
@@ -32,7 +35,7 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
 /** Where a machine can be hit and what each place takes of a hit (DESIGN section 6, M4-19); the damage to a place that
  *  blinds it (its sensor head), immobilises it (each knee) or shuts it down (its battery). */
 export const ZONES: Record<UnitKind, Record<string, number>> = {
-  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 },
+  drone: { body: 1, rotors: 1.5 }, hunter: { body: 0.8, rotors: 1.5 }, fpv: { body: 1 }, bomber: { body: 1, rotors: 1.5 }, spider: { body: 0.05, head: 0.5 }, colossus: { body: 0.03, head: 0.4 },
   quadruped: { body: 0.2, head: 1, legs: 0.6, battery: 1.5, launcher: 0.5 },
   humanoid: { body: 0.1, head: 1, kneeL: 0.8, kneeR: 0.8, battery: 2, rifle: 0.5 },
   heavy: { body: 0.05, head: 0.6, kneeL: 0.5, kneeR: 0.5, battery: 1.5 },
@@ -102,7 +105,7 @@ export const PISTOL = { damage: 25, mag: 15, every: 0.15, noise: 150, reach: 150
 
 /** How long after a machine has him (Engaged) it tells the network (DESIGN section 5), real seconds: the wired
  *  sensors at once nearly, the cameras in a second, the walkers slowest. */
-export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, fpv: 1, bomber: 1, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5, heavy: 2 };
+export const BROADCAST: Record<UnitKind, number> = { turret: 0.5, pir: 0.5, tripwire: 0.5, acoustic: 0.5, camera: 1, sweeper: 1, lamppost: 1, hunter: 1, drone: 1.5, fpv: 1, bomber: 1, spider: 2, colossus: 2, quadruped: 2, delivery: 2, carrier: 2, humanoid: 2.5, heavy: 2 };
 /** How far into the districts next to his the network's word of him goes (DESIGN section 5), metres. */
 export const SPREAD = 300;
 
@@ -165,6 +168,8 @@ export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number;
   hunter: { fov: 100, pitch: 45, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 15, thermal: 30, hear: 0.8 },
   fpv: { fov: 90, pitch: 30, day: 40, night: 30, eye: 0, ir: 0, lamp: 0, thermal: 40, hear: 0.5 },
   bomber: { fov: 100, pitch: 60, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 0, thermal: 30, hear: 0.8 },
+  spider: { fov: 200, pitch: 20, day: 50, night: 35, eye: 3.2, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
+  colossus: { fov: 120, pitch: 30, day: 70, night: 40, eye: 9, ir: 0.3, lamp: 0, thermal: 45, hear: 1 },
   delivery: { fov: 120, pitch: 0, day: 18, night: 10, eye: 0.5, ir: 0, lamp: 0, thermal: 0, hear: 1 },
   carrier: { fov: 120, pitch: 0, day: 25, night: 15, eye: 1.2, ir: 0.3, lamp: 0, thermal: 0, hear: 1 },
   // The cameras (M4-07): fixed ones over doors and at junctions, sweepers at plazas and gates, the smart lampposts'.

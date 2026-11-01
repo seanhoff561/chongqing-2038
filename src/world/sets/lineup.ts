@@ -15,6 +15,11 @@ export function buildLineup(): World {
     patrols.push({ kind: y ? 'drone' : 'street', unit, pts: [{ x, y, z: 2 }, { x, y, z: 12 }], dwell: [1.5, 1.5], hours: [0, 24] });
     if (name) card(name, x, 14.5);
   });
+  // The giants (U-050), out to the sides where there's room for them.
+  ([['spider', -26, '蜘蛛机甲 Spider walker'], ['colossus', 28, '巨型步行机 Colossus']] as [UnitKind, number, string][]).forEach(([unit, x, name]) => {
+    patrols.push({ kind: 'street', unit, pts: [{ x, y: 0, z: -12 }, { x, y: 0, z: 12 }], dwell: [3, 3], hours: [0, 24] });
+    card(name, x, 16);
+  });
   // The fixed ones on posts along the back, facing him.
   const post = (x: number, h: number) => solids.push(solid(x - 0.08, 0, -4.3, x + 0.08, h, -4.1, MAT.metal));
   ([['camera', -12, 3, '摄像头 Camera'], ['sweeper', -8.5, 3.2, '旋转摄像头 Sweeper'], ['pir', 0.5, 2, '红外 PIR'], ['acoustic', 3, 2, '声学 Acoustic']] as [Camera['kind'], number, number, string][]).forEach(([kind, x, y, name]) => {
