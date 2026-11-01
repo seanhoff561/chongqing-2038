@@ -40,7 +40,7 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
 
 /** Each kind's body as a standing cylinder about where it is: its bottom and top (from its pose) and radius. */
 const BODY: Record<UnitKind, [number, number, number]> = {
-  quadruped: [0, 1, 0.5], humanoid: [0, 1.9, 0.35], heavy: [0, 3.1, 0.9], drone: [-0.15, 0.15, 0.45], hunter: [-0.2, 0.2, 0.55], fpv: [-0.1, 0.1, 0.3], bomber: [-0.2, 0.2, 0.55], spider: [0, 17, 8], colossus: [0, 9.2, 1.4], heli: [-1.2, 1.4, 3], crawler: [0, 0.35, 0.45], delivery: [0, 0.7, 0.45], carrier: [0, 1.8, 1],
+  quadruped: [0, 1, 0.5], humanoid: [0, 1.9, 0.35], heavy: [0, 3.1, 0.9], drone: [-0.15, 0.15, 0.45], hunter: [-0.2, 0.2, 0.55], fpv: [-0.1, 0.1, 0.3], bomber: [-0.2, 0.2, 0.55], spider: [17, 26, 2.5], colossus: [0, 9.2, 1.4], heli: [-1.2, 1.4, 3], crawler: [0, 0.35, 0.45], delivery: [0, 0.7, 0.45], carrier: [0, 1.8, 1],
   camera: [-0.2, 0.2, 0.25], sweeper: [-0.2, 0.2, 0.25], lamppost: [-0.2, 0.2, 0.25], turret: [-0.5, 0.4, 0.5], pir: [-0.1, 0.1, 0.15], tripwire: [0, 0, 0], acoustic: [-0.2, 0.2, 0.2],
 };
 

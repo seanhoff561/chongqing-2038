@@ -6,8 +6,8 @@ import * as THREE from 'three';
 import { RIGS, type Anim } from '../../src/render/machines';
 import { UNITS } from '../../src/data/units';
 
-const M = Array.from({ length: 16 }, () => new THREE.Matrix4());
-const pose = (k: keyof typeof RIGS, a: Partial<Anim>) => { RIGS[k].pose({ speed: 0, phase: 0, aim: 0, crouch: 0, t: 0, ...a }, M); return M; };
+const M = Array.from({ length: 24 }, () => new THREE.Matrix4());
+const pose = (k: keyof typeof RIGS, a: Partial<Anim>) => { RIGS[k].pose({ speed: 0, phase: 0, aim: 0, crouch: 0, t: 0, v: 0, ...a }, M); return M; };
 const pt = (i: number, x: number, y: number, z: number) => new THREE.Vector3(x, y, z).applyMatrix4(M[i]);
 
 describe("the machines' models (M4-26)", () => {

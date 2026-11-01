@@ -18,7 +18,7 @@ const KINDS = Object.keys(RIGS) as UnitKind[];
 const LIGHT = { unaware: new THREE.Color(1, 1, 1), suspicious: new THREE.Color(1, 0.55, 0.08), engaged: new THREE.Color(1, 0.1, 0.06), out: new THREE.Color(0, 0, 0) };
 /** Their lights brighter after dark (U-050). */
 const BOOST = { value: 1 };
-const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 6.3, colossus: 2.6, crawler: 0.18, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
+const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 9, colossus: 2.6, crawler: 0.18, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
 
 /** How many of each kind can be drawn at once (M4-83): the nearest within NEAR get an instance set from their kind's
  *  pool, so the batch (and the matrices it uploads each frame) is sized to what's near him, not to the whole city. */
@@ -43,7 +43,7 @@ export class UnitView {
   private s = new THREE.Matrix4();
   private part = new THREE.Matrix4();
   private parts = Array.from({ length: 24 }, () => new THREE.Matrix4());
-  private anim: Anim = { speed: 0, phase: 0, aim: 0, crouch: 0, t: 0 };
+  private anim: Anim = { speed: 0, phase: 0, aim: 0, crouch: 0, t: 0, v: 0 };
 
   constructor(units: Unit[]) {
     const kinds = KINDS.filter(k => POOL[k]), n = (k: UnitKind) => Math.min(POOL[k]!, units.filter(u => u.kind === k).length);
@@ -105,7 +105,7 @@ export class UnitView {
       L.x = p.x; L.z = p.z; L.t = t;
       const lit = u.dead || u.shut || !p.active ? 'out' : u.state;
       if (lit !== this.lit[i]) { for (const id of ids) this.batch.setColorAt(id, LIGHT[lit]); this.lit[i] = lit; }
-      Object.assign(a, { speed: u.dead || u.shut ? 0 : L.speed, phase: L.phase, aim: L.aim, crouch: L.crouch, t: u.dead || u.shut ? 0 : t + u.id });
+      Object.assign(a, { speed: u.dead || u.shut ? 0 : L.speed, phase: L.phase, aim: L.aim, crouch: L.crouch, t: u.dead || u.shut ? 0 : t + u.id, v: u.id });
       this.m.makeRotationY(p.yaw).setPosition(p.x, p.y, p.z);
       // A tripwire's beam stretched to its far end.
       const to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;

@@ -18,15 +18,18 @@ export default async function ({ open, fail, screenshot }) {
   })()`);
   if (!aim) fail('units', 'the engaged humanoid is not aiming');
   await screenshot(page, 'units-pose');
-  // The giants (M4-48): the spider walker and the colossus, each walking at him.
-  for (const [kind, d, up] of [['spider', 34, 0.35], ['colossus', 22, 0.3]]) {
+  // The giants (M4-48): the colossus, and each of the eldritch walkers' three variations (M4-93, U-069: by the unit,
+  // its id nudged here to show each), walking at him.
+  for (const [kind, d, up, v] of [['spider', 44, 0.5, 0], ['spider', 44, 0.5, 1], ['spider', 44, 0.5, 2], ['colossus', 22, 0.3, 0]]) {
     await page.evaluate(`(() => {
       const g = window.__cq.game, u = g.state.units.find(u => u.kind === '${kind}'); u.stop = undefined;
+      u.id0 ??= u.id; u.id = u.id0 - (u.id0 % 3) + ${v}; u.disarmed = true; g.state.player.mode = 'ground'; g.state.player.down = 0;
       for (const o of g.state.units) if (o.kind !== '${kind}' && !o.stop) o.stop = { x: 55, y: 0, z: 55, yaw: 0, t: 0 };
       const q = window.__cq.unitPose(g.world, u, g.state.time); Object.assign(g.state.player.pos, { x: q.x - 3, y: 0, z: q.z + ${d} }); g.input.yaw = Math.atan2(-3, ${d}); g.input.pitch = ${up};
-      g.state.flags.god = true; g.runFrames(30);
+      g.state.flags.god = true; for (let i = 0; i < 20; i++) g.runFrames(2);
     })()`);
-    await screenshot(page, `units-${kind}`);
+    await screenshot(page, kind === 'spider' ? `units-eldritch-${v}` : `units-${kind}`);
   }
+  await page.evaluate(`(() => { const u = window.__cq.game.state.units.find(u => u.kind === 'spider'); if (u.id0 !== undefined) u.id = u.id0; })()`);
   await page.close();
 }

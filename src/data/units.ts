@@ -172,7 +172,7 @@ export const SENSES: Record<UnitKind, { fov: number; pitch: number; day: number;
   hunter: { fov: 100, pitch: 45, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 15, thermal: 30, hear: 0.8 },
   fpv: { fov: 90, pitch: 30, day: 40, night: 30, eye: 0, ir: 0, lamp: 0, thermal: 40, hear: 0.5 },
   bomber: { fov: 100, pitch: 60, day: 35, night: 30, eye: -0.1, ir: 0, lamp: 0, thermal: 30, hear: 0.8 },
-  spider: { fov: 200, pitch: 25, day: 70, night: 45, eye: 14, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
+  spider: { fov: 200, pitch: 35, day: 80, night: 50, eye: 21, ir: 0.3, lamp: 0, thermal: 40, hear: 1.2 },
   colossus: { fov: 120, pitch: 30, day: 70, night: 40, eye: 9, ir: 0.3, lamp: 0, thermal: 45, hear: 1 },
   heli: { fov: 140, pitch: 55, day: 90, night: 70, eye: -1, ir: 0.3, lamp: 20, thermal: 60, hear: 0.4 },
   crawler: { fov: 220, pitch: 0, day: 25, night: 18, eye: 0.3, ir: 0.5, lamp: 0, thermal: 20, hear: 1.5 },

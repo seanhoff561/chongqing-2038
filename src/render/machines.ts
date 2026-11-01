@@ -30,7 +30,7 @@ const part = (...p: THREE.BufferGeometry[]) => mergeGeometries(p);
 
 /** How a unit moves just now: its speed (m/s), its stride's phase, how far it has its gun up (0-1), how far crouched
  *  (0-1), and real seconds (rotors, scanning). */
-export interface Anim { speed: number; phase: number; aim: number; crouch: number; t: number }
+export interface Anim { speed: number; phase: number; aim: number; crouch: number; t: number; /** which of its kind's variations (by the unit) */ v: number }
 export interface Rig { parts: THREE.BufferGeometry[]; pose(a: Anim, m: THREE.Matrix4[]): void }
 
 const E = new THREE.Euler();
@@ -302,6 +302,35 @@ function drone(hunter: boolean): Rig {
   };
 }
 
+/** The giant walkers (M4-93, U-069): less spider than something that shouldn't be: a small white pod held 19 to 26 m
+ *  up on many giant jointed legs standing close under it, its knees climbing high over it, all white; taller than wide. Three variations: six legs on a tall
+ *  slow stride; eight under a longer pod, higher still; ten on a lower, wider, skittering gait. */
+const ELDRITCH = [{ legs: 6, h: 24, r: 6.5, lift: 2.4, sets: 2, long: 1 }, { legs: 8, h: 28, r: 5.5, lift: 1.6, sets: 2, long: 1.5 }, { legs: 10, h: 21, r: 7.5, lift: 1.2, sets: 3, long: 0.8 }];
+function eldritch(): Rig {
+  const L1 = 15, L2 = 19, MOST = 10;
+  const upper = part(box(0.7, L1, 0.7, 0, -L1 / 2, 0, WHITE), box(0.95, 2.6, 0.95, 0, -1.3, 0, PLATE), cyl(0.6, 1, 0, 0, 0, PLATE, 'x'));
+  const lower = part(box(0.5, L2, 0.5, 0, -L2 / 2, 0, WHITE), box(0.7, 3.2, 0.7, 0, -2, 0, PLATE), cyl(0.5, 0.9, 0, 0, 0, WHITE, 'x'), box(0.18, 1.6, 0.18, 0, -L2 + 0.6, 0, WHITE));
+  const body = part(box(2.2, 2.4, 3.4, 0, 0, 0, WHITE), box(1.7, 0.7, 2.8, 0, 1.5, 0, PLATE), box(1.3, 1.5, 1.3, 0, -1.7, 1.3, WHITE), box(0.9, 0.9, 0.9, 0, -2.6, 1.9, PLATE),
+    ...[-0.3, 0, 0.3].map(x => box(0.14, 0.14, 0.06, x, -2.5, 2.36, EYE, 1)));
+  const P = new THREE.Matrix4(), S = new THREE.Matrix4(), s = new THREE.Vector3(), t = new THREE.Vector3(), pole = new THREE.Vector3();
+  return {
+    parts: [body, ...Array.from({ length: MOST }, () => [upper, lower]).flat()],
+    pose: (a, m) => {
+      const V = ELDRITCH[a.v % ELDRITCH.length], A = Math.min(1, a.speed / 2), bob = Math.abs(Math.sin(a.phase)) * 0.3 * A;
+      at(P, null, 0, V.h + bob, 0, 0.04 * Math.sin(a.t * 0.4), 0.15 * Math.sin(a.t * 0.17), 0.05 * Math.sin(a.t * 0.31));
+      m[0].copy(P).multiply(S.makeScale(1, 1, V.long));
+      for (let k = 0; k < MOST; k++) {
+        if (k >= V.legs) { m[1 + k * 2].makeScale(0, 0, 0); m[2 + k * 2].makeScale(0, 0, 0); continue; }
+        const ang = ((k + 0.5) / V.legs) * Math.PI * 2, c = Math.cos(ang), sn = Math.sin(ang), ph = a.phase + ((k % V.sets) * Math.PI * 2) / V.sets;
+        s.set(c * 1.0, 0, sn * 1.6 * V.long);
+        t.set(c * V.r, -V.h - bob + Math.max(0, Math.cos(ph)) * V.lift * A, sn * V.r + Math.sin(ph) * 2.2 * A);
+        pole.set(c * 2, V.h * 1.6, sn * 2);
+        reach(m[1 + k * 2], m[2 + k * 2], P, s, t, pole, L1, L2);
+      }
+    },
+  };
+}
+
 /** The troop helicopter (M4-92): a white fuselage with a dark canopy, a tail boom and fin, skids, a searchlight lit
  *  under its nose; its main rotor's four blades and its tail rotor spinning. Parts: body, rotor, tail rotor. */
 function heli(): Rig {
@@ -322,7 +351,7 @@ function heli(): Rig {
 
 /** Every kind's rig. (The smart lampposts' cameras are their props'.) */
 export const RIGS: Record<UnitKind, Rig> = {
-  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: spider(4.5), colossus: colossus(), crawler: spider(0.22), heli: heli(),
+  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: eldritch(), colossus: colossus(), crawler: spider(0.22), heli: heli(),
   // A camera: its housing under a sun hood on a wall bracket, tipped down, the lens dark, its light red; a sweeper's
   // on a pan motor on a pole.
   camera: still(part(box(0.2, 0.15, 0.34, 0, 0, 0.12, WHITE, 0, 0.35), box(0.24, 0.03, 0.4, 0, 0.1, 0.14, PLATE, 0, 0.35), cyl(0.055, 0.04, 0, -0.06, 0.29, BLACK, 'z'),
