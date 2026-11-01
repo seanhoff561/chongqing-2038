@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-71 Take all and shift-click (U-054).
-Features done: 203 / 338 | Last done: M4-70
+**Status:** building M4. Next: M4-68 Holding things like a person (U-052).
+Features done: 204 / 338 | Last done: M4-71
 <!-- /status -->
 
 ## Log
@@ -62,3 +62,4 @@ Features done: 203 / 338 | Last done: M4-70
 - M4-69 A chalk bag, not climbing gloves (U-053): a chalk bag in place of climbing gloves: chalked hands hang twice as long until the chalk runs out (U-053)
 - M4-49 Quick opening, a circle filling (U-051): quick opening: a ring fills round the dot at each thing's own speed (U-051)
 - M4-70 Item pictures in the backpack (U-054): item pictures in the backpack, each drawn to its own footprint (U-054)
+- M4-71 Take all and shift-click (U-054): take all, and shift-click moves an item straight across (U-054)
