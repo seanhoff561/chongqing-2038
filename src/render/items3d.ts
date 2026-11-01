@@ -31,9 +31,21 @@ function pistol() {
     slide, cyl(0.0065, 0.012, steel, 'z', -0.07, 0, -0.16), cyl(0.0035, 0.013, rubber, 'z', -0.07, 0, -0.161));
 }
 
+/** A plain fixed-blade knife (U-084): a black rubber grip with a steel guard and pommel, and a steel blade standing up
+ *  out of the fist, its spine straight, its edge (forward) sweeping up to the point. */
+function knife() {
+  const s = new THREE.Shape(), T = 0.003;
+  s.moveTo(0, -0.011); s.lineTo(0.098, -0.011); s.quadraticCurveTo(0.117, -0.009, 0.126, -0.002);
+  s.quadraticCurveTo(0.104, 0.013, 0.07, 0.014); s.lineTo(0, 0.013); s.closePath();
+  const blade = new THREE.ExtrudeGeometry(s, { depth: T, bevelEnabled: true, bevelThickness: 0.0007, bevelSize: 0.0009, bevelSegments: 1, curveSegments: 12 })
+    .translate(0, 0, -T / 2).rotateX(Math.PI / 2).rotateY(Math.PI).translate(-0.058, 0, 0);
+  return group(box(0.1, 0.026, 0.022, rubber, 0.004), ...[0, 1, 2].map(k => box(0.008, 0.028, 0.024, rubber, -0.025 + k * 0.025)), box(0.008, 0.024, 0.05, steel, -0.054, 0, 0.004),
+    cyl(0.012, 0.012, steel, 'x', 0.06), new THREE.Mesh(blade, M(0xc4cacf, 0.35, 0.45)));
+}
+
 const models: Record<string, () => THREE.Object3D> = {
   crowbar: () => group(cyl(0.012, 0.6, steel, 'x', -0.2), box(0.012, 0.03, 0.07, steel, -0.5, 0, -0.03), box(0.05, 0.012, 0.03, steel, 0.1, 0, -0.02)),
-  knife: () => group(box(0.1, 0.03, 0.022, rubber), box(0.13, 0.004, 0.028, steel, -0.11, 0, 0)),
+  knife: () => knife(),
   pistol: () => pistol(),
   rpg: () => group(cyl(0.045, 1.0, M(0x4a5236, 0.7), 'z', -0.07, 0, -0.1), cyl(0.055, 0.08, dark, 'z', -0.07, 0, -0.62), cyl(0.055, 0.08, dark, 'z', -0.07, 0, 0.42), box(0.06, 0.03, 0.08, dark, -0.13, 0, -0.1)),
   shotgun: () => group(box(0.04, 0.12, 0.05, wood, 0, -0.02, 0.08), cyl(0.013, 0.7, dark, 'z', 0, 0.05, -0.3), box(0.05, 0.05, 0.3, wood, 0, 0.03, 0.25)),

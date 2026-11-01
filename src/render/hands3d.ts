@@ -190,7 +190,8 @@ export const HELD_AT = new THREE.Vector3(0, -0.03, -0.075);
 export const heldAt = (id: string) => (HOLDS[id]?.seat ? HELD_AT.clone().add(HOLDS[id].seat!) : HELD_AT.clone());
 /** How each thing is held (U-052), the right hand's place and turn in camera space: a handshake grip (the back of the
  *  hand outward, whatever is held standing up through the fist), the pistol out in front at the lower right as a
- *  shooter holds it, the knife low with its point forward. The forearms run down and away to elbows at his sides. */
+ *  shooter holds it (the knife like anything else, its blade up out of the fist: U-084). The forearms run down and away
+ *  to elbows at his sides. */
 const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; curl?: number; thumb?: number; thumbOut?: number; thumbSwing?: number; index?: number; lthumb?: number; lcurl?: number; seat?: THREE.Vector3 } = { pos: new THREE.Vector3(0.18, -0.25, -0.4), rot: new THREE.Euler(0.25, 0.12, -1.35) };
 /** (A hold's fingers and thumbs, right and left, if not curled tight round the grip, and where the item sits in the fist
  *  if not at HELD_AT: the pistol's thumb forward along the frame's side, moved
@@ -198,7 +199,6 @@ const HOLD: { pos: THREE.Vector3; rot: THREE.Euler; curl?: number; thumb?: numbe
  *  tests/e2e/thumbs.e2e.mjs.) */
 const HOLDS: Record<string, typeof HOLD> = {
   pistol: { pos: new THREE.Vector3(0.15, -0.15, -0.27), rot: new THREE.Euler(0.05, 0.05, -1.45), thumb: 0.15, thumbOut: -0.013, thumbSwing: -0.8, index: 0.75, lthumb: 0.15, lcurl: 0.7 },
-  knife: { pos: new THREE.Vector3(0.2, -0.22, -0.36), rot: new THREE.Euler(-0.9, 0.2, -1.3) },
 };
 const LEFT_ROT = new THREE.Euler(0.25, -0.6, 1.35);
 const R_ELBOW = new THREE.Vector3(0.3, -0.62, 0.08), L_ELBOW = new THREE.Vector3(-0.1, -0.66, 0.08);

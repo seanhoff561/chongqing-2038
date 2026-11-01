@@ -24,12 +24,11 @@ export function surface(kind: Kind): THREE.CanvasTexture {
     for (let j = 0; j < rows; j++) for (let u = 0; u < w * (j ? 0.6 + r() * 0.4 : 1); u += 6 + (j ? 0 : 3)) g.fillRect(x + u, y + j * 9, j ? 4 : 7, j ? 4 : 6);
   };
   if (kind === 'fabric') {
-    // A twill weave: fine diagonal threads, a little fuzz, worn paler in patches.
+    // A twill weave: fine diagonal threads, a little fuzz, worn paler in patches (no seam across it: U-081).
     fill(205);
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x += 2) { const v = (x + y) % 4 < 2 ? 185 : 225; g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, 2, 1); }
     speck(900, 150, 255);
     for (let i = 0; i < 5; i++) { const gr = g.createRadialGradient(r() * N, r() * N, 2, r() * N, r() * N, 20 + r() * 25); gr.addColorStop(0, 'rgba(255,255,255,0.18)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, N, N); }
-    g.fillStyle = 'rgba(80,80,80,0.5)'; g.fillRect(0, N * 0.48, N, 1.5);
   } else if (kind === 'metal') {
     // Brushed steel along one way, scratched across, darker in from the edges (handled grime).
     fill(200);

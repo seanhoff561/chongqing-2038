@@ -4,7 +4,7 @@
 // floor, pausing there before coming back out; the drones drop into alleys off their lines. And beats under the
 // ground: a quadruped through the underground city's halls and passages, a humanoid along the Grand Tunnel past the
 // friends' stub, waiting at the metro's end.
-import { raycast } from '../geom';
+import { raycast, overlaps } from '../geom';
 import { DWELL, ALIVE } from '../../data/units';
 import type { World, Patrol, Camera } from '../world';
 import { heightAt } from '../heightfield';
@@ -332,7 +332,11 @@ export function placeCameras(w: World): Camera[] {
     if (i % 3) return;
     const [door, inside] = p.route!, dx = door.x - inside.x, dz = door.z - inside.z, d = Math.hypot(dx, dz) || 1;
     // (One in four idle, its light off, until the district's Heightened: M4-16.)
-    out.push({ kind: 'camera', x: door.x - (dx / d) * 0.6, y: door.y + 2.8, z: door.z - (dz / d) * 0.6, yaw: Math.atan2(dx, dz), ...(i % 12 === 6 ? { dark: true } : {}) });
+    // (Outside, on the wall over the door: just out from its face, so it watches the street and never the room behind:
+    // U-084, it sat 0.6 m inside and saw into the building.)
+    let k = 0.15;
+    while (k < 1.5 && overlaps(w.index, { x0: door.x + (dx / d) * k - 0.08, y0: door.y + 2.6, z0: door.z + (dz / d) * k - 0.08, x1: door.x + (dx / d) * k + 0.08, y1: door.y + 2.9, z1: door.z + (dz / d) * k + 0.08 })) k += 0.1;
+    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), ...(i % 12 === 6 ? { dark: true } : {}) });
   });
   // A turret at each main junction in the districts (M4-57), on the lamppost nearest it within 20 m, over its lamp,
   // looking along its street; none within 60 m of another.
