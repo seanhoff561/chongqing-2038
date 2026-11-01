@@ -10,7 +10,7 @@ import { takeStack } from './inventory';
 import { survival as S } from '../data/survival';
 
 /** Seconds each takes. */
-export const TREAT: Record<string, number> = { bandage: 4, tourniquet: 3, splint: 8, painkillers: 2, firstaid: 10 };
+export const TREAT: Record<string, number> = { bandage: 1.5, tourniquet: 1.2, splint: 3, painkillers: 0.8, firstaid: 4 };
 
 /** Why it can't be used now, or null if it can. */
 function why(s: SimState, id: string): string | null {

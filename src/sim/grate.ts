@@ -14,7 +14,7 @@ import { movement as M } from '../data/movement';
 
 /** Seconds each takes, and how far each is heard (m). */
 export const GRATE = {
-  unbolt: 3.5, lift: 2, shut: 4, lower: 1.5, cover: 2,
+  unbolt: 1.4, lift: 0.8, shut: 1.6, lower: 0.6, cover: 0.8,
   loud: 14, noise: 9, quiet: 3,
   /** what counts as up there by it: his things within this of it */
   near: 12,

@@ -25,11 +25,11 @@ function use(t: ReturnType<typeof hurt>, id: string, secsHeld = TREAT[id] + 0.2)
 }
 
 describe('healing items (M5-17)', () => {
-  it('a bandage stops a light bleed in 4 s and is spent; not before', () => {
+  it('a bandage stops a light bleed in 1.5 s (U-064) and is spent; not before', () => {
     const t = hurt(s => { s.body.lightBleed = 10; });
-    use(t, 'bandage', 3);
+    use(t, 'bandage', 1);
     expect(t.state.body.lightBleed).toBeGreaterThanOrEqual(0);
-    run(t.state, t.world, secs(1.3));
+    run(t.state, t.world, secs(0.7));
     expect(t.state.body.lightBleed).toBe(-1);
     expect(count(t.state.inv.pack, 'bandage')).toBe(1);
   });

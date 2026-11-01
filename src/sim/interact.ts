@@ -6,7 +6,7 @@ import { raycast } from '../world/geom';
 
 export const REACH = 2.0;
 /** the hold-E task that lies him down to sleep rough, and its length in seconds */
-export const ROUGH = 'rough', ROUGH_HOLD = 1.2;
+export const ROUGH = 'rough', ROUGH_HOLD = 0.5;
 
 type Handler = (s: SimState, w: World, it: Inter) => void;
 interface Kind { now?: Handler; done?: Handler; dur?: (s: SimState, it: Inter) => number; can?: (s: SimState, it: Inter) => string | null; label?: (s: SimState, it: Inter) => [string, string]; grip?: boolean }

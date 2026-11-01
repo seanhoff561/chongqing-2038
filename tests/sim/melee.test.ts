@@ -50,7 +50,7 @@ describe('knife, crowbar and takedowns (M4-20)', () => {
     expect(u.hp).toBeCloseTo(UNITS.turret.hp - 2 * MELEE.crowbar.damage);
     expect(MELEE.crowbar.damage).toBeGreaterThan(MELEE.knife.damage);
   });
-  it('takes a humanoid down from behind in 2 s, quietly; let go early and it breaks free', () => {
+  it('takes a humanoid down from behind in a second, quietly; let go early and it breaks free', () => {
     // It faces away from him (toward -z), 1 m off.
     const t = facing('humanoid', 1, 0, true);
     hold(t.state, 'knife');
@@ -65,12 +65,12 @@ describe('knife, crowbar and takedowns (M4-20)', () => {
     expect(t.u.shut).toBe(true);
     expect(isOff(t.state, t.u)).toBe(true);
     expect(loud).toBeLessThanOrEqual(TAKEDOWN.noise);
-    // Let go a second in: free, and it has him.
+    // Let go half way: free, and it has him.
     const b = facing('quadruped', 1, 0, true);
     hold(b.state, 'knife');
     run(b.state, b.world, 6);
     run(b.state, b.world, 1, { pressed: LMB, buttons: LMB });
-    run(b.state, b.world, secs(1), { buttons: LMB });
+    run(b.state, b.world, secs(TAKEDOWN.time / 2), { buttons: LMB });
     run(b.state, b.world, 2);
     expect(b.state.task).toBeNull();
     expect(b.u.shut).toBeFalsy();

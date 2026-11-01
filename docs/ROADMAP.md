@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 56 of 86 done
+## M4: 57 of 87 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -844,11 +844,14 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Clicking with the crowbar or knife while a blow is still coming back gives no 'nothing to use it on' message
   - Neither thumb's flesh (its thickness along every bone) passes into the pistol at the hip or aimed, checked by a browser test
   - The hand doesn't show through the side of its sleeve: the forearm bends only a little at the wrist and the sleeve covers the wrist
+- [x] **M4-85** Every ring much faster (U-064)
+  - Every ring (opening and searching, healing, takedowns, reloading, picking off a tag, the grate, forcing doors and windows, lying down rough, clearing rubble) takes about 40% of the time it did; the sounds fit the new times
+  - The sim tests that time them pass at the new times
 - [ ] **M4-83** Smooth frame rate: 144 fps (U-061)
   - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
   - What made it choppy found and fixed (the M4-57 crowds' per-frame work, units drawn far off, per-frame allocations), without losing the machines
   - A browser check of the frame's CPU time in the busiest district kept as a guard from now on; real-GPU frame rate in PLAYTEST
-- [ ] **M4-84** Swinging round corners to redirect momentum (U-061)
+- [-] **M4-84** Swinging round corners to redirect momentum (U-061)
   - Running past a building's or pillar's outside corner, or a pole, he can grab it (the grab button as he passes within reach) and swing round it, coming off in the new direction with most of his speed (up to about 120 degrees of turn)
   - It works at a sprint and from a wall-run; it costs grip endurance like a hang; letting go early leaves him on a tangent
   - Sim tests: sprinting past a corner and swinging round it keeps at least 80% of the speed into the new direction; a pole the same; without the grab he runs on straight

@@ -20,7 +20,7 @@ export function syncWorld(s: SimState, w: World) {
 }
 
 /** Seconds to force a lock (M3-36): a lock wrenched out, a jammed door shouldered. */
-const FORCE: Record<string, number> = { locked: 4, jammed: 2.5 };
+const FORCE: Record<string, number> = { locked: 1.6, jammed: 1 };
 const lockOf = (s: SimState, it: Inter) => (s.wstate.unlocked?.[it.id] ? undefined : (it.data?.lock as string | undefined));
 
 function swing(s: SimState, w: World, it: Inter, loud = false) {
@@ -56,7 +56,7 @@ onInteract('door', {
 // A window's glass (M3-36): broken out, held, loud; bars hold.
 onInteract('window', {
   can: (s, it) => (s.wstate.open[it.id] ? 'broken' : null),
-  dur: () => 1.2,
+  dur: () => 0.5,
   done: (s, w, it) => {
     s.wstate.open[it.id] = true;
     w.index.off[doorSolid(it)] = 1;
