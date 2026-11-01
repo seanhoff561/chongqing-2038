@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 75 of 88 done
+## M4: 76 of 95 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -934,7 +934,35 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-52** Frightening machines (U-051)
   - The machines sound genuinely frightening, by design (the unseen, the sudden, the inhuman): sounds that tell him he's being watched, noticed and hunted before he sees anything; loud and terrifying close up
   - At high alert the city goes mad: sirens, broadcasts, rotors, footfalls closing in; calm returns slowly so he stays on edge
-- [ ] **M4-54** Gunfire quick, deadly and real (U-051)
+- [ ] **M4-86** Synth music by place (U-065)
+  - The ambience is melodic and relaxing to listen to, still a little haunting, not low and unnerving: synth/electronic music with a slow beat (nothing fast)
+  - Tracks for where he is: a calm, windy one high up, a grounded one in the streets, another underground and in the sewers; they cross-fade as he moves between them
+  - Sim/unit test: each place picks its track and the tempo stays slow; e2e: it plays without errors; the listening pass is in PLAYTEST
+- [ ] **M4-89** Stairwells and trapdoors seen through (U-066)
+  - No floor tile, finish or slab is drawn over a stairwell, a trapdoor or any opening in the apartments' floors: he sees down and up through them
+  - Sim/render test: every stair and trapdoor opening in the city has nothing drawn across it; a screenshot looking down a stairwell
+- [ ] **M4-90** Lootable things plain to see (U-066)
+  - What he can search or pick up is obvious: an outline or glow on it and a small mark when he looks its way, near enough; searched and empty, it goes plain again
+  - E2e: a lootable container and a dropped item are marked in a screenshot, a searched-empty one is not
+- [ ] **M4-91** Most street doors shut (U-066)
+  - Most doors at street level are chained shut, locked or collapsed (each shown so: a chain and padlock, a lock, rubble across it); only a few in each block open freely
+  - Locked ones open to a key or the crowbar (forcing is loud), chained ones to the crowbar or bolt cutters, collapsed ones not at all
+  - Sim test: share of street doors open freely under a quarter in every district, each other kind present; screenshots of each
+- [ ] **M4-92** Helicopter troop drop (U-067)
+  - Seen by several machines at once and then gone into a building, he brings a helicopter: it flies in loud over the roofs, hovers over that building and drops a squad of humanoids onto its roof by rope
+  - The squad comes in at the roof, down the stairwell, and sweeps the building floor by floor, every room; the helicopter circles with a searchlight while they do
+  - Robot dogs and small spider drones go into the sewers, tunnels and underground ways near it at the same time
+  - Sim test: the drop called when he goes into a building after being seen by three machines; the squad lands on its roof, goes down its stairs and visits every floor; dogs and spiders go underground near it; a screenshot of the helicopter over the roof
+- [ ] **M4-87** Drones everywhere (U-065)
+  - Many more drones over the whole city, flying over buildings and between them, not fast, stopping to scan things (rooftops, windows, alleys) as they go
+  - Easy to shoot down, and one shot down quietly does not tell the whole network: only machines that see or hear it go to look
+  - A downed drone can be searched for scrap (rotors, a radio module, a camera module, a battery pack)
+  - Sim test: drone count and their spread over roofs and gaps between buildings; one shot down with the suppressed pistol alerts no distant machines; its wreck yields scrap
+- [ ] **M4-88** Rain realism pass (U-065)
+  - The rain sounds quiet and real, never loud or annoying: a soft hiss, drops on metal and awnings sparse and low, dripping under cover, dull indoors
+  - No darkening or sheen filter laid over buildings and the ground in rain
+  - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain
+- [x] **M4-54** Gunfire quick, deadly and real (U-051)
   - Machine fire is fast and lethal: rounds arrive at once, a burst kills in seconds in the open
   - It sounds like real gunfire: the crack of rounds passing close, the report and its echo off the buildings, distance and walls changing it
 - [ ] **M4-55** His breath and heartbeat (U-051)

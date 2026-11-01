@@ -164,7 +164,7 @@ Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, 
 
 | Enemy weapon | Fire | Damage | Notes |
 |---|---|---|---|
-| Humanoid rifle | 3-round burst / 1.2 s | 18 per hit | hit chance 0.55 x visibility x (1 - 0.06 x his speed) x (1 - d/80) |
+| Humanoid rifle | 3-round burst / 1 s | 30 per hit | hit chance 0.75 x min(1, 2 x visibility) x (1 - 0.11 x his speed) x (1 - d/80) (M4-54: standing in the open at 20 m he's dead in about 4 s; sprinting away he mostly gets clear) |
 | Hunter drone SMG | 2-round burst / 0.8 s | 8 | accuracy 0.4 |
 | Turret | 6 rounds/s | 12 | accuracy 0.7 within 40 m |
 | Quadruped tag launcher | 1 / 6 s, 20 m | 0 | 60% hit: a tracking tag sticks to his clothes |

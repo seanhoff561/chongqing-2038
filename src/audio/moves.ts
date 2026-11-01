@@ -128,12 +128,20 @@ export function siren(a: Audio, gain: number) {
   a.tone(t + 1.3, 1.3, gain, 1150, 520, 'sawtooth');
 }
 
-/** A round fired (M4-11): a hard crack and its thump, carried far (from where it was fired, for a machine's: M4-33). */
-export function gunshot(a: Audio, gain: number, quiet = false, out?: AudioNode) {
+/** The raid siren (M4-63): a loud whoop rising, its octave over it, every 0.8 s while they break in. */
+export function raidSiren(a: Audio) {
+  if (!a.ready) return;
+  const t = a.ctx!.currentTime + 0.005;
+  a.tone(t, 0.75, 0.3, 450, 1300, 'sawtooth');
+  a.tone(t, 0.75, 0.12, 900, 2600, 'square');
+}
+
+/** His pistol fired: a hard crack and its thump. */
+export function gunshot(a: Audio, gain: number, quiet = false) {
   if (!a.ready || gain < 0.005) return;
   const t = a.ctx!.currentTime + 0.005;
   // Suppressed (U-058): a muffled crack and the slide's clack, not the bang.
-  if (quiet) { a.noise(t, 0.05, gain * 0.35, 'bandpass', 1800, 1.2, undefined, out); a.tone(t, 0.06, gain * 0.25, 180, 90, 'sine', out); a.noise(t + 0.03, 0.03, gain * 0.2, 'highpass', 3500, 1, undefined, out); return; }
-  a.noise(t, 0.06, gain, 'highpass', 1200, 0.7, undefined, out);
-  a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine', out);
+  if (quiet) { a.noise(t, 0.05, gain * 0.35, 'bandpass', 1800, 1.2); a.tone(t, 0.06, gain * 0.25, 180, 90, 'sine'); a.noise(t + 0.03, 0.03, gain * 0.2, 'highpass', 3500); return; }
+  a.noise(t, 0.06, gain, 'highpass', 1200, 0.7);
+  a.tone(t, 0.12, gain * 0.8, 140, 50, 'sine');
 }

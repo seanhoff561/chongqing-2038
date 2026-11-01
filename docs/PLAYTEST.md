@@ -210,3 +210,15 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-52: frightening machines (U-051)
 - With headphones, let a humanoid or a camera slowly make you out from the dark: do you hear its eye on you (a low throb and a thin whine from its direction) before it notices? The notice (a ratchet and a rising ping) and the lock (a shriek and a blow): sudden and frightening, not silly? Stand 3 m from a walker: is the servo grind loud and nasty? Get a district fully engaged: sirens, broadcasts, a swarm and a march far off; then hide: does the city stay on edge for a minute or two before calming?
+
+## M4-54: gunfire quick, deadly and real (U-051)
+- Stand in the open in front of an engaged humanoid at 20 m: dead in a few seconds? Sprint away from one at 12 m: do you usually make it to cover? Does that feel fair and frightening?
+- Listen: rounds cracking past before the report from a far shooter (100 m+), the report duller far off and through a wall, its echoes off a street, short in an alley or a room, rolling in a tunnel.
+
+## M4-55 and M4-63: his breath and heart; the raid's sirens (U-051, U-052)
+- Hang from a ledge until your grip is nearly gone, sprint for ten seconds, get shot down to a sliver of health, get a district engaged: do you hear yourself breathing hard and your heart pounding, louder the worse it is, and calm again after? Too loud or too quiet?
+- Sleep in a hideout that's been given away: when the raid breaks in, does the siren and the red flashing light wake you hard? Is it clear you have seconds to get out?
+
+## M4-86: synth music by place (U-065)
+- With headphones, listen in the street (the grounded track: warm bass, soft beat, electric piano), up on a high roof (the calm, windy one: pads and a slow echoing arpeggio, no drums) and underground (the deep one: echoing chords, sub bass, slow four on the floor, drips). Melodic and relaxing, a little haunting? The cross-fade as you climb up or go down: smooth? Any part grating, too loud against the effects, or too repetitive after 10 minutes?
+- Keys (U-066): B (hold) lies down to sleep rough; Esc opens and closes the pause and settings menu.

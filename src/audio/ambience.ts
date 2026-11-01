@@ -36,16 +36,16 @@ export function mix(e: Env): Mix {
 
 /** Where his head is: under the ground; indoors (a roof over him and walls most ways round); on a roof (6 m or more
  *  over the ground under the open sky); in an alley (walls close on both sides); else in the street. And whether
- *  there's cover over him from the rain. */
-export function whereIs(w: World, head: { x: number; y: number; z: number }, under: boolean): { where: Where; covered: boolean } {
-  if (under) return { where: 'under', covered: true };
+ *  there's cover over him from the rain, and how high he is over the ground. */
+export function whereIs(w: World, head: { x: number; y: number; z: number }, under: boolean): { where: Where; covered: boolean; height: number } {
+  if (under) return { where: 'under', covered: true, height: 0 };
   const up = raycast(w.index, head.x, head.y, head.z, 0, 1, 0, 40), covered = !!up;
   const walls = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dz]) => raycast(w.index, head.x, head.y, head.z, dx, 0, dz, 8)?.t ?? 99);
-  if (up && up.t < 6 && walls.filter(d => d < 8).length >= 3) return { where: 'indoors', covered };
-  const ground = w.ground ? heightAt(w.ground, head.x, head.z) ?? 0 : 0;
-  if (!covered && head.y - 1.6 - ground > 6) return { where: 'roof', covered };
-  if ((walls[0] < 4 && walls[1] < 4) || (walls[2] < 4 && walls[3] < 4)) return { where: 'alley', covered };
-  return { where: 'street', covered };
+  const height = head.y - 1.6 - (w.ground ? heightAt(w.ground, head.x, head.z) ?? 0 : 0);
+  if (up && up.t < 6 && walls.filter(d => d < 8).length >= 3) return { where: 'indoors', covered, height };
+  if (!covered && height > 6) return { where: 'roof', covered, height };
+  if ((walls[0] < 4 && walls[1] < 4) || (walls[2] < 4 && walls[3] < 4)) return { where: 'alley', covered, height };
+  return { where: 'street', covered, height };
 }
 
 export class Ambience {
@@ -74,10 +74,10 @@ export class Ambience {
 
   /** The held layers eased toward the mix. */
   private set(t: number, m: Mix) {
-    this.hum.gain.setTargetAtTime(m.hum * 0.12, t, 1.5);
+    this.hum.gain.setTargetAtTime(m.hum * 0.04, t, 1.5);
     this.wind.gain.gain.setTargetAtTime(m.wind * 0.1 * (0.7 + 0.3 * Math.sin(t * 0.13) * Math.sin(t * 0.07)), t, 1.2);
     this.wind.band.frequency.setTargetAtTime(m.windHz * (0.8 + 0.4 * Math.sin(t * 0.05)), t, 2);
-    this.rain.gain.setTargetAtTime(m.rain * 0.12, t, 0.8);
+    this.rain.gain.setTargetAtTime(m.rain * 0.03, t, 0.8);
     this.muffle.frequency.setTargetAtTime(m.muffle, t, 0.4);
   }
 
@@ -92,16 +92,16 @@ export class Ambience {
     // A drone somewhere, its note swelling and fading as it passes far off.
     if ((this.droneIn -= dt) <= 0) {
       this.droneIn = 25 + Math.random() * 50;
-      if (m.drone > 0.05) { const f = 140 + Math.random() * 60; a.tone(t, 9, 0.012 * m.drone, f, f * 0.93, 'sawtooth', this.muffle); }
+      if (m.drone > 0.05) { const f = 160 + Math.random() * 60; a.tone(t, 9, 0.006 * m.drone, f, f * 0.93, 'sawtooth', this.muffle); }
     }
     // Drops on metal and awnings: little bright ticks; under cover, water dripping from the edges.
     if ((this.tickIn -= dt) <= 0) {
-      this.tickIn = 0.03 + Math.random() * 0.12 / Math.max(0.1, m.ticks);
-      if (m.ticks > 0.05) a.tone(t, 0.025, 0.02 * m.ticks, 2500 + Math.random() * 3500, 1800, 'triangle', this.muffle);
+      this.tickIn = 0.15 + Math.random() * 0.5 / Math.max(0.1, m.ticks);
+      if (m.ticks > 0.05) a.tone(t, 0.02, 0.005 * m.ticks, 1800 + Math.random() * 2000, 1400, 'triangle', this.muffle);
     }
     if ((this.dripIn -= dt) <= 0) {
       this.dripIn = 0.25 + Math.random() * 1.2;
-      if (m.drips > 0.05) { const f = 700 + Math.random() * 900; a.tone(t, 0.08, 0.05 * m.drips, f * 1.6, f, 'sine', this.muffle); }
+      if (m.drips > 0.05) { const f = 700 + Math.random() * 900; a.tone(t, 0.06, 0.015 * m.drips, f * 1.4, f, 'sine', this.muffle); }
     }
   }
 
@@ -113,10 +113,10 @@ export class Ambience {
     this.on = true;
     this.muffle = ctx.createBiquadFilter(); this.muffle.type = 'lowpass'; this.muffle.frequency.value = 20000;
     this.muffle.connect(a.bus.ambience);
-    // The hum: two low notes beating against each other, and the mains' buzz an octave up, faint.
+    // The hum: the city's air, an open fifth held soft and high enough not to press on him (U-065: not the low beat).
     this.hum = ctx.createGain(); this.hum.gain.value = 0;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 220;
-    for (const [f, type, g] of [[49, 'sawtooth', 1], [50.7, 'sawtooth', 1], [100, 'sine', 0.4], [147, 'sine', 0.15]] as [number, OscillatorType, number][]) {
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+    for (const [f, type, g] of [[110, 'sine', 0.5], [165, 'sine', 0.35], [220.4, 'sine', 0.2]] as [number, OscillatorType, number][]) {
       const o = ctx.createOscillator(), og = ctx.createGain(); o.type = type; o.frequency.value = f; og.gain.value = g; o.connect(og).connect(lp); o.start();
     }
     lp.connect(this.hum).connect(this.muffle);
@@ -127,16 +127,18 @@ export class Ambience {
     this.wind = { gain: wg, band };
     // The rain's hiss: noise high and soft.
     const r = a.loop(), hp = ctx.createBiquadFilter(), pk = ctx.createBiquadFilter();
-    hp.type = 'highpass'; hp.frequency.value = 1200; pk.type = 'peaking'; pk.frequency.value = 5000; pk.gain.value = 4;
+    // (Soft, not a hiss in the ears: U-065.)
+    hp.type = 'highpass'; hp.frequency.value = 500; pk.type = 'lowpass'; pk.frequency.value = 4500; pk.Q.value = 0.5;
     this.rain = ctx.createGain(); this.rain.gain.value = 0;
     r.connect(hp).connect(pk).connect(this.rain).connect(this.muffle);
   }
 
-  /** One far sound of machinery: low, dull, with a slow tail. */
+  /** One far sound: machinery dull with distance, or a ring of metal. */
   private far(t: number, g: number) {
     const a = this.a, k = Math.floor(Math.random() * 3);
-    if (k === 0) { a.tone(t, 1.6, 0.05 * g, 60, 38, 'sine', this.muffle); a.noise(t, 1.2, 0.03 * g, 'lowpass', 300, 1, 120, this.muffle); }
-    else if (k === 1) { for (let i = 0; i < 3; i++) a.noise(t + i * 0.35, 0.25, 0.025 * g, 'bandpass', 600 + i * 80, 4, 400, this.muffle); }
-    else a.tone(t, 4, 0.02 * g, 180, 120, 'sawtooth', this.muffle);
+    if (k === 0) { a.tone(t, 1.4, 0.025 * g, 95, 70, 'sine', this.muffle); a.noise(t, 1, 0.015 * g, 'lowpass', 400, 1, 200, this.muffle); }
+    else if (k === 1) { for (let i = 0; i < 3; i++) a.noise(t + i * 0.35, 0.25, 0.015 * g, 'bandpass', 700 + i * 80, 4, 500, this.muffle); }
+    // (A far ring of metal, a haunting note held and dying.)
+    else a.tone(t, 3.5, 0.012 * g, 523, 519, 'triangle', this.muffle);
   }
 }

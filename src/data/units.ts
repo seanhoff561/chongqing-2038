@@ -59,13 +59,13 @@ export const SENSORS = { pir: { fov: 90, range: 10, motion: 0.5 } };
 
 /** The machines' weapons (DESIGN section 6, M4-11, M4-18): rounds a burst (0.1 s apart), seconds from one burst to the
  *  next, damage a hit, how far it reaches (a turret sure within `sure`), its hit chance at best, how far it's heard;
- *  a prod's stun. */
+ *  a prod's stun; whether a miss cracks past him (supersonic, M4-54). A rifle burst kills in seconds in the open (M4-54). */
 export const WEAPONS = {
-  turret: { burst: 1, every: 1 / 6, damage: 12, reach: 60, sure: 40, accuracy: 0.7, noise: 150, stun: 0 },
-  rifle: { burst: 3, every: 1.2, damage: 18, reach: 80, sure: 0, accuracy: 0.55, noise: 150, stun: 0 },
-  smg: { burst: 2, every: 0.8, damage: 8, reach: 35, sure: 35, accuracy: 0.4, noise: 100, stun: 0 },
-  cannon: { burst: 6, every: 2, damage: 24, reach: 100, sure: 0, accuracy: 0.45, noise: 250, stun: 0 },
-  prod: { burst: 1, every: 1.5, damage: 15, reach: 1.5, sure: 1.5, accuracy: 1, noise: 0, stun: 1 },
+  turret: { burst: 1, every: 1 / 6, damage: 12, reach: 60, sure: 40, accuracy: 0.7, noise: 150, stun: 0, crack: true },
+  rifle: { burst: 3, every: 1, damage: 30, reach: 80, sure: 0, accuracy: 0.75, noise: 150, stun: 0, crack: true },
+  smg: { burst: 2, every: 0.8, damage: 8, reach: 35, sure: 35, accuracy: 0.4, noise: 100, stun: 0, crack: false },
+  cannon: { burst: 6, every: 2, damage: 30, reach: 100, sure: 0, accuracy: 0.45, noise: 250, stun: 0, crack: true },
+  prod: { burst: 1, every: 1.5, damage: 15, reach: 1.5, sure: 1.5, accuracy: 1, noise: 0, stun: 1, crack: false },
 };
 export type Weapon = keyof typeof WEAPONS;
 

@@ -114,8 +114,8 @@ function walk(s: SimState, w: World, u: Unit) {
     if (d > 0.01) t.yaw = Math.atan2(dx, dz);
     if (d <= step) { t.pos = { ...q }; t.i++; step -= d; } else { t.pos = { x: t.pos.x + (dx / d) * step, y: t.pos.y + (dy / d) * step, z: t.pos.z + (dz / d) * step }; step = 0; }
   }
-  // A drone circling him in a fight keeps its eye on him (M4-45).
-  if ((u.kind === 'drone' || u.kind === 'hunter') && u.state === 'engaged' && u.seen && !t.back) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z);
+  // A drone circling him in a fight keeps its eye on him (M4-45), and a humanoid stepping aside its gun (M4-54).
+  if ((u.kind === 'drone' || u.kind === 'hunter' || t.strafe) && u.state === 'engaged' && u.seen && !t.back) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z);
 }
 
 export function stepAlert(s: SimState, w: World) {

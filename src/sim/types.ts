@@ -58,7 +58,7 @@ export type SimEvent =
   /** a humanoid calling the others (M4-10) */
   | { t: 'call'; x: number; y: number; z: number }
   /** a machine's gun fired (M4-11) */
-  | { t: 'shot'; x: number; y: number; z: number };
+  | { t: 'shot'; x: number; y: number; z: number; /** a supersonic round that missed him, cracking past (M4-54) */ crack?: boolean };
 
 /** A stack he dropped (M3-72): lying where he let it go until he picks it up. */
 export interface Dropped { stack: import('./inventory').Stack; x: number; y: number; z: number }

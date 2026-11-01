@@ -16,7 +16,7 @@ type V3 = { x: number; y: number; z: number };
 function after(s: SimState, w: World, u: Unit, to: V3) {
   const t = u.trip;
   if (!t) { leave(s, w, u, 'hunt', to); if (u.reserve) u.sent = s.time; return; }
-  Object.assign(t, { kind: 'hunt', path: way(w, u.kind, t.pos, to), i: 0, scan: 0, back: false, visits: undefined, cover: undefined });
+  Object.assign(t, { kind: 'hunt', path: way(w, u.kind, t.pos, to), i: 0, scan: 0, back: false, visits: undefined, cover: undefined, strafe: false });
 }
 
 /** Ten times a second, just after the network has heard. */

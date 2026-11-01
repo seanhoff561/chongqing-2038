@@ -16,10 +16,9 @@ import { View, PRESETS, type Preset } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
-import { radio, gunshot } from './audio/moves';
-import { MachineVoices } from './audio/machines';
-import { Ambience, whereIs, type Where } from './audio/ambience';
-import { Dread } from './audio/dread';
+import { radio } from './audio/moves';
+import { Soundscape } from './audio/soundscape';
+import { RaidLight } from './render/raidlight';
 import { unitPose } from './sim/units';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -75,11 +74,9 @@ export class Game {
   readonly inv: InventoryUI;
   readonly audio = new Audio();
   /** the machines heard where they are (M4-33) */
-  readonly voices = new MachineVoices(this.audio);
-  readonly ambience = new Ambience(this.audio);
-  readonly dread = new Dread(this.audio);
-  private env: { where: Where; covered: boolean } = { where: 'street', covered: false };
-  private envIn = 0;
+  readonly sound = new Soundscape(this.audio);
+  /** red light flashing round the chamber while a raid breaks in (M4-63) */
+  readonly raidLight = new RaidLight();
   readonly hands: Hands3D;
   /** The inside of where he's hidden (M3-47). */
   readonly hideView = new HideView();
@@ -121,6 +118,7 @@ export class Game {
     this.input = new Input(this.view.renderer.domElement);
     this.sky = new Sky(this.view);
     this.hands = new Hands3D(this.view.fp.cam);
+    this.view.scene.add(this.raidLight.light);
     this.view.scene.add(this.hideView.group);
     this.underwater = new Underwater(this.view);
     this.rigged.userData.n = 0;
@@ -165,18 +163,11 @@ export class Game {
     this.view.scene.add(this.units.group);
   }
 
-  /** The machines' sounds round him (M4-33: audio/machines.ts; M4-52: audio/dread.ts) and the alert boards. */
-  private machineSounds(dt: number) {
-    const p = this.state.player.pos;
-    // The alert shown where he is (M4-27): the boards on his district's alert.
-    const st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
+  /** The alert shown where he is (M4-27): the boards on his district's alert. */
+  private alarmBoards() {
+    const p = this.state.player.pos, st = this.state.hive.districts[districtOf(p.x, p.z)]?.state;
     alarm.value = st === 'engaged' || st === 'searching' || st === 'heightened' ? 1 : 0;
-    const cam = this.view.fp.cam;
-    this.voices.update(dt, this.state, this.world, cam.position, cam.getWorldDirection(this.look));
-    // And the machines frightening him: watched, noticed, hunted; the city mad at high alert (M4-52).
-    this.dread.update(dt, this.state, this.world, cam.position, this.voices.nearest(cam.position));
   }
-  private look = new THREE.Vector3();
 
   /** The draw distance: the scenario's, or the graphics preset's. With far stand-ins the whole city shows through
    *  aerial haze and the draw distance is the detail radius. */
@@ -244,13 +235,13 @@ export class Game {
       // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
       else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
       else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }
-      else if (e.t === 'fire') { gunshot(this.audio, 0.9, e.quiet); this.gun.fired(); }
+      else if (e.t === 'fire') { this.sound.fired(!!e.quiet); this.gun.fired(); }
       else if (e.t === 'open') this.inv.toggle(true);
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
       else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
-      else if (e.t === 'shot') { const d = Math.hypot(e.x - this.state.player.pos.x, e.y - this.state.player.pos.y, e.z - this.state.player.pos.z); if (d < 400 && this.audio.ready) gunshot(this.audio, 0.9, false, this.audio.spot(e)); }
+      else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
     if (this.state.dead) this.death.show();
@@ -316,12 +307,12 @@ export class Game {
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
-    // The empty city's sound for where he is and the hour (M4-51), where he is looked at twice a second.
-    if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(this.world, cam, wet || this.under > 0.5); }
-    this.ambience.update(dt, { ...this.env, hour: (this.state.time / 3600) % 24, rain: this.state.weather.rain });
     this.view.setLamp(this.state.player.lamp);
+    this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
-    this.machineSounds(dt);
+    // What he hears of the city and its machines (audio/soundscape.ts).
+    this.alarmBoards();
+    this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5);
     this.view.render(this.state.tick / 60, this.state.wstate.open);
     this.frames++;
   }
