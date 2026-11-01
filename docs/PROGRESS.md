@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M5. Next: M5-17 Healing items.
-Features done: 198 / 338 | Last done: M4-75
+**Status:** building M4. Next: M4-69 A chalk bag, not climbing gloves (U-053).
+Features done: 199 / 338 | Last done: M5-17
 <!-- /status -->
 
 ## Log
@@ -57,3 +57,4 @@ Features done: 198 / 338 | Last done: M4-75
 - M4-73 Wall kick by where he looks (U-055): a wall kick looking straight at the wall stalls; look up to climb it (U-055)
 - M4-74 Chimneying low, from the ground (U-055): chimneying from the ground, braced as low as prone (U-055)
 - M4-75 Wall-runs that start when meant (U-055): wall-runs by the way he moves, not a wall jump (U-055)
+- M5-17 Healing items: healing items work: bandage, tourniquet, splint, painkillers, first-aid kit (U-050)

@@ -931,11 +931,11 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Rooftop searchlights sweep at night, adding full light inside their cone; on contact they converge on the last known position
   - A sim test covers sweep and convergence
 
-## M5: 0 of 35 done
+## M5: 1 of 35 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
-- [ ] **M5-17** Healing items
+- [x] **M5-17** Healing items
   - Bandage, tourniquet, splint, painkillers and first-aid kit behave as in DESIGN section 4 with use times
   - Sim tests cover each
 - [ ] **M5-01** Laptop shell
