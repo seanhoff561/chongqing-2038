@@ -104,6 +104,8 @@ export interface SimState {
   units: import('./units').Unit[];
   /** what the hive knows (M4-04): where and when it has seen him; each district's alert that isn't Unaware (M4-12); his
    *  last known position and the way he was going (M4-13) */
+  /** rockets in the air (M4-65): where, going which way (unit), when fired, whose */
+  rockets?: { x: number; y: number; z: number; dx: number; dy: number; dz: number; t: number; by: 'heavy' | 'him' }[];
   /** grenades falling from a bomb drone (M4-47): where dropped, when, and the ground under */
   bombs?: { x: number; y: number; z: number; gy: number; t: number }[];
   hive: { /** when each column last changed a walker over, and how many it has (M4-58) */ changes?: Record<number, number>; changeovers?: number; seen: { x: number; y: number; z: number; t: number }[]; districts: Record<string, import('./district').District>; lkp?: { x: number; y: number; z: number; t: number; hx: number; hz: number; ax: number; az: number };

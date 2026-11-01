@@ -22,6 +22,8 @@ export interface Unit {
   near?: number;
   /** one of a beat's crowd (M4-57): another group round its loop, or the rest of a pair or squad */
   mate?: boolean;
+  /** when a heavy may next fire a rocket (M4-65) */
+  rocketAt?: number;
   /** a kamikaze's point it's committed its dive to (M4-47) */
   lock?: { x: number; y: number; z: number };
   /** which way he was going when it last saw him (M4-46: it follows on that way) */

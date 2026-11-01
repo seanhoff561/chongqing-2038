@@ -49,6 +49,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   bags: (a, t) => { a.noise(t, 0.6, 0.12, 'bandpass', 1400, 0.6, 600); a.noise(t + 0.5, 0.5, 0.1, 'bandpass', 1100, 0.6, 500); },
   drop: (a, t) => { a.noise(t, 0.08, 0.12, 'lowpass', 900); a.tone(t, 0.05, 0.05, 160, 90); },
   glass: (a, t) => { a.noise(t, 0.5, 0.45, 'highpass', 3500, 0.7, 7000); for (let i = 0; i < 5; i++) a.tone(t + 0.05 + i * 0.04, 0.06, 0.08, 3800 + i * 600, 3000, 'sine'); },
+  // A rocket's launch and roar (M4-65).
+  rocket: (a, t) => { a.noise(t, 0.12, 0.7, 'highpass', 900); a.noise(t + 0.05, 1.2, 0.35, 'bandpass', 700, 0.6, 300); a.tone(t, 0.3, 0.3, 90, 40); },
   // A drone crashing and blowing up (M4-62): a crack, the boom, debris rattling down.
   boom: (a, t) => { a.noise(t, 0.05, 0.6, 'highpass', 1500); a.tone(t, 0.6, 0.7, 70, 30); a.noise(t, 0.9, 0.45, 'lowpass', 500); a.noise(t + 0.3, 0.6, 0.12, 'bandpass', 2500, 1, 1200); },
   // Eating and drinking (U-058): a wrapper's rustle and chewing, a few bites; a bottle's gulps, swallowed.

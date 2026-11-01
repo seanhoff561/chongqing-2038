@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 68 of 88 done
+## M4: 69 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -911,7 +911,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-64** Knocked down (U-052)
   - A blast near him throws him by its force: off his feet, tumbling, landing on the ground where he lies a moment and gets up (the view goes with him)
   - A sim test: a blast beside him throws him away from it and leaves him down, then up
-- [ ] **M4-65** Rocket launchers (U-052)
+- [x] **M4-65** Rocket launchers (U-052)
   - The heavies' rocket pods fire rockets: seen and heard coming, a blast where they land (damage and knockdown by distance)
   - He can find and fire a rocket launcher too (rare, heavy, loud)
   - Sim tests: a rocket's blast hurts and throws him; his rocket wrecks a machine

@@ -34,6 +34,7 @@ const models: Record<string, () => THREE.Object3D> = {
   crowbar: () => group(cyl(0.012, 0.6, steel, 'x', -0.2), box(0.012, 0.03, 0.07, steel, -0.5, 0, -0.03), box(0.05, 0.012, 0.03, steel, 0.1, 0, -0.02)),
   knife: () => group(box(0.1, 0.03, 0.022, rubber), box(0.13, 0.004, 0.028, steel, -0.11, 0, 0)),
   pistol: () => pistol(),
+  rpg: () => group(cyl(0.045, 1.0, M(0x4a5236, 0.7), 'z', -0.07, 0, -0.1), cyl(0.055, 0.08, dark, 'z', -0.07, 0, -0.62), cyl(0.055, 0.08, dark, 'z', -0.07, 0, 0.42), box(0.06, 0.03, 0.08, dark, -0.13, 0, -0.1)),
   shotgun: () => group(box(0.04, 0.12, 0.05, wood, 0, -0.02, 0.08), cyl(0.013, 0.7, dark, 'z', 0, 0.05, -0.3), box(0.05, 0.05, 0.3, wood, 0, 0.03, 0.25)),
   nailgun: () => group(box(0.12, 0.04, 0.04, yellow, 0.01), box(0.08, 0.06, 0.26, yellow, -0.07, 0, -0.08), box(0.03, 0.03, 0.05, dark, -0.07, 0, -0.23)),
   boltcutters: () => group(cyl(0.012, 0.45, rubber, 'x', -0.1), cyl(0.012, 0.45, rubber, 'x', -0.1, 0, -0.04), box(0.12, 0.02, 0.05, steel, -0.38, 0, -0.02)),

@@ -93,6 +93,8 @@ export class Game {
   readonly gun = new GunFeel();
   readonly motion = new HeldMotion();
   readonly marks = new Marks();
+  private rocketMeshes: THREE.Group[] = [];
+  private trailIn = 0;
   private grabAge = 0;
   private smokeIn = 0;
   private whineIn = 0;
@@ -116,6 +118,13 @@ export class Game {
     this.view.scene.add(this.rigged);
     this.view.scene.add(this.furniture.group);
     this.view.scene.add(this.marks.group);
+    // Rockets in flight (M4-65): a body and a burning tail, eight at most.
+    for (let i = 0; i < 8; i++) {
+      const g = new THREE.Group();
+      g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.7, 8).rotateX(Math.PI / 2), new THREE.MeshLambertMaterial({ color: 0x4a5236 })));
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6).translate(0, 0, -0.4), new THREE.MeshBasicMaterial({ color: 0xffb050 })));
+      g.visible = false; this.rocketMeshes.push(g); this.view.scene.add(g);
+    }
     this.rain = new Rain(this.view.scene);
     this.bodyFx = new BodyFx(this.view.renderer.domElement);
     this.inv = new InventoryUI(this);
@@ -269,6 +278,10 @@ export class Game {
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
     this.marks.update(dt);
+    // Rockets in the air, trailing smoke (M4-65).
+    const rs = this.state.rockets ?? [];
+    this.rocketMeshes.forEach((m, i) => { const r = rs[i]; m.visible = !!r; if (r) { m.position.set(r.x, r.y, r.z); m.lookAt(r.x + r.dx, r.y + r.dy, r.z + r.dz); } });
+    if (rs.length && (this.trailIn -= dt) <= 0) { this.trailIn = 0.04; for (const r of rs) this.marks.puff(r.x - r.dx * 0.5, r.y - r.dy * 0.5, r.z - r.dz * 0.5); }
     // Hurt machines near him smoke and spark (M4-62).
     if ((this.smokeIn -= dt) <= 0) {
       this.smokeIn = 0.25;

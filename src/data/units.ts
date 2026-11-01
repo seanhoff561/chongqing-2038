@@ -115,6 +115,10 @@ export const CONVERGE = { ground: 250, fly: 400, dock: 500, every: 20, perDock: 
  *  kamikaze every `every` s from the nearest dock within `dock` m) and the bomb dropper after `bomberAfter`; a kamikaze
  *  locks on within `commit` m and dives there; a bomb dropper hangs `bombH` over him dropping a grenade every
  *  `bombEvery` s; a blast hurts within `reach` m by how near, `damage` at its heart, heard `noise` m round. */
+/** Rockets (M4-65): their speed (m/s), the blast (reach, damage to him at its heart, to a machine at its heart, armour
+ *  no help), how far heard; a heavy fires one from its pod every `every` s at him `near` to `far` m off; his launcher's
+ *  blast heard `noise` m round. */
+export const ROCKET = { speed: 45, life: 4, reach: 6, damage: 70, machine: 420, noise: 200, every: 9, near: 20, far: 120 };
 export const STRIKE = { fpvs: 2, bombers: 1, after: 25, every: 15, bomberAfter: 40, dock: 600, commit: 8, bombH: 12, bombEvery: 4, fpvBlast: { reach: 5, damage: 60 }, bomb: { reach: 4, damage: 45 }, noise: 120 };
 
 /** A patrol drone's battery (M4-08, DESIGN section 7): 6 real minutes in the air, the first and last 20 s of them

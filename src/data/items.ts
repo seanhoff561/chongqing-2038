@@ -90,6 +90,9 @@ export const items: ItemDef[] = [
   I('scope4x', '4倍瞄准镜', '4x scope', 2, 1, 0.35, 'part', 'Mounts on the slide: aimed, the view at 4x.', { uses: ['pistol-mod'] }),
   I('shotgun', '霰弹枪', 'Pump shotgun', 1, 4, 3.2, 'weapon', 'Close range. Very loud.', { uses: ['shoot', 'breach-lock'] }),
   I('shells', '霰弹', 'Shotgun shells', 1, 1, 0.25, 'ammo', 'Five shells.', { stack: 4 }),
+  // A rocket launcher (M4-65, U-052): rare, heavy and loud; one rocket at a time, it wrecks what it hits.
+  I('rpg', '火箭筒', 'Rocket launcher', 1, 4, 6.5, 'weapon', 'One rocket loaded at a time. Very loud.', { uses: ['shoot'] }),
+  I('rocket', '火箭弹', 'Rocket', 1, 3, 2.2, 'ammo', 'For the rocket launcher.'),
   I('nails', '钉排', 'Nail strip', 1, 1, 0.2, 'ammo', '30 nails.', { stack: 4 }),
   I('grenade', '手榴弹', 'Grenade', 1, 1, 0.4, 'throw', 'Breaches weak doors. Very loud.', { uses: ['breach', 'damage-robots', 'decoy'] }),
   I('firecrackers', '鞭炮', 'Firecrackers', 1, 2, 0.3, 'throw', 'A long string. Loud for a while.', { uses: ['decoy', 'scare-delivery'] }),
