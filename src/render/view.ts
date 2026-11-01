@@ -12,6 +12,7 @@ import { MAT } from '../world/mats';
 import { FPCamera } from './fpcamera';
 import { buildProps, tickProps, smallProps, isSmall } from './props';
 import { RoomProps } from './roomprops';
+import { buildBeyond, tickBeyond } from './beyond';
 
 /** Half-size of the sun's shadow area around the camera, metres. */
 export const SHADOW_R = 70;
@@ -113,6 +114,8 @@ export class View {
       if (w.ground) far.add(...buildFarGround(w.ground, w.marks), ...buildFarStreets(coarseField(w.ground), w.streets));
       far.traverse(o => { o.castShadow = false; });
       this.world.add(far);
+      // (And past the map's border, more to see: M4-100.)
+      if (w.ground && w.water[0]) this.world.add(buildBeyond(w.ground, w.water[0].y1));
     }
     // (A small pool, a flooded sump down in the sewers, is drawn near only, as the rooms are.)
     const pools: THREE.Mesh[] = [];
@@ -258,6 +261,7 @@ export class View {
       for (const cell of this.cells) if ((cell.visible = within(cell))) for (const m of cell.children) m.visible = within(m);
     }
     tickProps(t, open);
+    tickBeyond();
     swayTime.value = t;
     if (this.rooms) { this.rooms.update(c); if (this.rooms.group.parent !== this.scene) this.scene.add(this.rooms.group); }
     for (const o of this.scene.children) if (o === this.world) liveWalk(o, false); else o.updateMatrixWorld();

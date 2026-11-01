@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 254 / 366 | Last done: M4-34
+Features done: 255 / 366 | Last done: M4-100
 <!-- /status -->
 
 ## Log
@@ -115,3 +115,4 @@ Features done: 254 / 366 | Last done: M4-34
 - M4-31 Core loop end to end: the core loop end to end in a browser test: shelter, engaged, death, new run; loot, home, sleep, save
 - M4-32 Pursuit escapes in the first district: pursuit scenarios and three escapes that break contact and outlast the search
 - M4-34 Delivery robots: delivery robots: wheeled rounds, never stairs, scared off route by loud noise
+- M4-100 Beyond the city's edge (U-077): beyond the city's edge: rivers, far towers lit at night, hills

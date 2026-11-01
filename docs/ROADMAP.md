@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 97 of 104 done
+## M4: 98 of 104 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -1027,7 +1027,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - A sim test covers sweep and convergence
 - [ ] **M4-83b** 144 fps on the director's machine (U-061)
   - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
-- [ ] **M4-100** Beyond the city's edge (U-077)
+- [x] **M4-100** Beyond the city's edge (U-077)
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
