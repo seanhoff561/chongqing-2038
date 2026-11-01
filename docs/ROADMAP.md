@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 40 of 77 done
+## M4: 41 of 77 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -809,7 +809,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-73** Wall kick by where he looks (U-055)
   - A wall kick looking straight at the wall (level or below) only stalls him against it, a moment's pause in his fall; looking up a little and more sends him up it as before
   - Sim test: the same kick looking level stalls (no gain in height), looking up 20 degrees gains height
-- [ ] **M4-74** Chimneying low, from the ground (U-055)
+- [x] **M4-74** Chimneying low, from the ground (U-055)
   - While chimneying his body is as low as lying down (the crawl's height), so he fits the narrow, low gaps it's for
   - He can start chimneying standing on the ground between two walls, not only in the air
   - Sim test: from standing in a chimney gap he goes into it and up; his collision height there is the crawl's
