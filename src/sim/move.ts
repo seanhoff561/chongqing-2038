@@ -185,7 +185,7 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   // Jump.
   let jumped = false;
   // Standing in a narrow gap, Space braces him across it (U-055).
-  if (p.onGround && (input.pressed & B.JUMP) && p.posture !== 'crawl' && tryChimney(state, world, input, true)) return;
+  if (p.onGround && p.posture !== 'crawl' && tryChimney(state, world, input, true)) return;
   if (p.onGround && (input.pressed & B.JUMP) && groundParkour(state, world, input, Math.min(M.mantle.hop, L.maxMantle))) return;
   if ((p.onGround || p.coyote > 0) && (input.pressed & B.JUMP) && p.posture === 'stand' && L.jumpScale > 0) {
     // Off a slope he leaves along it (U-028): the rise of the ground under his feet along his stride adds to the
@@ -258,9 +258,9 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   p.mode = p.onGround ? 'ground' : 'air';
   if (world.water.length && checkWater(state, world)) return;
   if (!p.onGround) {
+    // In a narrow gap X braces him across it (M3-78, U-060).
+    if (tryChimney(state, world, input)) return;
     if (p.wall.t < 0) p.wall.t = Math.min(0, p.wall.t + DT);
-    // In a narrow gap Space braces him across it (M3-78) before any wall move.
-    else if (!jumped && tryChimney(state, world, input)) return;
     else if (!airParkour(state, world, input) && (input.pressed & B.JUMP) && !jumped) airWall(state, world);
   }
 }

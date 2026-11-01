@@ -1,8 +1,8 @@
 // Chimneying (M3-78, U-043): in a gap between two facing walls 0.6 to 1.25 m apart, upright (a shaft) or sloped (a
-// collapsed slab's slot, a duct), Space in the air braces his back and feet against them. W works him the way he
+// collapsed slab's slot, a duct), X (its own key, U-060) braces his back and feet against them. W works him the way he
 // looks (up a shaft looking up, up a slope looking up it), S back the other way, slowly, with a quiet scrape; he
-// holds wherever he stops. Space again lets go; the walls running out (the gap widening, an opening beside him)
-// drops him. Braced across, his body is as low as lying down (U-055), and Space standing in such a gap braces him too.
+// holds wherever he stops. X again or Space lets go; the walls running out (the gap widening, an opening beside him)
+// drops him. Braced across, his body is as low as lying down (U-055), and X standing in such a gap braces him too.
 import { B, DT, type InputFrame, type SimState } from './types';
 import type { World } from '../world/world';
 import type { Player } from './player';
@@ -26,10 +26,10 @@ export function gapAt(world: World, p: Player): number | null {
   return best >= C.min && best <= C.max ? best : null;
 }
 
-/** Space in a gap, in the air or standing in it (lifted off the floor onto his back and feet): braced. */
+/** X in a gap, in the air or standing in it (lifted off the floor onto his back and feet): braced. */
 export function tryChimney(state: SimState, world: World, input: InputFrame, standing = false): boolean {
   const p = state.player;
-  if (!(input.pressed & B.JUMP) || gapAt(world, p) === null) return false;
+  if (!(input.pressed & B.CHIMNEY) || gapAt(world, p) === null) return false;
   if (standing) {
     const lift = [0.35, 0.6, 0.9].find(d => free(world.index, p.pos.x, p.pos.y + d, p.pos.z, H));
     if (lift === undefined) return false;
@@ -54,7 +54,7 @@ function leave(world: World, p: Player) {
 
 export function stepChimney(state: SimState, world: World, input: InputFrame) {
   const p = state.player;
-  if ((input.pressed & B.JUMP) || gapAt(world, p) === null) { leave(world, p); return; }
+  if ((input.pressed & (B.JUMP | B.CHIMNEY)) || gapAt(world, p) === null) { leave(world, p); return; }
   const my = Math.max(-1, Math.min(1, input.my)), sp = (my > 0 ? C.up : C.down) * my * DT;
   if (!sp) return;
   const c = Math.cos(p.pitch), dx = -Math.sin(p.yaw) * c * sp, dy = Math.sin(p.pitch) * sp, dz = -Math.cos(p.yaw) * c * sp;

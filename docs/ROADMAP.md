@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 54 of 86 done
+## M4: 55 of 86 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -852,7 +852,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Running past a building's or pillar's outside corner, or a pole, he can grab it (the grab button as he passes within reach) and swing round it, coming off in the new direction with most of his speed (up to about 120 degrees of turn)
   - It works at a sprint and from a wall-run; it costs grip endurance like a hang; letting go early leaves him on a tangent
   - Sim tests: sprinting past a corner and swinging round it keeps at least 80% of the speed into the new direction; a pole the same; without the grab he runs on straight
-- [ ] **M4-81** Chimneying on its own key (U-060)
+- [x] **M4-81** Chimneying on its own key (U-060)
   - Chimneying (bracing across a gap) has its own key, X, shown in the pause menu's keys; Space no longer starts it, so jumping in a narrow gap jumps
   - Pressed between two walls the right distance apart, standing or in the air, X braces him; pressed again or Space lets go as now
   - Sim tests: Space in a gap jumps without bracing; X braces from the ground and from the air
