@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-46 Relentless pursuit (U-050).
-Features done: 222 / 349 | Last done: M4-62
+**Status:** building M4. Next: M4-47 Strike drones (U-050).
+Features done: 223 / 349 | Last done: M4-46
 <!-- /status -->
 
 ## Log
@@ -81,3 +81,4 @@ Features done: 222 / 349 | Last done: M4-62
 - M4-45 Combat AI (U-050): combat AI: drones circle and jink at a stand-off, humanoids bound between covers by turns and strafe in the open (U-050)
 - M4-61 The marks of damage (U-052): the marks of damage: bullet holes, pocks, scrapes, sparks and grit (U-052)
 - M4-62 Machines that break apart (U-052): machines that come apart: rifles shot out, heads off, drones downed and blowing up, hurt machines smoking (U-052)
+- M4-46 Relentless pursuit (U-050): relentless pursuit: they follow the way he went, over low walls, down into the underground (U-050)

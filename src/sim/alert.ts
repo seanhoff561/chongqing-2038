@@ -17,15 +17,23 @@ import { SCALE } from './clock';
 import { DT } from './types';
 
 type V3 = { x: number; y: number; z: number };
-/** How far up or down each kind steps without a stair: a quadruped's metre's jump; nothing climbs (M4-09). */
-const STEP: Record<UnitKind, number> = { quadruped: 1, humanoid: 0.5, heavy: 0.4, drone: 99, hunter: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
+/** How far up or down each kind steps without a stair: a quadruped's jump, a humanoid over a low wall (M4-46, a
+ *  person's agility); nothing climbs (M4-09). */
+const STEP: Record<UnitKind, number> = { quadruped: 1.5, humanoid: 1.1, heavy: 0.4, drone: 99, hunter: 99, delivery: 0.2, carrier: 0.3, camera: 0, sweeper: 0, lamppost: 0, turret: 0, pir: 0, tripwire: 0, acoustic: 0 };
 export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600, checkWithin: 200, /** a changeover's handing over, s (M4-58) */ swap: 3 };
 
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
  *  step up or down (a quadruped's metre's jump, half a metre for the rest: none climbs), as far as nothing's in the
  *  way; straight for a drone (8 m over the point) or without a nav graph. */
 export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
-  if (kind === 'drone' || kind === 'hunter') return [{ x: b.x, y: b.y + 8, z: b.z }];
+  if (kind === 'drone' || kind === 'hunter') {
+    // Straight to 8 m over it if the air's clear; under cover or below ground, along the way a walker would go, low
+    // over it (M4-46: through alleys and tunnels after him).
+    const top = { x: b.x, y: b.y + 8, z: b.z }, d = Math.hypot(top.x - a.x, top.y - a.y, top.z - a.z);
+    if (!w.nav || d < 0.1 || !raycast(w.index, a.x, a.y, a.z, (top.x - a.x) / d, (top.y - a.y) / d, (top.z - a.z) / d, d)) return [top];
+    const p = navPath(w.nav, a, b, 'street');
+    return p ? [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }] : [top];
+  }
   const p = w.nav ? navPath(w.nav, a, b, kind) : null;
   if (!p) return Math.abs(b.y - a.y) <= STEP[kind] ? [b] : [];
   const end = p.pts[p.pts.length - 1], d = Math.hypot(b.x - end.x, b.y - end.y, b.z - end.z);
@@ -54,6 +62,13 @@ function walk(s: SimState, w: World, u: Unit) {
     if (!t.back) {
       // Holding its cover while it can see him (M4-10); strafing, it's done its step aside.
       if (t.cover || t.strafe) return;
+      // Lost him here: on the way he was going (M4-46), once each time it sees him.
+      const g = u.went, gs = g ? Math.hypot(g.x, g.z) : 0;
+      if (g && gs > 1 && !t.followed && t.kind !== 'check' && t.kind !== 'swap' && u.state !== 'unaware') {
+        t.followed = true;
+        t.path = way(w, u.kind, t.pos, { x: t.pos.x + g.x * 4, y: t.pos.y, z: t.pos.z + g.z * 4 }); t.i = 0; t.scan = 0;
+        return;
+      }
       // Looking about, a slow sweep either way, 8 s (M4-04); then a humanoid goes through the hiding places near the
       // place one by one, looking briefly at each (M4-10).
       const look = t.kind === 'swap' ? ALERT.swap : t.visits ? SQUAD.look : ALERT.scan;
@@ -109,8 +124,14 @@ export function stepAlert(s: SimState, w: World) {
       const t = u.trip;
       if (!t.back && t.kind !== 'check' && u.seen && (u.id + s.tick) % 6 === 0 && a >= SIGHT.min) {
         const seesNow = Math.hypot(u.seen.x - s.player.pos.x, u.seen.z - s.player.pos.z) < 0.5, him = s.player.pos;
+        if (seesNow) t.followed = false;
         // A drone in the fight circles him at a stand-off (M4-45).
-        if ((u.kind === 'drone' || u.kind === 'hunter') && u.state === 'engaged') { t.path = [orbitPoint(s, u, t.pos, him)]; t.i = 0; t.scan = 0; t.visits = undefined; walk(s, w, u); continue; }
+        if ((u.kind === 'drone' || u.kind === 'hunter') && u.state === 'engaged') {
+          // (Not through a wall: with something in the way, the way round to him, M4-46.)
+          const o = orbitPoint(s, u, t.pos, him), d = Math.hypot(o.x - t.pos.x, o.y - t.pos.y, o.z - t.pos.z);
+          t.path = d > 0.1 && raycast(w.index, t.pos.x, t.pos.y, t.pos.z, (o.x - t.pos.x) / d, (o.y - t.pos.y) / d, (o.z - t.pos.z) / d, d) ? way(w, u.kind, t.pos, him) : [o];
+          t.i = 0; t.scan = 0; t.visits = undefined; walk(s, w, u); continue;
+        }
         if (u.kind === 'humanoid' && u.state === 'engaged' && seesNow) {
           // By turns one bounds to cover nearer him while the rest hold theirs; with none to go to, it strafes (M4-45).
           const adv = bounding(s, u);

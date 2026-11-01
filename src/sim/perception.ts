@@ -136,7 +136,7 @@ export function stepSight(s: SimState, w: World, every = 6) {
     // (Heightened, its awareness climbs 1.3 times as fast: M4-16.)
     const rate = SIGHT.rate * (H.size && H.has(districtOf(at.x, at.z)) ? SIGHT.heightened : 1);
     u.aware = v >= SIGHT.min ? Math.min(1.5, (u.aware ?? 0) + rate * v * dt) : Math.max(0, (u.aware ?? 0) - SIGHT.decay * dt);
-    if (v >= SIGHT.min) { u.seen = { ...s.player.pos }; u.saw = s.time; }
+    if (v >= SIGHT.min) { u.seen = { ...s.player.pos }; u.saw = s.time; u.went = { x: s.player.vel.x, z: s.player.vel.z }; }
   }
 }
 

@@ -22,6 +22,8 @@ export interface Unit {
   near?: number;
   /** one of a beat's crowd (M4-57): another group round its loop, or the rest of a pair or squad */
   mate?: boolean;
+  /** which way he was going when it last saw him (M4-46: it follows on that way) */
+  went?: { x: number; z: number };
   /** when it was last hit (M4-45: a drone jinks) */
   hurtAt?: number;
   /** its weapon out of action (M4-62); a drone falling out of the air: when and where it was hit, and the ground under it */
@@ -82,6 +84,8 @@ export interface Trip {
   cover?: { x: number; y: number; z: number };
   /** a humanoid bounding forward to cover nearer him, or strafing in the open (M4-45) */
   advancing?: boolean;
+  /** gone on the way he was going from where it lost him (M4-46) */
+  followed?: boolean;
   strafe?: boolean;
 }
 export interface Pose { x: number; y: number; z: number; yaw: number; active: boolean; /** a drone on its dock, charging: sees nothing */ docked?: boolean }
