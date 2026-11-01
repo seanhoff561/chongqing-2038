@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-31 Core loop end to end.
-Features done: 251 / 365 | Last done: M4-101
+**Status:** building M4. Next: M4-32 Pursuit escapes in the first district.
+Features done: 252 / 365 | Last done: M4-31
 <!-- /status -->
 
 ## Log
@@ -112,3 +112,4 @@ Features done: 251 / 365 | Last done: M4-101
 - M4-28 Street speakers and announcements: street speakers and LED boards: the occupier's announcements by alert and hour
 - M4-29 Machines in the first district: the first district's machines walk real ground all day: rerouted beats, drones over towers, delivery robots
 - M4-101 Combat pass (U-089): combat: every machine killable and lootable, heavier head shots, slower machine fire and drones
+- M4-31 Core loop end to end: the core loop end to end in a browser test: shelter, engaged, death, new run; loot, home, sleep, save
