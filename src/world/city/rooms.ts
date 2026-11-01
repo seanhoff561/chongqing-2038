@@ -4,7 +4,10 @@
 // a building as a puzzle (puzzle.ts, U-040). (docs/reference has no interiors: these are 1990s Chongqing walk-ups.)
 import { carve, type Solid } from '../geom';
 import { MAT } from '../mats';
-import { rand, randInt, type Rng } from '../../sim/rng';
+import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
+
+/** How many of the sinks still run (M4-96, U-069). */
+const SINKS = { running: 0.25 };
 import type { Lot, Fabric } from './buildings';
 import type { Site } from '../world';
 
@@ -157,6 +160,12 @@ function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, 
     const [nx, nz] = f.alongZ ? [face[1], face[0]] : face;
     // Its space, turned so its doors (the shell's +z) face the room.
     out.hides.push({ id: out.hides.length, kind: 'wardrobe', yaw: Math.atan2(nx, nz), inner: { x0: cx - hw, y0: y + 0.05, z0: cz - hd, x1: cx + hw, y1: y + 1.9, z1: cz + hd } });
+  }
+  // A sink: a few still run (M4-96, U-069), by dice of their own so the rooms stay as they are (U-053).
+  if (p === 'sink') {
+    const [sx, sz] = at((b[0] + b[2]) / 2 + face[0] * ((b[2] - b[0]) / 2 + 0.05), (b[1] + b[3]) / 2 + face[1] * ((b[3] - b[1]) / 2 + 0.05));
+    out.inter.push({ id, kind: 'sink', x: sx, y: y + P.h, z: sz, r: 0.6, zh: '水槽', en: 'Sink', data: { running: rand(makeRng(hashString(`tap:${id}`))) < SINKS.running } });
+    return;
   }
   // Every container is there to search (U-072: what looks like one is one), only the one chosen for it holding
   // anything; and a floor's first bed and table to use.

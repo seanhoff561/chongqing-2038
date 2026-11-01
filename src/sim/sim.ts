@@ -20,6 +20,7 @@ import './food';
 import './shelter';
 import './drops';
 import './grate';
+import './sinks';
 import { survival } from '../data/survival';
 import { createUnits } from './units';
 import { stepSight, stepHearing } from './perception';

@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-99 Realistic textures (U-073).
-Features done: 244 / 364 | Last done: M4-30
+Features done: 245 / 364 | Last done: M4-96
 <!-- /status -->
 
 ## Log
@@ -105,3 +105,4 @@ Features done: 244 / 364 | Last done: M4-30
 - M4-93 Eldritch walkers (U-069): eldritch walkers: tall, white, mostly giant legs, three variations (U-069)
 - M4-94 Blocked stairways and drowned sewers (U-069): blocked stairways and drowned sewers: stairwells blocked part-way, many more sewer runs flooded, some plugged (U-069)
 - M4-30 Dev perception overlay: dev perception overlay: sight fans, awareness bars, alert and unit list
+- M4-96 Refilling water at running sinks (U-069): running sinks refill empty water bottles
