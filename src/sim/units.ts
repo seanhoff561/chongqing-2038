@@ -16,6 +16,8 @@ export interface Unit {
   cam?: number;
   /** kept back until it's sent (M4-14): a hunter drone on its dock, a humanoid in its district's garage */
   reserve?: { dock?: number; garage?: number; /** the helicopter's team (M4-92) */ drop?: boolean };
+  /** not out till then: a new run's first minutes near where he starts (U-075) */
+  quiet?: number;
   /** when a reserve was last sent out (M4-14) */
   sent?: number;
   /** the hiding place it last passed near, and checked or not (M4-15) */
@@ -76,7 +78,7 @@ export interface Unit {
 }
 
 /** Whether a machine is out just now (M4-13). */
-export const isOff = (s: { time: number }, u: Unit) => !!u.dead || !!u.shut || !!u.crash || (u.off !== undefined && s.time < u.off);
+export const isOff = (s: { time: number }, u: Unit) => !!u.dead || !!u.shut || !!u.crash || (u.off !== undefined && s.time < u.off) || (u.quiet !== undefined && s.time < u.quiet);
 
 /** A trip off the beat: the way there (or back), how far along it, where it is and faces, the look-about left there,
  *  and where and when it left its beat. */
@@ -210,6 +212,8 @@ export function unitPose(w: World, u: Unit, time: number): Pose {
   if (u.crash && !u.dead) { const c = u.crash, f = (time - c.t) / SCALE; return { x: c.x + Math.sin(c.yaw) * 3 * Math.min(f, 2), y: Math.max(c.gy, c.y - 4.9 * f * f), z: c.z + Math.cos(c.yaw) * 3 * Math.min(f, 2), yaw: c.yaw + 14 * f, active: true }; }
   // Out, it stays where it stopped (M4-17); immobilised, where it stands (M4-19).
   if (u.stop) return { x: u.stop.x, y: u.stop.y, z: u.stop.z, yaw: u.stop.yaw, active: !isOff({ time }, u) };
+  // Not out yet (U-075): where its beat would have it, not there.
+  if (u.quiet !== undefined && time < u.quiet && u.cam === undefined) { const q = unitPose(w, { ...u, quiet: undefined }, time); return { ...q, active: false }; }
   if (u.trip) return { ...u.trip.pos, yaw: u.trip.yaw, active: true };
   if (u.cam !== undefined) {
     // A sweeper pans to and fro at a steady rate, 10 s a pass.

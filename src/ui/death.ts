@@ -26,16 +26,23 @@ export class DeathScreen {
     el.id = 'death';
     el.innerHTML = `<div class="d-title">你死了</div><div class="d-sub">${zh} · ${en}</div>
       <div class="d-sum">${clockText(s.time)} · survived ${dayOf(s.time) - 1} nights</div>
-      <button class="d-new">新的开始 New run</button>`;
+      <div class="d-new">Esc · 新的开始 New run</div>`;
     document.body.appendChild(el);
     this.game.input.uiOpen = true;
+    // Black at once and every sound stopped (U-077); Esc for a new run.
+    this.game.audio.mute(true);
     document.exitPointerLock?.();
-    el.querySelector<HTMLButtonElement>('.d-new')!.onclick = () => {
+    const key = (e: KeyboardEvent) => {
+      if (e.code !== 'Escape' || e.repeat) return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      removeEventListener('keydown', key, true);
       this.game.switchTo(this.game.scenario.run ? '' : this.game.scenario.name);
       el.remove();
       this.shown = false;
+      this.game.audio.mute(false);
       this.game.input.uiOpen = false;
       this.game.input.capture();
     };
+    addEventListener('keydown', key, true);
   }
 }

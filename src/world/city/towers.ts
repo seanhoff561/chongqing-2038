@@ -7,7 +7,8 @@ import { rand, randInt, type Rng } from '../../sim/rng';
 import { pick, GLASS } from './palette';
 import { PARAPET, type Lot, type Fabric } from './buildings';
 import { lobby } from './fronts';
-import { sides, facades, onFace, faceXZ, footOf, BARE } from './climb';
+
+import { sides, facades, footOf, BARE } from './climb';
 
 /** A block of the tower: its footprint, the floor at its foot, its roof, and the top of its edge (a parapet). */
 interface Block { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number; top: number }
@@ -69,17 +70,12 @@ export function tower(l: Lot, r: Rng, out: Fabric) {
     if (b.y0 + BARE + 2.5 >= from) continue;
     facades({ ...l, ...b, base: i ? b.y0 : base, wall: b.y1, top: Math.min(b.top, from), street: i ? [false, false, false, false] : l.street.map((v, k) => v && k !== span.face) as Lot['street'], ground: i ? undefined : l.ground }, r, out);
   }
-  // Over 80 m, most have a platform out from a wall halfway up, railed, to look down on the street from (M3-57a).
+  // (Over 80 m, most had a look-out platform halfway up, M3-57a; none since U-077: they looked out of place. Their dice
+  // are still rolled so the rest of the city comes out as it was, U-053.)
   const vy = base + Math.round(((wall - base) * (0.5 + rand(r) * 0.15)) / 3) * 3, b = blocks.find(k => k.y0 + 3 < vy && vy < k.y1 - 3), f0 = randInt(r, 4);
   if (wall - base > 80 && b && rand(r) < 0.8) for (let k = 0; k < 4; k++) {
-    const s = sides({ ...l, ...b })[(f0 + k) % 4], u = s.a + 2 + rand(r) * (s.b - s.a - 8), c = faceXZ(s, u + 2, 1.3);
-    if (s.b - s.a < 8) continue;
-    out.solids.push(onFace(s, u, u + 4, 0, 2.6, vy - 0.25, vy, MAT.concrete));
-    // A railing of bars: posts, a mid rail and a top rail along its edge and both ends; a service door behind.
-    for (const [a, c] of [[1.02, 1.06], [0.5, 0.54]]) out.decor.push(onFace(s, u, u + 4, 2.54, 2.6, vy + a, vy + c, MAT.metal), onFace(s, u, u + 0.06, 0, 2.6, vy + a, vy + c, MAT.metal), onFace(s, u + 3.94, u + 4, 0, 2.6, vy + a, vy + c, MAT.metal));
-    for (let c = u + 0.05; c < u + 4; c += 1.3) out.decor.push(onFace(s, c - 0.03, c + 0.03, 2.54, 2.6, vy, vy + 1.02, MAT.metal));
-    out.decor.push(onFace(s, u + 1.5, u + 2.5, 0, 0.04, vy, vy + 2.1, MAT.metal));
-    out.features.push({ kind: 'vantage', ...c, y: vy, group: out.features.length, nx: s.nx, nz: s.nz });
-    break;
+    const s = sides({ ...l, ...b })[(f0 + k) % 4];
+    rand(r);
+    if (s.b - s.a >= 8) break;
   }
 }

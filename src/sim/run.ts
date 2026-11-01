@@ -2,6 +2,7 @@
 // backpack, their crate and nothing else (DESIGN section 9). The furnished shelter stays as a test scene (furnish).
 import type { SimState } from './types';
 import type { World } from '../world/world';
+import { SCALE } from './clock';
 import { grid, addItem, newUid, type Grid } from './inventory';
 import { onUseId } from './use';
 import { VOICEMAIL } from '../data/dialogue';
@@ -35,7 +36,21 @@ export function startRun(s: SimState, w: World) {
     const id = f.kind.slice(3);
     s.dropped.push({ stack: { uid: newUid(s), id, n: 1, x: 0, y: 0, rot: false, ...(id === 'phone' ? { charge: 6 } : {}) }, x: f.x, y: f.y, z: f.z });
   }
+  quietStart(s, w);
   s.events.length = 0;
+}
+
+/** A new run's first minutes (U-075): no machine whose beat comes near where he starts is out yet, so he can get his
+ *  bearings (getting killed as he came up out of the hideout was common). */
+export const QUIET = { r: 160, minutes: 8 };
+export function quietStart(s: SimState, w: World) {
+  const at = s.player.pos, until = s.time + QUIET.minutes * 60 * SCALE;
+  for (const u of s.units) {
+    const p = u.patrol >= 0 ? w.patrols[u.patrol] : undefined, c = u.cam !== undefined ? w.cameras[u.cam] : undefined, near = (q: { x: number; z: number }) => Math.hypot(q.x - at.x, q.z - at.z) < QUIET.r;
+    // (And the columns marching through, the hunters on the docks round it, the cameras and sensors, dark for now.)
+    const col = u.convoy ? w.convoys?.[u.convoy.path] : undefined, dock = u.reserve?.dock !== undefined ? w.docks[u.reserve.dock] : undefined;
+    if ((p && p.pts.some(near)) || (c && near(c)) || (col && col.pts.some(near)) || (dock && near(dock))) u.quiet = until;
+  }
 }
 
 /** The phone plays its one voicemail, while it has charge. */

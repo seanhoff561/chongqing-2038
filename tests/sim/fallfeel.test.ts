@@ -1,8 +1,8 @@
-// M4-66 (U-052): falls that feel like falls. From 5 m he lands and goes on (the old roll's sound); from 8.5 m his knees
-// buckle a moment; past 10 m he's down on the ground a while; the wind in his ears rises with his fall speed.
+// M4-66 (U-052): falls that feel like falls; the wind in his ears rises with his fall speed. (U-078: a drop, however big,
+// no longer puts him down on the ground: he lands and goes on, hurt or not.)
 import { describe, it, expect } from 'vitest';
 import { setup, floor, run, secs } from './helpers';
-import { windOf, FALL_FEEL } from '../../src/sim/move';
+import { windOf } from '../../src/sim/move';
 
 /** Seconds he's down after a drop of h metres onto a floor. */
 function downFor(h: number) {
@@ -15,10 +15,8 @@ function downFor(h: number) {
 }
 
 describe('falls that feel like falls (M4-66)', () => {
-  it('lands and goes on, stumbles, or lies down, by the height', () => {
-    expect(downFor(5)).toBe(0);
-    expect(downFor(8.5)).toBeCloseTo(FALL_FEEL.stumble, 1);
-    expect(downFor(11)).toBeCloseTo(FALL_FEEL.down, 1);
+  it('lands and goes on from any height he lives through (U-078)', () => {
+    for (const h of [5, 8.5, 11]) expect(downFor(h), `${h} m`).toBe(0);
   });
   it('the wind rises with his fall speed', () => {
     expect(windOf(-3)).toBe(0);

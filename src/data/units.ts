@@ -6,17 +6,17 @@ export const STATIC = new Set<UnitKind>(['camera', 'sweeper', 'lamppost', 'turre
 
 export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: boolean; fly: number; zh: string; en: string; hp: number; weapon?: Weapon }> = {
   // Its shock prod (M4-18; its tag launcher is M4-22's).
-  quadruped: { patrol: 3, chase: 8, stairs: true, fly: 0, zh: '四足机器人', en: 'Quadruped', hp: 150, weapon: 'prod' },
+  quadruped: { patrol: 1.8, chase: 5, stairs: true, fly: 0, zh: '四足机器人', en: 'Quadruped', hp: 150, weapon: 'prod' },
   // Armoured (its plates take a tenth of a hit: ZONES) and armed with a rifle (M4-18).
-  humanoid: { patrol: 2.5, chase: 4.5, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 300, weapon: 'rifle' },
+  humanoid: { patrol: 1.8, chase: 3.6, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 300, weapon: 'rifle' },
   // A street heavy (M4-26b, U-038): a 3 m walker on the main streets, heavily armoured, a rotary cannon on its arm.
   heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
-  drone: { patrol: 9, chase: 9, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 40 },
+  drone: { patrol: 5, chase: 8, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 25 },
   // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
   spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 4000, weapon: 'cannon' },
   colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
   heli: { patrol: 22, chase: 22, stairs: true, fly: 60, zh: '运兵直升机', en: 'Helicopter', hp: 2500 },
-  crawler: { patrol: 3, chase: 7, stairs: true, fly: 0, zh: '蛛形无人机', en: 'Crawler drone', hp: 60, weapon: 'prod' },
+  crawler: { patrol: 2, chase: 4.5, stairs: true, fly: 0, zh: '蛛形无人机', en: 'Crawler drone', hp: 60, weapon: 'prod' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
   hunter: { patrol: 12, chase: 12, stairs: true, fly: 30, zh: '猎杀无人机', en: 'Hunter drone', hp: 70, weapon: 'smg' },
   // Strike drones (M4-47, U-050), kept on the docks and sent when a district's had him in sight too long: a kamikaze
@@ -53,7 +53,7 @@ export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; ba
   drone: { rotors: 20 }, hunter: { rotors: 30 }, bomber: { rotors: 20 },
 };
 /** A downed drone's blast (M4-62): how far it hurts and how much at its heart, and how far it's heard. */
-export const CRASH = { reach: 4, damage: 35, noise: 60 };
+export const CRASH = { reach: 4, damage: 35, noise: 60, /** a patrol drone's fall, heard (m) */ clatter: 15 };
 
 /** The fixed sensors (M4-11, DESIGN section 7): a motion sensor's cone and reach and the movement it notices (his
  *  speed times how his posture shows him, so a crawl slides under it). */

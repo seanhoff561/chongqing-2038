@@ -57,7 +57,7 @@ export class Audio {
       src.connect(band).connect(gain).connect(this.bus.effects); src.start();
       this.wind = { gain, band };
     }
-    this.wind.gain.gain.setTargetAtTime(level * 0.5, ctx.currentTime, 0.08);
+    this.wind.gain.gain.setTargetAtTime(level * 0.15, ctx.currentTime, 0.08);
     this.wind.band.frequency.setTargetAtTime(300 + level * 1500, ctx.currentTime, 0.08);
   }
 
@@ -73,9 +73,11 @@ export class Audio {
 
   /** A place a sound comes from (M4-33): heard round his head, fading with distance (by `rolloff`: 1 is half at twice
    *  5 m, and so on; the machines' own sounds fall off faster, U-067). */
-  panner(rolloff = 1): PannerNode {
+  panner(rolloff = 1, hrtf = true): PannerNode {
     const p = this.ctx!.createPanner();
-    p.panningModel = 'HRTF'; p.distanceModel = 'inverse'; p.refDistance = 5; p.rolloffFactor = rolloff; p.maxDistance = 10000;
+    // (HRTF for the held voices; a one-off's cheaper equal-power: dozens of HRTF panners at once in a firefight
+    // choked the audio, U-076.)
+    p.panningModel = hrtf ? 'HRTF' : 'equalpower'; p.distanceModel = 'inverse'; p.refDistance = 5; p.rolloffFactor = rolloff; p.maxDistance = 10000;
     p.connect(this.bus.effects);
     return p;
   }
@@ -83,7 +85,7 @@ export class Audio {
   /** A one-off sound's place: a panner there, let go once the sound is over; heard through a wall (U-067), dull and
    *  a third as loud. */
   spot(q: { x: number; y: number; z: number }, hold = 4, rolloff = 1, walled = false): AudioNode {
-    const p = this.panner(rolloff), t = this.ctx!.currentTime;
+    const p = this.panner(rolloff, false), t = this.ctx!.currentTime;
     if (p.positionX) { p.positionX.setValueAtTime(q.x, t); p.positionY.setValueAtTime(q.y, t); p.positionZ.setValueAtTime(q.z, t); } else p.setPosition(q.x, q.y, q.z);
     let into: AudioNode = p;
     if (walled) { const lp = this.ctx!.createBiquadFilter(), g = this.ctx!.createGain(); lp.type = 'lowpass'; lp.frequency.value = 450; g.gain.value = 0.3; lp.connect(g).connect(p); into = lp; setTimeout(() => lp.disconnect(), hold * 1000); }
@@ -91,14 +93,12 @@ export class Audio {
     return into;
   }
 
+  /** Every sound stopped (dead: U-077), or back. */
+  mute(on: boolean) { if (this.ctx) this.master.gain.setValueAtTime(on ? 0 : this.volumes.master, this.ctx.currentTime); }
+
   /** Under water every sound comes dull and low; out of it, clear again at once. */
   setUnderwater(on: boolean) {
     if (this.ctx) this.muffle.frequency.value = on ? 500 : 22000;
-  }
-
-  /** A recording fetched and decoded (U-070), or null if it can't be had. */
-  async load(url: string): Promise<AudioBuffer | null> {
-    try { const r = await fetch(url); return r.ok ? await this.ctx!.decodeAudioData(await r.arrayBuffer()) : null; } catch { return null; }
   }
 
   /** The shared noise, looping for good (a wind's, the rain's hiss). */

@@ -13,7 +13,7 @@ export default async function ({ open, fail }) {
       const g = window.__cq.game, w = g.world, units = g.view.world.children.length;
       ${how}
       const t = performance.now();
-      document.querySelector(${how.includes('kill') ? "'#death .d-new'" : "'#pause [data-a=newrun]'"}).click();
+      ${how.includes('kill') ? "window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' })); // (dead, Esc: U-077)" : "document.querySelector('#pause [data-a=newrun]').click();"}
       ${how.includes('kill') ? '' : "document.querySelector('#pause [data-a=newrun]').click();"}
       const ms = performance.now() - t;
       g.runFrames(2);

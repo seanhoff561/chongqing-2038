@@ -43,7 +43,10 @@ export class Hud {
    *  for as long as it takes to read. */
   say(zh: string, en: string, speaker = '') {
     const esc = (t: string) => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
-    this.queue.push({ html: `${speaker ? `<b>${esc(speaker)}</b> ` : ''}${esc(zh)}${en ? `<br><span>${esc(en)}</span>` : ''}`, secs: 1.5 + [...zh].length * 0.18 });
+    const html = `${speaker ? `<b>${esc(speaker)}</b> ` : ''}${esc(zh)}${en ? `<br><span>${esc(en)}</span>` : ''}`;
+    // A short message takes the place of the one showing, at once, and goes soon (U-077); lines of dialogue queue.
+    if (!speaker && !en) { this.queue = [{ html, secs: Math.min(2.5, 1 + [...zh].length * 0.03) }]; this.left = 0; return; }
+    this.queue.push({ html, secs: 1.5 + [...zh].length * 0.18 });
   }
   /** Every frame: the next subtitle when this one's time is up. */
   tick(dt: number) {

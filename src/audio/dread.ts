@@ -50,9 +50,7 @@ export class Dread {
   private on = false;
   private eye!: { gain: GainNode; pan: PannerNode };
   private grind!: { gain: GainNode; pan: PannerNode };
-  private swarm!: GainNode;
   private sayIn = 8;
-  private marchIn = 0;
   private lookIn = 0;
   constructor(private a: Audio) {}
 
@@ -71,19 +69,15 @@ export class Dread {
       this.lookIn = 0.1;
       // Its eye on him: the throb and whine from the watcher, louder as it makes him out.
       const e = watcher(s.units);
-      this.eye.gain.gain.setTargetAtTime(0.25 * e.level * e.level, t, 0.3);
+      this.eye.gain.gain.setTargetAtTime(0.12 * e.level * e.level, t, 0.3);
       if (e.u) place(this.eye.pan, unitPose(w, e.u, s.time), t);
       // Close up: the nearest walker's servos grinding.
       const nd = near ? Math.hypot(near.x - head.x, near.y - head.y, near.z - head.z) : DREAD.close;
-      this.grind.gain.gain.setTargetAtTime(nd < DREAD.close ? 0.35 * (1 - nd / DREAD.close) : 0, t, 0.15);
+      this.grind.gain.gain.setTargetAtTime(nd < DREAD.close ? 0.15 * (1 - nd / DREAD.close) : 0, t, 0.15);
       if (near) place(this.grind.pan, near, t);
-      // High alert: the swarm far off all round.
-      this.swarm.gain.setTargetAtTime(0.06 * Math.max(0, A - 0.3) / 0.7, t, 1);
     }
-    // The broadcasts: a clipped, inhuman voice, now and then.
-    if ((this.sayIn -= dt) <= 0) { this.sayIn = 10 + Math.random() * 14; if (A > 0.5) this.say(t, A); }
-    // Footfalls marching somewhere near, closing in.
-    if ((this.marchIn -= dt) <= 0) { this.marchIn = 0.55; if (A > 0.7) a.tone(t, 0.25, 0.05 * A, 70, 40, 'sine', this.swarm); }
+    // The broadcasts: a clipped, inhuman voice, now and then. (No held swarm or march since U-077.)
+    if ((this.sayIn -= dt) <= 0) { this.sayIn = 35 + Math.random() * 40; if (A > 0.5) this.say(t, A); }
   }
 
   private build() {
@@ -101,11 +95,6 @@ export class Dread {
     band.type = 'bandpass'; band.frequency.value = 900; band.Q.value = 1.5; gr.gain.value = 0;
     chop.connect(depth).connect(vca.gain); o.connect(vca).connect(band).connect(gr).connect(gp); o.start(); chop.start();
     this.grind = { gain: gr, pan: gp };
-    // The swarm: noise in a low band, its loudness fluttering like rotors.
-    const n = a.loop(), sb = ctx.createBiquadFilter(), flut = ctx.createOscillator(), fd = ctx.createGain(), sv = ctx.createGain();
-    sb.type = 'bandpass'; sb.frequency.value = 260; sb.Q.value = 2; flut.frequency.value = 13; fd.gain.value = 0.4; sv.gain.value = 0.6;
-    this.swarm = ctx.createGain(); this.swarm.gain.value = 0;
-    flut.connect(fd).connect(sv.gain); n.connect(sb).connect(sv).connect(this.swarm).connect(a.bus.ambience); flut.start();
   }
 
   /** It has noticed him: its head's ratchet and a rising ping, from there. */

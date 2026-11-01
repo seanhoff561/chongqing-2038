@@ -45,10 +45,10 @@ onInteract('door', {
     const key = it.data?.key as string | undefined;
     if (key && !s.wstate.unlocked?.[it.id] && !has(s.inv.pack, key)) return 'locked';
     const lock = lockOf(s, it);
-    if (lock === 'collapsed') return 'collapsed: rubble fills the doorway';
+    if (lock === 'collapsed') return 'collapsed';
     // A chain through the handles: the crowbar prises it, bolt cutters cut it; a lock is wrenched out with the crowbar.
-    if (lock === 'chained' && !has(s.inv.pack, 'crowbar') && !has(s.inv.pack, 'boltcutters')) return 'chained shut: a crowbar or bolt cutters would do it';
-    if (lock === 'locked' && !key && !has(s.inv.pack, 'crowbar')) return 'locked: a crowbar would force it';
+    if (lock === 'chained' && !has(s.inv.pack, 'crowbar') && !has(s.inv.pack, 'boltcutters')) return 'chained shut';
+    if (lock === 'locked' && !key && !has(s.inv.pack, 'crowbar')) return 'locked';
     return null;
   },
   // A locked, jammed or chained door is forced: held, and loud.

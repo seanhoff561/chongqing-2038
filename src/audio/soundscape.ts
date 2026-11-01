@@ -10,7 +10,6 @@ import { Breath } from './breath';
 import { Music } from './music';
 import { machineShot, echo } from './gunfire';
 import { gunshot, raidSiren } from './moves';
-import { loadSamples, samplesLoaded } from './samples';
 import { raycast } from '../world/geom';
 import type { World } from '../world/world';
 import type { SimEvent, SimState } from '../sim/types';
@@ -27,6 +26,8 @@ export class Soundscape {
   /** where he is, looked at twice a second, and whether there's cover over him */
   env: { where: Where; covered: boolean; height: number } = { where: 'street', covered: false, height: 0 };
   private envIn = 0;
+  private shotsAt = 0;
+  private shots = 0;
   private raidIn = 0;
   /** raid sirens sounded (M4-63) */
   raidSirens = 0;
@@ -43,7 +44,6 @@ export class Soundscape {
   /** Every frame, his head the camera; under the ground or the water. */
   update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean) {
     const head = cam.position;
-    loadSamples(this.a);
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
     this.ambience.update(dt, { ...this.env, hour: (s.time / 3600) % 24, rain: s.weather.rain });
     // The music for where he is (M4-86): high up, in the streets, underground.
@@ -52,13 +52,10 @@ export class Soundscape {
     this.dread.update(dt, s, w, head, this.voices.nearest(head));
     // The raid breaking in on him: its siren, loud, through the 10 s (M4-63).
     if (s.raid && (this.raidIn -= dt) <= 0) { this.raidIn = 0.8; raidSiren(this.a); this.raidSirens++; }
-    // His own breath and heart (M4-55): spent, hurt, or frightened by the city's alert.
+    // His own breath and heart (M4-55): spent, or badly hurt (U-077).
     const p = s.player;
-    this.breath.update(dt, p.endurance, s.body.hp, this.dread.alert, Math.hypot(p.vel.x, p.vel.z), CLIMBING.has(p.mode));
+    this.breath.update(dt, p.endurance, s.body.hp, Math.hypot(p.vel.x, p.vel.z), CLIMBING.has(p.mode));
   }
-
-  /** How many recordings have loaded (M4-98). */
-  get recorded() { return samplesLoaded(); }
 
   /** His pistol fired: its report, and unsuppressed, its echoes off what's round him. */
   fired(quiet: boolean) {
@@ -70,6 +67,11 @@ export class Soundscape {
   shot(e: Extract<SimEvent, { t: 'shot' }>, w: World, head: THREE.Vector3) {
     const d = Math.hypot(e.x - head.x, e.y - head.y, e.z - head.z);
     if (d > 400 || !this.a.ready) return;
+    // (No more than a few shots voiced in any tenth of a second, the nearest first come: a firefight's every round
+    // each its own sounds was too much for the audio, U-076. A near miss's crack always.)
+    const t = this.a.ctx!.currentTime;
+    if (t - this.shotsAt > 0.1) { this.shotsAt = t; this.shots = 0; }
+    if (++this.shots > 3 && !e.crack) return;
     const walls = d > 0.5 && !!raycast(w.index, e.x, e.y + 1, e.z, (head.x - e.x) / d, (head.y - e.y - 1) / d, (head.z - e.z) / d, d - 0.5);
     machineShot(this.a, e, d, !!e.crack, walls, this.env.where);
   }

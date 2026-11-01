@@ -1,6 +1,5 @@
 // Movement sound cues (U-004): every parkour action has one fixed, recognisable sound.
 import type { Audio } from './audio';
-import { loadSamples, playSample } from './samples';
 
 type Play = (a: Audio, t: number) => void;
 
@@ -52,6 +51,9 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   // steel locker's clang, a crate's lid scraping up, a fridge's seal letting go, a car boot's catch, a bag's rustle;
   // a door's latch, a grate's cold iron under his hands, a first blow at a window, stones shifting, springs, a knock.
   'open-drawer': (a, t) => { a.noise(t, 0.22, 0.14, 'bandpass', 1400, 1.5, 900); a.tone(t + 0.2, 0.05, 0.12, 300, 180, 'triangle'); },
+  // A tap turned (M4-96), and the water running from it.
+  tap: (a, t) => { a.tone(t, 0.09, 0.08, 1400, 1700, 'square'); a.noise(t, 0.05, 0.08, 'bandpass', 3000, 3); },
+  'water-run': (a, t) => { a.noise(t + 0.1, 1.4, 0.12, 'bandpass', 1800, 0.8, 1300); a.noise(t + 0.1, 1.4, 0.06, 'highpass', 4500, 0.7); },
   'open-wardrobe': (a, t) => { a.noise(t, 0.05, 0.12, 'highpass', 2200); a.noise(t + 0.04, 0.55, 0.07, 'bandpass', 700, 6, 450); a.tone(t + 0.06, 0.5, 0.035, 330, 240, 'sawtooth'); },
   'open-cabinet': (a, t) => { a.noise(t, 0.04, 0.12, 'highpass', 2500); a.noise(t + 0.03, 0.4, 0.06, 'bandpass', 900, 6, 600); a.tone(t + 0.05, 0.35, 0.03, 420, 300, 'sawtooth'); },
   'open-locker': (a, t) => { a.tone(t, 0.04, 0.2, 900, 600, 'square'); a.tone(t + 0.05, 0.6, 0.18, 410, 395, 'triangle'); a.tone(t + 0.05, 0.5, 0.08, 1130, 1100); a.noise(t + 0.05, 0.08, 0.2, 'highpass', 2000); },
@@ -66,7 +68,6 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   rubble: (a, t) => { for (let i = 0; i < 5; i++) a.noise(t + i * 0.09 + (i % 2) * 0.03, 0.12, 0.16, 'bandpass', 500 + i * 150, 2, 300); a.tone(t, 0.1, 0.2, 900, 850, 'triangle'); },
   springs: (a, t) => { a.noise(t, 0.2, 0.08, 'lowpass', 700); for (let i = 0; i < 3; i++) a.tone(t + i * 0.06, 0.12, 0.03, 900 + i * 140, 820, 'sawtooth'); },
   knock: (a, t) => { for (let i = 0; i < 2; i++) { a.tone(t + i * 0.16, 0.07, 0.25, 260, 140, 'triangle'); a.noise(t + i * 0.16, 0.03, 0.1, 'bandpass', 1500, 2); } },
-  drop: (a, t) => { a.noise(t, 0.08, 0.12, 'lowpass', 900); a.tone(t, 0.05, 0.05, 160, 90); },
   glass: (a, t) => { a.noise(t, 0.5, 0.45, 'highpass', 3500, 0.7, 7000); for (let i = 0; i < 5; i++) a.tone(t + 0.05 + i * 0.04, 0.06, 0.08, 3800 + i * 600, 3000, 'sine'); },
   // A rocket's launch and roar (M4-65).
   rocket: (a, t) => { a.noise(t, 0.12, 0.7, 'highpass', 900); a.noise(t + 0.05, 1.2, 0.35, 'bandpass', 700, 0.6, 300); a.tone(t, 0.3, 0.3, 90, 40); },
@@ -89,10 +90,7 @@ export const MOVE_SOUNDS: Record<string, Play> = {
 
 export function playMove(a: Audio, id: string) {
   const f = MOVE_SOUNDS[id];
-  if (!a.ready) return;
-  // A recording if there's one (M4-98), else the synthesised sound.
-  loadSamples(a);
-  if (playSample(a, id) || !f) return;
+  if (!f || !a.ready) return;
   f(a, a.ctx!.currentTime + 0.005);
 }
 
@@ -110,7 +108,7 @@ export function footfall(a: Audio, kind: string, out: AudioNode, gain = 0.5) {
   if (!a.ready) return;
   const t = a.ctx!.currentTime + 0.005, g = gain;
   if (kind === 'humanoid') { a.tone(t, 0.08, 0.3 * g, 110, 60, 'sine', out); a.noise(t, 0.05, 0.18 * g, 'bandpass', 900, 1.2, undefined, out); }
-  else if (kind === 'quadruped') { a.tone(t, 0.07, 0.3 * g, 150, 85, 'sine', out); a.noise(t, 0.06, 0.12 * g, 'lowpass', 700, 1, undefined, out); a.noise(t + 0.02, 0.012, 0.03 * g, 'highpass', 4000, 1, undefined, out); }
+  else if (kind === 'quadruped') { a.tone(t, 0.07, 0.12 * g, 130 + Math.random() * 40, 80, 'sine', out); a.noise(t, 0.06, 0.05 * g, 'lowpass', 600 + Math.random() * 300, 1, undefined, out); }
   else if (kind === 'heavy') { a.tone(t, 0.3, 0.7 * g, 70, 35, 'sine', out); a.noise(t, 0.2, 0.3 * g, 'lowpass', 400, 1, undefined, out); a.tone(t + 0.05, 0.25, 0.12 * g, 300, 450, 'sawtooth', out); }
   else if (kind === 'spider') { a.noise(t, 0.03, 0.4 * g, 'highpass', 2500, 1, undefined, out); a.tone(t, 0.06, 0.25 * g, 900, 500, 'triangle', out); a.noise(t + 0.04, 0.35, 0.12 * g, 'bandpass', 5000, 2, 3000, out); }
   else { a.tone(t, 0.9, 0.9 * g, 48, 24, 'sine', out); a.noise(t, 0.6, 0.45 * g, 'lowpass', 220, 1, 90, out); a.tone(t + 0.1, 0.8, 0.1 * g, 180, 120, 'sawtooth', out); }

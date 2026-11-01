@@ -18,10 +18,28 @@ export function canTake(kind: UnitKind | 'street', e: [number, number, number], 
   return true;
 }
 
+/** Each nav graph's points with a way out, bucketed by 16 m cell (made once, on first use): looking through every point
+ *  in the city for the nearest was most of a fight's cost (U-076). */
+const CELL = 16, grids = new WeakMap<Nav, Map<number, number[]>>();
+const key = (i: number, j: number) => i * 65536 + j;
+function gridOf(nav: Nav) {
+  let g = grids.get(nav);
+  if (g) return g;
+  g = new Map();
+  nav.pts.forEach((q, i) => { if (!nav.adj[i].length) return; const k = key(Math.floor(q.x / CELL), Math.floor(q.z / CELL)); const c = g!.get(k); if (c) c.push(i); else g!.set(k, [i]); });
+  grids.set(nav, g);
+  return g;
+}
+
 /** The nav point nearest a place, within r, that has a way out of it. */
 export function nearestNav(nav: Nav, p: V3, r = 60): number {
+  const g = gridOf(nav), ci = Math.floor(p.x / CELL), cj = Math.floor(p.z / CELL), n = Math.ceil(r / CELL);
   let best = -1, bd = r;
-  nav.pts.forEach((q, i) => { const d = Math.hypot(q.x - p.x, q.z - p.z) + Math.abs(q.y - p.y) * 2; if (nav.adj[i].length && d < bd) { bd = d; best = i; } });
+  for (let di = -n; di <= n; di++) for (let dj = -n; dj <= n; dj++) {
+    const c = g.get(key(ci + di, cj + dj));
+    if (!c) continue;
+    for (const i of c) { const q = nav.pts[i], d = Math.hypot(q.x - p.x, q.z - p.z) + Math.abs(q.y - p.y) * 2; if (d < bd) { bd = d; best = i; } }
+  }
   return best;
 }
 

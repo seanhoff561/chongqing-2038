@@ -54,7 +54,7 @@ export class FPCamera {
     this.sprint += ((sprinting ? 1 : 0) - this.sprint) * (1 - Math.exp(-6 * dt));
     // Falling fast (M4-66): the view pulls wider and shakes with the rush.
     const rush = p.mode === 'air' ? Math.max(0, Math.min(1, (-p.vel.y - 8) / 18)) : 0;
-    this.fov += (this.baseFov * (1 - 0.38 * this.zoom) + this.sprint * 9 + rush * 12 - this.fov) * k;
+    this.fov += (this.baseFov * (1 - 0.38 * this.zoom) + this.sprint * 9 + rush * 5 - this.fov) * k;
     if (Math.abs(this.cam.fov - this.fov) > 0.01) { this.cam.fov = this.fov; this.cam.updateProjectionMatrix(); }
     const limpDip = this.limp * (walking ? Math.max(0, Math.sin(this.bob)) * 0.09 : 0);
     const bobAmp = amp * (1 + this.sprint * 0.8);
@@ -62,7 +62,7 @@ export class FPCamera {
     const out = bx + this.lean * LEAN.out;
     this.cam.position.set(pos.x + Math.cos(yaw) * out, pos.y + this.eye + by - this.dip - Math.abs(this.lean) * LEAN.dip, pos.z - Math.sin(yaw) * out);
     // (The pistol's kick lifts the view as it lifts his aim: M4-21.)
-    const shake = rush * 0.012 * Math.sin(performance.now() * 0.05);
+    const shake = rush * 0.003 * Math.sin(performance.now() * 0.05);
     this.cam.rotation.set(pitch + p.kick - this.sprint * 0.04 + Math.sin(this.tumble) * 0.5 * Math.min(1, this.tumble) + shake, yaw, this.roll + limpDip * 0.4 + Math.sin(this.bob) * 0.006 * this.sprint + Math.sin(this.tumble * 0.7) * 0.6 * Math.min(1, this.tumble));
   }
 

@@ -19,7 +19,8 @@ export const SILENT = { after: 12, find: 6, cap: 40 };
 export function stepSilent(s: SimState, w: World) {
   if (s.tick % 6) return;
   for (const u of s.units) {
-    const off = isOff(s, u);
+    // (Kept back at a new run's start isn't silenced: it just isn't out yet, U-075.)
+    const off = isOff(s, u) && !(u.quiet !== undefined && s.time < u.quiet);
     if (off && !u.out) {
       u.out = true;
       const p = unitPose(w, u, s.time);

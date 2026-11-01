@@ -8,14 +8,13 @@ import { solid } from '../../src/world/geom';
 describe('ambience (M4-51)', () => {
   it('changes with where he is, the hour and the rain', () => {
     const at = (where: Parameters<typeof mix>[0]['where'], hour = 12, rain = 0, covered = false) => mix({ where, hour, rain, covered });
-    expect(at('roof').wind).toBeGreaterThan(at('street').wind * 2);
-    expect(at('alley').wind).toBeLessThan(at('street').wind);
+    expect(at('roof').far).toBeGreaterThan(at('street').far);
+    expect(at('alley').far).toBeLessThan(at('street').far);
     expect(at('under').muffle).toBeLessThan(2000);
     expect(at('indoors').muffle).toBeLessThan(2000);
     expect(at('street').muffle).toBeGreaterThan(15000);
     expect(at('under').drone).toBe(0);
-    // By night the hum sinks and the far machinery thins.
-    expect(at('street', 2).hum).toBeLessThan(at('street', 12).hum);
+    // By night the far machinery thins.
     expect(at('street', 2).far).toBeLessThan(at('street', 12).far);
     // Rain: hiss and ticks out in it (most on a roof), dripping under cover, muffled indoors, nothing underground.
     expect(at('street', 12, 1).rain).toBe(1);

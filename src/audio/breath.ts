@@ -1,6 +1,5 @@
-// His breath and heartbeat (M4-55, U-051). Spent (his grip worn out, or running and climbing hard), hurt, or
-// terrified, he breathes hard and his heart pounds in his ears, louder and faster the worse it is; calm and whole,
-// neither is heard.
+// His breath and heartbeat (M4-55, U-051, U-077). Spent (his grip worn out, or running and climbing hard) he breathes
+// hard; badly hurt, his sight going dark at the edges, his heart pounds in his ears; otherwise neither is heard.
 import type { Audio } from './audio';
 
 /** His effort: up while he runs hard or hangs and climbs, down at rest (a second's worth each way). */
@@ -11,12 +10,16 @@ export function stepEffort(effort: number, dt: number, speed: number, holding: b
   return speed > EFFORT.run || holding ? Math.min(1, effort + EFFORT.rise * dt) : Math.max(0, effort - EFFORT.fall * dt);
 }
 
-/** How hard he breathes and how his heart pounds, 0 to 1: from his grip's endurance (of 100), his health (of 100),
- *  the city's alert (0 to 1) and his effort. */
-export function strainOf(endurance: number, hp: number, alert: number, effort: number) {
-  const spent = Math.max(effort, 1 - endurance / 100), hurt = Math.max(0, Math.min(1, (60 - hp) / 50)), fear = alert;
-  return { breath: Math.min(1, Math.max(spent, hurt * 0.7, fear * 0.6)), heart: Math.min(1, Math.max(hurt, fear * 0.85, spent * 0.6)) };
+/** How hard he breathes and how his heart pounds, 0 to 1: from his grip's endurance (of 100), his health (of 100) and
+ *  his effort. */
+export function strainOf(endurance: number, hp: number, effort: number) {
+  // (Since U-077 the heart only when he's badly hurt, his sight going dark at the edges; the breath only when he's
+  // spent.)
+  const spent = Math.max(effort, 1 - endurance / 100), hurt = Math.max(0, Math.min(1, (BADLY - hp) / 22));
+  return { breath: Math.min(1, spent > 0.6 ? spent : 0), heart: hurt > 0 ? Math.min(1, 0.35 + hurt) : 0 };
 }
+/** How low his health must be (of 100) for his heart to be heard. */
+export const BADLY = 30;
 
 export class Breath {
   /** the levels just now */
@@ -27,9 +30,9 @@ export class Breath {
   private inhale = true;
   constructor(private a: Audio) {}
 
-  update(dt: number, endurance: number, hp: number, alert: number, speed: number, holding: boolean) {
+  update(dt: number, endurance: number, hp: number, speed: number, holding: boolean) {
     this.effort = stepEffort(this.effort, dt, speed, holding);
-    const L = (this.level = strainOf(endurance, hp, alert, this.effort)), a = this.a;
+    const L = (this.level = strainOf(endurance, hp, this.effort)), a = this.a;
     if (!a.ready) return;
     const t = a.ctx!.currentTime;
     // Breaths: in and out, quicker and louder the harder; nothing heard while he's easy.

@@ -302,16 +302,12 @@ function land(state: SimState, idx: SolidIndex) {
   // (A big fall's landing keeps the roll's sound, U-055.)
   if (h > 0.4) sfx(state, h > 3 ? 'roll' : h > M.noise.landMinH ? 'land-hard' : 'land');
   p.fallFrom = p.pos.y;
-  // Thrown by a blast, he lands down and lies a moment (M4-64); a big fall leaves him down a while, a hurting one
-  // buckles his knees (M4-66).
+  // Thrown by a blast, he lands down and lies a moment (M4-64). (A big fall no longer puts him on his side: U-078.)
   if (p.knock) { p.knock = false; p.mode = 'down'; p.down = KNOCK.down; }
-  else if (outcome.fracture && !outcome.lethal) { p.mode = 'down'; p.down = FALL_FEEL.down; }
-  else if (h > M.falls.safe) { p.mode = 'down'; p.down = FALL_FEEL.stumble; }
 }
 
-/** How a hard landing feels (M4-66): a big one leaves him down `down` s, a hurting one stumbling `stumble` s; the wind in
- *  his ears from falling `windFrom` m/s to full at `windFull`. */
-export const FALL_FEEL = { down: 2.5, stumble: 0.5, windFrom: 5, windFull: 27 };
+/** The wind in his ears falling (M4-66): from `windFrom` m/s to full at `windFull`. */
+export const FALL_FEEL = { windFrom: 5, windFull: 27 };
 /** The wind's level, 0 to 1, by how fast he's falling (his vertical speed, down negative). */
 export const windOf = (vy: number) => Math.max(0, Math.min(1, (-vy - FALL_FEEL.windFrom) / (FALL_FEEL.windFull - FALL_FEEL.windFrom)));
 

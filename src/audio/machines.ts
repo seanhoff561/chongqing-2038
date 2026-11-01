@@ -14,11 +14,13 @@ import { raycast } from '../world/geom';
 type V3 = { x: number; y: number; z: number };
 /** The speed of sound, m/s; how many rotors are heard at once; how far each kind is heard, m; how often the nearest are
  *  picked again, s. */
-const HEAR = { sound: 343, rotors: 6, rotor: 110, step: 35, giant: 100, walkers: 6, every: 0.4, /** how fast their sounds fall off (U-067) */ rolloff: 2 };
+// (Far fewer and quieter since U-077: the machines were a constant din. Two rotors at most, near; three walkers.)
+const HEAR = { sound: 343, rotors: 2, rotor: 60, step: 25, giant: 90, walkers: 3, every: 0.4, /** how fast their sounds fall off (U-067) */ rolloff: 2 };
 /** A rotor's note by kind: its blade hum (Hz) and how loud it is. */
-const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.2 }, hunter: { f: 190, gain: 0.28 }, fpv: { f: 430, gain: 0.5 }, bomber: { f: 110, gain: 0.4 }, heli: { f: 62, gain: 0.9 } };
+const ROTOR: Partial<Record<UnitKind, { f: number; gain: number }>> = { drone: { f: 150, gain: 0.08 }, hunter: { f: 190, gain: 0.12 }, fpv: { f: 430, gain: 0.4 }, bomber: { f: 110, gain: 0.25 }, heli: { f: 62, gain: 0.7 } };
 /** Metres between a walker's footfalls. */
-const STEP: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, spider: 0.7, colossus: 2.6, quadruped: 0.45 };
+// (A dog's soft pad only every few strides: their quick steps' sound was a grating repeat, U-075.)
+const STEP: Partial<Record<UnitKind, number>> = { humanoid: 3, heavy: 2.4, spider: 2.8, colossus: 2.6, quadruped: 4 };
 const GIANT = new Set<UnitKind>(['heavy', 'spider', 'colossus']);
 
 type Voice = { osc: OscillatorNode; osc2: OscillatorNode; gain: GainNode; lp: BiquadFilterNode; pan: PannerNode; u: Unit | null; f: number; d: number; /** how loud it's set to be */ g: number };
@@ -28,6 +30,8 @@ export class MachineVoices {
   private walkers: { u: Unit; at: V3 | null; run: number }[] = [];
   private pickIn = 0;
   private beepIn = 0;
+  /** the camera that last beeped at him, while he's still near it */
+  private beeped: object | null = null;
   constructor(private a: Audio) {}
 
   /** Every frame: his head where the camera is; the nearest machines picked now and then, their sounds placed. */
@@ -55,20 +59,23 @@ export class MachineVoices {
       const step = STEP[k.u.kind]!;
       if (k.run < step) continue;
       k.run %= step;
-      footfall(a, k.u.kind, a.spot(q, 4, HEAR.rolloff, walled(w, head, q, 1)), GIANT.has(k.u.kind) ? 1 : 0.5);
+      footfall(a, k.u.kind, a.spot(q, 4, HEAR.rolloff, walled(w, head, q, 1)), GIANT.has(k.u.kind) ? 0.8 : 0.3);
     }
-    // The nearest camera within 12 m beeps every 2.5 s, from where it hangs.
+    // A camera beeps once as he comes within 12 m of it, from where it hangs (not over and over: U-077).
     if ((this.beepIn -= dt) <= 0) {
-      this.beepIn = 2.5;
+      this.beepIn = 0.5;
       const c = w.cameras.filter(c => c.kind === 'camera' || c.kind === 'sweeper' || c.kind === 'lamppost').map(c => ({ c, d: Math.hypot(c.x - head.x, c.y - head.y, c.z - head.z) })).sort((x, y) => x.d - y.d)[0];
-      if (c && c.d < 12) beep(a, 0.25, a.spot(c.c));
+      const near = c && c.d < 12 ? c.c : null;
+      if (near && near !== this.beeped) beep(a, 0.2, a.spot(near));
+      this.beeped = near;
     }
   }
 
   /** The nearest walker heard, where it is. */
   nearest(head: V3): V3 | null {
     let best: V3 | null = null, bd = Infinity;
-    for (const k of this.walkers) if (k.at) { const d = Math.hypot(k.at.x - head.x, k.at.y - head.y, k.at.z - head.z); if (d < bd) { bd = d; best = k.at; } }
+    // (Not a dog: no servo grind off them, U-075.)
+    for (const k of this.walkers) if (k.at && k.u.kind !== 'quadruped') { const d = Math.hypot(k.at.x - head.x, k.at.y - head.y, k.at.z - head.z); if (d < bd) { bd = d; best = k.at; } }
     return best;
   }
 
