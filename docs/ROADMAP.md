@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 39 of 71 done
+## M4: 39 of 77 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -793,7 +793,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - At night the alley's neon lights the alley and throws its colour down the vent shaft into the chamber
   - By day daylight falls through the vent grate into the chamber; the chamber is no longer pitch dark
   - Screenshots of the chamber by day and by night, brighter than before (a luminance check)
-- [x] **M4-42** A roll key (U-050)
+- [-] **M4-42** A roll key (U-050)
   - A key of its own to roll: pressed just before or as he lands from a fall, he rolls and takes less fall damage from heights up to the roll's limit
   - It's in the controls list; a sim test lands a drop with and without the roll key and compares the damage
 - [x] **M4-43** Brighter lights at night (U-050)
@@ -802,6 +802,20 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-44** Every item use answers (U-050)
   - Using any item (left mouse with it in hand) either does something or says why it can't
   - A sim test uses every item in the catalogue, in hand on open ground, and each gives an effect or a message
+- [x] **M4-72** No roll: every fall lands as a roll did (U-054)
+  - The roll is gone (no roll key, no crouch-roll on landing); every fall is judged as a rolled one was: unhurt to 7 m, eased damage to 10 m, beyond that as before
+  - Sim test: a 6.5 m drop does nothing, a 9 m drop does the eased damage, with no key pressed
+  - U-055: the big fall's landing keeps the roll's sound
+- [ ] **M4-73** Wall kick by where he looks (U-055)
+  - A wall kick looking straight at the wall (level or below) only stalls him against it, a moment's pause in his fall; looking up a little and more sends him up it as before
+  - Sim test: the same kick looking level stalls (no gain in height), looking up 20 degrees gains height
+- [ ] **M4-74** Chimneying low, from the ground (U-055)
+  - While chimneying his body is as low as lying down (the crawl's height), so he fits the narrow, low gaps it's for
+  - He can start chimneying standing on the ground between two walls, not only in the air
+  - Sim test: from standing in a chimney gap he goes into it and up; his collision height there is the crawl's
+- [ ] **M4-75** Wall-runs that start when meant (U-055)
+  - Running along a wall and jumping beside it (Space again in the air while moving along it) starts a wall-run, not a kick off it; a kick only when he's heading into the wall
+  - Sim test: a sprint along a building's face and a jump runs along it, from several angles to it up to 35 degrees
 - [ ] **M4-69** A chalk bag, not climbing gloves (U-053)
   - Climbing gloves are gone; a chalk bag is found in their place (loot and the zipline's list of things to ride with drop them)
   - Chalked hands hold longer: hanging and pipes cost half while there's chalk in the bag, and it runs down with use
@@ -812,6 +826,13 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [ ] **M4-49** Quick opening, a circle filling (U-051)
   - Opening, searching and working things is quick: a circle fills round the crosshair at each thing's own speed (a drawer fast, a locked cabinet slower), instead of the bar
   - Each kind's time set in data; a sim test checks a drawer opens well under a second and harder things take longer; a screenshot of the circle
+- [ ] **M4-70** Item pictures in the backpack (U-054)
+  - Every item shows a picture in the grid drawn to its own footprint (a 1x3 crowbar long, a 2x2 kit square), turned with it, readable at a glance
+  - A screenshot of a full backpack
+- [ ] **M4-71** Take all and shift-click (U-054)
+  - A container's window has 'take all', moving everything that fits into the backpack
+  - Shift-click on an item moves it across at once (container to backpack, backpack to an open container), placed where it fits
+  - An e2e test of both
 - [ ] **M4-68** Holding things like a person (U-052)
   - The pistol is held as in a modern shooter's viewmodel: gripped in the right hand with the left wrapped under it, arms in from the lower right, raised to the sights to aim; the knife, crowbar and other tools held as a person holds them
   - Draw, idle sway, walking bob, firing recoil and reload motions; screenshots of each held item
