@@ -247,6 +247,16 @@ export function buildYuzhong(): World {
     world.inter.push({ id: `jbox${i}`, kind: 'jbox', x: c.box.x, y: c.box.y, z: c.box.z, r: 0.5, zh: '接线盒', en: 'Junction box', data: { cam: i } });
   });
   world.garages = placeGarages(world, home.at.spawn);
+  // Each shelter site's bed, table and containers (M6-24): what's in its rooms to claim, by where they stand.
+  const claim = new Map<string, Inter[]>(), cellOf = (x: number, z: number) => `${Math.floor(x / 8)},${Math.floor(z / 8)}`;
+  for (const it of world.inter) if (it.kind === 'mattress' || it.kind === 'table' || it.kind === 'container') { const k = cellOf(it.x, it.z); (claim.get(k) ?? claim.set(k, []).get(k)!).push(it); }
+  for (const s of world.sites) {
+    const round: Inter[] = [];
+    for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const it of claim.get(cellOf(s.x + i * 8, s.z + j * 8)) ?? []) if (Math.hypot(it.x - s.x, it.z - s.z) < 6 && Math.abs(it.y - s.y) < 1.6) round.push(it);
+    s.bed ??= round.find(i => i.kind === 'mattress')?.id ?? null;
+    s.table ??= round.find(i => i.kind === 'table')?.id ?? null;
+    if (!s.containers.length) s.containers = round.filter(i => i.kind === 'container').slice(0, 6).map(i => i.id);
+  }
   // No floor drawn over a hole (M4-82, U-060, U-066): a finish (a floor's tiles or boards, a roof's patch, moss, a
   // puddle) is drawn only where there's something under it to stand on: not over a stairwell, a trapdoor or a hole.
   world.decor = world.decor.flatMap(s => overSomething(world, s));
