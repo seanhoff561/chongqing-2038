@@ -1031,14 +1031,14 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 1 of 36 done
+## M5: 2 of 36 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
 - [x] **M5-17** Healing items
   - Bandage, tourniquet, splint, painkillers and first-aid kit behave as in DESIGN section 4 with use times
   - Sim tests cover each
-- [ ] **M5-35** Building types (U-091)
+- [x] **M5-35** Building types (U-091)
   - Buildings come in types rolled for each run: residential (about 70%, the current homes), office (about 25%), military (about 5%, rare, high security), and a few others; each like the current interiors but with its own wallpaper and floors, room sizes and furniture
   - Each type has its own loot pools: the rarer the type, the better its loot (offices: electronics and tools; military: weapons, ammunition, armour and the better technology), so a lucky early find can give him better technology
   - Military buildings are high security: more of their doors locked, cameras or sensors at their entrances
@@ -1061,9 +1061,10 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
 - [ ] **M5-05** Food checks
   - Scanned food shows its remaining shelf life or that it's spoiled; unscanned food shows nothing
   - A unit test covers it
-- [ ] **M5-06** Auto-map
-  - Visited 10 m cells are recorded with their level; the map page draws them top-down by layer
-  - The smoke test walks and sees explored cells
+- [ ] **M5-06** Auto-map: the whole city, filled in where he has been (U-096)
+  - The map page shows the whole city top-down from the start: every building's footprint, the districts named, his hideouts
+  - Visited 10 m cells are recorded with their level; round them the map fills in each building's type and the ways down; underground it shows the tunnels he's walked
+  - The smoke test sees the blank city before he's been anywhere, walks, and sees cells explored and buildings filled in
 - [ ] **M5-07** Binoculars and patrol logs
   - Binoculars zoom; watching a unit for 3 s logs its type, place, time and heading; repeated sightings draw its route on the map
   - A sim test covers it

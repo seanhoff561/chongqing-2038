@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 255 / 366 | Last done: M4-100
+Features done: 256 / 366 | Last done: M5-35
 <!-- /status -->
 
 ## Log
@@ -116,3 +116,4 @@ Features done: 255 / 366 | Last done: M4-100
 - M4-32 Pursuit escapes in the first district: pursuit scenarios and three escapes that break contact and outlast the search
 - M4-34 Delivery robots: delivery robots: wheeled rounds, never stairs, scared off route by loud noise
 - M4-100 Beyond the city's edge (U-077): beyond the city's edge: rivers, far towers lit at night, hills
+- M5-35 Building types (U-091): building types rolled for each run: homes, offices, clinics, workshops, military posts, each with its rooms, lining and loot

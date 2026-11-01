@@ -148,7 +148,7 @@ export class Game {
     const sc = scenarioByName(name);
     if (!sc) throw new Error(`unknown scenario ${name}`);
     this.scenario = sc;
-    this.world = getWorld(sc.world);
+    this.world = getWorld(sc.world, seed);
     this.state = createState(seed, this.world);
     if (sc.hour !== undefined) this.state.time = sc.hour * 3600;
     Object.assign(this.state.flags, sc.flags);

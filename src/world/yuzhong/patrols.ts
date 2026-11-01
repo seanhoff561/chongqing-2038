@@ -435,15 +435,17 @@ export function placeCameras(w: World): Camera[] {
     else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + Math.sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + Math.cos(p.yaw) * 0.2, yaw: p.yaw });
   }
   const near = (x: number, z: number) => DISTRICTS.some(k => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 400);
-  w.plots.filter(p => !p.far && p.route && p.route.length > 1 && near(p.route[0].x, p.route[0].z)).forEach((p, i) => {
-    if (i % 3) return;
+  w.plots.filter(p => !p.far && p.route && p.route.length > 1 && (near(p.route[0].x, p.route[0].z) || p.type === 'military')).forEach((p, i) => {
+    // (A military post's door always watched, its camera never idle: M5-35.)
+    const post = p.type === 'military';
+    if (i % 3 && !post) return;
     const [door, inside] = p.route!, dx = door.x - inside.x, dz = door.z - inside.z, d = Math.hypot(dx, dz) || 1;
     // (One in four idle, its light off, until the district's Heightened: M4-16.)
     // (Outside, on the wall over the door: just out from its face, so it watches the street and never the room behind:
     // U-084, it sat 0.6 m inside and saw into the building.)
     let k = 0.15;
     while (k < 1.5 && overlaps(w.index, { x0: door.x + (dx / d) * k - 0.08, y0: door.y + 2.6, z0: door.z + (dz / d) * k - 0.08, x1: door.x + (dx / d) * k + 0.08, y1: door.y + 2.9, z1: door.z + (dz / d) * k + 0.08 })) k += 0.1;
-    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), ...(i % 12 === 6 ? { dark: true } : {}) });
+    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), ...(i % 12 === 6 && !post ? { dark: true } : {}) });
   });
   // A turret at each main junction in the districts (M4-57), on the lamppost nearest it within 20 m, over its lamp,
   // looking along its street; none within 60 m of another.

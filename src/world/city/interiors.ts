@@ -8,13 +8,12 @@ import { MAT } from '../mats';
 import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
 import { FLOOR, WALL, SLAB, CORE, CORE_L, CORE_W } from './rooms';
 import { door, roll } from './access';
+import { TYPES } from './types';
 import { puzzle } from './puzzle';
 import { basement } from './basement';
 import type { Lot, Fabric } from './buildings';
 
 const HUT = 2.6;
-/** A street door's odds (U-066: few open freely): open, shut, locked, jammed, chained, collapsed. */
-const STREET_DOOR = [0.04, 0.08, 0.36, 0.1, 0.26, 0.16];
 /** How often a stairwell's blocked part-way up (U-069). */
 const STAIR_BLOCK = 0.4;
 
@@ -43,6 +42,9 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
   // The block, solid: its few rooms are carved out of it (its facade's painting kept whole across the cuts).
   const mass = solid(x0, base, z0, x1, wall, z1, look);
   mass.orig = { x0, y0: base, z0, x1, z1 };
+  // (Its walls inside lined as its type is: an office's plaster, a clinic's tiles, a post's bare concrete: M5-35.)
+  const inside = TYPES[l.type ?? 'residential'].inside;
+  if (inside !== undefined) mass.inside = inside;
   out.solids.push(mass);
   const decay = 0.3 + rand(r) * 0.7;
   // The main stairwell on some: a shaft up the corner from a lobby inside the street door (in the far wall, u = U)
@@ -56,7 +58,7 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
     cut(B(lobby[0], base, lobby[1], lobby[2], base + FLOOR - SLAB, lobby[3], 0));
     const doorCut = B(U - 0.01, base, doorV - 0.8, U + WALL + 0.05, base + 2.2, doorV + 0.8, 0);
     cut(doorCut);
-    door(nid('street'), B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), at(U + WALL / 2, doorV - 0.8), alongZ ? [1, 0] : [0, 1], 1.6, roll(r, STREET_DOOR), out);
+    door(nid('street'), B(U + WALL / 2 - 0.03, base, doorV - 0.8, U + WALL / 2 + 0.03, base + 2.2, doorV + 0.8, 0), at(U + WALL / 2, doorV - 0.8), alongZ ? [1, 0] : [0, 1], 1.6, roll(r, TYPES[l.type ?? 'residential'].door), out);
     // Landings at each floor, flights between, each two invisible ramps under visible steps (thin, so the flight
     // above leaves headroom): lane A rises along +u to the far landing, lane B comes back to the next floor's.
     const flight = (u0: number, v0: number, u1: number, v1: number, low: number, up: boolean) => {

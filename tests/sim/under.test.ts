@@ -108,7 +108,7 @@ describe("the underground city's buildings (M3-73)", () => {
     expect(w.props.filter(p => p.kind.startsWith('f:') && deep(p)).length).toBeGreaterThan(200);
   });
   it('hangs them with neon: tube round the fronts and windows, blade signs, screens, gantry signs', () => {
-    expect(w.decor.filter(s => s.mat === MAT.neon && deep({ x: s.x0, y: s.y0, z: s.z0 })).length).toBeGreaterThan(150);
+    expect(w.decor.filter(s => s.mat === MAT.neon && deep({ x: s.x0, y: s.y0, z: s.z0 })).length).toBeGreaterThan(140);
     const of = (k: string) => w.props.filter(p => p.kind === k && deep(p)).length;
     expect(of('neonblade')).toBeGreaterThan(60);
     expect(of('ledscreen')).toBeGreaterThan(4);

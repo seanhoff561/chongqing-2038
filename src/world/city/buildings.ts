@@ -5,6 +5,7 @@ import { MAT } from '../mats';
 import { makeRng, rand, randInt, hashString, type Rng } from '../../sim/rng';
 import type { Prop, Inter, Climbable, HideSpot, Site, Feature } from '../world';
 import { canEnter, hollow } from './interiors';
+import { typeOf, type BuildingType } from './types';
 import { facades } from './climb';
 import { details } from './details';
 import { fronts } from './fronts';
@@ -33,6 +34,8 @@ export interface Lot {
   route?: { x: number; y: number; z: number }[];
   /** the floor its stairwell's blocked going up from (U-069) */
   blocked?: number;
+  /** what it was, for this run (M5-35): its rooms, lining, doors and what's left in it */
+  type?: BuildingType;
   /** a tower's skyline: the highest roof round it (U-036); over it its walls hold more */
   sky?: number;
   /** its walls run straight up to its roof (a connection meets them): no setback at the top, no tower's shaft set
@@ -109,7 +112,7 @@ function mass(l: Lot, r: Rng, out: Fabric) {
   // Some tall solid blocks step their top two floors back from the edge.
   const step = !open && !l.edge && l.kind === 'res' && wall - base >= 24 && rand(r) < 0.25 ? 1.6 : 0;
   const m0 = out.solids.length;
-  if (open) hollow(l, r, out, look);
+  if (open) { l.type ??= typeOf(l.id); hollow(l, r, out, look); }
   else if (step) out.solids.push(solid(x0, base, z0, x1, wall - 2 * FLOOR, z1, look), solid(x0 + step, wall - 2 * FLOOR, z0 + step, x1 - step, wall, z1 - step, look));
   else out.solids.push(solid(x0, base, z0, x1, wall, z1, look));
   if (!open && !l.sheer) nooks(l, m0, r, out);

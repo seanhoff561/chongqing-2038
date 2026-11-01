@@ -40,7 +40,7 @@ export const FURNITURE = {
   rack: { w: 1.6, d: 0.5, h: 2.0, mat: MAT.metal },
 } as const;
 export type Piece = keyof typeof FURNITURE;
-export type Kind = 'living' | 'bedroom' | 'kitchen' | 'store' | 'shop' | 'restaurant' | 'workshop' | 'lobby' | 'office' | 'corridor';
+export type Kind = 'living' | 'bedroom' | 'kitchen' | 'store' | 'shop' | 'restaurant' | 'workshop' | 'lobby' | 'office' | 'corridor' | 'ward' | 'clinic' | 'barracks' | 'armory' | 'command';
 /** Each template's variants: the pieces along its walls; 'T' a table with stools out in the room. */
 const ROOMS: Record<Kind, (Piece | 'T')[][]> = {
   living: [['sofa', 'table', 'cabinet', 'shelf'], ['sofa', 'cabinet', 'chair', 'chair'], ['table', 'chair', 'chair', 'shelf', 'drawer'], ['sofa', 'shelf', 'locker', 'T']],
@@ -54,16 +54,28 @@ const ROOMS: Record<Kind, (Piece | 'T')[][]> = {
   // A block's corridor (M3-77): what the tenants left outside their doors.
   corridor: [['cabinet', 'crate'], ['locker'], ['shelf', 'crate'], ['crate']],
   office: [['desk', 'chair', 'desk', 'chair', 'locker', 'shelf'], ['desk', 'desk', 'desk', 'locker', 'locker', 'cabinet'], ['table', 'chair', 'chair', 'chair', 'shelf', 'locker']],
+  // The other types' rooms (M5-35): a clinic's wards and consulting rooms, a military post's barracks, armoury and
+  // command room.
+  ward: [['bed', 'bed', 'cabinet', 'locker'], ['bed', 'bed', 'bed', 'shelf'], ['bed', 'cabinet', 'sink', 'locker']],
+  clinic: [['desk', 'chair', 'cabinet', 'sink', 'locker'], ['table', 'cabinet', 'cabinet', 'shelf'], ['desk', 'locker', 'locker', 'sink']],
+  barracks: [['bed', 'bed', 'locker', 'locker'], ['bed', 'bed', 'bed', 'locker', 'locker'], ['bed', 'locker', 'table', 'chair']],
+  armory: [['rack', 'rack', 'locker', 'crate'], ['locker', 'locker', 'locker', 'crate', 'crate'], ['rack', 'crate', 'crate', 'locker']],
+  command: [['desk', 'chair', 'desk', 'chair', 'cabinet', 'locker'], ['table', 'chair', 'chair', 'rack', 'locker'], ['desk', 'desk', 'cabinet', 'shelf']],
 };
+/** What a container in each kind of room holds (its loot table), if not its own piece's (M5-35). */
+export const ROOM_LOOT: Partial<Record<Kind, string>> = { office: 'office', ward: 'medicine', clinic: 'medicine', barracks: 'barracks', armory: 'armory', command: 'office', workshop: 'workshop' };
 const FLOORING: Record<Kind, number[]> = {
   living: [MAT.tile, MAT.wood], bedroom: [MAT.wood, MAT.tile], kitchen: [MAT.tile], store: [MAT.concrete], shop: [MAT.tile, MAT.stone],
   restaurant: [MAT.tile], workshop: [MAT.concrete], lobby: [MAT.tile, MAT.stone], office: [MAT.tile, MAT.wood], corridor: [MAT.tile, MAT.concrete],
+  ward: [MAT.tile], clinic: [MAT.tile], barracks: [MAT.concrete], armory: [MAT.concrete], command: [MAT.tile, MAT.concrete],
 };
 
 export type Rect = [number, number, number, number];
 /** How many rooms have a spot for something loose on the floor (U-085), and which loot table (data/loot LOOSE.tables)
  *  each kind of room's rolls from (in the spot's kind: 'loose:<table>'). */
-const LOOSE_ROOMS = 0.3, LOOSE_ROOM: Partial<Record<Kind, string>> = { kitchen: 'kitchen', restaurant: 'kitchen', living: 'bedroom', bedroom: 'bedroom', office: 'bedroom', shop: 'shop', store: 'shop', workshop: 'workshop' };
+const LOOSE_ROOMS = 0.3, LOOSE_ROOM: Partial<Record<Kind, string>> = { kitchen: 'kitchen', restaurant: 'kitchen', living: 'bedroom', bedroom: 'bedroom', office: 'office', shop: 'shop', store: 'shop', workshop: 'workshop', ward: 'medicine', clinic: 'medicine', barracks: 'barracks', armory: 'barracks', command: 'office' };
+/** How often a room's container is the one holding something, if not one room in five. */
+const STOCKED: Partial<Record<Kind, number>> = { barracks: 0.35, armory: 0.6, command: 0.35, clinic: 0.3, ward: 0.25 };
 /** A room's frame: the lot, its floor's height and number, the building's frame (u along its long side, v across)
  *  and how far gone it is. */
 export interface Floor {
@@ -103,9 +115,10 @@ export function furnish(f0: Floor, rect: Rect, kind: Kind, keep: Rect[], fallen:
     const at = against(f, rect, FURNITURE[p], free, r);
     if (!at) continue;
     placed.push(at.b); got++;
-    const loot = 'loot' in FURNITURE[p] && !looted && rand(r) < 0.2;
+    // (One room in five's container holds something; a military post's more often: M5-35.)
+    const loot = 'loot' in FURNITURE[p] && !looted && rand(r) < (STOCKED[kind] ?? 0.2);
     if (loot) looted = true;
-    piece(f, p, at.b, at.face, f.nid('f'), rand(r) < 0.25 * f.decay && FURNITURE[p].h > 1.2, loot, out, site);
+    piece(f, p, at.b, at.face, f.nid('f'), rand(r) < 0.25 * f.decay && FURNITURE[p].h > 1.2, loot, out, site, kind);
   }
   clutter(f, rect, placed, keep, r, out);
   // Dust and grime lying in patches on the floor.
@@ -152,7 +165,7 @@ function against(_f: Floor, [u0, v0, u1, v1]: Rect, p: { w: number; d: number; h
 }
 
 /** Build a piece in its box: upright with its front to the room, or knocked over onto its back. */
-function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, fallen: boolean, loot: boolean, out: Fabric, site: Site) {
+function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, fallen: boolean, loot: boolean, out: Fabric, site: Site, room: Kind) {
   const P = FURNITURE[p], { y, B, at } = f;
   // Drawn as a model of its own (render/roomprops.ts, M3-74), its front facing the room; its box only collides.
   model(f, p, (b[0] + b[2]) / 2, (b[1] + b[3]) / 2, face, P.w, P.h, P.d, out, fallen);
@@ -185,7 +198,7 @@ function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, 
   if ('use' in P) { if (P.use === 'mattress') site.bed = id; else site.table = id; } else site.containers.push(id);
   out.inter.push('use' in P
     ? { id, kind: P.use, x: fx, y: y + P.h, z: fz, r: 0.8, zh: P.zh, en: P.en }
-    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: loot ? { type: p, loot: P.loot } : { type: p } });
+    : { id, kind: 'container', x: fx, y: y + Math.min(1.0, P.h / 2), z: fz, r: 0.6, zh: P.zh, en: P.en, data: loot ? { type: p, loot: ROOM_LOOT[room] ?? P.loot, room } : { type: p, room } });
 }
 
 /** A model prop (render/roomprops.ts) at frame point (u, v) on the floor, its front facing `face` (a step in the

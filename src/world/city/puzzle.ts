@@ -8,6 +8,7 @@
 import { rampSolid, carve, type Solid } from '../geom';
 import { stepsFor } from '../steps';
 import { MAT } from '../mats';
+import { TYPES } from './types';
 import { rand, randInt, type Rng } from '../../sim/rng';
 import { FLOOR, WALL, SLAB, DOOR, DOOR_H, CORE, CORE_W, furnish, over, type Floor, type Kind, type Rect } from './rooms';
 
@@ -66,7 +67,9 @@ export function puzzle(fr: Frame, from: number, r: Rng, out: Fabric) {
     return m;
   };
   const size = (lo: number, hi: number) => lo + rand(r) * (hi - lo);
-  const flatKind = (): Kind => (l.mat === MAT.facadeBand && rand(r) < 0.6 ? 'office' : (['bedroom', 'living', 'kitchen', 'store', 'bedroom'] as const)[randInt(r, 5)]);
+  // (Its type's rooms and their size, M5-35: a home's as ever.)
+  const T = TYPES[l.type ?? 'residential'], big = (lo: number, hi: number) => size(lo, hi) * T.scale;
+  const flatKind = (): Kind => (T.rooms ? T.rooms[randInt(r, T.rooms.length)] : l.mat === MAT.facadeBand && rand(r) < 0.6 ? 'office' : (['bedroom', 'living', 'kitchen', 'store', 'bedroom'] as const)[randInt(r, 5)]);
 
   // Openings: a box carved from the mass and the rooms' lining, and what fills it.
   const window = (m: Room, state: Glazing) => {
@@ -159,7 +162,7 @@ export function puzzle(fr: Frame, from: number, r: Rng, out: Fabric) {
     s.kind = s2.kind = 'store';
     s.keep.push(rect(m.face, a0, a0 + w, 0, d)); s2.keep.push(rect(m.face, a0, a0 + w, 0, d));
     between(m, s, 'door');
-    const top = add(m.face, a0 + w + GAP, size(SIZE.w[0], SIZE.w[1]), size(SIZE.d[0], SIZE.d[1]), k + 1, flatKind());
+    const top = add(m.face, a0 + w + GAP, big(SIZE.w[0], SIZE.w[1]), big(SIZE.d[0], SIZE.d[1]), k + 1, flatKind());
     if (top) between(s2, top, 'door');
     return top ?? s2;
   };
@@ -223,8 +226,8 @@ export function puzzle(fr: Frame, from: number, r: Rng, out: Fabric) {
     for (const step of recipe.steps) {
       let next: Room | null = null;
       if (step === 'door' || step === 'rubble' || step === 'vent') {
-        const w = size(SIZE.w[0], SIZE.w[1]), gap = step === 'vent' ? size(1.2, 3) : GAP;
-        next = add(at0.face, at0.a1 + gap, w, size(SIZE.d[0], SIZE.d[1]), at0.k, flatKind()) ?? add(at0.face, at0.a0 - gap - w, w, size(SIZE.d[0], SIZE.d[1]), at0.k, flatKind());
+        const w = big(SIZE.w[0], SIZE.w[1]), gap = step === 'vent' ? size(1.2, 3) : GAP;
+        next = add(at0.face, at0.a1 + gap, w, big(SIZE.d[0], SIZE.d[1]), at0.k, flatKind()) ?? add(at0.face, at0.a0 - gap - w, w, big(SIZE.d[0], SIZE.d[1]), at0.k, flatKind());
         if (next) {
           if (step === 'vent') {
             // A crawl duct through the mass: long, so carved as one with the cover at its first end.
@@ -254,7 +257,7 @@ export function puzzle(fr: Frame, from: number, r: Rng, out: Fabric) {
   // main body is no way into most of it).
   if (fr.core) for (let k = 1; k < n; k++) {
     if (rand(r) > 0.45) continue;
-    const m = add(2, CORE_W + GAP, size(SIZE.w[0], SIZE.w[1]), size(SIZE.d[0], SIZE.d[1]), k, flatKind());
+    const m = add(2, CORE_W + GAP, big(SIZE.w[0], SIZE.w[1]), big(SIZE.d[0], SIZE.d[1]), k, flatKind());
     if (!m) continue;
     const y = yOf(k), u = CORE_NEAR / 2;
     cuts.push(box([u - DOOR / 2, CORE_W - 0.01, u + DOOR / 2, CORE_W + GAP + 0.01], y, y + DOOR_H));

@@ -22,12 +22,14 @@ const stage = (text: string) => {
 
 const q = new URLSearchParams(location.search);
 const dev = q.get('dev') === '1';
-const seed = Number(q.get('seed')) || Math.floor(Math.random() * 1e9);
+// (A saved run's city is built for its seed from the start, so Continue doesn't build it twice: M5-35.)
+const saved = q.get('scenario') ? null : readSave(localStorage);
+const seed = Number(q.get('seed')) || saved?.state.seed || Math.floor(Math.random() * 1e9);
 const sc = scenarioByName(q.get('scenario') ?? 'run');
 // (Each stage's end, in ms since the page opened, for the boot's budget: tests/e2e/inplace.e2e.mjs.)
 const boot = { world: 0, view: 0, ready: 0 };
 await stage('建造城市 · Building the city');
-if (sc) getWorld(sc.world);
+if (sc) getWorld(sc.world, seed);
 boot.world = performance.now();
 await stage('铺设街道 · Raising the streets');
 const game = new Game({ scenario: q.get('scenario') ?? 'run', seed, dev });
@@ -35,8 +37,7 @@ boot.view = performance.now();
 // The player's settings put back: volumes, sensitivity, keys (U-079).
 applySettings(game);
 if (dev) new DevPanel(game);
-const save = q.get('scenario') ? null : readSave(localStorage);
-if (save) bootMenu(game, save);
+if (saved) bootMenu(game, saved);
 game.start();
 // Ctrl+W (crouching forward) would close the tab: while he plays, the browser asks first (U-059: no forced fullscreen).
 addEventListener('beforeunload', e => { if (document.pointerLockElement && !game.state.dead) e.preventDefault(); });

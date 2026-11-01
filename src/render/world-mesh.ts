@@ -43,7 +43,7 @@ export function inward(s: Solid): boolean[] {
   return [e.z1 < o.z1 - 0.01, e.z0 > o.z0 + 0.01, e.x1 < o.x1 - 0.01, e.x0 > o.x0 + 0.01];
 }
 /** A block's interior: papered more often than not, by its corner. */
-export const interiorMat = (s: Solid) => (s.orig && hash(s.orig.x0, s.orig.z0, 77) < 0.6 ? MAT.wallpaper : MAT.plaster);
+export const interiorMat = (s: Solid) => s.inside ?? (s.orig && hash(s.orig.x0, s.orig.z0, 77) < 0.6 ? MAT.wallpaper : MAT.plaster);
 
 /** Faces go to b; a facade's roof and underside go to roof (plain concrete) instead, and its walls facing into the
  *  block to inner. ao: occlusion for the +z, -z, +x and -x walls (1 open, lower in a narrow alley). */
