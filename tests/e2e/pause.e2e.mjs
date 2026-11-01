@@ -2,7 +2,7 @@
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=hideout&seed=1', 'pause');
   await page.evaluate('window.__cq.runFrames(5)');
-  await page.keyboard.press('Equal');
+  await page.keyboard.press('Escape');
   const shown = await page.evaluate(`getComputedStyle(document.getElementById('pause')).display !== 'none' && document.querySelector('#pause .pz-keys').textContent.includes('wall-run')`);
   if (!shown) fail('pause', '= did not open the pause menu with the controls');
   const t0 = await page.evaluate('window.__cq.game.ticks');

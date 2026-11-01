@@ -1,5 +1,5 @@
 // Pause menu (U-007, U-009, U-014): = or the browser dropping the mouse or fullscreen pauses the sim and shows
-// the controls, with buttons for the movement gym (and its areas) and the game. Esc is left to the browser.
+// the controls, with buttons for the movement gym (and its areas) and the game. Esc opens and closes it (U-066).
 // Settings join it in M8-13.
 import type { Game } from '../game';
 import { teleport } from '../sim/player';
@@ -19,12 +19,13 @@ const CONTROLS: [string, string][] = [
   ['Ctrl (hold) or C', 'crouch; while running: slide'],
   ['X', 'chimney: brace across a narrow gap (X again or Space lets go)'],
   ['Z', 'crawl'],
-  ['F (hold)', 'interact; with nothing in view: sleep rough'],
+  ['F (hold)', 'interact'],
+  ['B (hold)', 'lie down and sleep rough'],
   ['Left mouse, holding something', 'use it: fire, strike; the knife from behind a machine: a takedown (hold)'],
   ['Right mouse (hold) / R', 'aim a gun / reload'],
   ['1-5 / 0 or `', 'hotbar / empty hands'],
   ['Tab / L / H', 'backpack / laptop / headlamp'],
-  ['=', 'pause and settings'],
+  ['Esc', 'pause and settings'],
 ];
 
 export class PauseMenu {
@@ -45,7 +46,7 @@ export class PauseMenu {
   }
 
   private key(e: KeyboardEvent) {
-    if (e.repeat || e.code !== 'Equal') return;
+    if (e.repeat || e.code !== 'Escape') return;
     if ((e.target as HTMLElement | null)?.closest?.('input, select, textarea')) return;
     // A lost pointer lock can open the menu just before the key arrives: don't reopen-and-close.
     if (this.open) { if (performance.now() - this.openedAt > 400) this.resume(); }

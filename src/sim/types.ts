@@ -12,6 +12,8 @@ export const B = {
   RELOAD: 256, HEADLAMP: 512, LEAN_L: 1024, LEAN_R: 2048,
   /** chimneying, on its own key (U-060) */
   CHIMNEY: 4096,
+  /** lying down to sleep rough, held (U-066: its own key, not the interact key's) */
+  SLEEP: 8192,
 } as const;
 
 export interface InputFrame {

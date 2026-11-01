@@ -5,7 +5,7 @@ import type { Cmd } from '../sim/commands';
 const KEYS: Record<string, number> = {
   Space: B.JUMP, ShiftLeft: B.SPRINT, ShiftRight: B.SPRINT, KeyC: B.CROUCH, ControlLeft: B.CROUCH, ControlRight: B.CROUCH,
   // (Q lets go hanging on, and leans left on his feet: U-032.)
-  KeyZ: B.CRAWL, KeyF: B.INTERACT, KeyQ: B.DROP | B.LEAN_L, KeyE: B.LEAN_R, KeyR: B.RELOAD, KeyH: B.HEADLAMP, KeyX: B.CHIMNEY,
+  KeyZ: B.CRAWL, KeyF: B.INTERACT, KeyQ: B.DROP | B.LEAN_L, KeyE: B.LEAN_R, KeyR: B.RELOAD, KeyH: B.HEADLAMP, KeyX: B.CHIMNEY, KeyB: B.SLEEP,
 };
 
 export class Input {

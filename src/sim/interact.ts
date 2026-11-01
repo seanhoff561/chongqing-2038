@@ -102,8 +102,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   // himself the healing items', M5-17.)
   if (task?.id.startsWith('takedown:') || task?.id.startsWith('treat:') || task?.id === 'reload' || task?.id === 'untag') return;
   if (task?.id === ROUGH) {
-    // Holding E on open floor lays him down to sleep rough (U-013); moving, hiding or a target cancels it.
-    if (!(input.buttons & B.INTERACT) || p.mode !== 'ground' || lookTarget(s, w) || Math.hypot(p.vel.x, p.vel.z) > 0.5) { s.task = null; return; }
+    // Holding B lays him down to sleep rough (U-013, U-066); moving or hiding cancels it.
+    if (!(input.buttons & B.SLEEP) || p.mode !== 'ground' || Math.hypot(p.vel.x, p.vel.z) > 0.5) { s.task = null; return; }
     task.t += DT;
     if (task.t >= task.dur) { s.task = null; s.events.push({ t: 'sleep-menu', id: ROUGH }); }
     return;
@@ -120,8 +120,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   }
   const it = p.mode === 'ground' || p.mode === 'swim' || p.mode === 'grip' ? lookTarget(s, w) : null;
   s.target = it?.id ?? null;
-  // E with nothing in view starts the rough-sleep hold, leaving the press for hiding in a box.
-  if (!it && (input.pressed & B.INTERACT) && p.mode === 'ground') { s.task = { id: ROUGH, t: 0, dur: ROUGH_HOLD }; return; }
+  // B starts the rough-sleep hold (U-066: its own key).
+  if ((input.pressed & B.SLEEP) && p.mode === 'ground') { s.task = { id: ROUGH, t: 0, dur: ROUGH_HOLD }; return; }
   if (!it || !(input.pressed & B.INTERACT)) return;
   input.pressed &= ~B.INTERACT;
   const h = handlers.get(it.kind);

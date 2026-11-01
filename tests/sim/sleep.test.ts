@@ -21,7 +21,7 @@ describe('sleep', () => {
     expect(state.events.some(e => e.t === 'slept')).toBe(true);
   });
 
-  it('holding E on open floor lays him down to sleep rough: 40% less energy back (U-013)', () => {
+  it('holding B lays him down to sleep rough (U-066: its own key): 40% less energy back (U-013)', () => {
     const night = (rough: boolean) => {
       const { world, state } = setup([floor()], { x: 0, y: 0, z: 0, yaw: 0 }, {
         inter: rough ? [] : [{ id: 'm', kind: 'mattress', x: 0, y: 0.3, z: -1.2, r: 0.8, zh: '床垫', en: 'Sleep' }],
@@ -29,11 +29,12 @@ describe('sleep', () => {
       run(state, world, 3, { pitch: -0.6 });
       state.time = 22 * 3600;
       state.body.energy = 10;
-      run(state, world, 1, { pitch: -0.6, pressed: B.INTERACT, buttons: B.INTERACT });
+      const key = rough ? B.SLEEP : B.INTERACT;
+      run(state, world, 1, { pitch: -0.6, pressed: key, buttons: key });
       let menu = state.events.some(e => e.t === 'sleep-menu');
       if (rough) {
         expect(menu).toBe(false);
-        run(state, world, 80, { pitch: -0.6, buttons: B.INTERACT }, st => { if (st.events.some(e => e.t === 'sleep-menu')) menu = true; });
+        run(state, world, 80, { pitch: -0.6, buttons: key }, st => { if (st.events.some(e => e.t === 'sleep-menu')) menu = true; });
       }
       expect(menu).toBe(true);
       run(state, world, 1, { pitch: -0.6, cmds: [{ c: 'act', name: 'sleep', arg: 2 }] } as never);

@@ -8,14 +8,15 @@ export default async function ({ open, fail, screenshot }) {
     Object.assign(g.state.player.pos, { x: t.x, y: t.y - 1.45, z: t.z }); window.__cq.runFrames(10); })()`);
   const seen = {};
   for (const p of ['low', 'high', 'medium']) {
-    await page.keyboard.press('Equal');
+    await page.keyboard.press('Escape');
     const button = await page.$(`#pause button[data-preset="${p}"]`);
     if (!button) { fail('presets', `no ${p} button in the pause menu`); continue; }
     await button.click();
-    // (The menu closes again only after 0.4 s open.)
+    // (The menu closes again only after 0.4 s open. Then the near cells built all at once, as after a teleport: since
+    // M4-83 they stream in a piece a frame.)
     await new Promise(r => setTimeout(r, 450));
-    await page.keyboard.press('Equal');
-    const r = await page.evaluate(`(() => { const g = window.__cq.game, v = g.view; window.__cq.runFrames(20);
+    await page.keyboard.press('Escape');
+    const r = await page.evaluate(`(() => { const g = window.__cq.game, v = g.view; v.streamFrom.x = 1e9; window.__cq.runFrames(20);
       let litter = 0; v.world.traverse(o => { if (o.isMesh && o.userData.detail && !o.userData.inner) litter += o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count; });
       return { preset: v.preset, ratio: v.renderer.getPixelRatio(), draw: g.drawDistance, shadows: v.sun.castShadow, map: v.sun.shadow.mapSize.x, litter, calls: v.renderer.info.render.calls, tris: v.renderer.info.render.triangles }; })()`);
     seen[p] = r;

@@ -3,7 +3,7 @@
 export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=1', 'newrun');
   await page.evaluate(`(() => { const g = window.__cq.game; g.state.time += 3 * 86400; localStorage.setItem('cq2038.save', JSON.stringify({ version: 7, scenario: 'run', savedAt: g.state.time, state: g.state })); window.__cq.runFrames(2); })()`);
-  await page.keyboard.press('Equal');
+  await page.keyboard.press('Escape');
   await page.click('#pause button[data-a="newrun"]');
   const asked = await page.evaluate(`document.querySelector('#pause button[data-a="newrun"]').textContent`);
   if (!asked.includes('Sure')) fail('newrun', `no confirmation: ${asked}`);
