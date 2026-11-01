@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 77 of 95 done
+## M4: 78 of 95 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -968,7 +968,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-55** His breath and heartbeat (U-051)
   - Spent, hurt or terrified he breathes hard and his heart pounds, louder the worse it is
   - A sim test drives the breath and heart levels from endurance, HP and alert; the sound plays them
-- [ ] **M4-63** The raid wakes him to sirens (U-052)
+- [x] **M4-63** The raid wakes him to sirens (U-052)
   - When a raid breaks in he wakes to sirens and flashing red light round the chamber, loud and sudden, through the 10 s
   - A screenshot of the flashing light; the siren plays
 - [ ] **M4-28** Street speakers and announcements
