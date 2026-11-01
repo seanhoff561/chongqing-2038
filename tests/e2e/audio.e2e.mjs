@@ -26,12 +26,17 @@ export default async function ({ open, fail }) {
     // Hurt and hunted (M4-55): his breath and heart loud.
     g.state.flags.god = true; g.state.body.hp = 15; for (let i = 0; i < 30; i++) g.runFrames(1);
     const br = g.sound.breath.level;
-    return { state: a.ctx?.state, one, three, n: fly.length, hum: g.sound.ambience.level.hum, alert: d0.alert, heart: br.heart, track: g.sound.music.track };
+    // The rain as recorded (U-070), loaded and looping.
+    g.state.weather.rain = 1; for (let i = 0; i < 10; i++) g.runFrames(1);
+    for (let k = 0; k < 40 && !g.sound.ambience.rec; k++) { await new Promise(r => setTimeout(r, 250)); g.runFrames(1); }
+    const rec = !!g.sound.ambience.rec; g.state.weather.rain = 0;
+    return { state: a.ctx?.state, one, three, n: fly.length, hum: g.sound.ambience.level.hum, alert: d0.alert, heart: br.heart, track: g.sound.music.track, rec };
   })()`);
   if (r.state !== 'running') fail('audio', `the audio is ${r.state} after a click`);
   // The city's ambience playing under it all (M4-51).
   if (!(r.hum > 0)) fail('audio', 'no ambience');
   // The music for the street playing (M4-86).
+  if (!r.rec) fail('audio', 'the rain recording did not load');
   if (r.track !== 'ground') fail('audio', `the music on the plaza is ${r.track}`);
   if (!(r.alert > 0.9)) fail('audio', `the alert fell at once (${r.alert})`);
   if (!(r.heart > 0.8)) fail('audio', `hurt and hunted, his heart only ${r.heart}`);

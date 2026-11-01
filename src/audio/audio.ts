@@ -96,6 +96,11 @@ export class Audio {
     if (this.ctx) this.muffle.frequency.value = on ? 500 : 22000;
   }
 
+  /** A recording fetched and decoded (U-070), or null if it can't be had. */
+  async load(url: string): Promise<AudioBuffer | null> {
+    try { const r = await fetch(url); return r.ok ? await this.ctx!.decodeAudioData(await r.arrayBuffer()) : null; } catch { return null; }
+  }
+
   /** The shared noise, looping for good (a wind's, the rain's hiss). */
   loop(): AudioBufferSourceNode {
     const src = this.ctx!.createBufferSource();

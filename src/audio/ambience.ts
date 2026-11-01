@@ -26,8 +26,8 @@ export function mix(e: Env): Mix {
   // By night the hum sinks and the far machinery thins; the wind is the city's voice.
   const out: Mix = { ...m, hum: m.hum * (1 - 0.35 * night), far: m.far * (1 - 0.5 * night), wind: m.wind * (1 + 0.25 * night), rain: 0, ticks: 0, drips: 0 };
   if (e.where === 'under') return out;
-  // Rain: out in it, its hiss and the ticks of drops on metal; under cover, dripping and the hiss beyond; indoors, a
-  // dull drumming through the roof.
+  // Rain: out in it, its sound (ticks: how bright it rings on metal, most on a roof); under cover, dripping and the rain
+  // beyond; indoors, a dull drumming through the roof.
   if (e.where === 'indoors') { out.rain = r * 0.5; out.drips = r * 0.3; }
   else if (e.covered) { out.rain = r * 0.6; out.ticks = r * 0.5; out.drips = r * 0.9; }
   else { out.rain = r; out.ticks = r * (e.where === 'roof' ? 1 : 0.7); }
@@ -57,12 +57,12 @@ export class Ambience {
   private m: Mix = mix({ where: 'street', hour: 12, rain: 0, covered: false });
   private farIn = 4;
   private droneIn = 30;
-  private tickIn = 0;
-  private dripIn = 0;
+  /** the rain recorded (U-070): its loop and gain, its brightness on metal; the dripping's loop under cover */
+  private rec?: { rain: GainNode; shelf: BiquadFilterNode; drips: GainNode };
   private setIn = 0;
   constructor(private a: Audio) {}
 
-  /** Every frame: the layers eased toward the mix for where he is; the far sounds, the drops and drips placed now and then. */
+  /** Every frame: the layers eased toward the mix for where he is; the far sounds placed now and then. */
   update(dt: number, e: Env) {
     const a = this.a;
     if (!a.ready) return;
@@ -77,11 +77,16 @@ export class Ambience {
     this.hum.gain.setTargetAtTime(m.hum * 0.04, t, 1.5);
     this.wind.gain.gain.setTargetAtTime(m.wind * 0.1 * (0.7 + 0.3 * Math.sin(t * 0.13) * Math.sin(t * 0.07)), t, 1.2);
     this.wind.band.frequency.setTargetAtTime(m.windHz * (0.8 + 0.4 * Math.sin(t * 0.05)), t, 2);
-    this.rain.gain.setTargetAtTime(m.rain * 0.03, t, 0.8);
+    // The rain as recorded once it's loaded (U-070): out in it, brighter on roofs and metal; under cover the dripping
+    // as recorded; till then a soft hiss.
+    if (this.rec) {
+      this.rec.rain.gain.setTargetAtTime(m.rain * 0.55, t, 0.8); this.rec.shelf.gain.setTargetAtTime(m.ticks * 6, t, 0.8);
+      this.rec.drips.gain.setTargetAtTime(m.drips * 0.7, t, 0.8); this.rain.gain.setTargetAtTime(0, t, 0.3);
+    } else this.rain.gain.setTargetAtTime(m.rain * 0.03, t, 0.8);
     this.muffle.frequency.setTargetAtTime(m.muffle, t, 0.4);
   }
 
-  /** The far sounds, the drops and drips, now and then. */
+  /** The far sounds now and then. */
   private events(dt: number, t: number, m: Mix) {
     const a = this.a;
     // Machinery far off: a clank, a boom, a long groan of metal, low and blurred by distance.
@@ -93,15 +98,6 @@ export class Ambience {
     if ((this.droneIn -= dt) <= 0) {
       this.droneIn = 25 + Math.random() * 50;
       if (m.drone > 0.05) { const f = 160 + Math.random() * 60; a.tone(t, 9, 0.006 * m.drone, f, f * 0.93, 'sawtooth', this.muffle); }
-    }
-    // Drops on metal and awnings: little bright ticks; under cover, water dripping from the edges.
-    if ((this.tickIn -= dt) <= 0) {
-      this.tickIn = 0.15 + Math.random() * 0.5 / Math.max(0.1, m.ticks);
-      if (m.ticks > 0.05) a.tone(t, 0.02, 0.005 * m.ticks, 1800 + Math.random() * 2000, 1400, 'triangle', this.muffle);
-    }
-    if ((this.dripIn -= dt) <= 0) {
-      this.dripIn = 0.25 + Math.random() * 1.2;
-      if (m.drips > 0.05) { const f = 700 + Math.random() * 900; a.tone(t, 0.06, 0.015 * m.drips, f * 1.4, f, 'sine', this.muffle); }
     }
   }
 
@@ -131,6 +127,16 @@ export class Ambience {
     hp.type = 'highpass'; hp.frequency.value = 500; pk.type = 'lowpass'; pk.frequency.value = 4500; pk.Q.value = 0.5;
     this.rain = ctx.createGain(); this.rain.gain.value = 0;
     r.connect(hp).connect(pk).connect(this.rain).connect(this.muffle);
+    // The recordings (public/audio, docs/CREDITS.md), looped once they've loaded.
+    void Promise.all([a.load('audio/rain.ogg'), a.load('audio/drips.ogg')]).then(([rb, db]) => {
+      if (!rb || !db) return;
+      const loop = (b: AudioBuffer, at: number) => { const src = ctx.createBufferSource(); src.buffer = b; src.loop = true; src.start(0, at); return src; };
+      const rain = ctx.createGain(), shelf = ctx.createBiquadFilter(), drips = ctx.createGain();
+      rain.gain.value = drips.gain.value = 0; shelf.type = 'highshelf'; shelf.frequency.value = 3500;
+      loop(rb, Math.random() * rb.duration).connect(shelf).connect(rain).connect(this.muffle);
+      loop(db, Math.random() * db.duration).connect(drips).connect(this.muffle);
+      this.rec = { rain, shelf, drips };
+    });
   }
 
   /** One far sound: machinery dull with distance, or a ring of metal. */

@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 84 of 101 done
+## M4: 85 of 101 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -957,7 +957,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Most of the time no music at all, only the quiet ambience; now and then, minutes apart, a short piece fades in: very faint, slow, sparse (soft piano-like notes over a cold synth pad, long reverb, no drums), futuristic and haunting, different by place, and fades away again
   - Much quieter than before: always well under the ambience and effects
   - Unit test: the music is silent most of the time and its pieces slow and sparse; the listening pass is in PLAYTEST
-- [ ] **M4-88** Rain realism pass (U-065)
+- [x] **M4-88** Rain realism pass (U-065)
   - The rain sounds quiet and real, never loud or annoying: a soft hiss, drops on metal and awnings sparse and low, dripping under cover, dull indoors
   - No darkening or sheen filter laid over buildings and the ground in rain
   - Rain falls and looks real: streaks fine and faint, not a screen of lines; a screenshot in rain

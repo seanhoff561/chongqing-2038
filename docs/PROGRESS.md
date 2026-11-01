@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-88 Rain realism pass (U-065).
-Features done: 241 / 362 | Last done: M4-97
+**Status:** building M4. Next: M4-98 Recorded sounds (U-070).
+Features done: 242 / 362 | Last done: M4-88
 <!-- /status -->
 
 ## Log
@@ -100,3 +100,4 @@ Features done: 241 / 362 | Last done: M4-97
 - M4-91 Most street doors shut (U-066): most street doors shut: locked, chained, jammed or collapsed, each shown so (U-066)
 - M4-92 Helicopter troop drop (U-067): helicopter troop drop: seen and gone into a building, a squad dropped on its roof sweeps it floor by floor; dogs and crawlers into the sewers (U-067)
 - M4-97 Faint, rare music (U-070): faint, rare music: mostly silence, now and then a slow sparse piece fading in and away (U-070)
+- M4-88 Rain realism pass (U-065): rain realism: a real rain recording, dripping gutters under cover, finer fainter streaks, no wet filter (U-065, U-070)

@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { mulberry } from './rand';
 
-const N = 2400, BOX = 28, LEN = 0.8, FALL = 9, SLANT = 0.12;
+const N = 3000, BOX = 28, LEN = 0.42, FALL = 8.5, SLANT = 0.08;
 
 export class Rain {
   readonly lines: THREE.LineSegments;
@@ -15,7 +15,7 @@ export class Rain {
     for (let i = 0; i < N; i++) { this.seed[i * 3] = r() * BOX; this.seed[i * 3 + 1] = r() * BOX; this.seed[i * 3 + 2] = r() * BOX; }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3));
-    this.lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0x8c969e, transparent: true, opacity: 0.3, depthWrite: false }));
+    this.lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xb4bcc4, transparent: true, opacity: 0.16, depthWrite: false }));
     this.lines.frustumCulled = false;
     this.lines.visible = false;
     scene.add(this.lines);
@@ -38,6 +38,6 @@ export class Rain {
       this.pos[o + 3] = x - LEN * SLANT; this.pos[o + 4] = y + LEN; this.pos[o + 5] = z + 0.02;
     }
     (this.lines.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
-    (this.lines.material as THREE.LineBasicMaterial).opacity = 0.1 + 0.2 * amount;
+    (this.lines.material as THREE.LineBasicMaterial).opacity = 0.05 + 0.11 * amount;
   }
 }
