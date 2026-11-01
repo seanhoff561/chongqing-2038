@@ -149,22 +149,6 @@ const glowing: THREE.MeshPhongMaterial[] = [];
 /** Screens and neon (M3-63): brighter after dark, against the dark city; their day intensity in userData.day. */
 const signs: THREE.MeshPhongMaterial[] = [];
 
-/** A dull grey sky to reflect when surfaces are wet (M3-13). */
-let skyEnv: THREE.CubeTexture | null = null;
-function wetSky(): THREE.CubeTexture {
-  if (skyEnv) return skyEnv;
-  const face = (top: boolean, bottom: boolean) => {
-    const c = document.createElement('canvas'); c.width = c.height = 32;
-    const g = c.getContext('2d')!, grd = g.createLinearGradient(0, 0, 0, 32);
-    grd.addColorStop(0, top || !bottom ? '#7e868c' : '#2a2b2c'); grd.addColorStop(1, bottom || !top ? '#3a3c3e' : '#7e868c');
-    g.fillStyle = bottom ? '#2a2b2c' : top ? '#7e868c' : grd; g.fillRect(0, 0, 32, 32);
-    return c;
-  };
-  skyEnv = new THREE.CubeTexture([face(false, false), face(false, false), face(true, false), face(false, true), face(false, false), face(false, false)]);
-  skyEnv.needsUpdate = true;
-  return skyEnv;
-}
-
 /** Detail radius (U-012): detailed chunks draw inside it, the far stand-ins outside it. */
 export const lodRadius = { value: 1e9 };
 export type Lod = 'all' | 'near' | 'far';
@@ -270,23 +254,6 @@ diffuseColor *= mix(sampledDiffuseColor, rTex, smoothstep(0.35, 0.65, vCover.y +
 }
 
 const DRY = { shininess: 30, specular: 0x000000, reflectivity: 0, combine: THREE.MixOperation };
-let wet = -1;
-/** 0 dry to 1 soaked (M3-13): surfaces darken, pick up a sheen and reflect the grey sky. */
-/** k: how wet (0..1); day: daylight 0..1, so the sky's reflection fades at night. Wet surfaces go darker with a
- *  sheen (U-019): no fresnel in Phong, so the reflection stays faint rather than washing everything pale. */
-export function setWet(k: number, day = 1) {
-  const r = 0.1 * k * (0.15 + 0.85 * day);
-  if (Math.abs(k - wet) < 0.01 && Math.abs(r - wetR) < 0.005) return;
-  wet = k; wetR = r;
-  for (const m of mats.values()) {
-    if (m.emissiveIntensity > 1) continue;
-    if (k > 0 && !m.envMap) { m.envMap = wetSky(); m.needsUpdate = true; }
-    m.color.setScalar(1 - 0.34 * k);
-    m.specular.setScalar(0.25 * k * (0.3 + 0.7 * day));
-    m.reflectivity = r;
-  }
-}
-let wetR = 0;
 
 /** A street lamp's pool of light on the ground under it (M4-43, U-050): a soft disc, added over the street after dark. */
 let pool: THREE.MeshBasicMaterial | null = null;

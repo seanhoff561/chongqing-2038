@@ -99,13 +99,13 @@ export function beep(a: Audio, gain: number, out?: AudioNode) {
   a.tone(t + 0.09, 0.05, gain * 0.8, 3100, 3100, 'square', out);
 }
 
-/** A walker's footfall (M4-33), where it lands: a humanoid's hard rubber pad; a quadruped's clank and the whine of its
- *  servos (M4-09); the heavy's thud; the spider's sharp tap and hydraulic hiss; a colossus's boom, felt as much as heard. */
+/** A walker's footfall (M4-33), where it lands: a humanoid's hard rubber pad; a quadruped's soft padded paw and a faint
+ *  tick of its servos (U-065); the heavy's thud; the spider's sharp tap and hydraulic hiss; a colossus's boom, felt as much as heard. */
 export function footfall(a: Audio, kind: string, out: AudioNode, gain = 0.5) {
   if (!a.ready) return;
   const t = a.ctx!.currentTime + 0.005, g = gain;
   if (kind === 'humanoid') { a.tone(t, 0.08, 0.3 * g, 110, 60, 'sine', out); a.noise(t, 0.05, 0.18 * g, 'bandpass', 900, 1.2, undefined, out); }
-  else if (kind === 'quadruped') { a.noise(t, 0.04, 0.25 * g, 'bandpass', 2600, 3, undefined, out); a.tone(t, 0.16, 0.2 * g, 520, 880, 'sawtooth', out); }
+  else if (kind === 'quadruped') { a.tone(t, 0.07, 0.3 * g, 150, 85, 'sine', out); a.noise(t, 0.06, 0.12 * g, 'lowpass', 700, 1, undefined, out); a.noise(t + 0.02, 0.012, 0.03 * g, 'highpass', 4000, 1, undefined, out); }
   else if (kind === 'heavy') { a.tone(t, 0.3, 0.7 * g, 70, 35, 'sine', out); a.noise(t, 0.2, 0.3 * g, 'lowpass', 400, 1, undefined, out); a.tone(t + 0.05, 0.25, 0.12 * g, 300, 450, 'sawtooth', out); }
   else if (kind === 'spider') { a.noise(t, 0.03, 0.4 * g, 'highpass', 2500, 1, undefined, out); a.tone(t, 0.06, 0.25 * g, 900, 500, 'triangle', out); a.noise(t + 0.04, 0.35, 0.12 * g, 'bandpass', 5000, 2, 3000, out); }
   else { a.tone(t, 0.9, 0.9 * g, 48, 24, 'sine', out); a.noise(t, 0.6, 0.45 * g, 'lowpass', 220, 1, 90, out); a.tone(t + 0.1, 0.8, 0.1 * g, 180, 120, 'sawtooth', out); }

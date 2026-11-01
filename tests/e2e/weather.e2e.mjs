@@ -1,4 +1,4 @@
-// M3-13: weather on screen: heavy fog closes the view, rain falls in streaks and wets the surfaces; under a roof
+// M3-13: weather on screen: heavy fog closes the view, rain falls in streaks (no wet filter on the surfaces since U-065); under a roof
 // or underground there's no rain. M4-56 (U-051): just the rain, no splash particles.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=shibati&seed=1', 'weather');

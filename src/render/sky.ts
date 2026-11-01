@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { daylight, hourOf } from '../sim/clock';
 import { SHADOW_R, type View } from './view';
-import { setNight, setWet } from './materials';
+import { setNight } from './materials';
 import { SkyDome } from './skydome';
 
 const DAY_SKY = new THREE.Color(0x9fabb2), DUSK_SKY = new THREE.Color(0x6b5a58), NIGHT_SKY = new THREE.Color(0x151a27);
@@ -31,7 +31,6 @@ export class Sky {
     // Fog and rain flatten the light like an overcast sky, and fog closes the view from kilometres to ~120 m.
     const flat = Math.max(this.overcast, weather.fog * 0.9, weather.rain);
     const fogK = Math.exp(-3.1 * weather.fog);
-    setWet(weather.rain, d);
     const duskness = Math.max(0, 1 - Math.abs(d - 0.5) * 2) * (d < 1 && d > 0 ? 1 : 0);
     c.copy(NIGHT_SKY).lerp(DAY_SKY, d).lerp(DUSK_SKY, duskness * 0.6);
     (v.scene.background as THREE.Color).copy(c);
