@@ -5,7 +5,7 @@ import { solid, rampSolid, carve, type Solid } from '../geom';
 import { stepsFor } from '../steps';
 import { sides } from './climb';
 import { MAT } from '../mats';
-import { rand, type Rng } from '../../sim/rng';
+import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
 import { FLOOR, WALL, SLAB, CORE, CORE_L, CORE_W } from './rooms';
 import { door, roll } from './access';
 import { puzzle } from './puzzle';
@@ -15,6 +15,8 @@ import type { Lot, Fabric } from './buildings';
 const HUT = 2.6;
 /** A street door's odds (U-066: few open freely): open, shut, locked, jammed, chained, collapsed. */
 const STREET_DOOR = [0.04, 0.08, 0.36, 0.1, 0.26, 0.16];
+/** How often a stairwell's blocked part-way up (U-069). */
+const STAIR_BLOCK = 0.4;
 
 /** Room for the core and a room beside it, a whole number of floors, not too tall to climb on foot. */
 export function canEnter(l: Lot): boolean {
@@ -75,6 +77,23 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
       flight(CORE.near, CORE.lane, mid, CORE_W, y + (3 * FLOOR) / 4, false);
     }
     out.solids.push(B(0, wall - SLAB, 0, CORE.near, wall, CORE_W, MAT.concrete));
+    // Blocked part-way up, two in five (U-069): at a floor above the first, the flight up from it heaped to the
+    // ceiling with fallen concrete, or a steel grille welded across its foot. (Up from there another way, or not.)
+    // (Its own dice, so the rooms carved after come out as they always did: the map is frozen, U-053. A set piece's
+    // stairwell, one asked for, stays open.)
+    const sb = makeRng(hashString(`stairs:${l.id}`));
+    if (core !== true && n >= 3 && rand(sb) < STAIR_BLOCK) {
+      const kb = 1 + randInt(sb, n - 2), y = base + kb * FLOOR;
+      l.blocked = kb;
+      if (rand(sb) < 0.6) {
+        out.solids.push(B(CORE.near, y, 0, CORE.near + 1.5, y + FLOOR - SLAB, CORE.lane, MAT.rubble));
+        for (let i = 0; i < 3; i++) out.decor.push(B(CORE.near + 1.5, y, i * CORE.lane / 3, CORE.near + 1.9 + rand(sb) * 0.6, y + 0.3 + rand(sb) * 0.6, (i + 1) * CORE.lane / 3, MAT.rubble));
+      } else {
+        out.solids.push(B(CORE.near - 0.03, y, 0, CORE.near + 0.03, y + FLOOR - SLAB, CORE.lane, MAT.hidden));
+        for (let v = 0.06; v < CORE.lane; v += 0.13) out.decor.push(B(CORE.near - 0.015, y, v, CORE.near + 0.015, y + FLOOR - SLAB, v + 0.025, MAT.metal));
+        for (const yy of [y + 0.05, y + 1.1, y + FLOOR - SLAB - 0.08]) out.decor.push(B(CORE.near - 0.02, yy, 0, CORE.near + 0.02, yy + 0.04, CORE.lane, MAT.metal));
+      }
+    }
     // Roof hut over the shaft, its door onto the roof beside the near landing: locked as a rule, a lock to break.
     const hut = [
       B(-WALL, wall, -WALL, CORE_L + 0.2, wall + HUT, 0, MAT.concrete), B(-WALL, wall, 0, 0, wall + HUT, CORE_W, MAT.concrete),

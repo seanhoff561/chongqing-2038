@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-94 Blocked stairways and drowned sewers (U-069).
-Features done: 244 / 362 | Last done: M4-93
+**Status:** building M4. Next: M4-95 Spider robots in the sewers (U-069).
+Features done: 244 / 362 | Last done: M4-94
 <!-- /status -->
 
 ## Log
@@ -103,3 +103,4 @@ Features done: 244 / 362 | Last done: M4-93
 - M4-88 Rain realism pass (U-065): rain realism: a real rain recording, dripping gutters under cover, finer fainter streaks, no wet filter (U-065, U-070)
 - M4-98 Recorded sounds (U-070): recorded sounds: footsteps, doors, glass, impacts and gunfire from freely licensed recordings (U-070)
 - M4-93 Eldritch walkers (U-069): eldritch walkers: tall, white, mostly giant legs, three variations (U-069)
+- M4-94 Blocked stairways and drowned sewers (U-069): blocked stairways and drowned sewers: stairwells blocked part-way, many more sewer runs flooded, some plugged (U-069)

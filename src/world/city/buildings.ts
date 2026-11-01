@@ -31,6 +31,8 @@ export interface Lot {
   podium?: number;
   /** enterable buildings: a walking route from outside the door up the stairs and out onto the roof */
   route?: { x: number; y: number; z: number }[];
+  /** the floor its stairwell's blocked going up from (U-069) */
+  blocked?: number;
   /** a tower's skyline: the highest roof round it (U-036); over it its walls hold more */
   sky?: number;
   /** its walls run straight up to its roof (a connection meets them): no setback at the top, no tower's shaft set

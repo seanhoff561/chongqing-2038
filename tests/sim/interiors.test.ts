@@ -42,7 +42,8 @@ describe('enterable buildings (M3-04)', () => {
   });
   it('walks in from the street and climbs the stairwell to the roof', async () => {
     await settle();
-    const lot = open.find(l => (l.wall - l.base) / 3 >= 4)!;
+    // (One whose stairwell isn't blocked part-way: U-069.)
+    const lot = open.find(l => (l.wall - l.base) / 3 >= 4 && l.blocked === undefined)!;
     const s = createState(1, w);
     const route = lot.route!;
     unlock(s, w, route);

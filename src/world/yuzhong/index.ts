@@ -379,7 +379,7 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
   const s0 = out.solids.length, c0 = out.climbables.length, pt = place(f, o, p.seed, out);
   if (l.route) l.route = l.route.map(q => { const [x, z] = pt(q.x, q.z); return { ...q, x, z }; });
   out.lots.push(l);
-  return { corners: corners(o), base: p.base, wall: p.wall, top: l.top, kind: l.kind, row: p.row, found: low - 1, route: l.route, far: p.far, osm: p.osm,
+  return { corners: corners(o), base: p.base, wall: p.wall, top: l.top, kind: l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, far: p.far, osm: p.osm,
     own: { solids: [s0, out.solids.length], climbables: [c0, out.climbables.length] } };
 }
 

@@ -26,7 +26,7 @@ const SEWER = { w: 1.6, h: 2 }, CRAWL = { w: 0.9, h: 0.9 }, T = 0.3, SHAFT = 0.6
  *  old tunnels' spaces; under: the underground's solids (cut where a run meets them) and its spaces (no run's lining
  *  stands in them). */
 export function sewers(manholes: Feature[], plots: Plot[], g: Heightfield, walks: V3[], avoid: Box[], under: Solid[], spaces: Box[]): Sewers {
-  const r = makeRng(hashString('sewers'));
+  const r = makeRng(hashString('sewers')), f = makeRng(hashString('sewers:fates'));
   const out: Sewers = { solids: [], decor: [], climbables: [], water: [], zones: [], features: [], props: [], inter: [] };
   const nodes: V3[] = manholes.map(f => ({ x: f.x, y: f.y, z: f.z }));
   // Plots by 32 m cell, for the depth under foundations and basements.
@@ -62,7 +62,7 @@ export function sewers(manholes: Feature[], plots: Plot[], g: Heightfield, walks
   };
   /** Dig a run from node i's shaft to b at level y; a sewer, a crawlway, or a sewer with a flooded sump in its first
    *  leg. Returns whether it was dug. */
-  const dig = (i: number, b: V3, y: number, kind: 'sewer' | 'crawl' | 'sump') => {
+  const dig = (i: number, b: V3, y: number, kind: 'sewer' | 'crawl' | 'sump', fate: 'dry' | 'wade' | 'plug' = 'dry') => {
     // (Never down at the river's level: under it everything is flooded.)
     if (y - (kind === 'sump' ? DIP : 0) < WATER_Y + 1) return false;
     const a = { ...nodes[i], y }, z = kind === 'crawl' ? CRAWL : SEWER, ls = legs(a, { ...b, y });
@@ -78,6 +78,14 @@ export function sewers(manholes: Feature[], plots: Plot[], g: Heightfield, walks
       out.water.push({ x0: dip.x0, y0: y - DIP, z0: dip.z0, x1: dip.x1, y1: y + 0.2, z1: dip.z1 });
       out.features.push({ kind: 'sump', x: (dip.x0 + dip.x1) / 2, y: y - DIP, z: p.z, group: out.features.length });
     }
+    // Standing water the length of it, knee to waist deep (U-069); or a collapse plugging it half way along its first
+    // leg, the brick and earth come down to the roof.
+    if (fate === 'wade') { const d = 0.6 + rand(f) * 0.5; for (const l of ls) out.water.push(boxOf(l, y - 0.1, y + d, z.w / 2)); out.features.push({ kind: 'flood', x: (ls[0][0].x + ls[0][1].x) / 2, y, z: (ls[0][0].z + ls[0][1].z) / 2, group: out.features.length }); }
+    if (fate === 'plug') {
+      const [p, q] = ls[0], m = { x: (p.x + q.x) / 2, z: (p.z + q.z) / 2 }, ax = Math.abs(q.x - p.x) > Math.abs(q.z - p.z);
+      out.solids.push(solid(m.x - (ax ? 0.8 : z.w / 2 + 0.05), y, m.z - (ax ? z.w / 2 + 0.05 : 0.8), m.x + (ax ? 0.8 : z.w / 2 + 0.05), y + z.h, m.z + (ax ? z.w / 2 + 0.05 : 0.8), MAT.rubble));
+      out.features.push({ kind: 'plug', x: m.x, y, z: m.z, group: out.features.length });
+    }
     if (kind === 'crawl') out.features.push({ kind: 'crawlway', x: (ls[0][0].x + ls[0][1].x) / 2, y, z: ls[0][0].z, group: out.features.length });
     // A gutter down the middle of a sewer.
     if (kind !== 'crawl') for (const [p, q] of ls) out.decor.push({ ...solid(Math.min(p.x, q.x) - 0.15, y, Math.min(p.z, q.z) - 0.15, Math.max(p.x, q.x) + 0.15, y + 0.02, Math.max(p.z, q.z) + 0.15, MAT.water), inner: true });
@@ -92,8 +100,11 @@ export function sewers(manholes: Feature[], plots: Plot[], g: Heightfield, walks
       const k = i < j ? `${i},${j}` : `${j},${i}`;
       if (done.has(k)) continue;
       done.add(k);
-      const y = level(a, nodes[j]), q = rand(r), kind = q < 0.25 ? 'crawl' : q < 0.35 && Math.abs(nodes[j].x - a.x) > 30 ? 'sump' : 'sewer';
-      if (dig(i, nodes[j], y, kind)) {
+      const y = level(a, nodes[j]), q = rand(r), long = Math.abs(nodes[j].x - a.x) > 30, kind0 = q < 0.25 ? 'crawl' : q < 0.35 && long ? 'sump' : 'sewer';
+      // (Drowned and blocked more often since U-069, by a stream of its own so the same runs are dug: a sewer flooded
+      // to the roof in a dip, standing in water, or plugged.)
+      const g = rand(f), kind = kind0 === 'sewer' && long && g < 0.3 ? 'sump' : kind0, fate = kind0 !== 'sewer' ? 'dry' : g < 0.3 ? (long ? 'dry' : 'wade') : g < 0.6 ? 'wade' : g < 0.72 ? 'plug' : 'dry';
+      if (dig(i, nodes[j], y, kind, fate) || (kind !== kind0 && dig(i, nodes[j], y, kind0, 'wade'))) {
         deepest[j] = Math.min(deepest[j], y);
         out.features.push({ kind: 'drain', x: a.x, y, z: a.z, group: out.features.length }, { kind: 'drain', x: nodes[j].x, y, z: nodes[j].z, group: out.features.length });
       }

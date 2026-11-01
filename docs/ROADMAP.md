@@ -941,7 +941,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-89** Stairwells and trapdoors seen through (U-066)
   - No floor tile, finish or slab is drawn over a stairwell, a trapdoor or any opening in the apartments' floors: he sees down and up through them
   - Sim/render test: every stair and trapdoor opening in the city has nothing drawn across it; a screenshot looking down a stairwell
-- [x] **M4-90** Lootable things plain to see (U-066)
+- [-] **M4-90** Lootable things plain to see (U-066)
   - What he can search or pick up is obvious: an outline or glow on it and a small mark when he looks its way, near enough; searched and empty, it goes plain again
   - E2e: a lootable container and a dropped item are marked in a screenshot, a searched-empty one is not
 - [x] **M4-91** Most street doors shut (U-066)
@@ -969,7 +969,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - The giant walkers look less like spiders and more like eldritch horrors: taller than they are wide, all white, a small main body held high on many giant jointed legs that make up most of them
   - A few different variations (leg count, body shape, how they stand and step), each street giant one of them
   - Screenshots of each variation walking
-- [ ] **M4-94** Blocked stairways and drowned sewers (U-069)
+- [x] **M4-94** Blocked stairways and drowned sewers (U-069)
   - Stairways are blocked part-way more often (rubble, a fallen slab, a welded grille), so a building often can't be climbed all the way by its stairs
   - Sewer and tunnel passages blocked more often too, and many more of them flooded (wading or swimming, some full to the roof)
   - Sim test: the share of stairways and sewer passages blocked and flooded per district; the ways round still exist
