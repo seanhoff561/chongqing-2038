@@ -55,7 +55,9 @@ export const items: ItemDef[] = [
   I('picks', '发夹撬锁', 'Improvised lockpick', 1, 1, 0.02, 'tool', 'Bent hairpins. Three uses.', { stack: 3, uses: ['pick-lock', 'pick-padlock'] }),
   I('boltcutters', '断线钳', 'Bolt cutters', 1, 3, 2.5, 'tool', 'Cut chains, padlocks, fences, grates and cables.', { uses: ['cut-chain', 'cut-fence', 'cut-cable'] }),
   I('rope', '绳索', 'Rope and carabiners', 2, 2, 2, 'tool', '20 m static rope.', { uses: ['rappel', 'fixed-line', 'trolley-part'] }),
-  I('gloves', '攀爬手套', 'Climbing gloves', 1, 1, 0.2, 'wear', 'Better grip: hanging and pipes cost half.', { uses: ['grip', 'protect-hands'] }),
+  // Chalk, not climbing gloves (U-053): chalked hands hang longer while there's chalk in the bag; a block refills it.
+  I('chalk', '镁粉袋', 'Chalk bag', 1, 1, 0.2, 'wear', 'Chalked hands: hanging and pipes cost half while the chalk lasts.', { uses: ['grip'] }),
+  I('chalkblock', '镁粉块', 'Chalk block', 1, 1, 0.06, 'misc', 'Crumbled into a chalk bag, fills it.', { stack: 3, uses: ['refill-chalk'] }),
   I('insgloves', '绝缘手套', 'Insulated gloves', 1, 1, 0.4, 'wear', 'Rated for live electrical work.', { uses: ['insulate', 'grip'] }),
   I('headlamp', '头灯', 'Headlamp', 1, 1, 0.1, 'wear', 'White or dim red light.', { uses: ['light', 'read-dark'] }),
   I('binoculars', '望远镜', 'Binoculars', 2, 1, 0.6, 'tool', '10x. Anna logs what you watch.', { uses: ['zoom', 'patrol-log'] }),

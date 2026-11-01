@@ -22,7 +22,7 @@ export const loot: Record<string, LootTable> = {
   workshop: { rolls: [1, 2], empty: 0.3, items: [
     { id: 'toolbox', w: 3 }, { id: 'foldcrate', w: 2 },
     { id: 'tape', w: 4 }, { id: 'rods', w: 3 }, { id: 'crowbar', w: 1 }, { id: 'clips', w: 2 }, { id: 'cable', w: 2 },
-    { id: 'scootercells', w: 2 }, { id: 'gloves', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] },
+    { id: 'scootercells', w: 2 }, { id: 'chalk', w: 1 }, { id: 'chalkblock', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] },
   ] },
   car: { rolls: [0, 2], empty: 0.35, items: [
     { id: 'water', w: 4 }, { id: 'crackers', w: 2 }, { id: 'firstaid', w: 1 }, { id: 'tape', w: 2 }, { id: 'cable', w: 2 },

@@ -14,6 +14,7 @@ import { free, moveHorizontal, moveVertical, groundGap } from './physics';
 import { startAction, kickOff } from './parkour';
 import { lim, sfx, lookDelta } from './move';
 import { heldStack } from './use';
+import { chalkHands } from './chalk';
 
 const HW = M.width / 2;
 const G = M.grip;
@@ -152,7 +153,8 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
   const grips = p.hands.map(h => h.grip).filter((g): g is Grip => g !== null);
   if (!grips.length) { releaseAll(p); return; }
   const scale = (grips.every(g => g.kind === 'rung') ? G.ladderScale : 1) / L.climbScale;
-  p.endurance -= (grips.length > 1 ? G.drainTwo : G.drainOne) * scale * DT;
+  // Chalked hands hold longer (U-053).
+  p.endurance -= (grips.length > 1 ? G.drainTwo : G.drainOne) * scale * chalkHands(s) * DT;
   if (p.endurance <= 0) { p.endurance = 0; p.exhausted = true; releaseAll(p, 0.5); sfx(s, 'slip'); return; }
   if (input.pressed & B.DROP) { releaseAll(p, 0.4); sfx(s, 'release'); return; }
   // He hangs and pulls from the higher hand; sideways he sits between them.

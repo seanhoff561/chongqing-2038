@@ -44,6 +44,8 @@ export const movement = {
   wallKick: { reach: 0.8, max: 2, upMin: 0.12, runAcross: 0.64, runInto: 0.85, runAway: 0.6, upPitch: 0.45, upSpeed: 4.6, speed: 5.5, up: 3.4, pitchUp: 1.5, minAway: 0.35, alongMax: 0.5 },
   /** hand climbing (U-002): grips, reach, reeling, mantles over lips, dynos */
   grip: {
+    /** chalked hands' share of the drain, and the seconds of hanging a bag of chalk lasts (U-053) */
+    chalk: 0.5, chalkSecs: 600,
     rayReach: 1.6, heightReach: 2.2, lowest: 0.9, lowestCrouched: -0.3, lipDepth: 0.35, edgeBand: 0.4, pipeRadius: 0.3,
     pullMin: 1.15, hangMax: 2.1, pullSpeed: 1.1, wallGap: 0.4,
     /** spring toward the hanging spot, and how hard one or two hands can pull before slipping (U-004) */

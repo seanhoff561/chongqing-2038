@@ -13,7 +13,7 @@ import { damage } from './body';
 import { onUseId } from './use';
 
 /** What he hangs from, best first: its friction along the line. */
-const RIDERS: [string, number][] = [['trolley', 0.03], ['pulley', 0.04], ['hook', 0.08], ['grapple', 0.08], ['insgloves', 0.16], ['gloves', 0.16]];
+const RIDERS: [string, number][] = [['trolley', 0.03], ['pulley', 0.04], ['hook', 0.08], ['grapple', 0.08], ['insgloves', 0.16]];
 /** His hands above his feet, hanging; how close to a line they must be to take it. */
 const HANG = 2.05, REACH = 0.7;
 const MAX_LEN = 40, MIN_FALL = 0.1, TOP = 18;

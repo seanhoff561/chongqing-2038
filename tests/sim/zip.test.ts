@@ -47,7 +47,7 @@ describe('ziplines (M3-52)', () => {
   });
   it('needs something to hang from: bare hands slip', () => {
     expect(onLine(6, []).state.player.mode).not.toBe('zip');
-    expect(onLine(6, ['gloves']).state.player.mode).toBe('zip');
+    expect(onLine(6, ['insgloves']).state.player.mode).toBe('zip');
   });
   it('a live line throws him off with a shock, unless his gloves are insulated', () => {
     const r = onLine(6, ['trolley'], { live: true });
