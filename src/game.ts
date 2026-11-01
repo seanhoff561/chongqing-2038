@@ -90,6 +90,8 @@ export class Game {
   private heldModel: THREE.Object3D | null = null;
   readonly gun = new GunFeel();
   readonly motion = new HeldMotion();
+  private grabAge = 0;
+  private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
   private acc = 0;
   private last = 0;
@@ -315,7 +317,9 @@ export class Game {
     this.hideView.update(p.mode === 'hidden' && p.hideId >= 0 ? this.world.hides[p.hideId] ?? null : null);
     if (!this.hands.ready || !this.hands.group.visible) return;
     const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;
-    const readied = !held && findGrab(this.world, p) !== null;
+    // (Whether a hold's in reach, for the hands raised ready: looked for every fourth frame, it costs a millisecond.)
+    if (++this.grabAge >= 4) { this.grabAge = 0; this.readied = !held && findGrab(this.world, p) !== null; }
+    const readied = !held && this.readied;
     const task = this.state.task, reload = task?.id === 'reload' ? task.t / task.dur : -1;
     // Faster easing while striding so the arm swing keeps up with the steps.
     const k = 1 - Math.exp(-(p.mode === 'ground' && p.onGround ? 26 : 14) * dt);

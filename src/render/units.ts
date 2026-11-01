@@ -20,15 +20,23 @@ const LIGHT = { unaware: new THREE.Color(1, 1, 1), suspicious: new THREE.Color(1
 const BOOST = { value: 1 };
 const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, quadruped: 0.45, carrier: 1.1, delivery: 0.11 };
 
-/** Every unit in one batch, each part of it an instance: one draw call for all the machines near him. */
+/** How many of each kind can be drawn at once (M4-83): the nearest within NEAR get an instance set from their kind's
+ *  pool, so the batch (and the matrices it uploads each frame) is sized to what's near him, not to the whole city. */
+const POOL: Partial<Record<UnitKind, number>> = { humanoid: 110, quadruped: 110, drone: 40, hunter: 30, heavy: 8, carrier: 16, delivery: 16, camera: 160, sweeper: 8, turret: 40, pir: 12, tripwire: 4, acoustic: 8 };
+/** Frames between looks at a unit last seen this far past NEAR: none comes 50 m in half a second. */
+const RECHECK = 30;
+
+/** Every unit near him in one batch, each part of it an instance: one draw call for all the machines near him. */
 export class UnitView {
   readonly group = new THREE.Group();
   private batch: THREE.BatchedMesh;
-  /** each unit's instances (one a part), and whether it's drawn */
-  private ids: number[][] = [];
-  private on: boolean[] = [];
-  /** each unit's lights as last set */
+  /** each kind's instance sets (one instance a part) and which are free */
+  private pool = new Map<UnitKind, { sets: number[][]; free: number[] }>();
+  /** each unit's instance set from its kind's pool (-1: not drawn), its lights as last set, frames till it's looked at
+   *  again if it was far */
+  private slot: number[] = [];
   private lit: (keyof typeof LIGHT)[] = [];
+  private wait: number[] = [];
   /** each unit as last drawn: where and when (real seconds), its speed eased, its stride's phase, gun up, crouched */
   private last: { x: number; z: number; t: number; speed: number; phase: number; aim: number; crouch: number }[] = [];
   private m = new THREE.Matrix4();
@@ -38,7 +46,8 @@ export class UnitView {
   private anim: Anim = { speed: 0, phase: 0, aim: 0, crouch: 0, t: 0 };
 
   constructor(units: Unit[]) {
-    const verts = KINDS.reduce((a, k) => a + RIGS[k].parts.reduce((b, g) => b + g.attributes.position.count, 0), 0);
+    const kinds = KINDS.filter(k => POOL[k]), n = (k: UnitKind) => Math.min(POOL[k]!, units.filter(u => u.kind === k).length);
+    const verts = kinds.reduce((a, k) => a + RIGS[k].parts.reduce((b, g) => b + g.attributes.position.count, 0), 0);
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     // (Each unit's colour tints its lights only, not its paint.)
     mat.onBeforeCompile = sh => {
@@ -48,27 +57,45 @@ export class UnitView {
       sh.fragmentShader = 'varying float vGlow;\nvarying vec3 vTint;\nuniform float boost;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive + vColor.rgb * vGlow * vTint * boost;');
     };
     mat.customProgramCacheKey = () => 'units';
-    this.batch = new THREE.BatchedMesh(Math.max(1, units.reduce((a, u) => a + RIGS[u.kind].parts.length, 0)), verts, 0, mat);
-    const geo = Object.fromEntries(KINDS.map(k => [k, RIGS[k].parts.map(g => this.batch.addGeometry(g))])) as Record<UnitKind, number[]>;
-    for (const u of units) {
-      this.ids.push(geo[u.kind].map(g => { const id = this.batch.addInstance(g); this.batch.setVisibleAt(id, false); this.batch.setColorAt(id, LIGHT.unaware); return id; }));
-      this.on.push(false);
-      this.lit.push('unaware');
-      this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: u.id, aim: 0, crouch: 0 });
+    this.batch = new THREE.BatchedMesh(Math.max(1, kinds.reduce((a, k) => a + n(k) * RIGS[k].parts.length, 0)), Math.max(1, verts), 0, mat);
+    for (const k of kinds) {
+      const geo = RIGS[k].parts.map(g => this.batch.addGeometry(g)), sets: number[][] = [];
+      for (let i = 0; i < n(k); i++) sets.push(geo.map(g => { const id = this.batch.addInstance(g); this.batch.setVisibleAt(id, false); this.batch.setColorAt(id, LIGHT.unaware); return id; }));
+      this.pool.set(k, { sets, free: sets.map((_, i) => i).reverse() });
     }
     this.batch.frustumCulled = false;
     this.group.add(this.batch);
+  }
+
+  /** Its kind's instance set back in the pool. */
+  private release(i: number, kind: UnitKind) {
+    const pl = this.pool.get(kind)!;
+    for (const id of pl.sets[this.slot[i]]) this.batch.setVisibleAt(id, false);
+    pl.free.push(this.slot[i]);
+    this.slot[i] = -1;
   }
 
   update(w: World, units: Unit[], time: number, cam: THREE.Vector3) {
     let shown = 0;
     const t = time / SCALE, a = this.anim;
     BOOST.value = 1 + 1.6 * night.k;
+    while (this.slot.length < units.length) { this.slot.push(-1); this.lit.push('unaware'); this.wait.push(0); this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: this.last.length, aim: 0, crouch: 0 }); }
     units.forEach((u, i) => {
+      const pl = this.pool.get(u.kind);
+      if (!pl) return;
+      // (Far off last time: looked at again only now and then.)
+      if (this.wait[i] > 0) { this.wait[i]--; return; }
       // (An idle camera's housing still shows, M4-16, and a machine that's out where it stopped, M4-17.)
-      const p = unitPose(w, u, time), on = (p.active || u.cam !== undefined || !!u.stop) && u.kind !== 'lamppost' && Math.hypot(p.x - cam.x, p.z - cam.z) <= NEAR;
-      if (on !== this.on[i]) { for (const id of this.ids[i]) this.batch.setVisibleAt(id, on); this.on[i] = on; }
-      if (!on) return;
+      const p = unitPose(w, u, time), d2 = Math.hypot(p.x - cam.x, p.z - cam.z), on = (p.active || u.cam !== undefined || !!u.stop) && d2 <= NEAR;
+      if (!on) { if (this.slot[i] >= 0) this.release(i, u.kind); if (d2 > NEAR + 50) this.wait[i] = RECHECK; return; }
+      if (this.slot[i] < 0) {
+        const k = pl.free.pop();
+        if (k === undefined) return;
+        this.slot[i] = k;
+        for (const id of pl.sets[k]) { this.batch.setVisibleAt(id, true); this.batch.setColorAt(id, LIGHT[this.lit[i]]); }
+        this.last[i].t = -1;
+      }
+      const ids = pl.sets[this.slot[i]];
       // How it moves: its speed and stride from where it was (not across a jump: first drawn, or put somewhere), its
       // rifle up while it has him in its sights, crouched at the cover it holds.
       const L = this.last[i], dt = t - L.t, d = Math.hypot(p.x - L.x, p.z - L.z), k = Math.min(1, Math.max(0, dt) * 6);
@@ -77,14 +104,14 @@ export class UnitView {
       L.aim += ((u.aim ? 1 : 0) - L.aim) * k; L.crouch += (crouch - L.crouch) * k;
       L.x = p.x; L.z = p.z; L.t = t;
       const lit = u.dead || u.shut || !p.active ? 'out' : u.state;
-      if (lit !== this.lit[i]) { for (const id of this.ids[i]) this.batch.setColorAt(id, LIGHT[lit]); this.lit[i] = lit; }
+      if (lit !== this.lit[i]) { for (const id of ids) this.batch.setColorAt(id, LIGHT[lit]); this.lit[i] = lit; }
       Object.assign(a, { speed: u.dead || u.shut ? 0 : L.speed, phase: L.phase, aim: L.aim, crouch: L.crouch, t: u.dead || u.shut ? 0 : t + u.id });
       this.m.makeRotationY(p.yaw).setPosition(p.x, p.y, p.z);
       // A tripwire's beam stretched to its far end.
       const to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;
       if (to) this.m.multiply(this.s.makeScale(1, 1, Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z)));
       RIGS[u.kind].pose(a, this.parts);
-      this.ids[i].forEach((id, j) => this.batch.setMatrixAt(id, this.part.multiplyMatrices(this.m, this.parts[j])));
+      ids.forEach((id, j) => this.batch.setMatrixAt(id, this.part.multiplyMatrices(this.m, this.parts[j])));
       shown++;
     });
     this.batch.visible = shown > 0;

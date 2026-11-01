@@ -294,11 +294,22 @@ export const isSmall = (p: Prop) => SMALL.has(p.kind);
 
 /** Small props by themselves (M4-01c: the big city builds them a cell at a time as he nears it), merged per chunk
  *  and drawn near only; `share` of the loose litter. */
+/** Small props already built, kept to be used again (M4-83: building every one anew made a cell's streaming a hitch):
+ *  a few looks of each kind and size (to half a metre), every prop that hashes to a look drawn as it. */
+const LOOKS = 6, made = new Map<string, THREE.Object3D | null>();
+const half = (v?: number) => (v === undefined ? '' : Math.round(v * 2));
+function look(p: Prop): THREE.Object3D | null {
+  const k = `${p.kind}|${half(p.w)}|${half(p.h)}|${half(p.d)}|${p.text ?? ''}|${p.gap ?? ''}|${(((Math.round(p.x * 13) * 73856093) ^ (Math.round(p.z * 7) * 19349663)) >>> 0) % LOOKS}`;
+  let o = made.get(k);
+  if (o === undefined) { const b = builders[p.kind]; o = b ? b(p) : libProp(p); made.set(k, o); }
+  return o;
+}
+
 export function smallProps(props: Prop[], share = 1): THREE.Mesh[] {
   const small = new ChunkMerger();
   for (const p of props) {
     if (!keep(p, share)) continue;
-    const b = builders[p.kind], o = b ? b(p) : libProp(p);
+    const o = look(p);
     if (!o) continue;
     o.position.set(p.x, p.y, p.z);
     o.rotation.y = p.yaw;

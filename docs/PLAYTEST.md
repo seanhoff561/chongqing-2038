@@ -190,3 +190,6 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 
 ## M4-77 to M4-81 (U-057 to U-060)
 - Hold the pistol: does the right thumb lie forward along the frame's side, clear of the gun, and the hand sit in its sleeve with no heel showing? The crowbar held as it was before? Click the crowbar quickly a few times: no "nothing to use it on". Fire: no muzzle flash. Eat noodles and drink water: the rustle and chewing, the gulps. Click into the game: it stays windowed (F11 for fullscreen); Ctrl+W while playing asks first. In a narrow gap, X braces you and Space just jumps.
+
+## M4-83: the frame rate (U-061)
+- Walk and run through Jiefangbei and Jiaochangkou by day and at night with the dev panel open (?dev=1): what frame rate does it hold, and what are the frame times (sim, render)? Any hitches as you move into new streets? Teleport somewhere: a moment's load, then smooth? Hold 144 fps or tell me where it drops and by how much.

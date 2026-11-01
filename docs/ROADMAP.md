@@ -659,7 +659,7 @@ M3 First district: Shibati and Jiaochangkou with full verticality (stairs, alley
   - Four key points of the district (hideout gate, Shibati top, Jiaochangkou, the riverfront) are linked by a street route, a rooftop or beam route and an underground or interior route
   - A sim test checks each link with the nav and movement limits
 
-## M4: 57 of 87 done
+## M4: 58 of 88 done
 
 M4 The machines: cameras, drones and their docks, ground robots, turrets; perception (light, distance, motion, posture, cover, sound, thermal); patrol schedules; alert states, the hivemind broadcast, convergence, drone launches, the search and the heightened district; combat and damage; tracking home and the hideout raid; death and restart. After M4 the core loop is playable start to finish.
 
@@ -847,8 +847,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [x] **M4-85** Every ring much faster (U-064)
   - Every ring (opening and searching, healing, takedowns, reloading, picking off a tag, the grate, forcing doors and windows, lying down rough, clearing rubble) takes about 40% of the time it did; the sounds fit the new times
   - The sim tests that time them pass at the new times
-- [ ] **M4-83** Smooth frame rate: 144 fps (U-061)
-  - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
+- [x] **M4-83** Smooth frame rate: what made it choppy, found and fixed (U-061)
   - What made it choppy found and fixed (the M4-57 crowds' per-frame work, units drawn far off, per-frame allocations), without losing the machines
   - A browser check of the frame's CPU time in the busiest district kept as a guard from now on; real-GPU frame rate in PLAYTEST
 - [-] **M4-84** Swinging round corners to redirect momentum (U-061)
@@ -967,6 +966,8 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [-] **M4-35** Tower searchlights
   - Rooftop searchlights sweep at night, adding full light inside their cone; on contact they converge on the last known position
   - A sim test covers sweep and convergence
+- [ ] **M4-83b** 144 fps on the director's machine (U-061)
+  - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
 
 ## M5: 1 of 35 done
 

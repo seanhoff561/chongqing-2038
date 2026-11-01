@@ -206,29 +206,45 @@ export class View {
     return c;
   }
   /** Every frame: the nearest cell within reach of the detail radius (and 120 m more) whose near layers aren't
-   *  built gets them, one a frame; a cell 400 m past it lets its go. */
+   *  built gets them, a piece at a time (its trims, rooms and small props in 128 m squares, as many as fit in a few
+   *  milliseconds: building a whole cell in one frame was a hitch, U-061); a cell 400 m past it lets its go. Put
+   *  somewhere new (a teleport), everything near him is built at once, as a loading moment (not at boot: there the
+   *  loading screen is up for the first cells and the rest stream in). */
+  private streamFrom = new THREE.Vector3(Infinity, 0, 0);
   private streamCells(c: THREE.Vector3) {
+    const jumped = Number.isFinite(this.streamFrom.x) && this.streamFrom.distanceTo(c) > 60;
+    this.streamFrom.copy(c);
+    if (jumped) { for (let k = 0; k < 64 && this.streamStep(c, Infinity); k++); return; }
+    this.streamStep(c, STREAM_MS);
+  }
+  /** One step of the streaming within a time budget; false if nothing near was left to build. */
+  private streamStep(c: THREE.Vector3, budget: number): boolean {
     const reach = PRESETS[this.preset].detail, d = (q: { x: number; z: number }) => Math.hypot(Math.max(q.x - c.x, 0, c.x - q.x - 256), Math.max(q.z - c.z, 0, c.z - q.z - 256));
     let next: StreamCell | null = null;
     for (const q of this.stream.values()) {
       const dq = d(q);
-      if (!q.meshes && dq < reach + 120 && (!next || dq < d(next))) next = q;
-      else if (q.meshes && dq > reach + 400) { for (const m of q.meshes) { m.removeFromParent(); m.geometry.dispose(); } q.meshes = null; }
+      if ((!q.meshes || q.jobs?.length) && dq < reach + 120 && (!next || dq < d(next))) next = q;
+      else if (q.meshes && dq > reach + 400) { for (const m of q.meshes) { m.removeFromParent(); m.geometry.dispose(); } q.meshes = null; q.jobs = undefined; }
     }
-    if (!next) return;
-    next.meshes = nearLayers(next.detail, next.rooms, next.props, this.share);
+    if (!next) return false;
+    if (!next.meshes) { next.meshes = []; next.jobs = cellJobs(next, this.share); }
     let cell = this.cellAt.get(next.k);
     if (!cell) { this.cellAt.set(next.k, (cell = new THREE.Group())); cell.userData.rect = [next.x, next.z, next.x + 256, next.z + 256]; cell.matrixAutoUpdate = false; cell.userData.frozen = true; this.world.add(cell); this.cells.push(cell); }
-    for (const m of next.meshes) {
-      m.geometry.computeBoundingBox();
-      const b = m.geometry.boundingBox!;
-      m.userData.rect = [b.min.x, b.min.z, b.max.x, b.max.z];
-      m.matrixAutoUpdate = false; m.userData.frozen = true;
-      const r = cell.userData.rect;
-      r[0] = Math.min(r[0], b.min.x); r[1] = Math.min(r[1], b.min.z); r[2] = Math.max(r[2], b.max.x); r[3] = Math.max(r[3], b.max.z);
-      cell.add(m);
+    const t0 = performance.now();
+    while (next.jobs!.length && performance.now() - t0 < budget) {
+      for (const m of next.jobs!.shift()!()) {
+        m.geometry.computeBoundingBox();
+        const b = m.geometry.boundingBox!;
+        m.userData.rect = [b.min.x, b.min.z, b.max.x, b.max.z];
+        m.matrixAutoUpdate = false; m.userData.frozen = true;
+        const r = cell.userData.rect;
+        r[0] = Math.min(r[0], b.min.x); r[1] = Math.min(r[1], b.min.z); r[2] = Math.max(r[2], b.max.x); r[3] = Math.max(r[3], b.max.z);
+        cell.add(m);
+        next.meshes.push(m);
+      }
     }
     this.visFar = -1;
+    return true;
   }
 
   render(t = 0, open: Record<string, boolean> = {}) {
@@ -259,7 +275,20 @@ export class View {
 }
 
 /** A 256 m cell of the near layers: its corner, its trims and rooms, their meshes while built. */
-type StreamCell = { k: number; x: number; z: number; detail: Solid[]; rooms: Solid[]; props: Prop[]; meshes: THREE.Mesh[] | null };
+type StreamCell = { k: number; x: number; z: number; detail: Solid[]; rooms: Solid[]; props: Prop[]; meshes: THREE.Mesh[] | null; jobs?: (() => THREE.Mesh[])[] };
+/** The milliseconds a frame spends building near cells (at least one piece a frame). */
+const STREAM_MS = 3;
+
+/** A cell's near layers as pieces to build one by one: its trims, its rooms and its small props, each a 128 m square. */
+function cellJobs(q: StreamCell, share: number): (() => THREE.Mesh[])[] {
+  const sq = <T>(xs: T[], at: (x: T) => [number, number]) => { const m = new Map<number, T[]>(); for (const x of xs) { const [px, pz] = at(x), k = (px - q.x < 128 ? 0 : 1) + (pz - q.z < 128 ? 0 : 2); (m.get(k) ?? m.set(k, []).get(k)!).push(x); } return [...m.values()]; };
+  const mid = (s: Solid): [number, number] => { const e = s.rot ?? s; return [(e.x0 + e.x1) / 2, (e.z0 + e.z1) / 2]; };
+  return [
+    ...sq(q.detail, mid).map(ss => () => nearLayers(ss, [], [], share)),
+    ...sq(q.rooms, mid).map(ss => () => nearLayers([], ss, [], share)),
+    ...sq(q.props, p => [p.x, p.z]).map(ps => () => nearLayers([], [], ps, share)),
+  ];
+}
 
 /** The near layers' meshes: the small trims and small props (drawn within the detail radius) and the rooms inside
  *  the buildings (within the rooms' radius), none casting shadows. */

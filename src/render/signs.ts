@@ -81,13 +81,14 @@ export function signs() {
   m.onBeforeCompile = sh => {
     sh.uniforms.scroll = scroll;
     sh.uniforms.alarm = alarm;
-    // (On alarm a ticker reads its alert strip, a row down the atlas, in red.)
+    // (On alarm a ticker reads its alert strip, a row down the atlas, in red: a deep one, that stays red when the
+    // signs are bright at night rather than washing out to pink.)
     sh.vertexShader = 'attribute float glow;\nuniform float scroll;\nuniform float alarm;\nvarying float vGlow;\n' + sh.vertexShader.replace('#include <color_vertex>', `#include <color_vertex>
 vGlow = min(glow, 1.0);
 float led = step(1.5, glow), red = led * step(0.5, alarm);
 vMapUv += vec2(led * scroll, -red * ${TH / S});
 vEmissiveMapUv += vec2(led * scroll, -red * ${TH / S});
-vColor.rgb = mix(vColor.rgb, vec3(1.0, 0.12, 0.06), red);`);
+vColor.rgb = mix(vColor.rgb, vec3(0.6, 0.02, 0.01), red);`);
     sh.fragmentShader = 'varying float vGlow;\n' + sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive * vColor.rgb * vGlow;');
   };
   m.customProgramCacheKey = () => 'signs';
