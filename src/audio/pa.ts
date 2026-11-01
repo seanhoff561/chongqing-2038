@@ -5,10 +5,11 @@
 // it's all muffled through the walls. No subtitles.
 import type { Audio } from './audio';
 
-/** How near a speaker is heard (m), how long after the chime the words start (s), the horn's band and lift, how loud
+/** How near a speaker is heard (m), how long after the chime the words start (s), the horn's band and its gentle lift
+ *  (U-095: softer, less metallic), how loud
  *  the horn is, and how the street's reverb grows with distance (its share of a speaker heard d m off: d / wet, at
  *  most `most`). */
-const PA = { hear: 90, words: 1.9, band: [380, 3600], lift: 2000, level: 0.9, wet: 120, most: 0.5, sound: 343 };
+const PA = { hear: 90, words: 1.9, band: [260, 4800], lift: 2000, liftDb: 1.5, level: 0.9, wet: 120, most: 0.5, sound: 343 };
 
 const lines = new Map<string, Promise<AudioBuffer | null>>();
 function line(a: Audio, id: string) {
@@ -27,7 +28,7 @@ function reverb(a: Audio) {
     const d = ir.getChannelData(c);
     for (let i = 0; i < n; i++) { s = (s * 1103515245 + 12345) >>> 0; d[i] = ((s / 2147483648) - 1) * Math.exp(-i / (ctx.sampleRate * 0.28)) * 0.5; }
     // A few slaps off the facades across the street.
-    for (const [t, g] of [[0.045, 0.5], [0.09, 0.32], [0.16, 0.22]]) d[Math.round(t * ctx.sampleRate) + c * 37] += g;
+    for (const [t, g] of [[0.045, 0.22], [0.09, 0.13], [0.16, 0.08]]) d[Math.round(t * ctx.sampleRate) + c * 37] += g;
   }
   street = ctx.createConvolver(); street.buffer = ir; street.connect(a.bus.voice);
   return street;
@@ -46,8 +47,8 @@ export function announce(a: Audio, id: string, from: { x: number; y: number; z: 
       // The horn: its band, a lift where speech carries, the air (and the walls, indoors) taking the top off far ones.
       const lo = ctx.createBiquadFilter(), hi = ctx.createBiquadFilter(), lift = ctx.createBiquadFilter(), level = ctx.createGain(), dry = ctx.createGain(), send = ctx.createGain();
       lo.type = 'highpass'; lo.frequency.value = PA.band[0];
-      hi.type = 'lowpass'; hi.frequency.value = indoors ? 700 : Math.max(1400, PA.band[1] - d * 22);
-      lift.type = 'peaking'; lift.frequency.value = PA.lift; lift.Q.value = 1; lift.gain.value = 4;
+      hi.type = 'lowpass'; hi.frequency.value = indoors ? 700 : Math.max(1600, PA.band[1] - d * 30);
+      lift.type = 'peaking'; lift.frequency.value = PA.lift; lift.Q.value = 0.8; lift.gain.value = PA.liftDb;
       level.gain.value = PA.level * (indoors ? 0.4 : 1);
       const w = Math.min(PA.most, d / PA.wet);
       dry.gain.value = 1 - w; send.gain.value = w * 0.6;
