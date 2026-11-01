@@ -4,12 +4,12 @@ export interface LootTable { rolls: [number, number]; empty: number; items: Loot
 
 export const loot: Record<string, LootTable> = {
   // Ordinary homes and shops (tier 1).
-  kitchen: { rolls: [0, 3], empty: 0.25, items: [
+  kitchen: { rolls: [1, 3], empty: 0.15, items: [
     { id: 'noodles', w: 6, n: [1, 3] }, { id: 'zhacai', w: 4 }, { id: 'luncheon', w: 2 }, { id: 'crackers', w: 3 },
     { id: 'water', w: 5 }, { id: 'bottle', w: 3 }, { id: 'buns', w: 2 }, { id: 'teaeggs', w: 2 }, { id: 'pork', w: 1 },
     { id: 'peaches', w: 2 }, { id: 'bread', w: 2 }, { id: 'sausage', w: 2 }, { id: 'knife', w: 1 }, { id: 'alcohol', w: 1 }, { id: 'tape', w: 1 },
   ] },
-  bedroom: { rolls: [0, 2], empty: 0.3, items: [
+  bedroom: { rolls: [1, 2], empty: 0.2, items: [
     { id: 'bedroll', w: 2 },
     { id: 'hairpins', w: 4 }, { id: 'cloth', w: 4 }, { id: 'painkillers', w: 2 }, { id: 'bandage', w: 2 }, { id: 'phone', w: 1 },
     { id: 'chocolate', w: 2 }, { id: 'energy', w: 2 }, { id: 'headlamp', w: 1 }, { id: 'mylar', w: 1 },
@@ -33,3 +33,11 @@ export const loot: Record<string, LootTable> = {
     { id: 'tourniquet', w: 1 }, { id: 'mylar', w: 1 },
   ] },
 };
+
+/** The rest of a home's containers, not the one chosen for it (U-085: homes were too bare): now and then one thing
+ *  left behind in each, from the table its kind would hold. */
+export const LEFTOVER = { chance: 0.3, of: { cabinet: 'kitchen', fridge: 'kitchen', drawer: 'bedroom', locker: 'bedroom', wardrobe: 'bedroom', crate: 'shop' } as Record<string, string> };
+
+/** Things lying loose on rooms' floors (U-085): how many of the spots hold something, and how near him (m) they're
+ *  rolled for the run. */
+export const LOOSE = { chance: 0.5, near: 30 };

@@ -61,6 +61,9 @@ const FLOORING: Record<Kind, number[]> = {
 };
 
 export type Rect = [number, number, number, number];
+/** How many rooms have a spot for something loose on the floor (U-085), and which loot table (data/loot LOOSE.tables)
+ *  each kind of room's rolls from (in the spot's kind: 'loose:<table>'). */
+const LOOSE_ROOMS = 0.3, LOOSE_ROOM: Partial<Record<Kind, string>> = { kitchen: 'kitchen', restaurant: 'kitchen', living: 'bedroom', bedroom: 'bedroom', office: 'bedroom', shop: 'shop', store: 'shop', workshop: 'workshop' };
 /** A room's frame: the lot, its floor's height and number, the building's frame (u along its long side, v across)
  *  and how far gone it is. */
 export interface Floor {
@@ -109,6 +112,13 @@ export function furnish(f0: Floor, rect: Rect, kind: Kind, keep: Rect[], fallen:
   for (let i = 0, k = randInt(r, 3) + (f.decay > 0.6 ? 1 : 0); i < k; i++) {
     const s = 0.6 + rand(r) * 1.2, u = u0 + rand(r) * Math.max(0, u1 - u0 - s), v = v0 + rand(r) * Math.max(0, v1 - v0 - s);
     out.decor.push(B(u, y + 0.046, v, u + s, y + 0.048, v + s * (0.5 + rand(r)), MAT.asphalt));
+  }
+  // Now and then a spot where something lies loose on the floor (U-085), by dice of its own so the rooms stay as they
+  // are (U-053); what's there, if anything, is rolled for the run as he comes near (sim/loose.ts).
+  const lr = makeRng(hashString(`loose:${f.l.id}:${f.k}:${u0.toFixed(1)},${v0.toFixed(1)}`)), lt = LOOSE_ROOM[kind];
+  if (lt !== undefined && rand(lr) < LOOSE_ROOMS) {
+    const lu = u0 + 0.4 + rand(lr) * Math.max(0, u1 - u0 - 0.8), lv = v0 + 0.4 + rand(lr) * Math.max(0, v1 - v0 - 0.8), lb: Rect = [lu - 0.25, lv - 0.25, lu + 0.25, lv + 0.25];
+    if (!placed.some(q => over(q, lb)) && !keep.some(q => over(q, lb))) { const [lx, lz] = f.at(lu, lv); out.features.push({ kind: `loose:${lt}`, x: lx, y: y + 0.05, z: lz, group: 0 }); }
   }
   // Where to look in from: a corner, across to the far one.
   const [ex, ez] = f.at(u0 + 0.3, v0 + 0.3), [lx, lz] = f.at(u1, v1);

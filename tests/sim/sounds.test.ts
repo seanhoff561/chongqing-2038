@@ -15,7 +15,12 @@ describe('the sounds of things (M4-50)', () => {
     // (Registered by the sim's modules as they load.)
     setup([floor()]);
     expect(interKinds().length).toBeGreaterThanOrEqual(8);
-    for (const k of interKinds()) { expect(START_SOUND[k], k).toBeDefined(); expect(has(START_SOUND[k](thing(k))), START_SOUND[k](thing(k))).toBe(true); }
+    // (Grates and trapdoors are worked in silence: U-086.)
+    const SILENT = new Set(['grate']);
+    for (const k of interKinds()) {
+      if (SILENT.has(k)) { expect(START_SOUND[k], k).toBeUndefined(); continue; }
+      expect(START_SOUND[k], k).toBeDefined(); expect(has(START_SOUND[k](thing(k))), START_SOUND[k](thing(k))).toBe(true);
+    }
     for (const type of Object.keys(CONTAINER)) expect(has(START_SOUND.container(thing('container', { type }))), type).toBe(true);
     // A locker searched: its clang as he starts.
     const { world, state } = setup([floor()], { x: 0, y: 0, z: 0, yaw: 0 }, { inter: [{ ...thing('container', { type: 'locker', items: [] }), id: 'l1' }] });

@@ -5,10 +5,14 @@ import { scenarios } from '../data/scenarios';
 import { clockText } from '../sim/clock';
 import { teleport } from '../sim/player';
 import { addItem, newUid } from '../sim/inventory';
+import { createBody } from '../sim/body';
 import { items } from '../data/items';
 import { MAGS } from '../data/units';
 import { SCALE } from '../sim/clock';
 import { PerceptionOverlay } from './perception';
+
+/** The creative picker's kinds, in order (U-088). */
+const CATS: Record<string, string> = { weapon: 'Weapons', ammo: 'Ammo', part: 'Attachments & parts', tool: 'Tools', device: 'Devices', throw: 'Throwables', med: 'Medical', food: 'Food', drink: 'Drink', wear: 'Wearables', key: 'Keys', misc: 'Misc' };
 
 export class DevPanel {
   readonly el: HTMLDivElement;
@@ -29,8 +33,8 @@ export class DevPanel {
       <div class="row">teleport <select class="tp"></select></div>
       <div class="row">scenario <select class="sc">${scenarios.map(s => `<option>${s.name}</option>`).join('')}</select></div>
       <div class="row">time <input type="range" class="time" min="0" max="24" step="0.25" style="width:110px"> <span class="clock"></span></div>
-      <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="raid">raid now</button></div>
-      <div class="row">item <select class="anyitem"></select> <button class="giveany">give</button> <button class="giveall">one of each</button></div>
+      <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="raid">raid now</button> <button class="heal">heal</button></div>
+      <div class="row">item <input class="itemsearch" placeholder="search" style="width:80px"> <select class="anyitem"></select> <button class="giveany">give</button> <button class="giveall">one of each</button></div>
       <div class="row extra"></div>`;
     document.body.appendChild(el);
     this.stats = el.querySelector('.stats')!;
@@ -51,10 +55,18 @@ export class DevPanel {
     };
     el.querySelectorAll<HTMLButtonElement>('[data-give]').forEach(b => { b.onclick = () => { const id = b.dataset.give!; addItem(game.state, game.state.inv.pack, id, 1, id === 'pistol' ? { charge: 15 } : {}); b.blur(); }; });
     el.querySelector<HTMLButtonElement>('.tag')!.onclick = () => { game.state.player.tag = true; };
+    // Healed at once (U-087): full health, no bleeding, breaks, sickness or tag, fed, watered and rested.
+    el.querySelector<HTMLButtonElement>('.heal')!.onclick = e => { Object.assign(game.state.body, createBody(), { satiety: 100, hydration: 100, energy: 100 }); game.state.player.tag = false; (e.target as HTMLButtonElement).blur(); };
     // Creative (U-080): any item in the game into his backpack (a pistol or magazine loaded), or one of each; what
     // doesn't fit lands at his feet.
-    const any = el.querySelector<HTMLSelectElement>('.anyitem')!;
-    any.innerHTML = items.map(i => `<option value="${i.id}">${i.en} · ${i.zh}</option>`).join('');
+    // (Sorted by kind, and narrowed as he types in the search box: U-088.)
+    const any = el.querySelector<HTMLSelectElement>('.anyitem')!, search = el.querySelector<HTMLInputElement>('.itemsearch')!;
+    const list = (q: string) => {
+      const m = items.filter(i => !q || `${i.en} ${i.zh} ${i.id}`.toLowerCase().includes(q.toLowerCase()));
+      any.innerHTML = Object.entries(CATS).map(([c, label]) => { const of = m.filter(i => i.cat === c); return of.length ? `<optgroup label="${label}">${of.map(i => `<option value="${i.id}">${i.en} · ${i.zh}</option>`).join('')}</optgroup>` : ''; }).join('');
+    };
+    list('');
+    search.oninput = () => list(search.value);
     const give = (id: string) => {
       const extra = id === 'pistol' ? { charge: 15 } : MAGS[id] ? { charge: MAGS[id] } : {};
       if (addItem(game.state, game.state.inv.pack, id, 1, extra) > 0) game.state.dropped.push({ stack: { uid: newUid(game.state), id, n: 1, x: 0, y: 0, rot: false, ...extra }, x: game.state.player.pos.x, y: game.state.player.pos.y, z: game.state.player.pos.z });

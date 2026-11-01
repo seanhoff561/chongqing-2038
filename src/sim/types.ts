@@ -63,7 +63,7 @@ export type SimEvent =
   | { t: 'shot'; x: number; y: number; z: number; /** a supersonic round that missed him, cracking past (M4-54) */ crack?: boolean };
 
 /** A stack he dropped (M3-72): lying where he let it go until he picks it up. */
-export interface Dropped { stack: import('./inventory').Stack; x: number; y: number; z: number }
+export interface Dropped { stack: import('./inventory').Stack; x: number; y: number; z: number; /** lying loose in a room from before (U-085), not his */ loose?: boolean }
 
 /** A piece of furniture he placed: its item id and where it stands. */
 export interface Placed { id: string; item: string; x: number; y: number; z: number; yaw: number }
@@ -123,7 +123,7 @@ export interface SimState {
   target: string | null;
   task: { id: string; t: number; dur: number } | null;
   /** dynamic world state: searched containers, opened doors, removed things */
-  wstate: { searched: Record<string, true>; open: Record<string, boolean>; gone: Record<string, true>; unlocked?: Record<string, true>; benches?: Record<string, true> };
+  wstate: { searched: Record<string, true>; open: Record<string, boolean>; gone: Record<string, true>; unlocked?: Record<string, true>; benches?: Record<string, true>; /** the floors' loose spots rolled so far (U-085) */ loose?: Record<string, true> };
   /** lines he has rigged with rope and hooks (M3-52), and the first hook of one he's rigging */
   lines?: import('../world/world').Line[];
   rig?: Vec3 | null;

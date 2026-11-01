@@ -30,7 +30,7 @@ export const interKinds = () => [...handlers.keys()];
  *  follows, a door swinging, a grate grinding, glass going, the handlers play.) */
 export const START_SOUND: Record<string, (it: Inter) => string> = {
   container: it => `open-${(it.data?.type as string | undefined) ?? 'crate'}`,
-  pickup: () => 'rustle', door: () => 'latch', grate: () => 'grip-iron', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
+  pickup: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
 };
 
 /** What the prompt says for an interactable: its kind's label for the moment, else its own name. */

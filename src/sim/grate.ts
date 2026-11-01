@@ -58,8 +58,8 @@ function inTheWay(s: SimState, w: World, it: Inter) {
   return false;
 }
 
-function sound(s: SimState, it: Inter, id: string, r: number) {
-  s.events.push({ t: 'sfx', id });
+/** What the machines near it hear (he hears nothing of it: U-083, U-086). */
+function sound(s: SimState, it: Inter, r: number) {
   s.events.push({ t: 'noise', x: it.x, y: it.y + 0.5, z: it.z, r, kind: 'grate' });
 }
 
@@ -82,16 +82,16 @@ onInteract('grate', {
       o[bagsId(it)] = true;
       (s.wstate.unlocked ??= {})[it.id] = true;
       w.index.off[doorSolid(it)] = 1;
-      sound(s, it, a === 'unbolt' ? 'grate-bolt' : 'grate-open', a === 'unbolt' ? GRATE.loud : GRATE.noise);
+      sound(s, it, a === 'unbolt' ? GRATE.loud : GRATE.noise);
     } else if (a === 'shut' || a === 'lower') {
       if (inTheWay(s, w, it)) { s.events.push({ t: 'msg', text: 'in the way' }); return; }
       o[it.id] = false;
       w.index.off[doorSolid(it)] = 0;
       if (a === 'shut') { o[bagsId(it)] = false; delete s.wstate.unlocked?.[it.id]; }
-      sound(s, it, a === 'shut' ? 'grate-bolt' : 'grate-shut', a === 'shut' ? GRATE.loud : GRATE.noise);
+      sound(s, it, a === 'shut' ? GRATE.loud : GRATE.noise);
     } else {
       o[bagsId(it)] = false;
-      sound(s, it, 'bags', GRATE.quiet);
+      sound(s, it, GRATE.quiet);
     }
   },
 });
@@ -101,7 +101,7 @@ export function giveaway(s: SimState, it: Inter): string | null {
   if (isOpen(s, it)) return 'the grate left open';
   if (bagsOff(s, it)) return 'the bags off the grate';
   const near = (x: number, y: number, z: number) => y > it.y - 1 && Math.hypot(x - it.x, z - it.z) < GRATE.near;
-  if (s.dropped.some(d => near(d.x, d.y, d.z)) || s.placed.some(p => near(p.x, p.y, p.z))) return 'his things left by the grate';
+  if (s.dropped.some(d => !d.loose && near(d.x, d.y, d.z)) || s.placed.some(p => near(p.x, p.y, p.z))) return 'his things left by the grate';
   return null;
 }
 

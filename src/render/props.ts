@@ -5,6 +5,7 @@ import { material, night } from './materials';
 import { MAT } from '../world/mats';
 import { textTexture } from './textures';
 import { mergeGeometries } from './view';
+import { HANDLE } from '../world/city/access';
 import { ChunkMerger } from './world-mesh';
 import { libProp, libKinds } from './props-lib';
 import { tickSigns } from './signs';
@@ -332,7 +333,7 @@ function swingers(props: Prop[]): THREE.Mesh[] {
     if (ps[0].kind === 'chain' || ps[0].kind === 'padlock') { out.push(locks(ps)); continue; }
     const door = ps[0].kind === 'door';
     // A unit slab: a door's from its hinge along +x, a pane's about its middle; each scaled to its size.
-    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(door ? 0.5 : 0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
+    const mesh = new THREE.InstancedMesh(door ? leaf() : new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), material(door ? MAT.metal : MAT.glass), ps.length);
     const place = (i: number, a: number) => {
       const p = ps[i];
       m.makeTranslation(p.x, p.y, p.z).multiply(q.makeRotationY(p.yaw + a)).multiply(sc.makeScale(p.w!, p.h!, p.d ?? (door ? 0.06 : 0.03)));
@@ -369,6 +370,20 @@ function swingers(props: Prop[]): THREE.Mesh[] {
     out.push(mesh);
   }
   return out;
+}
+
+/** A door's leaf, a unit slab from its hinge along +x, with a lever handle on each face near its free edge (U-083):
+ *  a round rose against the face and the lever back toward the hinge, at HANDLE's height (in the leaf's unit frame,
+ *  so it's scaled with the door, a little smaller on a small one). */
+let leafGeo: THREE.BufferGeometry | null = null;
+function leaf() {
+  if (leafGeo) return leafGeo;
+  const x = 0.5 + HANDLE.u, y = HANDLE.y, parts: THREE.BufferGeometry[] = [new THREE.BoxGeometry(1, 1, 1).translate(0.5, 0.5, 0)];
+  for (const s of [-1, 1]) {
+    parts.push(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 10).rotateX(Math.PI / 2).scale(1, 0.48, 1).translate(x + 0.04, y, s * 0.75));
+    parts.push(new THREE.BoxGeometry(0.15, 0.007, 0.35).translate(x - 0.025, y, s * 1.05));
+  }
+  return (leafGeo = mergeGeometries(parts));
 }
 
 /** A chunk's chains (rings) and padlocks (blocks) on chained and locked doors (U-066, U-079), merged into one mesh

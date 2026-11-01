@@ -20,6 +20,10 @@ export function roll(r: Rng, w: number[]): Lock {
 
 /** A door in a doorway: `box` fills it (made hidden, its collision), the leaf hinged at `hinge` running along
  *  `dir` (a unit step) `w` wide. */
+/** Where a door's handle is (render/props.ts draws it on the leaf): its height up the door and its middle out from
+ *  the door's middle toward the free edge, both as shares of the door's height and width. */
+export const HANDLE = { y: 0.47, u: 0.355 };
+
 export function door(id: string, box: Solid, hinge: [number, number], dir: [number, number], w: number, lock: Lock, out: Fabric, label: [string, string] = ['门', 'Door']) {
   if (lock === 'open') return;
   box.mat = MAT.hidden; box.part = id;
@@ -35,24 +39,21 @@ export function door(id: string, box: Solid, hinge: [number, number], dir: [numb
     for (let i = 0; i < 4; i++) put(a0 + ((a1 - a0) * i) / 4 - 0.1, a0 + ((a1 - a0) * (i + 1)) / 4 + 0.1, 0.3 + ((i * 37) % 10) / 40, box.y0, box.y0 + h * (0.45 + ((i * 53) % 10) / 25), MAT.rubble);
     put(a0 - 0.1, a1 + 0.1, 0.12, box.y0 + h * 0.62, box.y0 + h * 0.62 + 0.25, MAT.concrete);
   } else {
-    const yaw = Math.atan2(-dir[1], dir[0]), mx = hinge[0] + (dir[0] * w) / 2, mz = hinge[1] + (dir[1] * w) / 2, y = box.y0 + 1.0;
+    const yaw = Math.atan2(-dir[1], dir[0]), mx = hinge[0] + (dir[0] * w) / 2, mz = hinge[1] + (dir[1] * w) / 2, y = box.y0 + (box.y1 - box.y0) * HANDLE.y;
     out.props.push({ kind: 'door', x: hinge[0], y: box.y0, z: hinge[1], yaw, w, h: box.y1 - box.y0, d: 0.05, text: id });
-    // What holds it, plain to see (U-066), gone when it's forced: a chain wound across it and its padlock; a lock's
-    // hasp and padlock.
-    // What holds it, on both faces (U-072), gone when it's forced. Chained: a chain of links (rings, every other one
-    // turned) run across each face and a padlock hanging where its ends meet. Locked: a handle on each face, a padlock
-    // hanging from it (U-079).
+    // What holds it, on both faces (U-066, U-072), gone when it's forced, round the handle each face has (render/props.ts,
+    // U-083). Chained: a chain wound twice round the handle and across to the frame past the door's edge, a padlock
+    // hanging where its ends meet. Locked: a padlock hanging from the handle (U-079).
     const n: [number, number] = [-dir[1], dir[0]], put = (kind: string, u: number, dy: number, off: number, cw: number, ch: number, cd: number, turn = 0) =>
       out.props.push({ kind, x: mx + dir[0] * u + n[0] * off, y: y + dy, z: mz + dir[1] * u + n[1] * off, yaw: yaw + turn, w: cw, h: ch, d: cd, text: id });
-    for (const off of [-0.045, 0.045]) {
+    const at = w * HANDLE.u;
+    for (const side of [-1, 1]) {
+      const off = side * 0.055;
       if (lock === 'chained') {
-        for (let k = 0, u = -w * 0.42; u <= w * 0.42; u += 0.05, k++) put('chain', u, 0.02 * Math.cos(u * 6), off, 0.065, 0.04, 0.012, k % 2 ? Math.PI / 2 : 0);
-        put('padlock', 0, -0.08, off * 1.4, 0.05, 0.06, 0.022); put('chain', 0, -0.035, off * 1.4, 0.034, 0.04, 0.008);
+        for (const dy of [0.025, -0.025]) for (let k = 0, u = at - 0.06; u <= w / 2 + 0.12; u += 0.045, k++) put('chain', u, dy + 0.01 * Math.cos(u * 9), off, 0.06, 0.038, 0.011, k % 2 ? Math.PI / 2 : 0);
+        put('chain', w / 2 + 0.12, -0.06, off * 1.15, 0.034, 0.04, 0.008); put('padlock', w / 2 + 0.12, -0.105, off * 1.15, 0.05, 0.06, 0.022);
       }
-      if (lock === 'locked') {
-        put('padlock', w * 0.4, 0.04, off * 1.2, 0.12, 0.022, 0.03);
-        put('chain', w * 0.4, -0.02, off * 1.8, 0.03, 0.04, 0.008); put('padlock', w * 0.4, -0.065, off * 1.8, 0.045, 0.055, 0.02);
-      }
+      if (lock === 'locked') { put('chain', at, -0.03, off * 1.1, 0.03, 0.04, 0.008); put('padlock', at, -0.075, off * 1.1, 0.045, 0.055, 0.02); }
     }
   }
   out.inter.push({ id, kind: 'door', x: hinge[0] + (dir[0] * w) / 2, y: box.y0 + 1.1, z: hinge[1] + (dir[1] * w) / 2, r: 0.9, zh: label[0], en: label[1], data: lock === 'shut' ? { part: id } : { part: id, lock } });

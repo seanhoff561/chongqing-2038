@@ -116,7 +116,10 @@ function fit(gun: THREE.Object3D, mods: string[]) {
   if (mods.includes('suppressor')) gun.add(cyl(0.016, 0.15, scopeMat, 'z', -0.07, 0, -0.24));
   if (mods.includes('reddot')) {
     gun.add(box(0.012, 0.03, 0.05, dark, -0.088, 0, 0.0), box(0.042, 0.004, 0.012, dark, -0.11, 0.013, -0.018), box(0.042, 0.004, 0.012, dark, -0.11, -0.013, -0.018), box(0.004, 0.026, 0.012, dark, -0.131, 0, -0.018));
-    gun.add(Object.assign(new THREE.Mesh(new THREE.PlaneGeometry(0.026, 0.038).rotateY(Math.PI / 2).rotateX(Math.PI / 2), lens), { position: new THREE.Vector3(-0.11, 0, -0.018) }));
+    // (Its window placed after it's made: a mesh's position can't be assigned over, and doing so threw every frame: U-088.)
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(0.026, 0.038).rotateY(Math.PI / 2).rotateX(Math.PI / 2), lens);
+    win.position.set(-0.11, 0, -0.018);
+    gun.add(win);
     gun.userData.optic = true;
   }
   if (mods.includes('scope4x')) {

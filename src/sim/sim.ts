@@ -31,6 +31,7 @@ import { stepDistricts } from './district';
 import { stepConverge } from './converge';
 import { stepHeli } from './heli';
 import { stepPa } from './announce';
+import { stepLoose } from './loose';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
@@ -92,6 +93,7 @@ export function step(state: SimState, world: World, input: InputFrame): void {
   stepSilent(state, world);
   stepDistricts(state, world);
   stepPa(state, world);
+  stepLoose(state, world);
   stepConverge(state, world);
   stepHeli(state, world);
   stepSearch(state, world);
