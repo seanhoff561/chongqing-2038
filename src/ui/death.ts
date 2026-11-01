@@ -1,8 +1,9 @@
 // Death: the save is gone. A short black screen with the run summary, then a fresh run in place: the city as it
-// stands, no reload (U-048).
+// stands, no reload (U-048). An ending (M7-01) the same: its name, the summary, the save gone.
 import type { Game } from '../game';
 import { deleteSave } from '../sim/save';
-import { dayOf, clockText } from '../sim/clock';
+import { clockText } from '../sim/clock';
+import { ENDINGS, summary } from '../sim/escape';
 
 const CAUSES: Record<string, [string, string]> = {
   fall: ['坠落', 'Fell'], bleeding: ['失血', 'Bled out'], drown: ['溺水', 'Drowned'], starvation: ['饥饿', 'Starved'],
@@ -21,11 +22,12 @@ export class DeathScreen {
     this.shown = true;
     const s = this.game.state;
     if (this.game.scenario.run) deleteSave(localStorage);
-    const [zh, en] = CAUSES[s.dead ?? ''] ?? [s.dead ?? '', s.dead ?? ''];
+    // (Or out: the run ended on a route, M7-01.)
+    const end = s.ended ? ENDINGS[s.ended.route] : null, [zh, en] = end ? [end.zh, end.en] : CAUSES[s.dead ?? ''] ?? [s.dead ?? '', s.dead ?? ''], sum = summary(s);
     const el = document.createElement('div');
     el.id = 'death';
-    el.innerHTML = `<div class="d-title">你死了</div><div class="d-sub">${zh} · ${en}</div>
-      <div class="d-sum">${clockText(s.time)} · survived ${dayOf(s.time) - 1} nights</div>
+    el.innerHTML = `<div class="d-title${end ? ' out' : ''}">${end ? '逃出去了' : '你死了'}</div><div class="d-sub">${zh} · ${en}</div>
+      <div class="d-sum">${clockText(s.time)} · survived ${sum.days} nights · got into ${sum.sites} site${sum.sites === 1 ? '' : 's'} · seen ${sum.seen} time${sum.seen === 1 ? '' : 's'}</div>
       <div class="d-new">Esc · 新的开始 New run</div>`;
     document.body.appendChild(el);
     this.game.input.uiOpen = true;

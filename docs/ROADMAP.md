@@ -1248,11 +1248,11 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
   - Swimming more than 60 m from either bank outside a route draws river drone boats with sonar and thermal; unprepared crossings fail
   - A sim test covers it
 
-## M7: 0 of 15 done
+## M7: 1 of 15 done
 
 M7 Escapes: every escape route end to end, each with its ending.
 
-- [ ] **M7-01** Escape and ending framework
+- [x] **M7-01** Escape and ending framework
   - Route progress lives in sim state; ending trigger zones end the run with a route id; the run summary records days, sites entered and times seen
   - A sim test triggers an ending and checks the save is cleared
 - [ ] **M7-02** Route A: bridge sensor relay

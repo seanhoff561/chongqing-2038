@@ -54,6 +54,7 @@ export type SimEvent =
   | { t: 'ate'; id: string; sick: boolean }
   | { t: 'msg'; text: string }
   | { t: 'bench'; id: string }
+  | { t: 'ending'; route: string }
   | { t: 'logged'; kind: import('../data/units').UnitKind; head: number }
   /** a line of dialogue (src/data/dialogue) */
   | { t: 'say'; id: string }
@@ -159,6 +160,12 @@ export interface SimState {
   taps?: number[];
   /** the keycards he's cloned (M5-24) */
   cloned?: string[];
+  /** the escape routes' steps done, and when (M7-01) */
+  escape?: Record<string, Record<string, number>>;
+  /** the run ended on a route (M7-01) */
+  ended?: { route: string; t: number };
+  /** the run's tally: sites got into, times the machines had him (and which districts have him now) */
+  stats?: { sites: Record<string, true>; seen: number; engaged: Record<string, boolean> };
   /** out too far on the river (M6-27): since when, and when the drone boats set out */
   river?: { since: number; boats?: number };
   /** the zipline kit's first clamp, on (M5-33) */

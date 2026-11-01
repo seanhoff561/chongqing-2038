@@ -272,7 +272,7 @@ export class Game {
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
-    if (this.state.dead) this.death.show();
+    if (this.state.dead || this.state.ended) this.death.show();
   }
 
   render(alpha: number, dt: number) {
