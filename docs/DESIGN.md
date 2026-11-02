@@ -397,8 +397,8 @@ that makes.
 
 | Budget (per frame) | Value | Held by |
 |---|---|---|
-| Draw calls | 250 | tests/e2e/perf.e2e.mjs at a street, a rooftop, the tunnel and the overview |
-| Triangles | 1.2 M | the same |
+| Draw calls | 250 (Low 200, High 340) | tests/e2e/budgets.e2e.mjs at 10 viewpoints across the city by day and night, every preset (M6-26) |
+| Triangles | 1.2 M (Low 1.0 M, High 1.9 M) | the same |
 | CPU (sim tick + render submission), headless software GL | 5 ms | the same |
 | Sim tick, all units | 2 ms | sim tests |
 

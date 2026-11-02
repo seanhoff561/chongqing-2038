@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 11 of 28 done
+## M6: 13 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1233,7 +1233,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [x] **M6-22** Machines across the city
   - Patrol data for every district: cameras, lampposts, docks, drones, quadrupeds, humanoids, delivery robots, turrets, garages for squads
   - A sim test runs a full game day across the city with no stuck units in under 30 s of wall time
-- [ ] **M6-23** Coverage tool
+- [x] **M6-23** Coverage tool
   - A tool computes, over a game day, the unwatched windows on each site's approaches
   - A test: every high-security site has at least one approach with an unwatched window of 10 s or more
 - [x] **M6-24** Shelter sites across the city (U-013)
@@ -1245,7 +1245,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [x] **M6-25** Teleports and scenarios for every site
   - The teleport list and ?scenario= cover every district and site approach
   - The smoke test loads each site scenario without errors
-- [ ] **M6-26** Whole-city render budgets
+- [x] **M6-26** Whole-city render budgets
   - Draw calls and triangles stay within each preset's budget at 10 viewpoints across the city
   - A browser test records them
 - [x] **M6-27** River border enforcement

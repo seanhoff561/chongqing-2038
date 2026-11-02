@@ -337,10 +337,10 @@ export type Preset = 'low' | 'medium' | 'high';
  *  drawn in (blocks beyond it are painted boxes), how far small trims and the rooms inside buildings are drawn, the
  *  sun's shadow map (0: no shadows) and the share of loose litter and clutter drawn. Medium is what the budgets are
  *  measured at. */
-export const PRESETS: Record<Preset, { ratio: number; draw: number; detail: number; inner: number; shadow: number; props: number }> = {
-  low: { ratio: 0.7, draw: 110, detail: 70, inner: 30, shadow: 0, props: 0.4 },
-  medium: { ratio: 1, draw: 160, detail: 110, inner: 45, shadow: 2048, props: 0.75 },
-  high: { ratio: 1.5, draw: 230, detail: 150, inner: 60, shadow: 4096, props: 1 },
+export const PRESETS: Record<Preset, { ratio: number; draw: number; detail: number; inner: number; shadow: number; props: number; /** draw calls and triangles a frame (M6-26: DESIGN section 16's at Medium) */ budget: { calls: number; tris: number } }> = {
+  low: { ratio: 0.7, draw: 110, detail: 70, inner: 30, shadow: 0, props: 0.4, budget: { calls: 200, tris: 1_000_000 } },
+  medium: { ratio: 1, draw: 160, detail: 110, inner: 45, shadow: 2048, props: 0.75, budget: { calls: 250, tris: 1_200_000 } },
+  high: { ratio: 1.5, draw: 230, detail: 150, inner: 60, shadow: 4096, props: 1, budget: { calls: 340, tris: 1_900_000 } },
 };
 const PRESET_KEY = 'cq2038.preset';
 function loadPreset(): Preset {

@@ -212,6 +212,41 @@ diffuseColor *= sampledDiffuseColor;`);
   return mm;
 }
 
+/** The plain world materials (M9-12, U-097): in one atlas, so a chunk's walls, roofs, stairs and ledges of all of them
+ *  draw in one go, not one draw a material. (Facades with their lit windows, water, the glowing and swaying ones, and
+ *  the ground's own keep theirs.) */
+export const ATLAS: number[] = [MAT.concrete, MAT.block, MAT.brick, MAT.metal, MAT.wood, MAT.tile, MAT.stone, MAT.plaster, MAT.asphalt, MAT.glass, MAT.moss, MAT.rubble, MAT.crate, MAT.roofTile, MAT.tealMetal, MAT.cloth, MAT.grass, MAT.leaves, MAT.blossom, MAT.mark];
+/** Its rows of four 512-pixel cells. */
+const ATLAS_ROWS = 5;
+export const atlasCell = (id: number) => ATLAS.indexOf(id);
+export function atlasMaterial(lod: Lod): THREE.MeshPhongMaterial {
+  const key = `atlas:${lod}`;
+  let m = mats.get(key);
+  if (m) return m;
+  const tex = canvasTexture('worldAtlas', 2048, 512 * ATLAS_ROWS, g => ATLAS.forEach((id, i) => {
+    const [draw] = draws[id] ?? draws[MAT.concrete];
+    g.save(); g.translate((i % 4) * 512, Math.floor(i / 4) * 512); g.beginPath(); g.rect(0, 0, 512, 512); g.clip(); draw(g, 512, 512); g.restore();
+  }));
+  const mm = (m = new THREE.MeshPhongMaterial({ map: tex, vertexColors: true, ...DRY }));
+  lodCut(mm, lod);
+  const cut = mm.onBeforeCompile;
+  mm.onBeforeCompile = (sh, rr) => {
+    cut.call(mm, sh, rr);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float cell;\nvarying float vCell;').replace('#include <uv_vertex>', '#include <uv_vertex>\nvCell = cell;');
+    // (Each material's cell, its repeats wrapped inside it; the canvas's top row is the texture's top.)
+    const R = `${ATLAS_ROWS}.0`;
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vCell;').replace('#include <map_fragment>', `vec2 cell = vec2(mod(vCell + 0.5, 4.0) - 0.5, ${R} - 1.0 - floor((vCell + 0.5) / 4.0));
+vec2 aG = vMapUv * vec2(0.25, 1.0 / ${R}) * 0.97;
+vec4 sampledDiffuseColor = textureGrad(map, (cell + 0.015 + fract(vMapUv) * 0.97) * vec2(0.25, 1.0 / ${R}), dFdx(aG), dFdy(aG));
+diffuseColor *= sampledDiffuseColor;`);
+  };
+  snowy(mm);
+  const key1 = mm.customProgramCacheKey;
+  mm.customProgramCacheKey = () => `${key1.call(mm)}:atlas`;
+  mats.set(key, mm);
+  return mm;
+}
+
 export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPhongMaterial {
   const key = `${id}:${vc}:${lod}`;
   let m = mats.get(key);
@@ -267,6 +302,7 @@ export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPh
     };
     m.customProgramCacheKey = () => `${key0.call(m)}:sway`;
   }
+  m.name = `mat${id}`;
   mats.set(key, m);
   return m;
 }

@@ -5,7 +5,7 @@
 // papered, not the facade.
 import * as THREE from 'three';
 import { topAt, raycast, type Solid, type SolidIndex } from '../world/geom';
-import { material, interiorMaterial, LININGS, texScale, isFacade, FACADE_BAY, type Lod } from './materials';
+import { material, interiorMaterial, atlasMaterial, atlasCell, LININGS, texScale, isFacade, FACADE_BAY, type Lod } from './materials';
 import { MAT } from '../world/mats';
 
 export const CHUNK = 128;
@@ -26,7 +26,7 @@ function tintOf(hex?: number): [number, number, number] {
 const AO_R = 6, AO_MIN = 0.62;
 
 /** Preallocated vertex arrays filled from n on. */
-interface Buf { pos: Float32Array; nor: Float32Array; uv: Float32Array; col: Float32Array; n: number; /** an inside group's lining per vertex (M5-35) */ lin?: Float32Array }
+interface Buf { pos: Float32Array; nor: Float32Array; uv: Float32Array; col: Float32Array; n: number; /** an inside group's lining per vertex (M5-35) */ lin?: Float32Array; /** an atlas group's material per vertex (M9-12) */ cell?: Float32Array }
 
 /** 0..1 from a solid's corner, stable across builds. */
 function hash(a: number, b: number, c: number): number {
@@ -76,7 +76,7 @@ export function pushSolid(s: Solid, b: Buf, roof: Buf = b, ao: number[] = OPEN, 
     const k = tone * g * shade;
     o.col[o.n * 3] = k * (1 + warm) * tc[0]; o.col[o.n * 3 + 1] = k * tc[1]; o.col[o.n * 3 + 2] = k * (1 - warm) * tc[2];
   };
-  const ins = inward(s), isc = 1 / texScale(interiorMat(s)), lining = LININGS.indexOf(interiorMat(s));
+  const ins = inward(s), isc = 1 / texScale(interiorMat(s)), lining = LININGS.indexOf(interiorMat(s)), cell = atlasCell(s.mat), roofCell = atlasCell(MAT.concrete);
   const quad = (pts: number[][], n: number[], uvs: number[][], side: boolean, shade = 1, inside = false) => {
     const o = inside ? inner : side ? b : roof, k = inside ? isc : side ? sc : rsc;
     for (const i of [0, 1, 2, 0, 2, 3]) {
@@ -86,7 +86,7 @@ export function pushSolid(s: Solid, b: Buf, roof: Buf = b, ao: number[] = OPEN, 
       o.nor[v * 3] = n[0]; o.nor[v * 3 + 1] = n[1]; o.nor[v * 3 + 2] = n[2];
       // An inside wall in plain world UVs along it, lit evenly.
       o.uv[v * 2] = (inside ? (n[0] ? p[2] : p[0]) : uvs[i][0]) * k; o.uv[v * 2 + 1] = (inside ? p[1] : uvs[i][1]) * k;
-      if (inside) { o.col.fill(0.86 * shade, v * 3, v * 3 + 3); if (o.lin) o.lin[v] = lining; } else colour(o, p[1], side, shade);
+      if (inside) { o.col.fill(0.86 * shade, v * 3, v * 3 + 3); if (o.lin) o.lin[v] = lining; } else { colour(o, p[1], side, shade); if (o.cell) o.cell[v] = side || !facade ? cell : roofCell; }
       o.n++;
     }
   };
@@ -136,7 +136,8 @@ export function buildSolidMeshes(solids: Solid[], lod: Lod = 'all', chunk = CHUN
   type G = Buf & { mat: number; cx: number; cz: number; count: number; inner?: boolean };
   const groups = new Map<string, G>();
   // (A chunk's inside faces all in one group, their linings from one atlas: M5-35.)
-  const keyOf = (s: Solid, mat: number, inner: boolean) => `${Math.floor((s.x0 + s.x1) / 2 / chunk)},${Math.floor((s.z0 + s.z1) / 2 / chunk)},${inner ? 'in' : mat}`;
+  // (And its plain materials all in one group, from one atlas: M9-12.)
+  const keyOf = (s: Solid, mat: number, inner: boolean) => `${Math.floor((s.x0 + s.x1) / 2 / chunk)},${Math.floor((s.z0 + s.z1) / 2 / chunk)},${inner ? 'in' : atlasCell(mat) >= 0 ? 'atlas' : mat}`;
   const group = (s: Solid, mat: number, inner = false) => {
     const key = keyOf(s, mat, inner);
     let g = groups.get(key);
@@ -157,6 +158,7 @@ export function buildSolidMeshes(solids: Solid[], lod: Lod = 'all', chunk = CHUN
   for (const g of groups.values()) {
     g.pos = new Float32Array(g.count * 3); g.nor = new Float32Array(g.count * 3); g.uv = new Float32Array(g.count * 2); g.col = new Float32Array(g.count * 3);
     if (g.inner) g.lin = new Float32Array(g.count);
+    else if (atlasCell(g.mat) >= 0) g.cell = new Float32Array(g.count);
   }
   // Which vertices cast a shadow: those of the solids big enough to show in the shadow map (a sill, a bar or a
   // frame doesn't), as ranges per group.
@@ -178,7 +180,8 @@ export function buildSolidMeshes(solids: Solid[], lod: Lod = 'all', chunk = CHUN
     geo.setAttribute('color', new THREE.BufferAttribute(g.col, 3));
     geo.computeBoundingSphere();
     if (g.inner) geo.setAttribute('lining', new THREE.BufferAttribute(g.lin!, 1));
-    const mesh = new THREE.Mesh(geo, g.inner ? interiorMaterial(lod) : material(g.mat, true, lod));
+    if (g.cell) geo.setAttribute('cell', new THREE.BufferAttribute(g.cell, 1));
+    const mesh = new THREE.Mesh(geo, g.inner ? interiorMaterial(lod) : g.cell ? atlasMaterial(lod) : material(g.mat, true, lod));
     mesh.receiveShadow = true;
     mesh.userData.chunk = { x: (g.cx + 0.5) * chunk, z: (g.cz + 0.5) * chunk };
     if (g.inner) mesh.userData.detail = mesh.userData.inner = true;

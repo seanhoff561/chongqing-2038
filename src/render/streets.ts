@@ -8,7 +8,7 @@
 // mesh, brightened by their vertex colour; kerbs ride in the paving mesh, so streets cost two draws a chunk.
 import * as THREE from 'three';
 import { heightAt, type Heightfield } from '../world/heightfield';
-import { material, texScale, type Lod } from './materials';
+import { material, texScale, atlasMaterial, atlasCell, type Lod } from './materials';
 import { MAT } from '../world/mats';
 import { CHUNK } from './world-mesh';
 import { Buf } from './ground-mesh';
@@ -33,20 +33,21 @@ const STEP = 2, UP: [number, number, number] = [0, 1, 0];
 interface Seg { ax: number; az: number; bx: number; bz: number; half: number; s: StreetLine }
 
 export function buildStreetMeshes(g: Heightfield, streets: StreetLine[], lod: Lod, lawns?: [number, number][][]): THREE.Mesh[] {
-  const out: THREE.Mesh[] = [], mats = new Map<number, THREE.Material>();
-  // Drawn a hair nearer than the ground they lie on, so far off the two never flicker through each other.
-  const own = (mat: number) => {
-    let m = mats.get(mat);
-    if (!m) {
-      const base = material(mat, true, lod);
-      m = Object.assign(base.clone(), { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2, onBeforeCompile: base.onBeforeCompile, customProgramCacheKey: base.customProgramCacheKey });
-      mats.set(mat, m);
-    }
-    return m;
-  };
-  for (const { k, mat, buf } of streetBuffers(g, streets, lawns)) {
-    const m = buf.mesh(own(mat));
+  const out: THREE.Mesh[] = [];
+  // Drawn a hair nearer than the ground they lie on, so far off the two never flicker through each other; a chunk's
+  // carriageways, pavements and lawns in one mesh off the world's atlas (M9-12: one draw, not three).
+  const base = atlasMaterial(lod), mat = Object.assign(base.clone(), { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2, onBeforeCompile: base.onBeforeCompile, customProgramCacheKey: base.customProgramCacheKey });
+  const byChunk = new Map<number, { buf: Buf; cells: number[] }>();
+  for (const { k, mat: id, buf } of streetBuffers(g, streets, lawns)) {
+    let c = byChunk.get(k);
+    if (!c) byChunk.set(k, (c = { buf: new Buf(), cells: [] }));
+    c.buf.pos = c.buf.pos.concat(buf.pos); c.buf.nor = c.buf.nor.concat(buf.nor); c.buf.uv = c.buf.uv.concat(buf.uv); c.buf.col = c.buf.col.concat(buf.col);
+    for (let i = 0; i < buf.pos.length / 3; i++) c.cells.push(atlasCell(id));
+  }
+  for (const [k, { buf, cells }] of byChunk) {
+    const m = buf.mesh(mat);
     if (!m) continue;
+    m.geometry.setAttribute('cell', new THREE.Float32BufferAttribute(cells, 1));
     m.userData.chunk = { x: (Math.floor(k / 65536) + 0.5) * CHUNK, z: ((k % 65536) + 0.5) * CHUNK };
     out.push(m);
   }

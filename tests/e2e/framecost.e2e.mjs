@@ -12,7 +12,10 @@ export default async function ({ open, fail }) {
     const hour = i < 7 ? 13 : 22;
     rows.push(await page.evaluate(`(() => { const g = window.__cq.game, t = g.world.teleports.find(t => t.name === '${name}'); g.state.time = ${hour} * 3600; g.state.flags.god = true;
       Object.assign(g.state.player.pos, { x: t.x, y: t.y, z: t.z }); g.input.yaw = ${i} * 0.9; g.input.pitch = 0;
-      for (let k = 0; k < 8; k++) g.runFrames(1);
+      for (let k = 0; k < 4; k++) g.runFrames(1);
+      // (Everything near streamed in first, so each run measures the same: M9-12.)
+      for (let k = 0; k < 200 && g.view.streamStep(g.view.fp.cam.position, 100); k++);
+      g.runFrames(1);
       let tick = 0, ren = 0; const N = 4;
       for (let k = 0; k < N; k++) { for (let j = 0; j < 30; j++) { const t0 = performance.now(); g.tick(); tick += performance.now() - t0; } const t1 = performance.now(); g.render(1, 1 / 60); ren += performance.now() - t1; }
       const inf = g.view.renderer.info.render;

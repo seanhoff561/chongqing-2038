@@ -16,8 +16,9 @@ export const SECURE: { id: string; plan: string; type: BuildingType; zh: string;
   { id: 'market', plan: 'osm396', type: 'mall', zh: '数码城', en: 'Electronics market', loot: 'electronics', hazard: 'acoustic' },
 ];
 
-/** How far over a street door its camera hangs and out from the wall (m); the pharmacy's plate's half-width (m). */
-const DOOR_CAM = { up: 3.2, out: 0.6 }, PLATE = 1.6;
+/** How far up a street door's camera hangs, out from the wall and along it from the door (m); the pharmacy's plate's
+ *  half-width (m). */
+const DOOR_CAM = { up: 3.2, out: 0.4, side: 4 }, PLATE = 1.6;
 
 export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props: Prop[] } {
   const sites: Secure[] = [], cameras: Camera[] = [], props: Prop[] = [];
@@ -32,8 +33,18 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
     // The street door: shut and locked behind its card's reader, a camera over it looking down the street.
     if (street) {
       if (S.card) street.data = { ...street.data, lock: 'locked', key: S.card };
-      const dx = street.x - cx, dz = street.z - cz, d = Math.hypot(dx, dz) || 1;
-      cameras.push({ kind: 'camera', x: street.x + (dx / d) * DOOR_CAM.out, y: street.y - 1.1 + DOOR_CAM.up, z: street.z + (dz / d) * DOOR_CAM.out, yaw: Math.atan2(dx, dz) });
+      // (Along the wall from it, aimed back at the doorstep: one right over the door can't see who stands at it.)
+      // (Out of the wall the door's in, by its leaf: the way away from the building's middle.)
+      const leaf = w.props.find(p => p.text === street.id), ly = leaf?.yaw ?? Math.atan2(street.x - cx, street.z - cz);
+      let ux = -Math.sin(ly), uz = -Math.cos(ly);
+      if (!leaf) { ux = Math.sin(ly); uz = Math.cos(ly); } else if (ux * (street.x - cx) + uz * (street.z - cz) < 0) { ux = -ux; uz = -uz; }
+      const y = street.y - 1.1 + DOOR_CAM.up, tx = street.x + ux * 2, tz = street.z + uz * 2;
+      for (const side of [DOOR_CAM.side, -DOOR_CAM.side, DOOR_CAM.side / 2, -DOOR_CAM.side / 2]) {
+        const x = street.x + ux * DOOR_CAM.out - uz * side, z = street.z + uz * DOOR_CAM.out + ux * side, d = Math.hypot(tx - x, street.y - y, tz - z);
+        if (raycast(w.index, x, y, z, (tx - x) / d, (street.y - y) / d, (tz - z) / d, d)) continue;
+        cameras.push({ kind: 'camera', x, y, z, yaw: Math.atan2(tx - x, tz - z) });
+        break;
+      }
       ways.push({ kind: S.card ? 'card' : 'door', id: street.id });
     }
     // The lowest vent to crawl through: at the police station the garage's shutter, prised up; at the others a duct.
