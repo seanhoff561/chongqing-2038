@@ -17,7 +17,7 @@ import { GEO } from '../geo';
 import { heightAt, rayGround, type Heightfield } from '../heightfield';
 import { buildGround, streets, onGround, WATER_Y, streetCells, type Street } from './ground';
 import { planLots, levelLots, markEnterable, oldQuarter, type Plan } from './lots';
-import { corners, rasterPoly, obbOverlap, type Obb } from './shapes';
+import { corners, rasterPoly, obbOverlap, minRect, points, type Obb } from './shapes';
 import { alleys } from '../city/climb';
 import { buildTunnels, tunnelFrame, JUNCTION, METRO } from './tunnels';
 import { buildUnder } from './under';
@@ -34,7 +34,7 @@ import { breaches } from './breach';
 import { monument, MONUMENT } from './monument';
 import { signage } from './signage';
 import { liFlat } from './liflat';
-import { riverfront, riverRoad } from './riverfront';
+import { riverfront, riverRoad, docks } from './riverfront';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -195,7 +195,20 @@ export function buildYuzhong(): World {
   const filled = fill(grow(staged), g, marks, plots);
   solids.push(...filled.solids);
   // The riverfront below Shibati (M3-20): the wall along the road, the steps down into the Yangtze.
-  const river = riverfront(grow(staged), g, sts, { x: foot[0], z: foot[1] });
+  const staged2 = grow(staged), taken = new Map<string, [number, number][]>(), river = riverfront(staged2, g, sts, { x: foot[0], z: foot[1] }, taken);
+  // And all round the peninsula (M6-06): the Yangtze side past Xiaoshizi and the Dongshuimen Bridge to the tip at
+  // Chaotianmen, and back along the Jialing by Hongyadong and the Qiansimen Bridge; each stretch its own dice.
+  for (const k of ['xiaoshizi', 'dongshuimenBridge', 'cablewayNorth', 'chaotianmen', 'hongyadong', 'qiansimenBridge']) {
+    const L = GEO.landmarks[k];
+    if (!L) continue;
+    try {
+      const more = riverfront(staged2, g, sts, L, taken, hashString(`riverfront:${k}`));
+      river.solids.push(...more.solids); river.decor.push(...more.decor); river.props.push(...more.props); river.features.push(...more.features);
+    } catch { /* (no riverside road near this one) */ }
+  }
+  // The docks on the rivers (M6-06): the OSM piers as pontoons.
+  const dock = docks(g, GEO.areas.filter(a => a[0] === 'pier').map(a => minRect(points(a[2], 0.1))));
+  river.solids.push(...dock.solids); river.decor.push(...dock.decor); river.features.push(...dock.features);
   solids.push(...river.solids);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
@@ -429,7 +442,7 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
   if (p.monument) { monument(o, l.base, out); l.top = l.wall = l.base + MONUMENT.height; }
   if (l.route) l.route = l.route.map(q => { const [x, z] = pt(q.x, q.z); return { ...q, x, z }; });
   out.lots.push(l);
-  return { corners: corners(o), base: p.base, wall: l.wall, top: l.top, kind: p.monument ? 'monument' : l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, type: l.type, far: p.far, osm: p.osm,
+  return { corners: corners(o), base: p.base, wall: l.wall, top: l.top, kind: p.monument ? 'monument' : l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, type: l.type, far: p.far, osm: p.osm, prefix: p.seed,
     own: { solids: [s0, out.solids.length], climbables: [c0, out.climbables.length] } };
 }
 

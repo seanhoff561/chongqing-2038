@@ -10,7 +10,8 @@ import { WATER_Y } from '../../src/world/yuzhong/ground';
 import { run, secs } from './helpers';
 import type { Feature } from '../../src/world/world';
 
-const w = getWorld('yuzhong'), of = (k: string) => w.features.filter(f => f.kind === k);
+// (Shibati's own stretch: since M6-06 the wall and the steps go on all round the peninsula, each stretch its own.)
+const w = getWorld('yuzhong'), rf = w.features.find(f => f.kind === 'key:riverfront')!, of = (k: string) => w.features.filter(f => f.kind === k && Math.hypot(f.x - rf.x, f.z - rf.z) < 500);
 const steps = of('river:steps'), wall = of('river:wall'), breaches = of('river:breach');
 
 /** Stand d metres back from a feature against its heading, on what's there, facing along it. */

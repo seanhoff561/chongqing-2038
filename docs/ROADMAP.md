@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 5 of 28 done
+## M6: 7 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1179,10 +1179,10 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [ ] **M6-04** Chaotianmen and Raffles City
   - The tip plaza, the Raffles towers and The Crystal sky conservatory at about 250 m, and the meeting of the rivers
   - A sim test reaches the plaza from Xiaoshizi
-- [ ] **M6-05** Xinhua Road and Xiaoshizi
+- [x] **M6-05** Xinhua Road and Xiaoshizi
   - The lower Yangtze-side streets, the Line 6 station entrance and the bridge approach
   - A sim test walks from Shibati to Xiaoshizi
-- [ ] **M6-06** Riverfronts
+- [x] **M6-06** Riverfronts
   - Jialing (north) and Yangtze (south) riverside roads, docks and barrier walls with water volumes all round the peninsula
   - A sim test walks the Yangtze riverfront from Shibati to Chaotianmen
 - [ ] **M6-07** Bridges and the far banks

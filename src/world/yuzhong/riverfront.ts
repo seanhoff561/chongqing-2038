@@ -76,8 +76,19 @@ export function riverRoad(g: Heightfield, sts: Street[], from: { x: number; z: n
   return { ...best, y: heightAt(g, best.x, best.z) ?? WATER_Y };
 }
 
-export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from: { x: number; z: number }) {
-  const solids: Solid[] = [], decor: Solid[] = [], props: Prop[] = [], features: Feature[] = [], r = makeRng(2038);
+/** The riverfront round the shore nearest `from`: steps down the bank, and the occupier's wall along the river side
+ *  of the riverside roads. `taken` holds the panels and steps already put up (round another point's shore), so where
+ *  two stretches meet nothing's doubled (M6-06: the wall all round the peninsula); `seed` its own dice. */
+export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from: { x: number; z: number }, taken = new Map<string, [number, number][]>(), seed = 2038) {
+  const solids: Solid[] = [], decor: Solid[] = [], props: Prop[] = [], features: Feature[] = [], r = makeRng(seed);
+  // (Nothing of this stretch within d of one put up round another point: 4 m cells, their neighbours looked in.)
+  const fresh = (x: number, z: number, d: number) => {
+    const i = Math.floor(x / 4), j = Math.floor(z / 4);
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const [px, pz] of taken.get(`${i + a},${j + b}`) ?? []) if (Math.hypot(px - x, pz - z) < d) return false;
+    mine.push([x, z]);
+    return true;
+  };
+  const mine: [number, number][] = [];
   const h = (x: number, z: number) => heightAt(g, x, z);
   const shore = (x: number, z: number, dx: number, dz: number, max: number) => shoreAlong(g, x, z, dx, dz, max);
   // The nearest water from the foot of the stairs, and which way it lies.
@@ -94,7 +105,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
     const ramp = rampSolid(ex, WATER_Y - 4.5, ez - 3, ex + L, ez + 3, WATER_Y - 2, top, 2, MAT.stone), steps: Solid[] = [];
     stepsFor(ramp, steps, MAT.stone);
     const [rs] = turn([ramp], yaw, ex, ez);
-    if (hits(idx, { x0: rs.x0, y0: top - 0.5, z0: rs.z0, x1: rs.x1, y1: top + 3, z1: rs.z1 })) continue;
+    if (hits(idx, { x0: rs.x0, y0: top - 0.5, z0: rs.z0, x1: rs.x1, y1: top + 3, z1: rs.z1 }) || !fresh(ex, ez, 60)) continue;
     solids.push(rs);
     decor.push(...turn(steps, yaw, ex, ez));
     features.push({ kind: 'river:steps', x: ex - dx * 0.5, y: top, z: ez - dz * 0.5, group: features.length, nx: dx, nz: dz });
@@ -110,7 +121,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
       if (y === null || y < WATER_Y + 1) continue;
       const yaw = Math.atan2(uz, ux), x0 = cx - PANEL.w / 2, z0 = cz - PANEL.t / 2;
       const [p] = turn([solid(x0, y - 0.6, z0, x0 + PANEL.w, y + PANEL.h, z0 + PANEL.t, MAT.concrete)], yaw, cx, cz);
-      if (hits(idx, { x0: p.x0, y0: y + 0.3, z0: p.z0, x1: p.x1, y1: y + PANEL.h, z1: p.z1 }) || sts.some(o => o !== s && MAIN.has(o.kind) && near(o, cx, cz, o.w / 2 + 0.6))) continue;
+      if (hits(idx, { x0: p.x0, y0: y + 0.3, z0: p.z0, x1: p.x1, y1: y + PANEL.h, z1: p.z1 }) || sts.some(o => o !== s && MAIN.has(o.kind) && near(o, cx, cz, o.w / 2 + 0.6)) || !fresh(cx, cz, 1.2)) continue;
       // One in 22 is down: lying flat on the river side, a way over it.
       if (rand(r) < 1 / 22) {
         const [f] = turn([solid(cx - PANEL.w / 2, y - 0.2, cz + 0.4, cx + PANEL.w / 2, y + 0.1, cz + 0.4 + PANEL.h, MAT.concrete)], yaw + (side > 0 ? 0 : Math.PI), cx, cz);
@@ -127,6 +138,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
       if (rand(r) < 0.04) props.push({ kind: 'redbanner', x: cx - nx * (PANEL.t / 2 + 0.05), y: y + 1.6, z: cz - nz * (PANEL.t / 2 + 0.05), yaw: Math.atan2(-nx, -nz), w: 1.4, text: '9' });
     }
   }
+  for (const [x, z] of mine) { const k = `${Math.floor(x / 4)},${Math.floor(z / 4)}`; (taken.get(k) ?? taken.set(k, []).get(k)!).push([x, z]); }
   return { solids, decor, props, features };
 }
 
@@ -138,4 +150,23 @@ function near(s: Street, x: number, z: number, d: number) {
     if (Math.hypot(ax + vx * u - x, az + vz * u - z) < d) return true;
   }
   return false;
+}
+
+/** The docks (M6-06): each OSM pier on the rivers a pontoon deck afloat on its footprint (its turned rectangle), a
+ *  metre and a half proud of the water, bollards along its edges; the bank's end of it meets the riverside where the
+ *  ground comes down to it. */
+export const DOCK = { up: 1.5, t: 1.2, bollard: 6 };
+export function docks(g: Heightfield, piers: { cx: number; cz: number; hw: number; hd: number; yaw: number }[]) {
+  const solids: Solid[] = [], decor: Solid[] = [], features: Feature[] = [], top = WATER_Y + DOCK.up;
+  for (const o of piers) {
+    // (Mostly over the water: the ground under it below the surface at three of five points.)
+    const c = Math.cos(o.yaw), s = Math.sin(o.yaw), at = (u: number, v: number) => heightAt(g, o.cx + c * u - s * v, o.cz + s * u + c * v);
+    const wet = [[0, 0], [o.hw * 0.7, 0], [-o.hw * 0.7, 0], [0, o.hd * 0.7], [0, -o.hd * 0.7]].filter(([u, v]) => (at(u, v) ?? top) < WATER_Y).length;
+    if (wet < 3 || o.hw < 3 || o.hd < 1.5) continue;
+    solids.push(...turn([solid(o.cx - o.hw, top - DOCK.t, o.cz - o.hd, o.cx + o.hw, top, o.cz + o.hd, MAT.concrete)], o.yaw, o.cx, o.cz));
+    // Bollards along both long edges, a pontoon's steel rail round it.
+    for (let u = -o.hw + 1; u < o.hw; u += DOCK.bollard) for (const v of [-o.hd + 0.4, o.hd - 0.4]) decor.push(...turn([solid(o.cx + u - 0.15, top, o.cz + v - 0.15, o.cx + u + 0.15, top + 0.6, o.cz + v + 0.15, MAT.metal)], o.yaw, o.cx, o.cz));
+    features.push({ kind: 'river:dock', x: o.cx, y: top, z: o.cz, group: features.length });
+  }
+  return { solids, decor, features };
 }
