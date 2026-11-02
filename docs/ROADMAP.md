@@ -1031,7 +1031,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 37 of 38 done
+## M5: 38 of 38 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
@@ -1155,7 +1155,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - No zipline spawns on its own; a zipline kit (cable, clamps, a trolley) is found as loot and strung by him between two anchors in reach of each other and in line of sight (masts, poles, railings, a roof's edge), sloping down, then ridden as M3-52's lines are
   - He can take it down and carry it on; it weighs and takes space like any item; machines that see a strung line investigate it
   - A sim test strings one across a street between two roofs and rides it
-- [ ] **M5-34** Realistic item models (U-053)
+- [x] **M5-34** Realistic item models (U-053)
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 

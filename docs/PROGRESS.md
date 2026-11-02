@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 301 / 369 | Last done: M8-15
+Features done: 302 / 369 | Last done: M5-34
 <!-- /status -->
 
 ## Log
@@ -128,3 +128,4 @@ Features done: 301 / 369 | Last done: M8-15
 - M8-14 Voiced announcements: the voiced announcements resolve, each with its recording
 - M8-10 Music: the music: a pursuit pulse that follows the alert, darker pads by night
 - M8-15 Story beats in the world: the story in the world: the voicemail, Haozi's chalk mice, the first night
+- M5-34 Realistic item models (U-053): realistic models for every item
