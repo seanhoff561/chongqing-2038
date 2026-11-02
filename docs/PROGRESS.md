@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 321 / 371 | Last done: M6-13
+Features done: 322 / 371 | Last done: M6-25
 <!-- /status -->
 
 ## Log
@@ -134,3 +134,4 @@ Features done: 321 / 371 | Last done: M6-13
 - M6-01, M6-02: Jiefangbei: the Liberation Monument, malls, LED edicts
 - M6-05, M6-06: the lower town walked, the riverfronts walled all round, docks
 - M6-11, M6-12, M6-13: the hospital, police station and electronics market in the city's buildings
+- M6-25: teleports to every way into every site, scenarios for every district and site

@@ -32,7 +32,7 @@ import { dressStreets } from './dressing';
 import { sewers } from './sewers';
 import { breaches } from './breach';
 import { monument, MONUMENT } from './monument';
-import { SECURE, fitSecure } from './secure';
+import { SECURE, fitSecure, approaches } from './secure';
 import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
@@ -271,6 +271,7 @@ export function buildYuzhong(): World {
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
   world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props);
+  world.teleports.push(...approaches(world, sec.sites));
   // Each parked scooter's battery, prised out with a crowbar (M5-23).
   world.props.forEach((p, i) => { if (p.kind === 'scooter') world.inter.push({ id: `scooter${i}`, kind: 'scooter', x: p.x, y: p.y + 0.45, z: p.z, r: 0.6, zh: '电动车', en: 'Scooter' }); });
   // Each camera's junction box (M5-09): where a tap clips in.

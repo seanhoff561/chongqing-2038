@@ -3,7 +3,8 @@
 // fitted out: its four ways in (the street door behind a keycard reader under a camera, a vent or a shutter to crawl
 // through, the roof door from a roof reached by grapple, the basement's manhole), its loot by its own table, its
 // own hazard.
-import type { World, Camera, Inter, Secure, Prop } from '../world';
+import type { World, Camera, Inter, Secure, Prop, Teleport } from '../world';
+import { free } from '../../sim/physics';
 import type { BuildingType } from '../city/types';
 import { onWall } from './sensors';
 import { raycast } from '../geom';
@@ -71,4 +72,37 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
     sites.push({ id: S.id, prefix: S.plan, x: cx, z: cz, ways });
   }
   return { sites, cameras, props };
+}
+
+/** A teleport to each of a site's ways in (M6-25): stood outside it on what's there, facing it; the roof door's on
+ *  the roof by it, the basement's at the foot of its shaft in the sewer below. */
+export function approaches(w: World, sites: Secure[]): Teleport[] {
+  const out: Teleport[] = [];
+  for (const S of sites) {
+    const meta = SECURE.find(q => q.id === S.id)!;
+    for (const way of S.ways) {
+      const it = w.inter.find(i => i.id === way.id)!;
+      let at: { x: number; y: number; z: number } | null = null;
+      if (way.kind === 'basement') {
+        const lad = w.climbables.find(c => c.kind === 'ladder' && Math.hypot(c.x - it.x, c.z - it.z) < 1.5 && c.y1 > it.y - 3 && c.y0 < it.y);
+        if (lad) for (const d of [1, 1.6]) for (const [dx, dz] of [[lad.nx, lad.nz], [1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const x = lad.x + dx * d, z = lad.z + dz * d, y = lad.y0 + 0.05;
+          if (!at && free(w.index, x, y, z, 1.8)) at = { x, y, z };
+        }
+      } else {
+        // Outside it: away from the building's middle (or round it, on a roof), on the floor there, room to stand.
+        const ox = it.x - S.x, oz = it.z - S.z, od = Math.hypot(ox, oz) || 1;
+        for (const d of [1.5, 2.2, 3]) for (const turn of [0, 0.5, -0.5, 1, -1, Math.PI / 2, -Math.PI / 2, Math.PI]) {
+          if (at) break;
+          const a = Math.atan2(ox / od, oz / od) + turn, x = it.x + Math.sin(a) * d, z = it.z + Math.cos(a) * d;
+          const down = raycast(w.index, x, it.y + 0.8, z, 0, -1, 0, 4);
+          if (!down) continue;
+          const y = it.y + 0.8 - down.t + 0.05;
+          if (Math.abs(y - (it.y - 1.1)) < 1.6 && free(w.index, x, y, z, 1.8)) at = { x, y, z };
+        }
+      }
+      if (at) out.push({ name: `${meta.en}: ${way.kind}`, ...at, yaw: Math.atan2(-(it.x - at.x), -(it.z - at.z)) });
+    }
+  }
+  return out;
 }

@@ -41,6 +41,15 @@ export const scenarios: Scenario[] = [
   // The four endings (M7-15), each played from where its route comes out.
   { name: 'ending-bridge', world: 'yuzhong', desc: 'Beneath the Bridge: the ending of the rail-deck route', at: 'xiaoshizi', hour: 6, overcast: 0.8, ending: 'bridge', flags: { god: true } },
   { name: 'ending-cable', world: 'yuzhong', desc: 'The Cable: the ending of the cableway route', at: 'cablewayNorth', hour: 19, overcast: 0.6, ending: 'cable', flags: { god: true } },
+  // Every district and site (M6-25), from its teleport; each site at its main way in.
+  { name: 'jiaochangkou', world: 'yuzhong', desc: 'Jiaochangkou junction', overcast: 0.6, at: 'jiaochangkou' },
+  { name: 'hongyadong', world: 'yuzhong', desc: 'Hongyadong on the Jialing cliff', overcast: 0.6, at: 'hongyadong' },
+  { name: 'xiaoshizi', world: 'yuzhong', desc: 'Xiaoshizi and Xinhua Road, toward the Dongshuimen Bridge', overcast: 0.6, at: 'xiaoshizi' },
+  { name: 'chaotianmen', world: 'yuzhong', desc: 'Chaotianmen at the tip, where the rivers meet', overcast: 0.6, at: 'chaotianmen' },
+  { name: 'site-construction', world: 'yuzhong', desc: "the construction site and its tower crane", overcast: 0.6, at: 'Construction site' },
+  { name: 'site-hospital', world: 'yuzhong', desc: 'the hospital, at its ambulance-bay door (M6-11)', overcast: 0.6, at: 'Yuzhong Hospital: card' },
+  { name: 'site-police', world: 'yuzhong', desc: 'the police station, at its front door (M6-12)', overcast: 0.6, at: 'Police station: card' },
+  { name: 'site-market', world: 'yuzhong', desc: 'the electronics market, at its loading door (M6-13)', overcast: 0.6, at: 'Electronics market: door' },
   { name: 'snow', world: 'yuzhong', desc: 'a snowy winter morning at the top of the Eighteen Stairs (U-097)', at: 'shibati', day: 50, hour: 10, cover: 1, overcast: 0.9, flags: { snow: 0.8, god: true } },
   { name: 'ending-boat', world: 'yuzhong', desc: 'Into the Fog: the ending of the river route', at: 'chaotianmen', hour: 3, overcast: 0.9, ending: 'boat', flags: { god: true } },
   { name: 'ending-tunnel', world: 'yuzhong', desc: "Tunnel's End: the ending of the underground route", at: 'Tunnel junction (north passage)', hour: 5, overcast: 0.9, ending: 'tunnel', flags: { god: true } },
