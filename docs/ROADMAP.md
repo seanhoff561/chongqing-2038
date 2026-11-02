@@ -1293,7 +1293,7 @@ M7 Escapes: every escape route end to end, each with its ending.
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 1 of 16 done
+## M8: 2 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1301,7 +1301,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
   - docs/cinematics/INTRO.md: style bible (3D Chinese anime look tied to the game's references), character sheets (Li Wei, his father 李国荣, his mother and sister, his friends, the drones and robot soldiers, the ASI's face), location sheets, and the screenplay: the news of the AI's rise, Li Wei at work, the attack, his family's deaths, the flight through Shibati and the subway to the grate hideout
   - A shot list per scene: shot id, duration, camera, action, lighting, a ready generator prompt with negative prompt and consistency notes, VO and subtitles in zh and en, music and sound; a trailer cut list from the same shots
   - A unit test checks every shot has a prompt, duration and camera and every line has zh and en
-- [ ] **M8-01** Dialogue data
+- [x] **M8-01** Dialogue data
   - src/data/dialogue holds every line (id, speaker, zh, en) for the intro, Anna, Li Wei, his father, announcements and endings; Li Wei's lines use Chongqing dialect
   - A unit test checks every referenced id exists and every line has both languages
 - [ ] **M8-02** Voice playback chain

@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 296 / 369 | Last done: M7-01
+Features done: 297 / 369 | Last done: M8-01
 <!-- /status -->
 
 ## Log
@@ -123,3 +123,4 @@ Features done: 296 / 369 | Last done: M7-01
 - M6-24 Shelter sites across the city (U-013): shelter sites across the city, each with what its rooms hold to claim
 - M9-05 Save robustness: a save that can't be read is set aside and said so, not lost
 - M7-01 Escape and ending framework: escapes and endings: route progress, ending zones, the run summary, the save cleared
+- M8-01 Dialogue data: the dialogue: the intro's lines, the endings' exchanges, every speaker
