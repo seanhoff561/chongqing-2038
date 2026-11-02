@@ -198,4 +198,8 @@ export interface SimState {
   /** fog and rain now, 0 to 1 (M3-12): from the seeded schedule, forced up by the dev flags */
   /** snow falling 0 to 1 (U-097), and how much lies on what's open to the sky, 0 to 1 (as of game time `at`) */
   weather: { fog: number; rain: number; snow?: number; cover?: number; at?: number };
+  /** a gas-suppressed room set off, by its id: when (M6-14) */
+  gas?: Record<string, number>;
+  /** a district's relay cut (M6-14): until when its machines can't pass word on */
+  relayDown?: Record<string, number>;
 }

@@ -6,6 +6,7 @@
 // it after its kind's delay (one switched off or jammed before then never does), and from then on, while any that has
 // told it sees him, it knows where he is as he goes (the last known position); each time it's told, every machine in
 // that district and every other within 300 m of him hears where.
+import { relayDown } from './relay';
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { STATIC, SPREAD } from '../data/units';
@@ -52,7 +53,8 @@ export function stepDistricts(s: SimState, w: World) {
     const D = (s.hive.districts[k] ??= { state: 'unaware', since: s.time, contact: -1, until: 0 });
     const to = (state: Alert) => { if (D.state !== state) { D.state = state; D.since = s.time; if (state === 'engaged') D.cap = undefined; } };
     const c = told.get(k);
-    if (c && c.t > D.contact) { D.contact = c.t; tell(s, w, k, c.t, c.at); }
+    // (Its relay cut, the word goes no further than the machine that has him: M6-14.)
+    if (c && c.t > D.contact) { D.contact = c.t; if (!relayDown(s, k)) tell(s, w, k, c.t, c.at); }
     const lost = (s.time - D.contact) / SCALE;
     if (c && lost < DISTRICT.lost) to('engaged');
     else if (D.state === 'engaged') { if (lost >= DISTRICT.lost) to('searching'); }

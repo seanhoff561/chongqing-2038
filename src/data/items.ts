@@ -143,6 +143,7 @@ export const items: ItemDef[] = [
   I('sitecard', '工地门禁卡', 'Site access card', 1, 1, 0.01, 'key', 'Construction site gate.'),
   I('policecard', '警局门禁卡', 'Police access card', 1, 1, 0.01, 'key', 'Police station doors.'),
   I('hospcard', '医院门禁卡', 'Hospital access card', 1, 1, 0.01, 'key', 'Hospital staff doors.'),
+  I('telcard', '电信门禁卡', 'Exchange access card', 1, 1, 0.01, 'key', 'Telecom exchange gate.'),
   I('netcreds', '网络凭证', 'Network credentials', 1, 1, 0.01, 'key', 'Admin tokens for the exchange.'),
   I('schedule', '检修时刻表', 'Rail-deck schedule', 1, 1, 0.01, 'key', 'Maintenance drone timings on the Line 6 deck.'),
   I('phone', '破手机', 'Cracked phone', 1, 1, 0.15, 'misc', 'His father\'s. One voicemail.'),

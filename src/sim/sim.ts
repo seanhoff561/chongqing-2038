@@ -13,6 +13,7 @@ import { applyCmds } from './commands';
 import { stepHeld } from './use';
 import { stepInteract, allInters } from './interact';
 import { stepWeather } from './weather';
+import { stepGas } from './gas';
 import { stepContainers } from './containers';
 import './loot';
 import { syncWorld } from './doors';
@@ -123,6 +124,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepThrown(state, world);
   stepJam(state, world);
   stepTraps(state, world);
+  stepGas(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepPa(state, world);

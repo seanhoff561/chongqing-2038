@@ -107,6 +107,8 @@ export interface World {
   sites: Site[];
   /** the high-security sites in buildings (M6-11 to M6-13): their ways in, by interactable */
   secure?: Secure[];
+  /** gas-suppressed rooms (M6-14): their box and the sensor that sets them off */
+  gas?: { id: string; box: Box; sensor: number }[];
   /** render-only stand-ins for the far view (U-012): one box per block; empty for small worlds */
   far: Solid[];
   solids: Solid[];

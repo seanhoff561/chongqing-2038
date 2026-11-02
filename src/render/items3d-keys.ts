@@ -42,6 +42,8 @@ export const keysModels: Record<string, () => THREE.Object3D> = {
   sitecard: () => card(0xd8b830, 0x2a5aa8, photo(0.006, -0.026), cyl(0.002, 0.001, M(0x1a1a1a, 0.5), 'z', -0.022, 0.0, 0, 0.002, 8), ring(0.006, 0.0008, chrome, 'z', -0.029, 0.0, 0, Math.PI * 2, 10, 3)),
   // The police station's door card: navy blue, a gold police emblem.
   policecard: () => card(0x1a2a5a, 0xc8a040, cyl(0.01, 0.0003, M(0xc8a040, 0.35, 0.7), 'z', 0.004, -0.024, 0.0004, 0.01, 12), cyl(0.0055, 0.0004, M(0xb02a24, 0.5), 'z', 0.004, -0.024, 0.0006, 0.0055, 5)),
+  // The telecom exchange's gate card: sky blue, a white band, the operator's swoosh in a darker blue, a chip.
+  telcard: () => card(0x3a8ad8, 0xf0f4f8, ring(0.008, 0.0012, M(0x1a4a8a, 0.5), 'z', 0.008, -0.024, 0.0004, Math.PI * 1.3, 12, 3), box(0.009, 0.007, 0.0002, M(0xc8a040, 0.35, 0.7), -0.012, 0.012, 0.0005)),
   // The hospital's staff card on its badge reel: white, a green band and cross, a photo.
   hospcard: () => group(card(0xf0f0ec, 0x2a8a5a, box(0.012, 0.004, 0.0001, M(0x2a8a5a, 0.5), 0.006, 0.026, 0.00045), box(0.004, 0.012, 0.0001, M(0x2a8a5a, 0.5), 0.006, 0.026, 0.00045), photo(0.006, -0.026)),
     cyl(0.016, 0.012, M(0xe8e8e4, 0.5), 'z', 0.028, 0, -0.004, 0.016, 14), box(0.03, 0.001, 0.0005, M(0x2a2a2a, 0.6), 0.01, 0, -0.002)),

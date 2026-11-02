@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 325 / 371 | Last done: M6-24b
+Features done: 326 / 371 | Last done: M6-14
 <!-- /status -->
 
 ## Log
@@ -137,3 +137,4 @@ Features done: 325 / 371 | Last done: M6-24b
 - M6-25: teleports to every way into every site, scenarios for every district and site
 - M6-23, M6-26: the coverage tool; render budgets held at every preset, plain materials atlased
 - M6-24b: the Xiaoshizi metro service room and the Hongyadong cliff cellar as shelters
+- M6-14: the telecom exchange: gas in the server hall, the camera mesh, the district relay

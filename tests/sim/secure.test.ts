@@ -13,6 +13,9 @@ import { free } from '../../src/sim/physics';
 import { B } from '../../src/sim/types';
 import { run, secs, aim } from './helpers';
 import type { Inter } from '../../src/world/world';
+import { GAS } from '../../src/sim/gas';
+import { RELAY, relayDown } from '../../src/sim/relay';
+import { districtOf } from '../../src/sim/district';
 
 const w = getWorld('yuzhong');
 const site = (id: string) => w.secure!.find(q => q.id === id)!;
@@ -34,7 +37,7 @@ function before(it: Inter) {
       s.flags.clear = true; s.flags.god = true; s.time = 12 * 3600;
       for (const u of s.units) u.off = Infinity;
       syncWorld(s, w);
-      for (const id of ['hospcard', 'policecard', 'crowbar', 'boltcutters']) addItem(s, s.inv.pack, id, 1);
+      for (const id of ['hospcard', 'policecard', 'telcard', 'crowbar', 'boltcutters']) addItem(s, s.inv.pack, id, 1);
       teleport(s.player, x, y, z);
       run(s, w, 5);
       aim(s, it.x, it.y, it.z);
@@ -62,7 +65,7 @@ function work(s: ReturnType<typeof createState>, it: Inter) {
 }
 
 describe('high-security sites in the city (M6-11, M6-12, M6-13)', () => {
-  for (const [id, n] of [['hospital', 4], ['police', 4], ['market', 4]] as const) {
+  for (const [id, n] of [['hospital', 4], ['police', 4], ['market', 4], ['telecom', 4]] as const) {
     it(`the ${id}: ${n} ways in, each taken`, () => {
       const S = site(id);
       expect(S, id).toBeTruthy();
@@ -141,5 +144,32 @@ describe('high-security sites in the city (M6-11, M6-12, M6-13)', () => {
     expect(ears.length, 'acoustic arrays').toBeGreaterThanOrEqual(2);
     const heard = ears.filter(({ c, i }) => { const at = spot(c); if (!at) return false; const s = near(at.x, at.y, at.z); run(s, w, 3); moveAbout(s, secs(3), B.SPRINT); return (s.units.find(u => u.cam === i)!.aware ?? 0) > 0; });
     expect(heard.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("the telecom exchange (M6-14): a camera mesh round it, its server hall's gas, its terminal and the district's relay", () => {
+    expect(sensor('camera', 'telecom', 50).length, 'the camera mesh').toBeGreaterThanOrEqual(6);
+    const hall = w.gas!.find(g => g.id === 'telecom-hall')!;
+    expect(hall, 'the server hall').toBeTruthy();
+    const mid = { x: (hall.box.x0 + hall.box.x1) / 2, y: hall.box.y0 + 0.05, z: (hall.box.z0 + hall.box.z1) / 2 };
+    // Seen in the hall, the gas comes down; staying, he suffocates; out within 8 s, he lives.
+    for (const leave of [false, true]) {
+      const s = near(mid.x, mid.y, mid.z);
+      s.flags.god = false;
+      const u = s.units.find(q => q.cam === hall.sensor)!;
+      u.aware = 1.2;
+      run(s, w, 2);
+      expect(s.gas?.['telecom-hall'], 'gas set off').toBeDefined();
+      if (leave) { run(s, w, secs(5)); teleport(s.player, hall.box.x1 + 6, mid.y, mid.z); }
+      run(s, w, secs(GAS.secs + 2));
+      if (leave) expect(s.dead, 'got out').toBeFalsy(); else expect(s.dead, 'stayed').toBe('gas');
+    }
+    // The terminal and the relay; the relay cut with bolt cutters, and the district's word goes nowhere.
+    const term = w.inter.find(i => i.id === 'telecom-terminal')!, relay = w.inter.find(i => i.id === 'telecom-relay')!;
+    expect(term.kind).toBe('exchange');
+    const s = before(relay)!;
+    expect(s, 'somewhere to stand at the rack').toBeTruthy();
+    run(s, w, 1, { buttons: B.INTERACT, pressed: B.INTERACT });
+    for (let i = 0; i < secs(RELAY.cut + 1); i++) { aim(s, relay.x, relay.y, relay.z); run(s, w, 1, { buttons: B.INTERACT }); }
+    expect(relayDown(s, districtOf(relay.x, relay.z))).toBe(true);
   });
 });

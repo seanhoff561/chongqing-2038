@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 14 of 28 done
+## M6: 15 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1206,7 +1206,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [x] **M6-13** Electronics market
   - Four ways in, tier 2-3 electronics, acoustic sensor arrays on shop floors
   - Sim tests take each way in and trigger the hazard
-- [ ] **M6-14** Telecom exchange
+- [x] **M6-14** Telecom exchange
   - Four ways in, tier 3 network loot and terminal, server-hall gas suppression and the camera mesh; it is the district relay node
   - Sim tests take each way in and trigger the hazard
 - [ ] **M6-15** Substation

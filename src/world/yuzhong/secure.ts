@@ -8,20 +8,22 @@ import { free } from '../../sim/physics';
 import type { BuildingType } from '../city/types';
 import { onWall } from './sensors';
 import { raycast } from '../geom';
+import { MAT } from '../mats';
 
 /** The sites: which building (its plan's seed), what it was, its card, its loot table, and its hazard. */
-export const SECURE: { id: string; plan: string; type: BuildingType; zh: string; en: string; card?: string; loot: string; hazard: 'plate+pir' | 'turret' | 'acoustic' }[] = [
+export const SECURE: { id: string; plan: string; type: BuildingType; zh: string; en: string; card?: string; loot: string; hazard: 'plate+pir' | 'turret' | 'acoustic' | 'gas' }[] = [
   { id: 'hospital', plan: 'osm68', type: 'clinic', zh: '渝中医院', en: 'Yuzhong Hospital', card: 'hospcard', loot: 'hospital', hazard: 'plate+pir' },
   { id: 'police', plan: 'osm449', type: 'military', zh: '派出所', en: 'Police station', card: 'policecard', loot: 'police', hazard: 'turret' },
   { id: 'market', plan: 'osm396', type: 'mall', zh: '数码城', en: 'Electronics market', loot: 'electronics', hazard: 'acoustic' },
+  { id: 'telecom', plan: 'osm9', type: 'office', zh: '电信枢纽', en: 'Telecom exchange', card: 'telcard', loot: 'telecom', hazard: 'gas' },
 ];
 
 /** How far up a street door's camera hangs, out from the wall and along it from the door (m); the pharmacy's plate's
  *  half-width (m). */
 const DOOR_CAM = { up: 3.2, out: 0.4, side: 4 }, PLATE = 1.6;
 
-export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props: Prop[] } {
-  const sites: Secure[] = [], cameras: Camera[] = [], props: Prop[] = [];
+export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props: Prop[]; gas: NonNullable<World['gas']> } {
+  const sites: Secure[] = [], cameras: Camera[] = [], props: Prop[] = [], gas: NonNullable<World['gas']> = [];
   for (const S of SECURE) {
     const plot = w.plots.find(p => p.prefix === S.plan);
     if (!plot) continue;
@@ -52,7 +54,7 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
       const v = vents[0];
       // (A shutter's drawn by itself, render/shutters.ts: the vent's leaf and its lock go.)
       if (S.id === 'police') { v.data = { ...v.data, shutter: true, lock: 'locked' }; v.zh = '车库卷帘门'; v.en = 'Garage shutter'; w.props = w.props.filter(p => p.text !== v.id); }
-      else { v.zh = S.id === 'hospital' ? '洗衣房通风口' : '通风管'; v.en = S.id === 'hospital' ? 'Laundry vent' : 'Vent duct'; }
+      else { v.zh = S.id === 'hospital' ? '洗衣房通风口' : S.id === 'telecom' ? '发电机房通风口' : '通风管'; v.en = S.id === 'hospital' ? 'Laundry vent' : S.id === 'telecom' ? 'Generator-room vent' : 'Vent duct'; }
       ways.push({ kind: S.id === 'police' ? 'shutter' : 'vent', id: v.id });
     }
     // The police station's cell-block bars at the back, chained: bolt cutters.
@@ -76,13 +78,34 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
     } else if (S.hazard === 'turret') {
       // The armoury's turret, hung under the ceiling at its far wall, looking back across it.
       for (const ar of rooms('armory').filter((q, n, all) => all.findIndex(o => Math.abs(o.y - q.y) < 1) === n).slice(0, 2)) { const c = onWall(w, 'turret', ar); if (c) cameras.push(c); }
+    } else if (S.hazard === 'gas') {
+      // The server hall: the first office up from the street, its floor racked with servers; the exchange's terminal
+      // and the district's relay rack in it; a motion sensor that brings the gas down.
+      const hall = rooms('office').filter(q => q.y > (street?.y ?? plot.base) + 1.5).sort((a, b) => a.y - b.y)[0];
+      if (hall) {
+        const down = raycast(w.index, hall.x, hall.y + 0.5, hall.z, 0, -1, 0, 3), y = down ? hall.y + 0.5 - down.t : hall.y - 0.9, R = 3.5;
+        const box = { x0: hall.x - R, y0: y, z0: hall.z - R, x1: hall.x + R, y1: y + 2.9, z1: hall.z + R };
+        const pir = onWall(w, 'pir', hall);
+        if (pir) { gas.push({ id: `${S.id}-hall`, box, sensor: w.cameras.length + cameras.length }); cameras.push(pir); }
+        for (let k = -1; k <= 1; k += 2) w.decor.push({ x0: hall.x + k * 1.6 - 0.3, y0: y, z0: hall.z - 1.2, x1: hall.x + k * 1.6 + 0.3, y1: y + 2, z1: hall.z + 1.2, mat: MAT.metal, ramp: 0, low: 0, tint: 0x3a3e44 });
+        w.inter.push({ id: `${S.id}-terminal`, kind: 'exchange', x: hall.x - 1.2, y: y + 1.1, z: hall.z, r: 0.8, zh: '交换机终端', en: 'Exchange terminal', data: { serves: ['jiaochangkou', 'shibati', 'jiefangbei'] } },
+          { id: `${S.id}-relay`, kind: 'relay', x: hall.x + 1.2, y: y + 1.1, z: hall.z, r: 0.8, zh: '中继机柜', en: 'Relay rack' });
+        hall.zh = '机房'; hall.en = 'Server hall';
+      }
+      // The camera mesh: at each corner of the building, a camera looking along each of its walls.
+      const c4 = plot.corners;
+      c4.forEach((p, k) => {
+        const ox = p[0] - cx, oz = p[1] - cz, od = Math.hypot(ox, oz) || 1, x = p[0] + (ox / od) * 0.6, z = p[1] + (oz / od) * 0.6, y = plot.base + 4.5;
+        if (!free(w.index, x, y - 0.3, z, 0.6)) return;
+        for (const q of [c4[(k + 1) % c4.length], c4[(k + c4.length - 1) % c4.length]]) cameras.push({ kind: 'camera', x, y, z, yaw: Math.atan2(q[0] - p[0], q[1] - p[1]) });
+      });
     } else {
       // Acoustic arrays on the shop floors, one a floor.
       for (const sh of rooms('shop').filter((q, n, all) => all.findIndex(o => Math.abs(o.y - q.y) < 1) === n).slice(0, 5)) { const c = onWall(w, 'acoustic', sh); if (c) cameras.push(c); }
     }
     sites.push({ id: S.id, prefix: S.plan, x: cx, z: cz, ways });
   }
-  return { sites, cameras, props };
+  return { sites, cameras, props, gas };
 }
 
 /** A teleport to each of a site's ways in (M6-25): stood outside it on what's there, facing it; the roof door's on
