@@ -14,6 +14,7 @@ import { scenarioByName } from '../../src/data/scenarios';
 import { run, secs, LMB, RMB } from './helpers';
 import { addItem } from '../../src/sim/inventory';
 import { enterHide } from '../../src/sim/hide';
+import { aimAt } from '../../src/sim/damage';
 import { GRATE, bagsId } from '../../src/sim/grate';
 import { doorSolid } from '../../src/sim/doors';
 
@@ -61,13 +62,18 @@ describe('pursuit escapes (M4-32)', () => {
         s.inv.hotbar[0] = s.inv.pack.items.find(i => i.id === 'pistol')!.uid; s.inv.held = 1;
         let fired = 0, last = '';
         const hits: string[] = [], fly = sc.pursuit === 'drone', done = () => (fly ? !!u!.crash || !!u!.dead : !!u!.blind);
-        for (let i = 0; i < secs(90); i++) { const q = unitPose(w, u!, s.time); if (Math.hypot(q.x - s.player.pos.x, q.z - s.player.pos.z) < 18) break; run(s, w, 1); }
-        for (let n = 0; n < 15 && !done(); n++) {
-          const q = unitPose(w, u!, s.time), p = s.player.pos, hx = q.x + (fly ? 0 : Math.sin(q.yaw) * 0.55), hz = q.z + (fly ? 0 : Math.cos(q.yaw) * 0.55), dd = Math.hypot(hx - p.x, hz - p.z);
-          const pitch = Math.atan2(q.y + (fly ? 0.1 : 0.8) - p.y - 1.62, dd), yaw = Math.atan2(-(hx - p.x), -(hz - p.z));
-          run(s, w, secs(0.3), { pitch, yaw, buttons: RMB });
+        // (Fired only with it in his sights, nothing in between: since M5-35 a dog and a hunter close in as he aims.)
+        const sight = () => {
+          const q = unitPose(w, u!, s.time), p = s.player.pos, dd = Math.hypot(q.x - p.x, q.z - p.z);
+          return { pitch: Math.atan2(q.y + 0.1 - p.y - 1.62, dd), yaw: Math.atan2(-(q.x - p.x), -(q.z - p.z)), dd };
+        };
+        for (let i = 0; i < secs(90) && sight().dd > 30; i++) run(s, w, 1);
+        for (let i = 0; i < secs(60) && fired < 15 && !done(); i++) {
+          const { pitch, yaw } = sight();
+          run(s, w, 1, { pitch, yaw, buttons: RMB });
+          if (aimAt(s, w, 60)?.u !== u || s.player.swing > 0) continue;
           run(s, w, 1, { pitch, yaw, pressed: LMB, buttons: LMB | RMB }, st => { for (const e of st.events) { if (e.t === 'fire') fired++; if (e.t === 'hit') hits.push(e.zone); } });
-          last = `${dd.toFixed(0)}m up ${(q.y - p.y).toFixed(1)} ${s.player.mode}`;
+          last = `${sight().dd.toFixed(0)}m ${s.player.mode}`;
         }
         expect(done(), `the ${sc.pursuit} dealt with: ${fired} fired, hits ${hits.join(',')}, last ${last}`).toBe(true);
       }

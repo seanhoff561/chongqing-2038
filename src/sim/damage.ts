@@ -55,11 +55,19 @@ export function aimAt(s: SimState, w: World, reach: number, spread = { yaw: 0, p
   const p = s.player, yaw = p.yaw + spread.yaw, pitch = p.pitch + spread.pitch, e = eyeOf(p);
   const d = { x: -Math.sin(yaw) * Math.cos(pitch), y: Math.sin(pitch), z: -Math.cos(yaw) * Math.cos(pitch) }, h2 = d.x * d.x + d.z * d.z;
   let best = null as Aim | null;
-  if (h2 < 1e-6) return null;
   for (const u of s.units) {
     if (u.dead || u.kind === 'tripwire' || (u.reserve && !u.trip)) continue;
     const q = unitPose(w, u, s.time), [y0, y1, r] = BODY[u.kind];
     if (!q.active && !u.stop) continue;
+    // Straight up or down (a drone right over him, M4-32): through its body if he's under its axis.
+    if (h2 < 1e-6) {
+      if (Math.hypot(e.x - q.x, e.z - q.z) > r) continue;
+      const t = d.y > 0 ? q.y + y0 - e.y : e.y - (q.y + y1);
+      if (t < 0 || t > reach + r || (best && t >= best.t)) continue;
+      const at = { x: e.x, y: e.y + d.y * t, z: e.z };
+      best = { u, t, zone: zoneOf(u.kind, q, { x: at.x, y: at.y + d.y * 0.1, z: at.z }, d), at };
+      continue;
+    }
     // Where the ray enters its body's cylinder: within its radius of its axis (a quadratic along the ray's level run),
     // and between its bottom and top (straight up or down at it too: a drone overhead, U-089).
     const ox = e.x - q.x, oz = e.z - q.z, b = ox * d.x + oz * d.z, c = ox * ox + oz * oz - r * r, disc = b * b - h2 * c;
