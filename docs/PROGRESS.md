@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 300 / 369 | Last done: M8-10
+Features done: 301 / 369 | Last done: M8-15
 <!-- /status -->
 
 ## Log
@@ -127,3 +127,4 @@ Features done: 300 / 369 | Last done: M8-10
 - M8-03 tools/make-voice: tools/make-voice: every line to an mp3 with the director's TTS, a voice per speaker
 - M8-14 Voiced announcements: the voiced announcements resolve, each with its recording
 - M8-10 Music: the music: a pursuit pulse that follows the alert, darker pads by night
+- M8-15 Story beats in the world: the story in the world: the voicemail, Haozi's chalk mice, the first night

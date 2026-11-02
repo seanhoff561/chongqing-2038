@@ -56,6 +56,7 @@ import { stepRemarks } from './remarks';
 import { stepKitLines } from './zipkit';
 import { stepRiver } from './river';
 import { stepEscape } from './escape';
+import { stepBeats } from './beats';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
 import { stepMelee } from './melee';
@@ -156,6 +157,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepKitLines(state, world);
   stepRiver(state, world);
   stepEscape(state, world);
+  stepBeats(state, world);
   checkCollapse(state);
   state.tick++;
   state.time += GAME_PER_TICK;

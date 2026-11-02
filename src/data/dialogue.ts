@@ -28,6 +28,16 @@ export const ANNA: Line[] = [
   { id: 'anna-drone', speaker: 'anna', zh: '附近有无人机的信号。很近。', en: "A drone's signal, close by. Very close." },
   { id: 'anna-tag', speaker: 'anna', zh: '你身上有追踪器在叫。用接收器把它弄下来。', en: "There's a tracker chirping on you. Use the dongle to get it off." },
   { id: 'anna-tag-off', speaker: 'anna', zh: '好了，追踪器没了。', en: "That's it, the tracker's gone." },
+  // His first night (M8-15).
+  { id: 'anna-night-1', speaker: 'anna', zh: '天黑了。第一个晚上最难熬。', en: "It's dark. The first night is the hardest." },
+  { id: 'anna-night-2', speaker: 'anna', zh: '它们晚上看得更清楚。找个地方睡，我守着。', en: "They see better at night. Find somewhere to sleep. I'll keep watch." },
+];
+
+/** Haozi's chalk mice in the tunnels (M8-15): what Li Wei says at each, the first time he sees it. */
+export const MARKS: Line[] = [
+  { id: 'mark-1', speaker: 'liwei', zh: '耗子的耗儿……他们从这儿过的。', en: "Haozi's mouse... they came through here." },
+  { id: 'mark-2', speaker: 'liwei', zh: '又一个。尾巴朝那边，跟到走嘛。', en: 'Another one. The tail points that way. Follow it.' },
+  { id: 'mark-3', speaker: 'liwei', zh: '耗子，你们在哪儿哦……', en: 'Haozi, where are you lot...' },
 ];
 
 /** Each ending's last exchange between him and Anna (M7-15, DESIGN section 13); his in Chongqing speech. */
@@ -92,4 +102,4 @@ export const INTRO: Line[] = [
   { id: 'intro-s06-07-1', speaker: 'anna', zh: '那我们就从这里开始。', en: 'Then we start from here.' },
 ];
 
-export const lineById = new Map([...VOICEMAIL, ...ANNA, ...INTRO, ...Object.values(ENDING_LINES).flat(), ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));
+export const lineById = new Map([...VOICEMAIL, ...ANNA, ...MARKS, ...INTRO, ...Object.values(ENDING_LINES).flat(), ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

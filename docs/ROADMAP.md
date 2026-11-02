@@ -1293,7 +1293,7 @@ M7 Escapes: every escape route end to end, each with its ending.
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 5 of 16 done
+## M8: 6 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1348,7 +1348,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [x] **M8-14** Voiced announcements
   - The machine's announcements play through speakers in the world, positioned, in calm Mandarin with subtitles when near
   - A unit test checks each announcement id resolves
-- [ ] **M8-15** Story beats in the world
+- [x] **M8-15** Story beats in the world
   - His father's voicemail, friends' marks in the tunnels and Anna's first-night lines play once each per run
   - A sim test triggers each once
 

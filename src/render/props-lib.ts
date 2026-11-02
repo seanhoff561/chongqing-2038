@@ -302,6 +302,14 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
     k.cyl(0.08, 0.06, 4.5, 0x3a3e42, 0, 0, 0, 8).box(0.25, 0.2, 0.45, 0xe0e0e0, 0, 4.4, 0.2).cyl(0.25, 0.25, 0.04, 0x2a2e32, 0, 4.1, 0, 8);
     return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: new Kit(5).box(0.05, 0.05, 0.05, RED, 0, 4.5, 0.44).geometry(), mat: GLOW_MAT }]);
   },
+  // Haozi's chalk mouse on a wall (M8-15): a round body, two ears, a long tail, in chalk lines (its face +z).
+  chalkmouse: p => {
+    const k = new Kit(seedOf(p)).use('plain'), W = 0xe8e6dc;
+    for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; k.box(0.05, 0.012, 0.004, W, Math.cos(a) * 0.12, 0.1 + Math.sin(a) * 0.08, 0.002, -a); }
+    for (const s of [-1, 1]) for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; k.box(0.025, 0.01, 0.004, W, s * 0.07 + Math.cos(a) * 0.04, 0.22 + Math.sin(a) * 0.04, 0.002); }
+    for (let i = 0; i < 5; i++) k.box(0.06, 0.01, 0.004, W, -0.15 - i * 0.05, 0.08 + Math.sin(i) * 0.02, 0.002, 0.3 * Math.sin(i));
+    return group([{ geo: k.geometry(), mat: PROP_MAT }]);
+  },
   // A camera's junction box (M5-09): a grey steel box, its door's seam and a conduit up out of its top (its face +z).
   jbox: p => {
     const k = new Kit(seedOf(p)).use('metal');

@@ -247,6 +247,22 @@ export function buildYuzhong(): World {
     world.inter.push({ id: `jbox${i}`, kind: 'jbox', x: c.box.x, y: c.box.y, z: c.box.z, r: 0.5, zh: '接线盒', en: 'Junction box', data: { cam: i } });
   });
   world.garages = placeGarages(world, home.at.spawn);
+  // Haozi's chalk mice (M8-15): on the tunnel wall beside the underground route, three along its first stretch, a few
+  // points apart.
+  const route = world.features.filter(f => f.kind === 'underRoute').sort((a, b) => a.group - b.group);
+  for (let i = 1, k = 0, last = -9; i < route.length && k < 3; i++) {
+    const q = route[i];
+    if (i - last < 3) continue;
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const h = raycast(world.index, q.x, q.y + 1.2, q.z, dx, 0, dz, 4);
+      if (!h) continue;
+      const x = q.x + dx * (h.t - 0.02), z = q.z + dz * (h.t - 0.02);
+      world.props.push({ kind: 'chalkmouse', x, y: q.y + 0.9, z, yaw: Math.atan2(-dx, -dz) });
+      world.features.push({ kind: `mark:${++k}`, x, y: q.y + 1.2, z, group: k });
+      last = i;
+      break;
+    }
+  }
   // Each shelter site's bed, table and containers (M6-24): what's in its rooms to claim, by where they stand.
   const claim = new Map<string, Inter[]>(), cellOf = (x: number, z: number) => `${Math.floor(x / 8)},${Math.floor(z / 8)}`;
   for (const it of world.inter) if (it.kind === 'mattress' || it.kind === 'table' || it.kind === 'container') { const k = cellOf(it.x, it.z); (claim.get(k) ?? claim.set(k, []).get(k)!).push(it); }

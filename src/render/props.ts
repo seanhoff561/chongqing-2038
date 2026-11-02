@@ -256,7 +256,7 @@ export function tickProps(t: number, open: Record<string, boolean> = {}) {
 }
 
 /** Small things, a few pixels from further off: merged apart and drawn only near the camera (view.ts DETAIL). */
-const SMALL = new Set(['jbox', 'weeds', 'trash', 'debris', 'boxes', 'bags', 'pot', 'scooter', 'bike', 'sign', 'bin', 'rebar', 'shrub', 'garden', 'bench', 'mahjong', 'drum', 'stall',
+const SMALL = new Set(['jbox', 'chalkmouse', 'weeds', 'trash', 'debris', 'boxes', 'bags', 'pot', 'scooter', 'bike', 'sign', 'bin', 'rebar', 'shrub', 'garden', 'bench', 'mahjong', 'drum', 'stall',
   'cablebundle', 'dish', 'antenna', 'stilts', 'laundry', 'dronewreck', 'bangbang']);
 
 /** Loose litter and clutter, nothing in the way or to hide in: the graphics preset draws a share of it (M3-17). */

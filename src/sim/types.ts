@@ -160,6 +160,8 @@ export interface SimState {
   taps?: number[];
   /** the keycards he's cloned (M5-24) */
   cloned?: string[];
+  /** the story's beats played this run (M8-15) */
+  beats?: Record<string, true>;
   /** the escape routes' steps done, and when (M7-01) */
   escape?: Record<string, Record<string, number>>;
   /** the run ended on a route (M7-01) */
