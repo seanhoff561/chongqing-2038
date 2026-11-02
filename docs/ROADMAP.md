@@ -1293,7 +1293,7 @@ M7 Escapes: every escape route end to end, each with its ending.
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 2 of 16 done
+## M8: 3 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1307,7 +1307,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [ ] **M8-02** Voice playback chain
   - Playback uses public/audio/vo/<id>.mp3 if it exists, then Web Speech zh-CN, then subtitles alone; never blocks
   - The smoke test plays a line with no files and no speech voice without errors
-- [ ] **M8-03** tools/make-voice
+- [x] **M8-03** tools/make-voice
   - A script the director runs locally to generate every mp3 with a TTS of their choice, with distinct voices per speaker
   - A unit test runs it in dry-run mode and lists every line with its voice
 - [ ] **M8-04** Subtitles
