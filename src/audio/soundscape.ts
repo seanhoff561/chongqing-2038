@@ -7,7 +7,9 @@ import { MachineVoices } from './machines';
 import { Ambience, whereIs, type Where } from './ambience';
 import { Dread } from './dread';
 import { Heart } from './heart';
-import { Music } from './music';
+import { Music, nightOf } from './music';
+import { districtOf } from '../sim/district';
+import { daylight } from '../sim/clock';
 import { machineShot, echo } from './gunfire';
 import { gunshot, raidSiren } from './moves';
 import { raycast } from '../world/geom';
@@ -44,7 +46,7 @@ export class Soundscape {
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
     this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24 });
     // The music for where he is (M4-86): high up, in the streets, underground.
-    this.music.update(this.env.where, this.env.height);
+    this.music.update(this.env.where, this.env.height, s.hive.districts[districtOf(head.x, head.z)]?.state ?? 'unaware', nightOf(daylight(s.time)));
     this.voices.update(dt, s, w, head, cam.getWorldDirection(this.fwd));
     this.dread.update(dt, s, w, head, this.voices.nearest(head));
     // The raid breaking in on him: its siren, loud, through the 10 s (M4-63).

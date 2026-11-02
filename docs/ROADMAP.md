@@ -1293,7 +1293,7 @@ M7 Escapes: every escape route end to end, each with its ending.
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 4 of 16 done
+## M8: 5 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1331,7 +1331,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [ ] **M8-09** Ambience
   - City hum, rain, wind, river, tunnel drips and distant announcements, mixed by place, weather and time
   - The smoke test runs ambience in three places
-- [ ] **M8-10** Music
+- [x] **M8-10** Music
   - Ambient day and night pads and a pursuit layer whose intensity follows the alert state
   - A unit test maps each alert state to its intensity
 - [ ] **M8-11** Main menu

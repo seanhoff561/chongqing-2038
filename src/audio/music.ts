@@ -6,6 +6,7 @@
 // clock, a quarter of a second ahead.
 import type { Audio } from './audio';
 import type { Where } from './ambience';
+import type { Alert } from '../sim/district';
 
 export type Track = 'high' | 'ground' | 'under';
 type Chord = number[];
@@ -32,6 +33,14 @@ export const TRACKS: Record<Track, Def> = {
 export const PLAN = { quiet: [100, 260], piece: [50, 100], first: 45, gain: 0.35 };
 
 /** The next stretch's length: a silence, or a piece, by a random number 0 to 1. */
+/** The pursuit layer's strength by the district's alert (M8-10): nothing when they don't know of him, strongest while
+ *  one has him; and how far its pulse eases toward that each second. */
+export const PURSUIT = { level: { unaware: 0, suspicious: 0.3, engaged: 1, searching: 0.65, heightened: 0.35 } as Record<Alert, number>, ease: 0.5, gain: 0.5 };
+/** By night the pads darker and the notes fewer (M8-10): their brightness and the notes' share at night, by day 1. */
+export const NIGHT = { bright: 0.55, notes: 0.6 };
+/** How dark it is, 0 by day to 1 at night, for the pads. */
+export const nightOf = (daylight: number) => 1 - daylight;
+
 export const stretch = (piece: boolean, r: number) => { const [a, b] = piece ? PLAN.piece : PLAN.quiet; return a + (b - a) * r; };
 
 /** The track for where he is: up on the roofs or high over the ground, the high one; underground, the deep one. */
@@ -55,13 +64,22 @@ export class Music {
   playing = false;
   private until = -1;
   private master!: GainNode;
+  /** the pursuit layer's fader, and its next beat; how dark it is (0 to 1) */
+  private pursuit!: GainNode;
+  private beat = 0;
+  private night = 0;
   constructor(private a: Audio) {}
 
-  update(where: Where, height: number) {
+  update(where: Where, height: number, alert: Alert = 'unaware', night = 0) {
     const a = this.a;
     if (!a.ready) return;
     if (!this.on) this.build();
     const t = a.ctx!.currentTime;
+    this.night = night;
+    // The pursuit layer, by the alert: a low pulse, its own fader, under the pieces and the silences alike.
+    this.pursuit.gain.setTargetAtTime(PURSUIT.level[alert] * PURSUIT.gain, t, 1 / PURSUIT.ease);
+    if (this.pursuit.gain.value > 0.005) while (this.beat < t + 0.25) { this.pulse(Math.max(this.beat, t + 0.02)); this.beat = Math.max(this.beat, t) + 0.5; }
+    else this.beat = 0;
     if (this.until < 0) this.until = t + PLAN.first;
     // Silence, then a piece faded in, then silence again.
     if (t >= this.until) {
@@ -89,13 +107,22 @@ export class Music {
   /** One step (a sixteenth) of a track: a pad every two bars, a note now and then on a beat. */
   private play(k: Track, D: Def, i: number, t: number, step: number) {
     const s = i % 32, chord = D.chords[Math.floor(i / 32) % D.chords.length], out = this.out[k];
-    if (s === 0) this.pad(t, chord, step * 32, D.pad, out);
-    // A note on a beat now and then: a walk up and down the scale, never far, held long and echoing.
-    if (s % 4 === 0 && this.rand() < D.melody) {
+    if (s === 0) this.pad(t, chord, step * 32, D.pad * (1 - (1 - NIGHT.bright) * this.night), out);
+    // A note on a beat now and then: a walk up and down the scale, never far, held long and echoing (fewer at night).
+    if (s % 4 === 0 && this.rand() < D.melody * (1 - (1 - NIGHT.notes) * this.night)) {
       const c = this.clock[k];
       c.note = Math.max(0, Math.min(D.scale.length - 1, c.note + Math.floor(this.rand() * 5) - 2));
       this.keys(t, D.scale[c.note], step * 10, k === 'under' ? 0.03 : 0.035, this.echo[k], k === 'under' ? 1 : 0);
     }
+  }
+
+  /** The pursuit layer's beat: a low, muffled thump with a breath of noise, twice a second. */
+  private pulse(t: number) {
+    const ctx = this.a.ctx!, o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter();
+    o.type = 'triangle'; o.frequency.setValueAtTime(hz(33), t); o.frequency.exponentialRampToValueAtTime(hz(28), t + 0.35);
+    lp.type = 'lowpass'; lp.frequency.value = 220;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+    o.connect(lp).connect(g).connect(this.pursuit); o.start(t); o.stop(t + 0.45);
   }
 
   /** A pad: two detuned saws a note, softly in and out, through a low-pass. */
@@ -128,6 +155,7 @@ export class Music {
     this.verb = ctx.createConvolver(); this.verb.buffer = ir;
     // Everything through one fader: silent until a piece comes.
     this.master = ctx.createGain(); this.master.gain.value = 0; this.master.connect(a.bus.music);
+    this.pursuit = ctx.createGain(); this.pursuit.gain.value = 0; this.pursuit.connect(a.bus.music);
     const wet = ctx.createGain(); wet.gain.value = 0.8; this.verb.connect(wet).connect(this.master);
     for (const k of Object.keys(TRACKS) as Track[]) {
       const g = ctx.createGain(); g.gain.value = k === this.track ? 1 : 0;

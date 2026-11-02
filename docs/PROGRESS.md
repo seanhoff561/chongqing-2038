@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 299 / 369 | Last done: M8-14
+Features done: 300 / 369 | Last done: M8-10
 <!-- /status -->
 
 ## Log
@@ -126,3 +126,4 @@ Features done: 299 / 369 | Last done: M8-14
 - M8-01 Dialogue data: the dialogue: the intro's lines, the endings' exchanges, every speaker
 - M8-03 tools/make-voice: tools/make-voice: every line to an mp3 with the director's TTS, a voice per speaker
 - M8-14 Voiced announcements: the voiced announcements resolve, each with its recording
+- M8-10 Music: the music: a pursuit pulse that follows the alert, darker pads by night
