@@ -109,6 +109,8 @@ export interface World {
   secure?: Secure[];
   /** gas-suppressed rooms (M6-14): their box and the sensor that sets them off */
   gas?: { id: string; box: Box; sensor: number }[];
+  /** live busbars (M6-15): each a line, end to end */
+  hv?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
   /** render-only stand-ins for the far view (U-012): one box per block; empty for small worlds */
   far: Solid[];
   solids: Solid[];

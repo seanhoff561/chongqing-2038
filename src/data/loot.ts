@@ -82,6 +82,9 @@ export const loot: Record<string, LootTable> = {
   telecom: { rolls: [1, 3], empty: 0.05, items: [
     { id: 'rfamp', w: 3 }, { id: 'netcreds', w: 2 }, { id: 'fibretap', w: 2 }, { id: 'cable', w: 3 }, { id: 'board', w: 2 }, { id: 'cameratap', w: 2 }, { id: 'telcard', w: 1 }, { id: 'battpack', w: 1 },
   ] },
+  substation: { rolls: [1, 3], empty: 0.1, items: [
+    { id: 'insgloves', w: 2 }, { id: 'coil', w: 3 }, { id: 'cable', w: 3 }, { id: 'tape', w: 3 }, { id: 'clips', w: 2 }, { id: 'carbattery', w: 1 }, { id: 'boltcutters', w: 1 },
+  ] },
   // Tier 4: the drone hub's: what a drone controller is made of, big battery packs, the thermal module.
   tier4: { rolls: [2, 4], empty: 0, items: [
     { id: 'radiomod', w: 3 }, { id: 'board', w: 3 }, { id: 'battpack', w: 3, n: [1, 2] }, { id: 'powercell', w: 2 }, { id: 'thermalmod', w: 2 }, { id: 'rotor', w: 3, n: [2, 4] },

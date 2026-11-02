@@ -88,6 +88,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   'blow-knife-metal': (a, t) => { a.tone(t + 0.1, 0.3, 0.14, 3300, 3150); a.noise(t + 0.1, 0.12, 0.2, 'highpass', 4000); },
   'blow-knife-hard': (a, t) => a.noise(t + 0.1, 0.26, 0.22, 'bandpass', 3600, 2, 2400),
   'blow-knife-soft': (a, t) => { a.tone(t + 0.1, 0.07, 0.25, 320, 150); a.noise(t + 0.1, 0.06, 0.15, 'lowpass', 1200); },
+  // Live busbars humming (M6-15): a low 100 Hz drone, loud, a warning.
+  hum: (a, t) => { a.tone(t, 1.4, 0.16, 100, 100, 'sawtooth'); a.tone(t, 1.4, 0.08, 200, 200, 'sine'); },
   // His stomach growling, hungry (M8-08): a low gurgling rumble.
   stomach: (a, t) => { a.tone(t, 0.9, 0.12, 95, 70, 'sawtooth'); a.noise(t + 0.1, 0.7, 0.08, 'bandpass', 180, 2, 120); a.tone(t + 0.5, 0.5, 0.08, 120, 85, 'triangle'); },
   dyno: (a, t) => { a.tone(t, 0.1, 0.35, 130, 60, 'triangle'); breath(a, t, 0.14, 0.22, 800); },

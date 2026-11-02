@@ -51,6 +51,7 @@ export const scenarios: Scenario[] = [
   { name: 'site-police', world: 'yuzhong', desc: 'the police station, at its front door (M6-12)', overcast: 0.6, at: 'Police station: card' },
   { name: 'site-market', world: 'yuzhong', desc: 'the electronics market, at its loading door (M6-13)', overcast: 0.6, at: 'Electronics market: door' },
   { name: 'site-telecom', world: 'yuzhong', desc: 'the telecom exchange, at its front gate (M6-14)', overcast: 0.6, at: 'Telecom exchange: card' },
+  { name: 'site-substation', world: 'yuzhong', desc: 'the Xinhua Road substation, at its gate (M6-15)', overcast: 0.6, at: 'Xinhua Road substation: card' },
   { name: 'snow', world: 'yuzhong', desc: 'a snowy winter morning at the top of the Eighteen Stairs (U-097)', at: 'shibati', day: 50, hour: 10, cover: 1, overcast: 0.9, flags: { snow: 0.8, god: true } },
   { name: 'ending-boat', world: 'yuzhong', desc: 'Into the Fog: the ending of the river route', at: 'chaotianmen', hour: 3, overcast: 0.9, ending: 'boat', flags: { god: true } },
   { name: 'ending-tunnel', world: 'yuzhong', desc: "Tunnel's End: the ending of the underground route", at: 'Tunnel junction (north passage)', hour: 5, overcast: 0.9, ending: 'tunnel', flags: { god: true } },

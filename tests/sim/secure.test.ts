@@ -37,7 +37,7 @@ function before(it: Inter) {
       s.flags.clear = true; s.flags.god = true; s.time = 12 * 3600;
       for (const u of s.units) u.off = Infinity;
       syncWorld(s, w);
-      for (const id of ['hospcard', 'policecard', 'telcard', 'crowbar', 'boltcutters']) addItem(s, s.inv.pack, id, 1);
+      for (const id of ['hospcard', 'policecard', 'telcard', 'badge', 'crowbar', 'boltcutters']) addItem(s, s.inv.pack, id, 1);
       teleport(s.player, x, y, z);
       run(s, w, 5);
       aim(s, it.x, it.y, it.z);
@@ -65,7 +65,7 @@ function work(s: ReturnType<typeof createState>, it: Inter) {
 }
 
 describe('high-security sites in the city (M6-11, M6-12, M6-13)', () => {
-  for (const [id, n] of [['hospital', 4], ['police', 4], ['market', 4], ['telecom', 4]] as const) {
+  for (const [id, n] of [['hospital', 4], ['police', 4], ['market', 4], ['telecom', 4], ['substation', 4]] as const) {
     it(`the ${id}: ${n} ways in, each taken`, () => {
       const S = site(id);
       expect(S, id).toBeTruthy();
@@ -171,5 +171,28 @@ describe('high-security sites in the city (M6-11, M6-12, M6-13)', () => {
     run(s, w, 1, { buttons: B.INTERACT, pressed: B.INTERACT });
     for (let i = 0; i < secs(RELAY.cut + 1); i++) { aim(s, relay.x, relay.y, relay.z); run(s, w, 1, { buttons: B.INTERACT }); }
     expect(relayDown(s, districtOf(relay.x, relay.z))).toBe(true);
+  });
+
+  it("the substation (M6-15): its busbars hum, an arc kills him standing under them, keeping low he passes; the spare fuse in its relay cabinet", () => {
+    expect(w.hv!.length, 'busbars').toBeGreaterThanOrEqual(3);
+    const b = w.hv![1], mid = { x: (b.a.x + b.b.x) / 2, z: (b.a.z + b.b.z) / 2 }, down = raycast(w.index, mid.x, b.a.y - 0.3, mid.z, 0, -1, 0, 4)!, y = b.a.y - 0.3 - down.t + 0.02;
+    // Two metres off, the hum; under it standing, the arc.
+    const s = near(mid.x, y, mid.z + 2.5);
+    s.flags.god = false;
+    const heard: string[] = [];
+    run(s, w, secs(3), {}, st => { for (const e of st.events) if (e.t === 'sfx') heard.push(e.id); });
+    expect(heard, 'the hum').toContain('hum');
+    expect(s.dead).toBeFalsy();
+    teleport(s.player, mid.x, y, mid.z);
+    run(s, w, 3);
+    expect(s.dead).toBe('shock');
+    // Crawling under it, alive.
+    const t = near(mid.x, y, mid.z);
+    t.flags.god = false;
+    t.player.posture = 'crawl';
+    run(t, w, 3, { buttons: B.CRAWL });
+    expect(t.dead).toBeFalsy();
+    // The single spare HV fuse, in the relay cabinet.
+    expect(w.inter.some(i => i.en === 'Relay cabinet' && (i.data?.items as [string, number][] | undefined)?.some(([id]) => id === 'hvfuse'))).toBe(true);
   });
 });
