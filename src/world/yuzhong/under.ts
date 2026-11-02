@@ -10,7 +10,7 @@ import { MAT } from '../mats';
 import { GEO } from '../geo';
 import { makeRng, hashString, rand } from '../../sim/rng';
 import type { Heightfield } from '../heightfield';
-import type { Climbable, Feature, Inter, Prop, Zone } from '../world';
+import type { Climbable, Feature, Inter, Prop, Zone, Site } from '../world';
 import { cover } from '../city/access';
 import type { UnderLot } from './undercity';
 import { stair } from '../steps';
@@ -21,7 +21,7 @@ import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } 
 
 type V3 = { x: number; y: number; z: number };
 export interface Under {
-  solids: Solid[]; decor: Solid[]; props: Prop[]; climbables: Climbable[]; zones: Zone[]; features: Feature[]; inter: Inter[];
+  solids: Solid[]; decor: Solid[]; props: Prop[]; climbables: Climbable[]; zones: Zone[]; features: Feature[]; inter: Inter[]; sites: Site[];
   /** the underground city's buildings, to build like the city's (undercity.ts) */
   lots: UnderLot[];
   /** what the lots keep clear of: the open cuts of stairways and culverts, the grates */
@@ -47,7 +47,7 @@ const TW = 3.6, TH = 3.4;
 /** gt: the Grand Tunnel's floor, the end of its passage north (the junction), its ways in, and a walk along it
  *  from under Jiaochangkou into the passage. */
 export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; ways: V3[]; walk: V3[]; metro: V3; toJunction: V3[] }): Under {
-  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], at: {} };
+  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], at: {} };
   const lining: Solid[] = [], bores: Box[] = [], kept: Solid[] = [], r = makeRng(hashString('under')), lr = makeRng(hashString('under-grates'));
   const k = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
   const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => streetCells[k(x, z)] !== 0;
@@ -69,6 +69,22 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
     space(x0, z0, x1, z1, y, y + h);
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
     for (let t = 6; t < len - 2 && w > 2; t += 16) { const x = a[0] + ((b[0] - a[0]) * t) / len, z = a[1] + ((b[1] - a[1]) * t) / len; u.decor.push(solid(x - 0.3, y + h - 0.1, z - 0.3, x + 0.3, y + h, z + 0.3, MAT.lamp)); }
+  };
+  /** The metro staff's room off a station (M6-24b): through a door in the platform wall at its middle, beyond the
+   *  track, a concrete room with a cot, a table and lockers; a shelter he could make his own. */
+  const serviceRoom = (R: ReturnType<typeof run>, at: number, y: number) => {
+    const [x0, z0, x1, z1] = R.rect(at - 3, at + 3, 9.6, 14.6), [dx0, dz0, dx1, dz1] = R.rect(at - 0.6, at + 0.6, 8.7, 9.8);
+    space(x0, z0, x1, z1, y, y + 3, MAT.concrete, false, true);
+    space(dx0, dz0, dx1, dz1, y, y + 2.1);
+    const P = (t: number, v: number) => R.pt(at + t, v), box = (t0: number, t1: number, v0: number, v1: number, h: number, mat: number) => { const [a0, b0, a1, b1] = R.rect(at + t0, at + t1, v0, v1); return solid(a0, y, b0, a1, y + h, b1, mat); };
+    u.solids.push(box(-2.6, -0.6, 13.4, 14.4, 0.45, MAT.cloth), box(1.2, 2.5, 13.6, 14.4, 0.78, MAT.wood), box(-2.8, -2.2, 10, 11.6, 1.9, MAT.metal), box(-2.8, -2.2, 11.8, 13.0, 1.9, MAT.metal));
+    const [mx, mz] = P(-1.6, 13.2), [tx, tz] = P(1.85, 13.4), [l1x, l1z] = P(-2.0, 10.8), [l2x, l2z] = P(-2.0, 12.4);
+    u.inter.push({ id: 'svc-cot', kind: 'mattress', x: mx, y: y + 0.45, z: mz, r: 1, zh: '行军床', en: 'Cot' },
+      { id: 'svc-table', kind: 'table', x: tx, y: y + 0.78, z: tz, r: 0.8, zh: '桌子', en: 'Table' },
+      { id: 'svc-locker1', kind: 'container', x: l1x, y: y + 1, z: l1z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'bedroom' } },
+      { id: 'svc-locker2', kind: 'container', x: l2x, y: y + 1, z: l2z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'kitchen' } });
+    const [cx, cz] = P(0, 12);
+    u.sites.push({ id: 'xiaoshizi-service', kind: 'cellar', name: ['小什字地铁值班室', 'Xiaoshizi metro service room'], x: cx, y, z: cz, bed: 'svc-cot', table: 'svc-table', containers: ['svc-locker1', 'svc-locker2'], exits: 1, windows: 0, streetSides: 0 });
   };
   const holeRect = (x0: number, z0: number, x1: number, z1: number) => {
     for (let j = Math.floor(z0 / g.cell); j <= Math.floor(z1 / g.cell); j++) for (let i = Math.floor(x0 / g.cell); i <= Math.floor(x1 / g.cell); i++) if (i >= 0 && j >= 0 && i < g.w - 1 && j < g.h - 1) g.hole[j * (g.w - 1) + i] = 1;
@@ -243,6 +259,7 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   const northT = run([xe, C.z - CX], [xe, ze + SL]);
   tubes(dig, northT, 0, northT.len, LB);
   station(dig, run([xe, ze + SL], [xe, ze - 4]), SL + 4, LB, r);
+  serviceRoom(run([xe, ze + SL], [xe, ze - 4]), (SL + 4) / 2, LB);
 
   // Ways in. Streets stepping down off the street in landings, open to the sky, onto the city's deck (U-032:
   // ground level keeps going down): one on each of two sides of the cavern, where one fits clear of the streets.

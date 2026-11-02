@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 13 of 28 done
+## M6: 14 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1239,7 +1239,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [x] **M6-24** Shelter sites across the city (U-013)
   - Every district offers several candidate shelter sites (flats, roof huts, back rooms, basements, the Hongyadong cliff cellar, the Xiaoshizi metro service room, tunnel chambers) with beds, tables or containers to claim
   - A unit test counts sites per district; a sim test sets up a shelter in two of them
-- [ ] **M6-24b** The named shelter rooms (split from M6-24)
+- [x] **M6-24b** The named shelter rooms (split from M6-24)
   - The Hongyadong cliff cellar and the Xiaoshizi metro service room are shelter sites with a bed, a table or containers to claim
   - A sim test sets up a hideout in each
 - [x] **M6-25** Teleports and scenarios for every site

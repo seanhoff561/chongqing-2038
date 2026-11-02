@@ -216,7 +216,7 @@ export function buildYuzhong(): World {
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
     props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], vert.climbables, under.climbables, dress.climbables),
-    hides: out.hides, sites: out.sites.concat(tun.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones),
+    hides: out.hides, sites: out.sites.concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones),
     far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, dress.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
     teleports, spawn: hide,
   });
@@ -296,6 +296,13 @@ export function buildYuzhong(): World {
       last = i;
       break;
     }
+  }
+  // The Hongyadong cliff cellar (M6-24b): the cellar under the block nearest Hongyadong on the cliff, its store's
+  // shelves and crates to claim.
+  const HY = GEO.landmarks.hongyadong, hatch = world.inter.filter(i => i.en === 'Trapdoor' && Math.hypot(i.x - HY.x, i.z - HY.z) < 80).sort((a, b) => Math.hypot(a.x - HY.x, a.z - HY.z) - Math.hypot(b.x - HY.x, b.z - HY.z))[0];
+  if (hatch) {
+    const pre = hatch.id.slice(0, hatch.id.lastIndexOf('.')), store = world.inter.filter(i => i.kind === 'container' && i.id.startsWith(pre) && i.y < hatch.y - 1 && i.y > hatch.y - 5);
+    if (store.length) world.sites.push({ id: 'hongyadong-cellar', kind: 'cellar', name: ['洪崖洞崖下地窖', 'Hongyadong cliff cellar'], x: store[0].x, y: hatch.y - 3.2, z: store[0].z, bed: null, table: null, containers: store.slice(0, 6).map(i => i.id), exits: 1, windows: 0, streetSides: 0 });
   }
   // Each shelter site's bed, table and containers (M6-24): what's in its rooms to claim, by where they stand.
   const claim = new Map<string, Inter[]>(), cellOf = (x: number, z: number) => `${Math.floor(x / 8)},${Math.floor(z / 8)}`;

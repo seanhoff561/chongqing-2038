@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 324 / 371 | Last done: M6-26
+Features done: 325 / 371 | Last done: M6-24b
 <!-- /status -->
 
 ## Log
@@ -136,3 +136,4 @@ Features done: 324 / 371 | Last done: M6-26
 - M6-11, M6-12, M6-13: the hospital, police station and electronics market in the city's buildings
 - M6-25: teleports to every way into every site, scenarios for every district and site
 - M6-23, M6-26: the coverage tool; render budgets held at every preset, plain materials atlased
+- M6-24b: the Xiaoshizi metro service room and the Hongyadong cliff cellar as shelters
