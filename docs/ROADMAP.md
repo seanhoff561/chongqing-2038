@@ -1293,7 +1293,7 @@ M7 Escapes: every escape route end to end, each with its ending.
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 3 of 16 done
+## M8: 4 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1345,7 +1345,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
   - Every control can be rebound; mouse sensitivity is a slider (U-001)
   - Mouse sensitivity, invert Y, FOV, master/voice/effects/ambience volume, subtitle size and language, graphics preset; persisted
   - The smoke test changes and reloads them
-- [ ] **M8-14** Voiced announcements
+- [x] **M8-14** Voiced announcements
   - The machine's announcements play through speakers in the world, positioned, in calm Mandarin with subtitles when near
   - A unit test checks each announcement id resolves
 - [ ] **M8-15** Story beats in the world

@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 298 / 369 | Last done: M8-03
+Features done: 299 / 369 | Last done: M8-14
 <!-- /status -->
 
 ## Log
@@ -125,3 +125,4 @@ Features done: 298 / 369 | Last done: M8-03
 - M7-01 Escape and ending framework: escapes and endings: route progress, ending zones, the run summary, the save cleared
 - M8-01 Dialogue data: the dialogue: the intro's lines, the endings' exchanges, every speaker
 - M8-03 tools/make-voice: tools/make-voice: every line to an mp3 with the director's TTS, a voice per speaker
+- M8-14 Voiced announcements: the voiced announcements resolve, each with its recording
