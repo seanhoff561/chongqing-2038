@@ -5,13 +5,13 @@
 // (M4-06). Each unit thinks ten times a second, in turn,
 // and its awareness of him climbs while he's visible and falls away when he isn't.
 import type { SimState } from './types';
-import type { World } from '../world/world';
+import type { World, Patrol } from '../world/world';
 import { SENSES, SIGHT, HEARING, THERMAL, SENSORS, type UnitKind } from '../data/units';
 import { movement as M } from '../data/movement';
 import { raycast } from '../world/geom';
 import { lightAt, LAMP_LIGHT } from './light';
 import { daylight, SCALE } from './clock';
-import { unitPose, isOff, type Pose } from './units';
+import { unitPose, isOff, type Pose, type Unit } from './units';
 import { smoked } from './throw';
 import { onUseId } from './use';
 import { LEAN } from './player';
@@ -83,6 +83,23 @@ function wireTrips(s: SimState, c: { x: number; y: number; z: number; to?: { x: 
   return Math.hypot(c.x + vx * t - p.x, c.z + vz * t - p.z) < 0.25 && c.y >= p.y && c.y <= p.y + h;
 }
 
+/** Each beat's ground, its dock's too (a box, x and z). */
+const beatBoxes = new WeakMap<Patrol, { x0: number; z0: number; x1: number; z1: number }>();
+/** Whether a unit walking its beat is too far from him anywhere along it, or on the way to and from its dock, to see
+ *  him (a unit off its beat, a column's or a fixed sensor is always placed and looked at). */
+function offBeat(s: SimState, w: World, u: Unit) {
+  if (u.trip || u.stop || u.crash || u.convoy || u.cam !== undefined || u.reserve || u.patrol < 0) return false;
+  const P = w.patrols[u.patrol];
+  let b = beatBoxes.get(P);
+  if (!b) {
+    const pts = P.dock !== undefined ? [...P.pts, w.docks[P.dock]] : P.pts;
+    b = { x0: Math.min(...pts.map(q => q.x)), z0: Math.min(...pts.map(q => q.z)), x1: Math.max(...pts.map(q => q.x)), z1: Math.max(...pts.map(q => q.z)) };
+    beatBoxes.set(P, b);
+  }
+  const r = rangeOf(s, u.kind) + 3, p = s.player.pos;
+  return p.x < b.x0 - r || p.x > b.x1 + r || p.z < b.z0 - r || p.z > b.z1 + r;
+}
+
 /** How far a unit sees now: its day range by day, its night range by night (between them at dusk), cut by fog and rain. */
 export function rangeOf(s: SimState, kind: UnitKind) {
   const S = SENSES[kind], d = daylight(s.time), f = s.weather.fog, r = s.weather.rain;
@@ -130,8 +147,9 @@ export function stepSight(s: SimState, w: World, every = 6) {
       continue;
     }
     if ((u.id + s.tick) % every) continue;
-    // Blinded (M4-19), it sees nothing.
-    if (u.blind) { u.aware = Math.max(0, (u.aware ?? 0) - SIGHT.decay * dt); continue; }
+    // Blinded (M4-19), or nowhere on its whole beat within sight of him (M9-12: most of the city's machines, not
+    // placed at all), it sees nothing.
+    if (u.blind || offBeat(s, w, u)) { u.aware = Math.max(0, (u.aware ?? 0) - SIGHT.decay * dt); continue; }
     const at = unitPose(w, u, s.time);
     // A motion sensor's alarm: all at once (M4-11).
     if (u.kind === 'pir') {

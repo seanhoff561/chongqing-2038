@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 313 / 371 | Last done: M5-37
+Features done: 314 / 371 | Last done: M9-12
 <!-- /status -->
 
 ## Log
@@ -130,3 +130,4 @@ Features done: 313 / 371 | Last done: M5-37
 - M8-15 Story beats in the world: the story in the world: the voicemail, Haozi's chalk mice, the first night
 - M5-34 Realistic item models (U-053): realistic models for every item
 - M8-02, M8-04, M8-07, M8-08, M8-09, M8-11, M8-12, M8-13, M7-15, M9-03, M5-37: voice, subtitles, mixer, sound pass, ambience, menus, endings, soak, winter snow (U-097, U-098)
+- M9-12: sim tick halved, GPU rain, shaders compiled up front, frame-cost test (U-097)

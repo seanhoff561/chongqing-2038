@@ -195,7 +195,7 @@ export function stepAlert(s: SimState, w: World) {
       else if (u.seen) { leave(s, w, u, 'look', u.seen); continue; }
     }
     // Checking where the hive saw him, as it passes nearest the place on its beat (each unit in turn).
-    if ((u.id + think) % 6 || u.state !== 'unaware' || u.reserve) continue;
+    if ((u.id + think) % 6 || u.state !== 'unaware' || u.reserve || !s.hive.seen.length) continue;
     const at = unitPose(w, u, s.time);
     if (!at.active || (u.checked !== undefined && s.time - u.checked < loopOf(w, u) * SCALE)) continue;
     for (const h of s.hive.seen) {

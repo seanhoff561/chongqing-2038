@@ -31,7 +31,9 @@ export function stepFire(s: SimState, w: World) {
   for (const u of s.units) {
     const wpn = UNITS[u.kind].weapon;
     if (!wpn) continue;
-    const at = isOff(s, u) || (u.reserve && !u.trip) ? null : unitPose(w, u, s.time);
+    // (Neither it nor any district engaged, it holds fire without being placed: M9-12, most of them most ticks.)
+    const calm = u.state !== 'engaged' && !hot.size;
+    const at = calm || isOff(s, u) || (u.reserve && !u.trip) ? null : unitPose(w, u, s.time);
     if (!at || !at.active || at.docked || (u.state !== 'engaged' && !(hot.size && hot.has(districtOf(at.x, at.z))))) { u.aim = false; u.fire = undefined; u.left = undefined; continue; }
     // (A prod's reach from its body to his middle: not up through a ledge he's on.)
     const W = WEAPONS[wpn], d = wpn === 'prod' ? Math.hypot(p.pos.x - at.x, p.pos.y + 0.9 - at.y - 0.6, p.pos.z - at.z) : Math.hypot(p.pos.x - at.x, p.pos.y + 1 - at.y, p.pos.z - at.z);

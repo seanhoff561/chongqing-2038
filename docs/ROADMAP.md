@@ -1356,7 +1356,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
   - His father's voicemail, friends' marks in the tunnels and Anna's first-night lines play once each per run
   - A sim test triggers each once
 
-## M9: 2 of 12 done
+## M9: 3 of 12 done
 
 M9 Balance and polish: difficulty, performance on budget, solvability proofs, a bug sweep, and the final playtest checklist.
 
@@ -1388,6 +1388,6 @@ M9 Balance and polish: difficulty, performance on budget, solvability proofs, a 
   - README, DESIGN and CREDITS match the shipped game; a test checks README lists every scenario and control
 - [ ] **M9-11** Final playtest checklist
   - docs/PLAYTEST.md ends with a full-run checklist for the director
-- [ ] **M9-12** Frame-time pass at High (U-097)
+- [x] **M9-12** Frame-time pass at High (U-097)
   - The CPU cost of a frame (sim ticks plus render work) at the high preset measured at 10 viewpoints across the city by day and night, cut wherever it can be (per-frame allocations, redundant updates, draw calls merged or instanced, culling), aiming at 144 fps
   - A browser test records the frame cost and draw calls at each viewpoint before and after; the real frame rate goes to PLAYTEST

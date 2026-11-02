@@ -40,6 +40,8 @@ export class View {
 
   constructor(container: HTMLElement) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    // (Each shader's compile log read back at once stalls the GPU: only for dev tools and the browser tests, M9-12.)
+    this.renderer.debug.checkShaderErrors = navigator.webdriver || location.search.includes('dev=1');
     this.setPreset(loadPreset());
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -166,6 +168,9 @@ export class View {
     this.world.updateMatrixWorld(true);
     freeze(this.world);
     this.visFar = -1;
+    // Every material's shaders compiled now, in the background where the browser can, not the first time each comes
+    // into view (M9-12: a hitch each).
+    this.renderer.compileAsync(this.scene, this.fp.cam).catch(() => {});
   }
 
   /** The graphics preset (M3-17), remembered between visits. Returns whether the share of props drawn changed (the

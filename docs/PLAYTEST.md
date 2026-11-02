@@ -272,3 +272,4 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 - When a drone comes to look for you, does it come round to one side rather than hanging straight overhead?
 - Die in a run and press Esc: does the main menu come up?
 - Do lockers now open in silence?
+- 144 fps (M9-12): on High, walk round Jiefangbei, Shibati and Chaotianmen by day and by night with the dev overlay on (`?dev=1`). What frame rate do you get? Are there hitches when new streets come into view?
