@@ -1,7 +1,7 @@
 html, body { margin: 0; height: 100%; background: #07080a; overflow: hidden; font-family: "IBM Plex Mono", "Noto Sans Mono CJK SC", "Noto Sans CJK SC", Consolas, monospace; color: #b8b2a2; }
 canvas { display: block; }
 #hud { position: fixed; inset: 0; pointer-events: none; }
-#hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(230,225,210,0.7); border-radius: 50%; }
+#hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(235,230,215,0.85); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.45); }
 #hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh); }
 #hud .scope.binos { background: #000; -webkit-mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); -webkit-mask-composite: source-in; mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); mask-composite: intersect; }
 #hud .ring { display: none; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px; transform: rotate(-90deg); }

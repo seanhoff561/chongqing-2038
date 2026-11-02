@@ -7,7 +7,7 @@ import type { Game } from '../game';
 import type { Grid, Stack } from '../sim/inventory';
 import { dims, weight } from '../sim/inventory';
 import { item } from '../data/items';
-import { MODS } from '../data/units';
+import { MODS, TAG } from '../data/units';
 import { icon } from './icons';
 
 /** What he can eat, drink or use from the backpack. */
@@ -83,6 +83,15 @@ export class InventoryUI {
       all.textContent = '全拿 Take all';
       all.onclick = () => { this.game.input.cmds.push({ c: 'takeall' }); this.sig = ''; };
       p.querySelector('.inv-title span')!.appendChild(all);
+    }
+    // His jacket off and gone over by hand, for a tracker stuck on it (U-099).
+    if (ref === 'pack') {
+      const b = document.createElement('button');
+      b.className = 'inv-takeall';
+      b.textContent = '搜外套 Search jacket';
+      b.title = `Take your jacket off and go over it for a tracking tag (${TAG.search} s, standing)`;
+      b.onclick = () => { this.game.input.cmds.push({ c: 'act', name: 'search' }); this.toggle(false); };
+      p.querySelector('.inv-title span')!.appendChild(b);
     }
     const area = document.createElement('div');
     area.className = 'inv-grid';

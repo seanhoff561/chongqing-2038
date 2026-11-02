@@ -63,6 +63,8 @@ export class Input {
     });
     addEventListener('mouseup', e => { this.mouse &= ~(e.button === 0 ? B.USE : e.button === 2 ? B.AIM : 0); });
     addEventListener('contextmenu', e => e.preventDefault());
+    // (The mouse let go of, its buttons up: none left held down, aiming for good.)
+    document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el) this.mouse = 0; });
     addEventListener('mousemove', e => {
       if (document.pointerLockElement !== el) return;
       this.yaw -= e.movementX * this.sensitivity;

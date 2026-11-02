@@ -9,7 +9,7 @@ import { powered } from './power';
 
 /** Game seconds a full battery lasts open; the light its screen casts on him; a full charge's game seconds at a
  *  hideout, and what it takes from the car battery (percent). */
-export const LAPTOP = { lasts: 2 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
+export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
 
 onCmd((s, c) => {
   if (c.c !== 'act' || c.name !== 'laptop' || s.dead) return;

@@ -83,8 +83,8 @@ export const TAKEDOWN = { reach: 1.5, rear: 120, time: 1, noise: 6 };
 
 /** A quadruped's tag launcher (DESIGN section 6, M4-22): a shot every 6 s at him out to 20 m (beyond its prod's
  *  reach), sticking a tracking tag to his clothes three times in five; its pop heard 15 m round. Found with an SDR
- *  dongle, a tag takes 3 s to pick off. */
-export const TAG = { every: 6, reach: 20, near: 1.5, chance: 0.6, noise: 15, remove: 1.2 };
+ *  dongle, a tag takes `remove` s to pick off; going over his jacket by hand without one, `search` s (U-099). */
+export const TAG = { every: 6, reach: 20, near: 1.5, chance: 0.6, noise: 15, remove: 1.2, search: 8 };
 /** Followed home (M4-23, U-013): coming within 25 m of a hideout's bed under 10 s (real) after a machine last had
  *  him in sight, or with a tag on him, or seen while there, gives the hideout away. */
 export const TRACK = { near: 25, after: 10 };
@@ -135,7 +135,7 @@ export const STRIKE = { fpvs: 2, bombers: 1, after: 25, every: 15, bomberAfter: 
 
 /** A patrol drone's battery (M4-08, DESIGN section 7): 6 real minutes in the air, the first and last 20 s of them
  *  flying out from its rooftop dock and home again, then 2 minutes on the dock charging: the gap in its cover. */
-export const DRONE = { flight: 360, charge: 120, launch: 20 };
+export const DRONE = { flight: 360, charge: 120, launch: 20, /** the arc over the roofs to and from its dock, least and most (m, U-103) */ hump: [15, 60] };
 
 /** A sweeping camera pans 45 degrees either side, 10 s each way (M4-07). */
 export const SWEEP = { arc: 45, pass: 10 };

@@ -15,7 +15,7 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   boats: (a, t) => { a.tone(t, 0.25, 0.12, 1800, 1800, 'sine'); a.tone(t + 0.6, 2.4, 0.08, 140, 190, 'sawtooth'); a.noise(t + 0.6, 2.4, 0.06, 'bandpass', 400, 1, 600); },
   // The EMP's pulse (M5-14): a sharp electric crack and a falling whine.
   zap: (a, t) => { a.noise(t, 0.06, 0.4, 'highpass', 3000); a.tone(t, 0.5, 0.12, 2400, 180, 'sawtooth'); a.tone(t + 0.02, 0.3, 0.08, 60, 40, 'square'); },
-  'step-crawl': (a, t) => a.noise(t, 0.18, 0.05, 'bandpass', 2400, 0.8, 1600),
+  'step-crawl': (a, t) => a.noise(t, 0.16, 0.04, 'bandpass', 900, 0.8, 650),
   'step-crouch': (a, t) => a.noise(t, 0.07, 0.08, 'lowpass', 900),
   'step-jog': (a, t) => { a.noise(t, 0.08, 0.16, 'lowpass', 1100); a.tone(t, 0.06, 0.06, 90, 60); },
   'step-sprint': (a, t) => { a.noise(t, 0.09, 0.26, 'lowpass', 1600); a.tone(t, 0.07, 0.1, 110, 60); },
@@ -23,13 +23,13 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   land: (a, t) => { a.tone(t, 0.12, 0.25, 85, 45); a.noise(t, 0.1, 0.18, 'lowpass', 700); },
   'land-hard': (a, t) => { a.tone(t, 0.2, 0.45, 70, 35); a.noise(t, 0.16, 0.35, 'lowpass', 500); breath(a, t + 0.05, 0.12, 0.22, 600); },
   roll: (a, t) => { a.tone(t, 0.1, 0.2, 80, 45); a.noise(t + 0.03, 0.4, 0.16, 'bandpass', 1300, 0.7, 500); },
-  vault: (a, t) => { a.noise(t, 0.04, 0.3, 'highpass', 2500); a.noise(t + 0.05, 0.25, 0.08, 'bandpass', 600, 0.6, 1800); },
-  hop: (a, t) => { a.noise(t, 0.04, 0.25, 'highpass', 2200); a.noise(t + 0.06, 0.12, 0.12, 'lowpass', 900); },
+  vault: (a, t) => { a.noise(t, 0.04, 0.2, 'lowpass', 1200); a.noise(t + 0.05, 0.25, 0.08, 'bandpass', 600, 0.6, 1800); },
+  hop: (a, t) => { a.noise(t, 0.04, 0.18, 'lowpass', 1200); a.noise(t + 0.06, 0.12, 0.12, 'lowpass', 900); },
   slide: (a, t) => a.noise(t, 0.85, 0.22, 'bandpass', 1800, 0.5, 400),
-  // The wall kick: a hard rubber thud with a bright snap, always the same.
-  wallkick: (a, t) => { a.tone(t, 0.09, 0.5, 160, 70, 'triangle'); a.noise(t, 0.035, 0.35, 'highpass', 3000); breath(a, t + 0.03, 0.09, 0.14, 1100); },
-  wallrun: (a, t) => { a.tone(t, 0.08, 0.35, 150, 80, 'triangle'); a.noise(t, 0.05, 0.2, 'bandpass', 1800); },
-  wallstep: (a, t) => { a.tone(t, 0.06, 0.25, 140, 90, 'triangle'); a.noise(t, 0.04, 0.14, 'bandpass', 2000); },
+  // The wall kick: a hard rubber thud, always the same (no bright snap: U-100).
+  wallkick: (a, t) => { a.tone(t, 0.09, 0.5, 160, 70, 'triangle'); a.noise(t, 0.035, 0.2, 'lowpass', 1000); breath(a, t + 0.03, 0.09, 0.14, 1100); },
+  wallrun: (a, t) => { a.tone(t, 0.08, 0.3, 150, 80, 'triangle'); a.noise(t, 0.05, 0.14, 'lowpass', 900); },
+  wallstep: (a, t) => { a.tone(t, 0.06, 0.2, 140, 90, 'triangle'); a.noise(t, 0.04, 0.1, 'lowpass', 800); },
   // Hands: a dry slap on the hold; two hands slap twice.
   // Braced across a gap (M3-78): shoulders and soles scuffing the walls.
   brace: (a, t) => { a.noise(t, 0.12, 0.12, 'bandpass', 900, 0.8, 600); a.noise(t + 0.1, 0.08, 0.08, 'bandpass', 1400, 1, 900); },

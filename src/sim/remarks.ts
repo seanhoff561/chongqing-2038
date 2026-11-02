@@ -1,21 +1,18 @@
 // Anna's remarks (M5-32, DESIGN section 12): a word, subtitled, when she's scanned something, when he's hurt (a bad
-// hit, bleeding, a bone gone), when her battery's nearly flat, when the SDR he carries hears a drone close, and when a
-// tag's on him and when it's off. Each no more than once a minute.
+// hit, bleeding, a bone gone), when her battery's nearly flat, and when a tag's on him and
+// when it's off. Each no more than once a minute. (No more word of every drone the SDR hears close: U-099.)
 import type { SimState } from './types';
-import type { World } from '../world/world';
 import { SCALE } from './clock';
-import { unitPose } from './units';
 
-/** Each trigger's line (data/dialogue.ts ANNA); how close (m) a drone's signal is close; the least seconds (real)
+/** Each trigger's line (data/dialogue.ts ANNA); the least seconds (real)
  *  between two of the same; what counts as a bad hit. */
 export const REMARKS = {
-  lines: { scanUnit: 'anna-scan-unit', scanItem: 'anna-scan-item', hurt: 'anna-hurt', bleed: 'anna-bleed', broken: 'anna-break', battery: 'anna-battery', drone: 'anna-drone', tag: 'anna-tag', tagOff: 'anna-tag-off' },
-  near: 60, every: 60, hit: 15,
+  lines: { scanUnit: 'anna-scan-unit', scanItem: 'anna-scan-item', hurt: 'anna-hurt', bleed: 'anna-bleed', broken: 'anna-break', battery: 'anna-battery', tag: 'anna-tag', tagOff: 'anna-tag-off' },
+  every: 60, hit: 15,
 };
 type Trigger = keyof typeof REMARKS.lines;
-const FLY = new Set(['drone', 'hunter', 'fpv', 'bomber']);
 
-export function stepRemarks(s: SimState, w: World) {
+export function stepRemarks(s: SimState) {
   if (s.ended) return;
   const R = (s.remarks ??= { last: {}, hp: s.body.hp, bleed: false, leg: s.body.leg, tag: false, low: false });
   const say = (k: Trigger) => {
@@ -36,9 +33,4 @@ export function stepRemarks(s: SimState, w: World) {
   if (sdr && tag && !R.tag) say('tag');
   if (!tag && R.tag) say('tagOff');
   R.tag = tag;
-  // (A drone close, heard by the SDR he carries: checked every couple of seconds.)
-  if (sdr && s.tick % 120 === 0) {
-    const p = s.player.pos;
-    if (s.units.some(u => FLY.has(u.kind) && !u.dead && !(u.reserve && !u.trip) && (() => { const q = unitPose(w, u, s.time); return q.active && !q.docked && Math.hypot(q.x - p.x, q.z - p.z) < REMARKS.near; })())) say('drone');
-  }
 }

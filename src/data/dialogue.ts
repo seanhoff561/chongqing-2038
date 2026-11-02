@@ -25,7 +25,6 @@ export const ANNA: Line[] = [
   { id: 'anna-bleed', speaker: 'anna', zh: '你在流血。先止血，别的等会儿。', en: "You're bleeding. Stop it first, everything else can wait." },
   { id: 'anna-break', speaker: 'anna', zh: '骨头断了。要夹板，不然走不远。', en: "That's broken. You need a splint or you won't get far." },
   { id: 'anna-battery', speaker: 'anna', zh: '我快没电了。找个有电的地方。', en: "I'm nearly flat. Find somewhere with power." },
-  { id: 'anna-drone', speaker: 'anna', zh: '附近有无人机的信号。很近。', en: "A drone's signal, close by. Very close." },
   { id: 'anna-tag', speaker: 'anna', zh: '你身上有追踪器在叫。用接收器把它弄下来。', en: "There's a tracker chirping on you. Use the dongle to get it off." },
   { id: 'anna-tag-off', speaker: 'anna', zh: '好了，追踪器没了。', en: "That's it, the tracker's gone." },
   // His first night (M8-15).

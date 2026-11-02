@@ -11,7 +11,7 @@ import { surfaceAt } from './swim';
 
 /** How far out is too far (m); real seconds before sonar has him, and before the boats are on him; the fog that
  *  hides a still swimmer at night; how slow is still (m/s). */
-export const RIVER = { far: 60, sonar: 10, boats: 20, fog: 0.6, still: 0.3 };
+export const RIVER = { far: 60, sonar: 10, boats: 20, fog: 0.6, still: 0.3, /** how near a sonar buoy hears him (M6-20) */ buoy: 30 };
 
 /** Whether there's no bank within 60 m of (x, z): no ground above the water's surface along any of 16 bearings. */
 export function farOut(w: World, x: number, z: number, surface: number) {
@@ -27,7 +27,9 @@ export function farOut(w: World, x: number, z: number, surface: number) {
 export function stepRiver(s: SimState, w: World) {
   if (s.tick % 30) return;
   const p = s.player, surface = surfaceAt(w, p);
-  const out = p.mode === 'swim' && surface > -Infinity && farOut(w, p.pos.x, p.pos.z, surface);
+  // (Or near the river police's sonar buoys, anywhere: M6-20.)
+  const buoyed = w.features.some(f => f.kind === 'pier:buoy' && Math.hypot(f.x - p.pos.x, f.z - p.pos.z) < RIVER.buoy);
+  const out = p.mode === 'swim' && surface > -Infinity && (buoyed || farOut(w, p.pos.x, p.pos.z, surface));
   const hidden = !!s.jam || (daylight(s.time) < 0.3 && s.weather.fog >= RIVER.fog && Math.hypot(p.vel.x, p.vel.z) < RIVER.still);
   if (!out) { if (s.river) s.events.push({ t: 'msg', text: 'near the bank again: the whine on the water fades' }); s.river = undefined; return; }
   const R = (s.river ??= { since: s.time });

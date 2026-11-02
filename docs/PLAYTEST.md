@@ -273,3 +273,12 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 - Die in a run and press Esc: does the main menu come up?
 - Do lockers now open in silence?
 - 144 fps (M9-12): on High, walk round Jiefangbei, Shibati and Chaotianmen by day and by night with the dev overlay on (`?dev=1`). What frame rate do you get? Are there hitches when new streets come into view?
+
+## U-099 to U-101: tracker, toolboxes, footsteps, crosshair
+- Get tagged by a quadruped (it fires from a distance). Does the message make clear it's a tracker? Open the backpack and press 'Search jacket': does it come off after about 8 s?
+- Is Anna quiet now about drone signals?
+- Search a few flats' kitchens, shops and cars: does a toolbox turn up early enough to start a bench?
+- Walk on pipes, metal stairs and roofs, grass, rubble and snow: is anything still high-pitched or annoying?
+- The field of view slider should be gone. Play a long session: does the crosshair ever vanish, or interacting stop working? If so, note what you held and what was on screen just before.
+- Open Anna's map at the start of a new run: are the key places marked and named, and do the edge markers point the right way? Does the battery last long enough now?
+- Watch drones for a while in Jiefangbei and Jiaochangkou: are they mostly at building height and between the blocks, rather than high overhead?

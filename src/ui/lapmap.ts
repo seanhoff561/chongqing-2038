@@ -2,7 +2,7 @@
 // middle: every building's footprint, the districts named, his hideouts. Where he's been (the 10 m cells round him,
 // sim/automap.ts) it fills in: each building's type, the ways down. On the layer he's on: underground, the city
 // dimmed over the tunnels he's walked. Over it, what the SDR heard (drone beats, docks: M5-08) and the routes of
-// machines logged more than once (M5-07).
+// machines logged more than once (M5-07). The key places marked from the start, so he knows where to look (U-102).
 import type { Game } from '../game';
 import type { World, Plot, Inter } from '../world/world';
 import type { BuildingType } from '../world/city/types';
@@ -15,6 +15,7 @@ import { districtOf } from '../sim/district';
 import { dockTimes } from '../sim/units';
 import { GEO } from '../world/geo';
 import { DISTRICT_NAMES } from '../world/yuzhong/lots';
+import { SECURE } from '../world/yuzhong/secure';
 
 /** The canvas (px) and metres to a pixel. */
 export const MAPV = { w: 520, h: 300, m: 1.25 };
@@ -33,6 +34,26 @@ function prep(w: World) {
     const plots = w.plots.filter(p => !p.far).map(p => { const xs = p.corners.map(c => c[0]), zs = p.corners.map(c => c[1]); return { p, x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs), z1: Math.max(...zs) }; });
     prepped.set(w, (v = { plots, grates: w.inter.filter(i => i.kind === 'grate') }));
   }
+  return v;
+}
+
+/** The key places (U-102): the high-security sites, the construction site, the pier, the cableway, the metro
+ *  stations, the Grand Tunnel and the air-raid shelter; where each is. */
+const PLACES: [string, string, string][] = [
+  ['Construction site', '工地', 'Construction site'], ['River-police pier: gangway', '水警码头', 'River-police pier'],
+  ['Grand Tunnel entrance', '大隧道', 'Grand Tunnel'], ['Air-raid shelter', '防空洞', 'Air-raid shelter'],
+];
+const placesOf = new WeakMap<World, { x: number; z: number; zh: string; en: string }[]>();
+export function keyPlaces(w: World) {
+  let v = placesOf.get(w);
+  if (v) return v;
+  v = (w.secure ?? []).map(q => { const d = SECURE.find(x => x.id === q.id)!; return { x: q.x, z: q.z, zh: d.zh, en: d.en }; });
+  for (const [name, zh, en] of PLACES) { const t = w.teleports.find(q => q.name === name); if (t) v.push({ x: t.x, z: t.z, zh, en }); }
+  const cw = GEO.landmarks.cablewayNorth;
+  if (cw && w.name === 'yuzhong') v.push({ x: cw.x, z: cw.z, zh: '长江索道', en: 'Yangtze cableway' });
+  // (The metro stations, one mark each.)
+  for (const t of w.teleports) if (t.name.startsWith('Metro ') && !t.name.startsWith('Metro station') && !t.name.startsWith('Metro tunnel') && !v.some(q => q.zh === `地铁${t.name.slice(6)}`)) v.push({ x: t.x, z: t.z, zh: `地铁${t.name.slice(6)}`, en: 'metro' });
+  placesOf.set(w, v);
   return v;
 }
 
@@ -89,6 +110,20 @@ export function drawMap(c: HTMLCanvasElement, g: Game) {
   // The districts, named.
   ctx.fillStyle = '#7d7563';
   for (const [k, [zh, en]] of Object.entries(DISTRICT_NAMES)) { const L = GEO.landmarks[k]; if (L && inView(L.x, L.z)) ctx.fillText(`${zh} ${en}`, X(L.x) - 30, Z(L.z) - 6); }
+  // The key places (U-102): a diamond each, named.
+  // (Off the map: at its edge, the way it lies, and how far.)
+  for (const q of keyPlaces(w)) {
+    if (!inView(q.x, q.z)) {
+      const dx = q.x - p.x, dz = q.z - p.z, k = Math.min((W / 2 - 8) * m / Math.max(1e-6, Math.abs(dx)), (H / 2 - 8) * m / Math.max(1e-6, Math.abs(dz)));
+      const ex = W / 2 + (dx * k) / m, ez = H / 2 + (dz * k) / m;
+      ctx.fillStyle = '#a87838'; ctx.beginPath(); ctx.arc(ex, ez, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#a89070'; ctx.fillText(`${q.zh} ${Math.round(Math.hypot(dx, dz))}m`, Math.min(W - 70, Math.max(2, ex - 30)), Math.min(H - 12, Math.max(14, ez + (ez > H / 2 ? -14 : 4))));
+      continue;
+    }
+    ctx.fillStyle = '#e8a04a'; ctx.strokeStyle = '#080908';
+    ctx.beginPath(); ctx.moveTo(X(q.x), Z(q.z) - 5); ctx.lineTo(X(q.x) + 5, Z(q.z)); ctx.lineTo(X(q.x), Z(q.z) + 5); ctx.lineTo(X(q.x) - 5, Z(q.z)); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e8c090'; ctx.fillText(`${q.zh} ${q.en}`, X(q.x) + 7, Z(q.z) - 5);
+  }
   // His hideouts.
   for (const h of s.shelters) { ctx.fillStyle = '#ffd890'; ctx.strokeStyle = '#080908'; ctx.beginPath(); ctx.moveTo(X(h.x), Z(h.z) - 5); ctx.lineTo(X(h.x) + 4, Z(h.z) + 3); ctx.lineTo(X(h.x) - 4, Z(h.z) + 3); ctx.closePath(); ctx.fill(); ctx.stroke(); }
   const line = (pts: { x: number; z: number }[]) => { ctx.beginPath(); pts.forEach((q, k) => (k ? ctx.lineTo(X(q.x), Z(q.z)) : ctx.moveTo(X(q.x), Z(q.z)))); ctx.stroke(); };
@@ -115,7 +150,7 @@ export function drawMap(c: HTMLCanvasElement, g: Game) {
 /** Under the map: what the colours are, and what he's explored. */
 export function mapKey(g: Game): string {
   const n = Object.keys(g.state.explored ?? {}).length;
-  return `<div>${Object.values(TYPE).map(([c, zh, en]) => `<i style="color:${c}">■</i> ${zh} <span>${en}</span>`).join(' ')} <i style="color:${SEALED}">■</i> <span>sealed</span> <i style="color:#c8a96a">○</i> <span>way down</span> <i style="color:#ffd890">▲</i> <span>hideout</span></div>` +
+  return `<div>${Object.values(TYPE).map(([c, zh, en]) => `<i style="color:${c}">■</i> ${zh} <span>${en}</span>`).join(' ')} <i style="color:${SEALED}">■</i> <span>sealed</span> <i style="color:#c8a96a">○</i> <span>way down</span> <i style="color:#ffd890">▲</i> <span>hideout</span> <i style="color:#e8a04a">◆</i> <span>key place</span></div>` +
     `<div data-k="cells">已探索 ${n} 格 <span>${n} cells explored</span> · <span data-k="known">${seen.known} of ${seen.inView} buildings here known</span></div>` + docks(g);
 }
 

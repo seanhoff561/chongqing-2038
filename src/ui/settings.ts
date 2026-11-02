@@ -1,5 +1,6 @@
-// Settings (U-079, M8-13): the volumes, the mouse's sensitivity and Y, the field of view, the keys, the subtitles
+// Settings (U-079, M8-13): the volumes, the mouse's sensitivity and Y, the keys, the subtitles
 // (M8-04), kept in this browser and put back each time (the graphics preset keeps itself: view.ts).
+// (The field of view is fixed, always the usual one: no slider, U-101.)
 // Shown in the pause menu: a slider each, and each action's key, clicked to bind it to the next key pressed.
 import type { Game } from '../game';
 import type { Bus } from '../audio/audio';
@@ -10,11 +11,11 @@ const VOLS: ['master' | Bus, string][] = [['master', '总音量 Master'], ['effe
 /** The mouse's sensitivity, its least and most. */
 const SENS = { min: 0.0006, max: 0.006 };
 
-interface Saved { volumes?: Partial<Record<'master' | Bus, number>>; sensitivity?: number; keys?: Record<string, string[]>; subLang?: 'both' | 'zh' | 'en'; subSize?: number; invertY?: boolean; fov?: number }
+interface Saved { volumes?: Partial<Record<'master' | Bus, number>>; sensitivity?: number; keys?: Record<string, string[]>; subLang?: 'both' | 'zh' | 'en'; subSize?: number; invertY?: boolean }
 
 function load(): Saved { try { return JSON.parse(localStorage.getItem(KEY) ?? '{}') as Saved; } catch { return {}; } }
 function save(g: Game) {
-  try { localStorage.setItem(KEY, JSON.stringify({ volumes: g.audio.volumes, sensitivity: g.input.sensitivity, keys: binds, subLang: g.hud.subLang, subSize: g.hud.subSize, invertY: g.input.invertY, fov: g.view.fp.baseFov } satisfies Saved)); } catch { /* private mode: not kept */ }
+  try { localStorage.setItem(KEY, JSON.stringify({ volumes: g.audio.volumes, sensitivity: g.input.sensitivity, keys: binds, subLang: g.hud.subLang, subSize: g.hud.subSize, invertY: g.input.invertY } satisfies Saved)); } catch { /* private mode: not kept */ }
 }
 
 /** Put back what was saved, at boot. */
@@ -26,7 +27,6 @@ export function applySettings(g: Game) {
   if (s.subLang) g.hud.subLang = s.subLang;
   if (s.subSize) g.hud.subSize = s.subSize;
   if (s.invertY !== undefined) g.input.invertY = s.invertY;
-  if (s.fov) g.view.fp.baseFov = s.fov;
   for (const [id, keys] of Object.entries(s.keys ?? {})) if (binds[id] && keys[0]) bindKey(id, keys[0]);
 }
 
@@ -40,7 +40,6 @@ export function settingsHTML(g: Game): string {
     // Subtitles (M8-04): the lines in Chinese, English or both, and their size.
     `<label class="pz-slide">字幕 Subtitles<select data-sub="lang">${(['both', 'zh', 'en'] as const).map(v => `<option value="${v}"${g.hud.subLang === v ? ' selected' : ''}>${{ both: '中英 Both', zh: '中文 Chinese', en: 'English' }[v]}</option>`).join('')}</select></label>` +
     slider('subsize', '字幕大小 Subtitle size', g.hud.subSize, 0.8, 1.6, 0.1) +
-    slider('fov', '视野 Field of view', g.view.fp.baseFov, 60, 100, 1) +
     `<label class="pz-slide">反转Y轴 Invert Y<input type="checkbox" data-invert ${g.input.invertY ? 'checked' : ''}></label>` +
     `<div class="pz-h">按键 Keys</div><div class="pz-binds">${ACTIONS.map(a => `<div><span>${a.label}</span><button data-bind="${a.id}">${binds[a.id].map(name).join(' / ')}</button></div>`).join('')}</div>` +
     `<button data-keys="reset">按键复原 Reset keys</button>`;
@@ -51,7 +50,7 @@ export function wireSettings(g: Game, el: HTMLElement, redraw: () => void) {
   el.querySelectorAll<HTMLInputElement>('input[data-set]').forEach(i => {
     i.oninput = () => {
       const v = Number(i.value), id = i.dataset.set!;
-      if (id === 'sens') g.input.sensitivity = v; else if (id === 'subsize') g.hud.subSize = v; else if (id === 'fov') g.view.fp.baseFov = v; else { g.audio.volumes[id as 'master' | Bus] = v; g.audio.applyVolumes(); }
+      if (id === 'sens') g.input.sensitivity = v; else if (id === 'subsize') g.hud.subSize = v; else { g.audio.volumes[id as 'master' | Bus] = v; g.audio.applyVolumes(); }
       save(g);
     };
   });

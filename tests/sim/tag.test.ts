@@ -64,4 +64,17 @@ describe('tracking tags (M4-22)', () => {
     run(t.state, t.world, secs(0.3));
     expect(t.state.player.tag).toBe(false);
   });
+  it('is found by hand too, his jacket off and gone over, slower (U-099)', () => {
+    const t = upOnABlock();
+    t.state.units.length = 0;
+    t.state.player.tag = true;
+    run(t.state, t.world, 10);
+    expect(t.state.player.mode).toBe('ground');
+    run(t.state, t.world, 1, { cmds: [{ c: 'act', name: 'search' }] });
+    expect(t.state.task?.id).toBe('untag');
+    run(t.state, t.world, secs(TAG.search - 0.2));
+    expect(t.state.player.tag).toBe(true);
+    run(t.state, t.world, secs(0.3));
+    expect(t.state.player.tag).toBe(false);
+  });
 });

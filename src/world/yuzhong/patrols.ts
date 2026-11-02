@@ -6,7 +6,8 @@
 // friends' stub, waiting at the metro's end.
 import { raycast, overlaps } from '../geom';
 import { DWELL, ALIVE } from '../../data/units';
-import type { World, Patrol, Camera } from '../world';
+import type { World, Patrol, Camera, Plot } from '../world';
+import { districtAt } from './lots';
 import { heightAt } from '../heightfield';
 import { GEO } from '../geo';
 import { navPath } from '../../sim/nav';
@@ -29,7 +30,11 @@ const GIANTS = { colossi: 3 };
 /** How many spider robots live in each district's sewers, and how far out from its centre (U-069). */
 const CRAWLERS = { per: 6, r: 450 };
 /** The drones everywhere (U-065): how many more a district, how far out, how many stops a loop, how long each scan (s). */
-const SKY = { per: 12, r: 350, stops: 8, scan: 5 };
+/** The roaming drones (U-065, U-103): how many a district, how far out, stops on a loop, seconds scanning at each;
+ *  the street drones' height over the street; the tallest roof (over its ground) they stop over; how high in a gap. */
+/** The tallest a roof a drone's dock goes on (over its ground, U-103). */
+const DOCK_ROOF = 40;
+const SKY = { per: 12, r: 350, stops: 8, scan: 5, street: 9, roof: 28, gap: [7, 12] };
 
 /** A building's middle. */
 const centre = (q: { corners: [number, number][] }) => ({ x: q.corners.reduce((a, c) => a + c[0], 0) / q.corners.length, z: q.corners.reduce((a, c) => a + c[1], 0) / q.corners.length });
@@ -38,6 +43,15 @@ const centre = (q: { corners: [number, number][] }) => ({ x: q.corners.reduce((a
 function clear(w: World, a: V3, b: V3, up: number) {
   const d = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
   return d < 0.1 || !raycast(w.index, a.x, a.y + up, a.z, (b.x - a.x) / d, (b.y - a.y) / d, (b.z - a.z) / d, d);
+}
+
+/** A drone's leg clear for its whole body (U-103: flown low among the buildings): five lines a drone's width apart
+ *  through nothing, and 2 m or more over the ground all along. */
+function airway(w: World, a: V3, b: V3) {
+  const d = Math.hypot(b.x - a.x, b.z - a.z) || 1, nx = -(b.z - a.z) / d, nz = (b.x - a.x) / d, g = w.ground!;
+  for (const [o, up] of [[0, 0], [0.6, 0], [-0.6, 0], [0, 0.5], [0, -0.5]]) if (!clear(w, { x: a.x + nx * o, y: a.y, z: a.z + nz * o }, { x: b.x + nx * o, y: b.y, z: b.z + nz * o }, up)) return false;
+  for (let k = 0, n = Math.ceil(d / 4); k <= n; k++) { const t = k / n, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t; if (a.y + (b.y - a.y) * t < (heightAt(g, x, z) ?? -Infinity) + 2) return false; }
+  return true;
 }
 
 /** A point ALIVE.face m out from the nearest building wall within 40 m of q, at the wall's middle height, and the way
@@ -204,8 +218,8 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
     const next = mains[1];
     if (next && len(next) > 80) giants.push(giant(next, 'spider', 2));
     if (long && len(long) > 200) colossi.push(long);
-    // A drone up and down it, day and night, 16 m over the street.
-    if (long) district.push({ kind: 'drone', unit: 'drone', pts: long.map(q => ({ ...q, y: q.y + 16 })), dwell: long.map(() => 0), hours: [0, 24], crowd: { n: 2, size: 1 } });
+    // A drone up and down it, day and night, down among the buildings 9 m over the street (U-103).
+    if (long) district.push({ kind: 'drone', unit: 'drone', pts: long.map(q => ({ ...q, y: q.y + SKY.street })), dwell: long.map(() => 0), hours: [0, 24], crowd: { n: 2, size: 1 } });
     // (Its flattest side street, gentle enough for wheels, a delivery robot's: M4-29, M4-34.)
     const sides = stretches(SIDE_ONLY, CROWD.sideR, CROWD.sideMin).slice(0, CROWD.sides);
     // (Its steepest over any 8 m of it: close-set points make a bump look like a cliff.)
@@ -218,9 +232,12 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   let street = 0;
   const out = base.concat(district).map((p): Patrol => {
     // A drone drops into an alley now and then, to 6 m over the bins, hangs there, and climbs back to its line. It
-    // charges on a dock on the tallest roof within 150 m of where its beat starts (M4-08).
+    // charges on a dock on a roof within 150 m of where its beat starts (M4-08), in its own district: the tallest of the low ones, not up on
+    // a tower (U-103).
     if (p.kind === 'drone') {
-      const s0 = p.pts[0], roof = w.plots.filter(q => !q.far && Math.hypot(centre(q).x - s0.x, centre(q).z - s0.z) < 150).sort((a, b) => b.top - a.top)[0];
+      // (Its own district's first; then a low roof, the tallest; else the lowest tower.)
+      const s0 = p.pts[0], home = districtAt(s0.x, s0.z).district, score = (q: Plot) => (districtAt(centre(q).x, centre(q).z).district === home ? 1e4 : 0) + (q.top - q.base <= DOCK_ROOF ? q.top : -q.top);
+      const roof = w.plots.filter(q => !q.far && Math.hypot(centre(q).x - s0.x, centre(q).z - s0.z) < 150).sort((a, b) => score(b) - score(a))[0];
       let dock: number | undefined;
       if (roof) { const c = centre(roof); dock = w.docks.length; w.docks.push({ x: c.x, y: roof.top + 2.3, z: c.z }); w.props.push({ kind: 'dronedock', x: c.x, y: roof.top, z: c.z, yaw: 0 }); }
       const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
@@ -326,9 +343,10 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   return out.concat(heavies, giants, lurkers(w, hides), sewerCrawlers(w), skyDrones(w)).map(p => (p.unit === 'drone' ? flyOver(w, p) : p));
 }
 
-/** Drones everywhere (M4-87, U-065): a dozen more in each district, slow, wandering a loop of their own over the roofs
- *  and down between the blocks, stopping over a roof or in a gap to turn and scan it. Each leg flown only where the
- *  air's clear (else it rises over what's in the way). */
+/** Drones everywhere (M4-87, U-065): a dozen more in each district, slow, wandering a loop of their own over the low
+ *  roofs and down between the blocks, stopping over a roof or in a gap to turn and scan it. They keep down at the
+ *  buildings' level (U-103): a leg blocked by a tower goes round it, to one side, if it can, and the stop's left out
+ *  if it can't (never up over the top). */
 function skyDrones(w: World): Patrol[] {
   const out: Patrol[] = [], g = w.ground!;
   for (const k of DISTRICTS) {
@@ -336,16 +354,36 @@ function skyDrones(w: World): Patrol[] {
     if (roofs.length < 8) continue;
     for (let d = 0; d < SKY.per; d++) {
       const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
-      for (let j = 0; j < SKY.stops; j++) {
-        const p = roofs[(d * 7919 + j * 104729) % roofs.length], c = centre(p);
-        // Over the roof, or down in the gap beside it (out from its side, at half its height or lower).
-        const gap = j % 2 === 1, a = ((d * 5 + j * 3) % 8) * (Math.PI / 4), off = gap ? 9 : 0;
-        const x = c.x + Math.cos(a) * off, z = c.z + Math.sin(a) * off, ground = heightAt(g, x, z) ?? p.base;
-        let q: V3 = { x, y: gap ? Math.max(ground + 9, Math.min(p.top - 4, ground + 20)) : p.top + 7, z };
-        const last = pts[pts.length - 1];
-        if (last && !clear(w, last, q, 0)) q = { ...q, y: Math.max(q.y, last.y, p.top + 7) };
-        if (last && !clear(w, last, q, 0)) { const up = { ...last, y: Math.max(last.y, p.top + 12) }; pts.push(up); dwell.push(0); }
+      for (let j = 0, tries = 0; j < SKY.stops && tries < SKY.stops * 8; tries++) {
+        // (Each stop a short hop from the last, 30 to 130 m: a wander down the streets, not across the sky.)
+        const last = pts[pts.length - 1], near = last ? roofs.filter(r => { const m = Math.hypot(centre(r).x - last.x, centre(r).z - last.z); return m > 30 && m < 130; }) : roofs;
+        if (!near.length) break;
+        const p = near[(d * 7919 + tries * 104729) % near.length], c = centre(p);
+        // Over a low roof, or down in the gap beside a block (out past its side, at half its height or lower); a
+        // tower's only ever looked at from the gap beside it, not from over its top (U-103).
+        const gap = j % 2 === 1 || p.top - p.base > SKY.roof, a = ((d * 5 + tries * 3) % 8) * (Math.PI / 4), ca = Math.cos(a), sa = Math.sin(a);
+        const off = gap ? Math.max(...p.corners.map(([x, z]) => (x - c.x) * ca + (z - c.z) * sa)) + 5 : 0;
+        const x = c.x + ca * off, z = c.z + sa * off, ground = heightAt(g, x, z) ?? p.base;
+        const q: V3 = { x, y: gap ? Math.max(ground + SKY.gap[0], Math.min(p.top - 4, ground + SKY.gap[1])) : p.top + 5, z };
+        if (overlaps(w.index, { x0: q.x - 0.6, y0: q.y - 0.6, z0: q.z - 0.6, x1: q.x + 0.6, y1: q.y + 0.6, z1: q.z + 0.6 })) continue;
+        if (last && !airway(w, last, q)) {
+          // (Round what's in the way: through a point off to one side of the leg, at the higher of its two ends.)
+          const dx = q.x - last.x, dz = q.z - last.z, l = Math.hypot(dx, dz) || 1, y = Math.max(last.y, q.y);
+          const via = [15, -15, 30, -30, 50, -50].map(o => ({ x: (last.x + q.x) / 2 - (dz / l) * o, y, z: (last.z + q.z) / 2 + (dx / l) * o })).find(m => airway(w, last, m) && airway(w, m, q));
+          if (!via) continue;
+          pts.push(via); dwell.push(0);
+        }
         pts.push(q); dwell.push(SKY.scan); look[pts.length - 1] = a + Math.PI;
+        j++;
+      }
+      // (And round, back to the start, the same way.)
+      const e = pts[pts.length - 1], f = pts[0];
+      if (pts.length > 2 && !airway(w, e, f)) {
+        const dx = f.x - e.x, dz = f.z - e.z, l = Math.hypot(dx, dz) || 1, y = Math.max(e.y, f.y);
+        const via = [15, -15, 30, -30, 50, -50].map(o => ({ x: (e.x + f.x) / 2 - (dz / l) * o, y, z: (e.z + f.z) / 2 + (dx / l) * o })).find(m => airway(w, e, m) && airway(w, m, f));
+        if (via) { pts.push(via); dwell.push(0); }
+        // (No way round: back the way it came.)
+        else for (let i = pts.length - 2, n = pts.length; i > 0; i--) { pts.push(pts[i]); dwell.push(dwell[i]); if (look[i] !== undefined) look[pts.length - 1] = look[i]; if (pts.length > 2 * n) break; }
       }
       // (Charging on the nearest roof dock, like the rest: M4-08.)
       const dock = w.docks.reduce((b, q, i) => (b < 0 || Math.hypot(q.x - pts[0].x, q.z - pts[0].z) < Math.hypot(w.docks[b].x - pts[0].x, w.docks[b].z - pts[0].z) ? i : b), -1);

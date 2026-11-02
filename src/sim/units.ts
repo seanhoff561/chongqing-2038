@@ -235,7 +235,8 @@ export function unitPose(w: World, u: Unit, time: number): Pose {
     const C = DRONE.flight + DRONE.charge, c = (((time / SCALE + u.phase + ((u.id * 97) % C)) % C) + C) % C;
     if (c >= DRONE.flight) return home;
     const f = c < DRONE.launch ? 1 - c / DRONE.launch : c > DRONE.flight - DRONE.launch ? (c - DRONE.flight + DRONE.launch) / DRONE.launch : 0;
-    if (f > 0) { const b = beatPose(w, u, time), e = f * f * (3 - 2 * f); return { x: b.x + (home.x - b.x) * e, y: b.y + (home.y - b.y) * e, z: b.z + (home.z - b.z) * e, yaw: Math.atan2(home.x - b.x, home.z - b.z) + (c < DRONE.launch ? Math.PI : 0), active: true }; }
+    // (Up over the roofs between in an arc, flown low as they are on their beats: U-103.)
+    if (f > 0) { const b = beatPose(w, u, time), e = f * f * (3 - 2 * f), hump = Math.min(DRONE.hump[1], DRONE.hump[0] + 0.3 * Math.hypot(home.x - b.x, home.z - b.z)) * Math.sin(Math.PI * Math.min(1, f * 1.15)); return { x: b.x + (home.x - b.x) * e, y: b.y + (home.y - b.y) * e + hump, z: b.z + (home.z - b.z) * e, yaw: Math.atan2(home.x - b.x, home.z - b.z) + (c < DRONE.launch ? Math.PI : 0), active: true }; }
   }
   return beatPose(w, u, time);
 }

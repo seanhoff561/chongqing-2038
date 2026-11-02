@@ -1,5 +1,5 @@
 // M5-32: Anna's remarks. Every trigger's line is a real line of hers; she speaks up when he starts bleeding, when her
-// battery's nearly flat, when the SDR he carries hears a drone close, and when a tag's on him and then off; not twice
+// battery's nearly flat (never a drone's signal: U-099), and when a tag's on him and then off; not twice
 // in a minute for the same thing.
 import { describe, it, expect } from 'vitest';
 import { setup, floor, run, secs } from './helpers';
@@ -25,18 +25,19 @@ describe("Anna's remarks (M5-32)", () => {
     s.laptop = { open: true, charge: 0.1 };
     run(s, w, 2, {}, hear);
     expect(said).toContain('anna-battery');
-    // The SDR: the tag on him, and the drone close.
+    // The SDR: the tag on him (and no word of a drone close any more, U-099).
     s.player.tag = true;
     addItem(s, s.inv.pack, 'sdr', 1);
     run(s, w, secs(2.5), {}, hear);
     expect(said).toContain('anna-tag');
-    expect(said).toContain('anna-drone');
+    expect(said).not.toContain('anna-drone');
     s.player.tag = false;
     run(s, w, 2, {}, hear);
     expect(said).toContain('anna-tag-off');
     // Not again within the minute.
-    const n = said.filter(x => x === 'anna-drone').length;
+    const n = said.filter(x => x === 'anna-tag').length;
+    s.player.tag = true;
     run(s, w, secs(20), {}, hear);
-    expect(said.filter(x => x === 'anna-drone').length).toBe(n);
+    expect(said.filter(x => x === 'anna-tag').length).toBe(n);
   });
 });

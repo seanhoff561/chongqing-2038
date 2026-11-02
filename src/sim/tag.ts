@@ -1,7 +1,7 @@
 // Tracking tags (M4-22, DESIGN section 6). A quadruped that's after him and can see him out past its prod's reach
 // fires its tag launcher every 6 s: three times in five a tracking tag sticks to his clothes (he feels the thump,
 // no more), and it stays there, giving his way home away (M4-23), until he finds it with an SDR dongle and picks it
-// off, 3 s.
+// off, or takes his jacket off and goes over it by hand, slower (the backpack's button, U-099).
 import { DT, type SimState } from './types';
 import type { World } from '../world/world';
 import { TAG, SIGHT, TRACK } from '../data/units';
@@ -9,6 +9,7 @@ import { SCALE } from './clock';
 import { raidTime } from './raid';
 import { visibility } from './perception';
 import { onUseId } from './use';
+import { onCmd } from './commands';
 import { rand } from './rng';
 import type { Pose, Unit } from './units';
 
@@ -20,7 +21,7 @@ export function launcher(s: SimState, w: World, u: Unit, at: Pose, d: number) {
   s.events.push({ t: 'noise', x: at.x, y: at.y + 0.8, z: at.z, r: TAG.noise, kind: 'tag' });
   if (rand(s.rng) >= TAG.chance) return;
   s.player.tag = true;
-  s.events.push({ t: 'msg', text: 'something thumped into your jacket' });
+  s.events.push({ t: 'msg', text: 'something thumped into your jacket: a tracker? An SDR dongle finds it, or search your jacket (backpack)' });
 }
 
 // The SDR dongle (M4-22): its chirp finds a tag on him, and he picks it off.
@@ -31,14 +32,22 @@ onUseId('sdr', s => {
   s.events.push({ t: 'msg', text: 'a tracker chirping on your jacket: picking it off' });
 });
 
-/** Every tick: picking a tag off, if he is. */
+// By hand (U-099): the jacket off and gone over seam by seam, on his feet; it finds one if it's there.
+onCmd((s, cmd) => {
+  if (cmd.c !== 'act' || cmd.name !== 'search' || s.task || s.player.mode !== 'ground') return;
+  s.task = { id: 'untag', t: 0, dur: TAG.search };
+  s.events.push({ t: 'msg', text: 'jacket off: going over it by hand' });
+});
+
+/** Every tick: picking a tag off, if he is (or searching for one by hand: on his feet). */
 export function stepTag(s: SimState) {
   if (s.task?.id !== 'untag') return;
+  if (s.player.mode !== 'ground') { s.task = null; s.events.push({ t: 'msg', text: 'interrupted' }); return; }
   s.task.t += DT;
   if (s.task.t < s.task.dur) return;
   s.task = null;
+  s.events.push({ t: 'msg', text: s.player.tag ? 'tracking tag off and crushed' : 'nothing stuck to your jacket' });
   s.player.tag = false;
-  s.events.push({ t: 'msg', text: 'tracking tag off and crushed' });
 }
 
 /** Every tick (M4-23, U-013): followed home. Coming into a hideout's area (within 25 m of its bed) with a machine's

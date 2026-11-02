@@ -36,6 +36,7 @@ import { SECURE, fitSecure, approaches } from './secure';
 import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
+import { riverPolice } from './pier';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -210,8 +211,11 @@ export function buildYuzhong(): World {
     } catch { /* (no riverside road near this one) */ }
   }
   // The docks on the rivers (M6-06): the OSM piers as pontoons.
-  const dock = docks(g, GEO.areas.filter(a => a[0] === 'pier').map(a => minRect(points(a[2], 0.1))));
+  const piers = GEO.areas.filter(a => a[0] === 'pier').map(a => minRect(points(a[2], 0.1))), dock = docks(g, piers);
   river.solids.push(...dock.solids); river.decor.push(...dock.decor); river.features.push(...dock.features);
+  // The river police's (M6-20): the pier nearest Chaotianmen.
+  const police = riverPolice(g, piers, GEO.landmarks.chaotianmen);
+  if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); inter.push(...police.inter); }
   solids.push(...river.solids);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
@@ -267,11 +271,17 @@ export function buildYuzhong(): World {
     // (No walker's beat off the ground's grid, out past the city's edge where the street network runs on: M6-22.)
     .filter(p => p.kind !== 'street' || p.pts.every(q => q.x >= g.x0 && q.z >= g.z0 && q.x <= g.x0 + (g.w - 1) * g.cell && q.z <= g.z0 + (g.h - 1) * g.cell));
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
-  world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
+  world.cameras = placeCameras(world).concat(placeSensors(world, gtAt), police?.cameras ?? []);
+  if (police) world.climbables.push(...police.climbables);
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
   world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv;
   world.teleports.push(...approaches(world, sec.sites));
+  // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
+  for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
+    const f = world.features.find(q => q.kind === k), d = world.features.find(q => q.kind === 'pier:deck');
+    if (f && d) world.teleports.push({ name: `River-police pier: ${name}`, x: f.x, y: f.y + (k === 'pier:ladder' ? 0.3 : 0.1), z: f.z, yaw: Math.atan2(-(d.x - f.x), -(d.z - f.z)) });
+  }
   // Each parked scooter's battery, prised out with a crowbar (M5-23).
   world.props.forEach((p, i) => { if (p.kind === 'scooter') world.inter.push({ id: `scooter${i}`, kind: 'scooter', x: p.x, y: p.y + 0.45, z: p.z, r: 0.6, zh: '电动车', en: 'Scooter' }); });
   // Each camera's junction box (M5-09): where a tap clips in.

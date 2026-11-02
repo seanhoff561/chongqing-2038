@@ -3,11 +3,13 @@ export interface LootEntry { id: string; w: number; n?: [number, number] }
 export interface LootTable { rolls: [number, number]; empty: number; items: LootEntry[] }
 
 export const loot: Record<string, LootTable> = {
-  // Ordinary homes and shops (tier 1).
+  // Ordinary homes and shops (tier 1). A toolbox (a bench's start) under a home's sink, on a shop's shelf, in a car's
+  // boot as well as a workshop (U-099).
   kitchen: { rolls: [1, 3], empty: 0.15, items: [
     { id: 'noodles', w: 6, n: [1, 3] }, { id: 'zhacai', w: 4 }, { id: 'luncheon', w: 2 }, { id: 'crackers', w: 3 },
     { id: 'water', w: 5 }, { id: 'bottle', w: 3 }, { id: 'buns', w: 2 }, { id: 'teaeggs', w: 2 }, { id: 'pork', w: 1 },
     { id: 'peaches', w: 2 }, { id: 'bread', w: 2 }, { id: 'sausage', w: 2 }, { id: 'knife', w: 1 }, { id: 'alcohol', w: 1 }, { id: 'tape', w: 1 },
+    { id: 'toolbox', w: 1 },
   ] },
   bedroom: { rolls: [1, 2], empty: 0.2, items: [
     { id: 'bedroll', w: 2 },
@@ -15,18 +17,19 @@ export const loot: Record<string, LootTable> = {
     { id: 'chocolate', w: 2 }, { id: 'energy', w: 2 }, { id: 'headlamp', w: 1 }, { id: 'mylar', w: 1 },
   ] },
   shop: { rolls: [1, 3], empty: 0.15, items: [
-    { id: 'foldcrate', w: 1 }, { id: 'bedroll', w: 1 }, { id: 'mattress', w: 1 },
+    { id: 'foldcrate', w: 1 }, { id: 'bedroll', w: 1 }, { id: 'mattress', w: 1 }, { id: 'toolbox', w: 2 },
     { id: 'noodles', w: 5, n: [1, 4] }, { id: 'water', w: 5, n: [1, 2] }, { id: 'energy', w: 3 }, { id: 'chocolate', w: 3 },
     { id: 'crackers', w: 3 }, { id: 'zhacai', w: 3 }, { id: 'firecrackers', w: 1 }, { id: 'tape', w: 2 }, { id: 'tablets', w: 1, n: [2, 5] },
   ] },
   workshop: { rolls: [1, 2], empty: 0.3, items: [
-    { id: 'toolbox', w: 3 }, { id: 'foldcrate', w: 2 },
+    { id: 'toolbox', w: 5 }, { id: 'foldcrate', w: 2 },
     { id: 'tape', w: 4 }, { id: 'rods', w: 3 }, { id: 'crowbar', w: 1 }, { id: 'clips', w: 2 }, { id: 'cable', w: 2 },
     { id: 'scootercells', w: 2 }, { id: 'stone', w: 2, n: [1, 3] }, { id: 'chalk', w: 1 }, { id: 'chalkblock', w: 1 }, { id: 'suppressor', w: 1 }, { id: 'reddot', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] }, { id: 'zipkit', w: 1 },
   ] },
   car: { rolls: [0, 2], empty: 0.35, items: [
     { id: 'water', w: 4 }, { id: 'crackers', w: 2 }, { id: 'firstaid', w: 1 }, { id: 'tape', w: 2 }, { id: 'cable', w: 2 },
     { id: 'extinguisher', w: 1 }, { id: 'energy', w: 2 }, { id: 'cloth', w: 2 }, { id: 'carbattery', w: 3 }, { id: 'mag9x', w: 1 }, { id: 'scope4x', w: 1 }, { id: 'rocket', w: 1 }, { id: 'rpg', w: 1 },
+    { id: 'toolbox', w: 2 },
   ] },
   // The rarer buildings (M5-35, U-091): the rarer, the better. An office's electronics and odds and ends; a military
   // post's barracks (ammunition, rations, first aid) and its armoury (guns, their attachments, grenades, the
@@ -43,6 +46,7 @@ export const loot: Record<string, LootTable> = {
   armory: { rolls: [1, 3], empty: 0.05, items: [
     { id: 'pistol', w: 3 }, { id: 'mag9', w: 6, n: [1, 3] }, { id: 'mag9x', w: 2 }, { id: 'suppressor', w: 2 }, { id: 'reddot', w: 2 }, { id: 'scope4x', w: 1 },
     { id: 'grenade', w: 2 }, { id: 'emp', w: 1 }, { id: 'jammer', w: 1 }, { id: 'thermalmod', w: 1 }, { id: 'dronectl', w: 1 }, { id: 'rocket', w: 1 }, { id: 'rpg', w: 1 },
+    { id: 'toolbox', w: 2 },
   ] },
   medicine: { rolls: [1, 2], empty: 0.2, items: [
     { id: 'bandage', w: 5, n: [1, 3] }, { id: 'painkillers', w: 4, n: [1, 3] }, { id: 'alcohol', w: 3 }, { id: 'tablets', w: 2, n: [2, 6] },
@@ -83,7 +87,7 @@ export const loot: Record<string, LootTable> = {
     { id: 'rfamp', w: 3 }, { id: 'netcreds', w: 2 }, { id: 'fibretap', w: 2 }, { id: 'cable', w: 3 }, { id: 'board', w: 2 }, { id: 'cameratap', w: 2 }, { id: 'telcard', w: 1 }, { id: 'battpack', w: 1 },
   ] },
   substation: { rolls: [1, 3], empty: 0.1, items: [
-    { id: 'insgloves', w: 2 }, { id: 'coil', w: 3 }, { id: 'cable', w: 3 }, { id: 'tape', w: 3 }, { id: 'clips', w: 2 }, { id: 'carbattery', w: 1 }, { id: 'boltcutters', w: 1 },
+    { id: 'insgloves', w: 2 }, { id: 'coil', w: 3 }, { id: 'cable', w: 3 }, { id: 'tape', w: 3 }, { id: 'clips', w: 2 }, { id: 'carbattery', w: 1 }, { id: 'boltcutters', w: 1 }, { id: 'toolbox', w: 2 },
   ] },
   // Tier 4: the drone hub's: what a drone controller is made of, big battery packs, the thermal module.
   tier4: { rolls: [2, 4], empty: 0, items: [

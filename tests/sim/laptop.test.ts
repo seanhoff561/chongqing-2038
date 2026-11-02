@@ -1,4 +1,4 @@
-// M5-01: Anna's laptop. L opens and shuts it (a command; nothing stops); open, a full battery lasts two game hours and
+// M5-01: Anna's laptop. L opens and shuts it (a command; nothing stops); open, a full battery lasts eight game hours (U-102) and
 // then it shuts itself, flat; at night its screen lights him (0.5); shut at a hideout with a charged car battery it
 // charges, a little off the battery.
 import { describe, it, expect } from 'vitest';
@@ -10,18 +10,19 @@ import { claimBed } from '../../src/sim/shelter';
 const toggle = { cmds: [{ c: 'act' as const, name: 'laptop' }] };
 
 describe("Anna's laptop (M5-01)", () => {
-  it('runs two game hours open, lights him, and charges at a hideout with power', () => {
+  it('runs eight game hours open, lights him, and charges at a hideout with power', () => {
     const { world, state } = setup([floor()]);
     state.time = 22 * 3600;
     run(state, world, 1, toggle);
     expect(state.laptop!.open).toBe(true);
     expect(laptopLight(state)).toBe(LAPTOP.glow);
-    // An hour in, half gone; time goes on all the while.
-    const t0 = state.time;
-    run(state, world, secs(3600 / SCALE));
-    expect(state.time - t0).toBeCloseTo(3600, -2);
+    // Half its time in, half gone; time goes on all the while.
+    const t0 = state.time, half = LAPTOP.lasts / 2;
+    expect(LAPTOP.lasts).toBe(8 * 3600);
+    run(state, world, secs(half / SCALE));
+    expect(state.time - t0).toBeCloseTo(half, -2);
     expect(state.laptop!.charge).toBeCloseTo(0.5, 1);
-    run(state, world, secs(3600 / SCALE) + 60);
+    run(state, world, secs(half / SCALE) + 60);
     expect(state.laptop!.open).toBe(false);
     expect(state.laptop!.charge).toBe(0);
     // Flat, it won't open.

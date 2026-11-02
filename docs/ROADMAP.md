@@ -1046,7 +1046,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Sim test: over a run the types come out near their shares and differ between runs; each type's rooms and loot differ; a military building's loot is better than a home's
 - [x] **M5-01** Laptop shell
   - L opens Anna's laptop over the view without pausing; at night its glow adds 0.5 light at his position
-  - The laptop battery drains while open (2 game hours) and charges at a powered shelter
+  - The laptop battery drains while open (8 game hours, U-102) and charges at a powered shelter
   - Dense, dim, bilingual terminal styling per DESIGN section 12; the smoke test opens it
 - [x] **M5-02** Laptop pages and navigation
   - Pages 状态 Status, 扫描 Scan, 地图 Map, 日志 Logs, 摄像头 Cams, 无人机 Drone and 笔记 Notes switch by keys and clicks; locked pages say what they need
@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 16 of 28 done
+## M6: 17 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1224,7 +1224,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [ ] **M6-19** Bridge checkpoint
   - Three ways in, the military crate, turret cluster and scanner gates
   - Sim tests take each way in and trigger the hazard
-- [ ] **M6-20** River-police pier
+- [x] **M6-20** River-police pier
   - Three ways in, the patrol boat, sonar buoys and river drone boats
   - Sim tests take each way in and trigger the hazard
 - [ ] **M6-21** City tunnels
@@ -1347,7 +1347,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [x] **M8-13** Settings
   - Settings open from the pause menu (= key, U-009)
   - Every control can be rebound; mouse sensitivity is a slider (U-001)
-  - Mouse sensitivity, invert Y, FOV, master/voice/effects/ambience volume, subtitle size and language, graphics preset; persisted
+  - Mouse sensitivity, invert Y (no FOV setting: U-101), master/voice/effects/ambience volume, subtitle size and language, graphics preset; persisted
   - The smoke test changes and reloads them
 - [x] **M8-14** Voiced announcements
   - The machine's announcements play through speakers in the world, positioned, in calm Mandarin with subtitles when near

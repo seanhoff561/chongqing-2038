@@ -305,6 +305,9 @@ export class Game {
 
   render(alpha: number, dt: number) {
     const p = this.state.player;
+    // (A menu's up only while one's really showing: never left set by one menu closing over another, which took the
+    // prompts, the hands and the mouse away for good.)
+    this.input.uiOpen = this.inv.open || this.sleep.open || this.pause.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot');
     const pos = { x: this.prev.x + (p.pos.x - this.prev.x) * alpha, y: this.prev.y + (p.pos.y - this.prev.y) * alpha, z: this.prev.z + (p.pos.z - this.prev.z) * alpha };
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
     const gun = this.heldId === 'pistol' ? this.heldModel : null;

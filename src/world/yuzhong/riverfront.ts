@@ -153,9 +153,9 @@ function near(s: Street, x: number, z: number, d: number) {
 }
 
 /** The docks (M6-06): each OSM pier on the rivers a pontoon deck afloat on its footprint (its turned rectangle), a
- *  metre and a half proud of the water, bollards along its edges; the bank's end of it meets the riverside where the
+ *  metre and a half proud of the water and a metre deep under it, bollards along its edges; the bank's end of it meets the riverside where the
  *  ground comes down to it. */
-export const DOCK = { up: 1.5, t: 1.2, bollard: 6 };
+export const DOCK = { up: 1.5, t: 2.6, bollard: 6 };
 export function docks(g: Heightfield, piers: { cx: number; cz: number; hw: number; hd: number; yaw: number }[]) {
   const solids: Solid[] = [], decor: Solid[] = [], features: Feature[] = [], top = WATER_Y + DOCK.up;
   for (const o of piers) {
