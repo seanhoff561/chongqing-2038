@@ -21,7 +21,8 @@ const covers = {
   'drain grate': w.inter.filter(i => i.kind === 'grate' && i.en === 'Drain grate'),
   'street grate': w.inter.filter(i => i.id.startsWith('under-grate')),
   'sewer grate': w.inter.filter(i => i.id.startsWith('sewer-grate')),
-  vent: w.inter.filter(i => i.kind === 'door' && i.en === 'Vent cover'),
+  // (By its id: a site's vents go by what they are there, M6-11: 'Laundry vent', the police station's garage shutter.)
+  vent: w.inter.filter(i => i.kind === 'door' && /\.v\d+$/.test(i.id)),
 };
 
 /** Is the middle of its opening filled (the cover's collision there, and on)? */

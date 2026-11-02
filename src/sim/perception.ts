@@ -77,10 +77,11 @@ function pirTrips(s: SimState, w: World, at: Pose) {
 }
 
 /** A tripwire (M4-11): his body, feet to head, through its beam; a running jump clears one at shin height. */
-function wireTrips(s: SimState, c: { x: number; y: number; z: number; to?: { x: number; y: number; z: number } }) {
+function wireTrips(s: SimState, c: { x: number; y: number; z: number; to?: { x: number; y: number; z: number }; w?: number }) {
   const p = s.player.pos, b = c.to!, vx = b.x - c.x, vz = b.z - c.z, L = vx * vx + vz * vz || 1, t = Math.max(0, Math.min(1, ((p.x - c.x) * vx + (p.z - c.z) * vz) / L));
   const h = M.height[s.player.posture === 'crouch' ? 'crouch' : s.player.posture === 'crawl' ? 'crawl' : 'stand'];
-  return Math.hypot(c.x + vx * t - p.x, c.z + vz * t - p.z) < 0.25 && c.y >= p.y && c.y <= p.y + h;
+  // (A pressure plate's the same, wide and on the floor: any weight on it, M6-11.)
+  return Math.hypot(c.x + vx * t - p.x, c.z + vz * t - p.z) < (c.w ?? 0.25) && c.y >= p.y && c.y <= p.y + h;
 }
 
 /** Each beat's ground, its dock's too (a box, x and z). */

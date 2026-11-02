@@ -65,6 +65,20 @@ export const loot: Record<string, LootTable> = {
     { id: 'pistol', w: 2 }, { id: 'mag9', w: 4, n: [1, 2] }, { id: 'shotgun', w: 1 }, { id: 'shells', w: 3, n: [1, 2] }, { id: 'grenade', w: 2 }, { id: 'extinguisher', w: 1 },
     { id: 'breach', w: 1 }, { id: 'rfamp', w: 2 }, { id: 'fibretap', w: 1 }, { id: 'cameratap', w: 2 }, { id: 'coil', w: 1 }, { id: 'trigger', w: 1 }, { id: 'cloner', w: 1 },
   ] },
+  // The sites' own (M6-11 to M6-13): the hospital's medicine (tier 2), the police station's weapons and keys (tier 3), the
+  // electronics market's parts (tiers 2-3).
+  hospital: { rolls: [1, 3], empty: 0.1, items: [
+    { id: 'firstaid', w: 3 }, { id: 'tourniquet', w: 3 }, { id: 'splint', w: 3 }, { id: 'painkillers', w: 4, n: [1, 3] }, { id: 'bandage', w: 4, n: [1, 3] },
+    { id: 'tablets', w: 2, n: [2, 6] }, { id: 'mylar', w: 2 }, { id: 'oxygen', w: 1 }, { id: 'capbank', w: 1 }, { id: 'alcohol', w: 2 }, { id: 'hospcard', w: 1 },
+  ] },
+  police: { rolls: [1, 3], empty: 0.05, items: [
+    { id: 'pistol', w: 2 }, { id: 'mag9', w: 5, n: [1, 2] }, { id: 'shotgun', w: 1 }, { id: 'shells', w: 3, n: [1, 2] }, { id: 'grenade', w: 2 }, { id: 'extinguisher', w: 1 },
+    { id: 'policecard', w: 2 }, { id: 'boatkey', w: 1 }, { id: 'cloner', w: 1 }, { id: 'binoculars', w: 1 },
+  ] },
+  electronics: { rolls: [1, 3], empty: 0.1, items: [
+    { id: 'sdr', w: 2 }, { id: 'rfid', w: 2 }, { id: 'board', w: 4, n: [1, 2] }, { id: 'clips', w: 3 }, { id: 'cable', w: 3 }, { id: 'canif', w: 1 }, { id: 'battpack', w: 3 },
+    { id: 'cameratap', w: 1 }, { id: 'rfamp', w: 1 }, { id: 'tape', w: 2 },
+  ] },
   // Tier 4: the drone hub's: what a drone controller is made of, big battery packs, the thermal module.
   tier4: { rolls: [2, 4], empty: 0, items: [
     { id: 'radiomod', w: 3 }, { id: 'board', w: 3 }, { id: 'battpack', w: 3, n: [1, 2] }, { id: 'powercell', w: 2 }, { id: 'thermalmod', w: 2 }, { id: 'rotor', w: 3, n: [2, 4] },

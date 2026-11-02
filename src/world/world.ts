@@ -32,6 +32,10 @@ export interface Site {
   bed: string | null; table: string | null; containers: string[]; exits: number; windows: number; streetSides: number;
 }
 
+/** A high-security site in a building (M6-11): which, its building's ids' prefix, where, and its ways in (each an
+ *  interactable: the way it's taken, its id). */
+export interface Secure { id: string; prefix: string; x: number; z: number; ways: { kind: string; id: string }[] }
+
 /** A light, for perception (M3-16): lit up to v within r of its box (a lamppost's is its pole's height under the
  *  lamp, a strip light's its strip). */
 export interface Light { kind: 'post' | 'neon' | 'lamp' | 'flood'; box: Box; r: number; v: number }
@@ -68,7 +72,7 @@ export interface Nav { pts: { x: number; y: number; z: number }[]; adj: [number,
 export const NAV = { street: 0, stairs: 1, tunnel: 2, jump: 3 } as const;
 /** A camera or another fixed sensor where it's mounted (M4-07, M4-11): which kind, its lens (a turret's gun, a
  *  sensor's head; a tripwire's one end, `to` its other), which way it faces. */
-export interface Camera { kind: 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic'; x: number; y: number; z: number; yaw: number; to?: { x: number; y: number; z: number }; /** idle until its district is Heightened (M4-16) */ dark?: boolean; /** its junction box, where a tap clips in (M5-09), facing out along yaw */ box?: { x: number; y: number; z: number; yaw: number } }
+export interface Camera { kind: 'camera' | 'sweeper' | 'lamppost' | 'turret' | 'pir' | 'tripwire' | 'acoustic'; x: number; y: number; z: number; yaw: number; to?: { x: number; y: number; z: number }; /** a pressure plate's half-width across its line, laid on the floor (M6-11) */ w?: number; /** idle until its district is Heightened (M4-16) */ dark?: boolean; /** its junction box, where a tap clips in (M5-09), facing out along yaw */ box?: { x: number; y: number; z: number; yaw: number } }
 /** A column's way out of the city (M3-57b), and its detours: how far along it, and the alley point gone to. */
 export interface Convoy { pts: { x: number; y: number; z: number }[]; spurs: { s: number; at: { x: number; y: number; z: number } }[] }
 /** A machine's beat (M3-37, M4-01): along streets (into alleys and buildings off them), over the roofs, or under the
@@ -101,6 +105,8 @@ export interface World {
   lights?: Light[];
   inter: Inter[];
   sites: Site[];
+  /** the high-security sites in buildings (M6-11 to M6-13): their ways in, by interactable */
+  secure?: Secure[];
   /** render-only stand-ins for the far view (U-012): one box per block; empty for small worlds */
   far: Solid[];
   solids: Solid[];

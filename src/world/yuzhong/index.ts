@@ -32,6 +32,7 @@ import { dressStreets } from './dressing';
 import { sewers } from './sewers';
 import { breaches } from './breach';
 import { monument, MONUMENT } from './monument';
+import { SECURE, fitSecure } from './secure';
 import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
@@ -99,6 +100,8 @@ export function buildYuzhong(): World {
     p.sky = p.base;
     for (const q of plans) if (q !== p && !q.far && q.wall > p.sky && Math.hypot(q.obb.cx - p.obb.cx, q.obb.cz - p.obb.cz) < p.obb.hw + p.obb.hd + q.obb.hw + q.obb.hd + 25 && obbOverlap(p.obb, q.obb, 12.5)) p.sky = q.wall;
   }
+  // The high-security sites' buildings, what they were fixed (M6-11: yuzhong/secure.ts).
+  for (const S of SECURE) { const p = plans.find(q => q.seed === S.plan); if (p) p.siteType = S.type; }
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
   // Holes knocked through from one building into the next where their floors meet (M3-76).
@@ -265,6 +268,9 @@ export function buildYuzhong(): World {
     .filter(p => p.kind !== 'street' || p.pts.every(q => q.x >= g.x0 && q.z >= g.z0 && q.x <= g.x0 + (g.w - 1) * g.cell && q.z <= g.z0 + (g.h - 1) * g.cell));
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
   world.cameras = placeCameras(world).concat(placeSensors(world, gtAt));
+  // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
+  const sec = fitSecure(world);
+  world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props);
   // Each parked scooter's battery, prised out with a crowbar (M5-23).
   world.props.forEach((p, i) => { if (p.kind === 'scooter') world.inter.push({ id: `scooter${i}`, kind: 'scooter', x: p.x, y: p.y + 0.45, z: p.z, r: 0.6, zh: '电动车', en: 'Scooter' }); });
   // Each camera's junction box (M5-09): where a tap clips in.
@@ -409,7 +415,7 @@ function landMask(g: Heightfield): Uint8Array {
 
 /** Build one lot in its own frame and turn everything it made into place. */
 function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
-  const o = p.obb, l: Lot = { id: n, x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd, base: p.base, wall: p.wall, top: p.wall, kind: p.kind, mat: p.mat, street: p.street, across: p.across, noEnter: p.noEnter, edge: p.edge, sky: p.sky, bare: p.bare, pitched: p.pitched, sheer: p.sheer, holdless: p.holdless, district: p.district,
+  const o = p.obb, l: Lot = { id: n, x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd, base: p.base, wall: p.wall, top: p.wall, kind: p.kind, mat: p.mat, street: p.street, across: p.across, noEnter: p.noEnter, edge: p.edge, sky: p.sky, bare: p.bare, pitched: p.pitched, sheer: p.sheer, holdless: p.holdless, district: p.district, type: p.siteType,
     ground: (x, z) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw); return heightAt(g, o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)) ?? p.base; } };
   const f = empty(), r = makeRng(hashString(p.seed));
   if (p.far) {

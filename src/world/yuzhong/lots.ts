@@ -19,6 +19,8 @@ export interface Plan {
   osm: boolean; name: string;
   /** the Liberation Monument's footprint, built as itself (yuzhong/monument.ts), not as a block */
   monument?: boolean;
+  /** a high-security site's building: what it was, fixed (yuzhong/secure.ts) */
+  siteType?: import('../city/types').BuildingType;
   /** on the far bank: drawn but not built for play */
   far: boolean;
   /** the ground round it rises above its base (a higher street beside it): solid only, never hollowed */

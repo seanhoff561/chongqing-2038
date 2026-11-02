@@ -1163,7 +1163,7 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 7 of 28 done
+## M6: 10 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
@@ -1197,13 +1197,13 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
 - [ ] **M6-10** Construction site and tower crane
   - Li Wei's half-built tower and crane per DESIGN section 10: four ways in, tier 2 tools, the loose-plank and crane-load hazards
   - Sim tests take each way in and trigger each hazard
-- [ ] **M6-11** Hospital
+- [x] **M6-11** Hospital
   - Four ways in, tier 2 medical loot, the pressure-plate pharmacy and motion-sensor wards
   - Sim tests take each way in and trigger the hazard
-- [ ] **M6-12** Police station
+- [x] **M6-12** Police station
   - Four ways in, tier 3 weapons and keys, the armoury ceiling turret
   - Sim tests take each way in and trigger the hazard
-- [ ] **M6-13** Electronics market
+- [x] **M6-13** Electronics market
   - Four ways in, tier 2-3 electronics, acoustic sensor arrays on shop floors
   - Sim tests take each way in and trigger the hazard
 - [ ] **M6-14** Telecom exchange

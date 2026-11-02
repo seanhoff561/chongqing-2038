@@ -14,7 +14,7 @@ type V3 = { x: number; y: number; z: number };
 const WIRE_U = [150, 186], EAR_U = [160, 196], BEAM = 0.4, GATE_UP = 7.6, GATE_OUT = 1.2;
 
 /** On the farthest wall within 15 m of a room's middle, 2.2 m up off its floor, looking back across it. */
-function onWall(w: World, kind: Camera['kind'], f: V3): Camera | null {
+export function onWall(w: World, kind: Camera['kind'], f: V3): Camera | null {
   const down = raycast(w.index, f.x, f.y + 1.5, f.z, 0, -1, 0, 4);
   const y = (down ? f.y + 1.5 - down.t : f.y) + 2.2;
   let best: Camera | null = null, bd = 0;
