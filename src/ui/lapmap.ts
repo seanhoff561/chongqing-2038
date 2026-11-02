@@ -21,7 +21,7 @@ export const MAPV = { w: 520, h: 300, m: 1.25 };
 /** Each type's colour, and a building whose type he doesn't know (or one that can't be entered). */
 const TYPE: Record<BuildingType, [string, string, string]> = {
   residential: ['#9a8050', '住宅', 'homes'], office: ['#5a8aa8', '办公', 'offices'], clinic: ['#62a878', '诊所', 'clinics'],
-  workshop: ['#b07838', '工坊', 'workshops'], military: ['#c04a36', '军事', 'military'],
+  workshop: ['#b07838', '工坊', 'workshops'], military: ['#c04a36', '军事', 'military'], mall: ['#a8689a', '商场', 'malls'],
 };
 const UNKNOWN = '#16150f', SEALED = '#58544a';
 

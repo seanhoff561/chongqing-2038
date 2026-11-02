@@ -9,6 +9,7 @@ import { quad, slot, signs, SIGN_PROPS } from './signs';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { propAtlas, atlasMaterial } from './prop-atlas';
 import { alarm, lampPool } from './materials';
+import { SCREEN_EDICT } from './edicts';
 
 // One material for every library prop: the atlas carries every surface, leaves included (alpha-tested).
 const PROP_MAT = atlasMaterial(new THREE.MeshPhongMaterial({ map: propAtlas(), alphaTest: 0.45, vertexColors: true, shininess: 8 }));
@@ -418,7 +419,9 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
       // A two-tone split with a logo.
       glow.box(w * 0.5, h, 0.02, lo, -w * 0.25, 0, 0.04).cyl(h * 0.25, h * 0.25, 0.02, hi, w * 0.25, h * 0.5, 0.06, 20, 'z');
     }
-    return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: glow.geometry(), mat: GLOW_MAT }]);
+    // (And over it, between the campaigns, the machine's edict: render/edicts.ts, M6-02.)
+    const edict = new THREE.PlaneGeometry(w, h).translate(0, h / 2, 0.07);
+    return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: glow.geometry(), mat: GLOW_MAT }, { geo: edict, mat: SCREEN_EDICT }]);
   },
   // A shop's sign (U-028, U-031), in the style and colours its building's shops share (text 'style:scheme'), its
   // +z out of the wall. Blade light boxes with big characters down both faces; dark boards with the characters in

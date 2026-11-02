@@ -31,6 +31,7 @@ import { buildLine2, stationEntrances, BEAM } from './line2';
 import { dressStreets } from './dressing';
 import { sewers } from './sewers';
 import { breaches } from './breach';
+import { monument, MONUMENT } from './monument';
 import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad } from './riverfront';
@@ -161,6 +162,19 @@ export function buildYuzhong(): World {
     { name: 'Construction site', x: site.frame.x, y: site.base + 0.05, z: site.frame.z, yaw: 0 },
     { name: 'Construction site crane', x: site.crane.x, y: site.crane.top + 2.55, z: site.crane.z, yaw: 0 },
   ] : []);
+  // (Jiefangbei's out on the plaza, on the walking street nearest the monument clear of its kerb, looking at it:
+  // M6-01. Its landmark is the monument itself.)
+  const mon = plots.find(p => p.kind === 'monument'), jt = teleports.find(t => t.name === 'jiefangbei');
+  if (mon && jt) {
+    const mx = mon.corners.reduce((a, c) => a + c[0], 0) / mon.corners.length, mz = mon.corners.reduce((a, c) => a + c[1], 0) / mon.corners.length;
+    let best: { x: number; z: number; d: number } | null = null;
+    for (const st of sts) if (st.kind === 'pedestrian' || st.kind === 'footway') for (let k = 0; k + 1 < st.pts.length; k++) {
+      const [ax, az] = st.pts[k], [bx, bz] = st.pts[k + 1], n = Math.ceil(Math.hypot(bx - ax, bz - az) / 2);
+      for (let i = 0; i <= n; i++) { const x = ax + ((bx - ax) * i) / n, z = az + ((bz - az) * i) / n, d = Math.hypot(x - mx, z - mz); if (d > MONUMENT.kerb[0] + 3 && (!best || d < best.d)) best = { x, z, d }; }
+    }
+    const q = best ?? { x: mx + MONUMENT.kerb[0] + 3, z: mz };
+    Object.assign(jt, { x: q.x, y: hAt(g, q.x, q.z) + 1.5, z: q.z, yaw: Math.atan2(-(mx - q.x), -(mz - q.z)) });
+  }
   const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
@@ -382,7 +396,7 @@ function landMask(g: Heightfield): Uint8Array {
 
 /** Build one lot in its own frame and turn everything it made into place. */
 function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
-  const o = p.obb, l: Lot = { id: n, x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd, base: p.base, wall: p.wall, top: p.wall, kind: p.kind, mat: p.mat, street: p.street, across: p.across, noEnter: p.noEnter, edge: p.edge, sky: p.sky, bare: p.bare, pitched: p.pitched, sheer: p.sheer, holdless: p.holdless,
+  const o = p.obb, l: Lot = { id: n, x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd, base: p.base, wall: p.wall, top: p.wall, kind: p.kind, mat: p.mat, street: p.street, across: p.across, noEnter: p.noEnter, edge: p.edge, sky: p.sky, bare: p.bare, pitched: p.pitched, sheer: p.sheer, holdless: p.holdless, district: p.district,
     ground: (x, z) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw); return heightAt(g, o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)) ?? p.base; } };
   const f = empty(), r = makeRng(hashString(p.seed));
   if (p.far) {
@@ -390,7 +404,7 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
     const look = p.kind === 'tower' ? MAT.glass : MAT.facade;
     f.solids.push(solid(l.x0, l.base, l.z0, l.x1, l.wall, l.z1, look));
     f.far.push(solid(l.x0, l.base, l.z0, l.x1, l.wall + PARAPET, l.z1, look));
-  } else {
+  } else if (!p.monument) {
     buildLot(l, r, f);
     signage(l, p, r, f);
   }
@@ -412,9 +426,10 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
       (i0, i1, j) => { for (let i = i0; i <= i1; i++) if (i < g.w - 1 && j < g.h - 1) g.hole[j * (g.w - 1) + i] = 1; });
   }
   const s0 = out.solids.length, c0 = out.climbables.length, pt = place(f, o, p.seed, out);
+  if (p.monument) { monument(o, l.base, out); l.top = l.wall = l.base + MONUMENT.height; }
   if (l.route) l.route = l.route.map(q => { const [x, z] = pt(q.x, q.z); return { ...q, x, z }; });
   out.lots.push(l);
-  return { corners: corners(o), base: p.base, wall: p.wall, top: l.top, kind: l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, type: l.type, far: p.far, osm: p.osm,
+  return { corners: corners(o), base: p.base, wall: l.wall, top: l.top, kind: p.monument ? 'monument' : l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, type: l.type, far: p.far, osm: p.osm,
     own: { solids: [s0, out.solids.length], climbables: [c0, out.climbables.length] } };
 }
 

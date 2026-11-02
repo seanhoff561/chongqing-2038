@@ -17,6 +17,8 @@ export interface Plan {
   street: [boolean, boolean, boolean, boolean];
   across: [number, number, number, number];
   osm: boolean; name: string;
+  /** the Liberation Monument's footprint, built as itself (yuzhong/monument.ts), not as a block */
+  monument?: boolean;
   /** on the far bank: drawn but not built for play */
   far: boolean;
   /** the ground round it rises above its base (a higher street beside it): solid only, never hollowed */
@@ -187,7 +189,9 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
     // Unknown heights meet a neighbour's roof; known ones may give or take a floor to (the 1:1 map is a base to
     // edit for play, U-020).
     const fl = tower || business ? floors : known ? fit(o, base, floors, Math.max(1, floors - 1), floors + 1, r) : fit(o, base, floors, 2, 20, r);
-    add({ obb: o, base, wall: base + fl * (tower ? 3.3 : business ? 4 : FLOOR), flex: tower || business ? undefined : known ? [Math.max(1, floors - 1), floors + 1] : [2, 20], kind: tower ? 'tower' : 'res', mat, seed: `osm${n}`, street, across: [0, 0, 0, 0], osm: true, name, far, noEnter: business, ...districtAt(o.cx, o.cz) });
+    add({ obb: o, base, wall: base + fl * (tower ? 3.3 : business ? 4 : FLOOR), flex: tower || business ? undefined : known ? [Math.max(1, floors - 1), floors + 1] : [2, 20], kind: tower ? 'tower' : 'res', mat, seed: `osm${n}`, street, across: [0, 0, 0, 0], osm: true, name, far, noEnter: business, ...districtAt(o.cx, o.cz),
+      // (The Liberation Monument: nothing joins it, nothing goes in.)
+      ...(name.includes('纪念碑') ? { monument: true, sheer: true, noEnter: true } : {}) });
   });
 
   // The Eighteen Stairs (U-018, M3-41c, U-034, M3-35): both flights and the lane below lined with terraces of old

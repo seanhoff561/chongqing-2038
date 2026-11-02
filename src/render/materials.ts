@@ -43,6 +43,13 @@ function cracks(g: CanvasRenderingContext2D, w: number, h: number, seed: number,
   }
 }
 
+/** Redraw the screens' shared canvas (M6-02): with `draw`, or back to the campaigns. */
+export function screenDraw(draw: ((g: CanvasRenderingContext2D, w: number, h: number) => void) | null) {
+  const t = canvasTexture(`mat${MAT.screen}`, 512, 512, drawScreen), c = t.image as HTMLCanvasElement;
+  (draw ?? drawScreen)(c.getContext('2d')!, c.width, c.height);
+  t.needsUpdate = true;
+}
+
 /** An advertising screen (M3-57): panels of the city's last campaigns and the machines' own, in magenta, cyan
  *  and amber on black, big characters, scanlines. 8 m a repeat. */
 const drawScreen: Draw = (g, w, h) => {

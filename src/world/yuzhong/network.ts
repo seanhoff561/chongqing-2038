@@ -96,7 +96,7 @@ const WINS = new Set(['win:open', 'win:glass']);
 /** The graph, the routes and the beats. `grate` is the start hideout's way out. */
 export function network(plots: Plot[], features: Feature[], sites: Site[], sts: Street[], g: Heightfield, anchors: V3[][], grate: V3, out: Vertical, gates: Gate[], index: SolidIndex, keys: { name: string; at: V3 }[] = [], joins: [number, number][] = []): { routes: Route[]; patrols: Patrol[]; links: Link[] } {
   const r = makeRng(hashString('network'));
-  const lots = plots.filter(p => !p.far), obb = lots.map(p => minRect(p.corners)), n = lots.length;
+  const lots = plots.filter(p => !p.far && p.kind !== 'monument'), obb = lots.map(p => minRect(p.corners)), n = lots.length;
   const cells = new Map<string, number[]>(), key = (x: number, z: number) => `${Math.floor(x / 48)},${Math.floor(z / 48)}`;
   obb.forEach((o, i) => (cells.get(key(o.cx, o.cz)) ?? cells.set(key(o.cx, o.cz), []).get(key(o.cx, o.cz))!).push(i));
   const around = (x: number, z: number) => { const out: number[] = []; for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) out.push(...(cells.get(`${Math.floor(x / 48) + i},${Math.floor(z / 48) + j}`) ?? [])); return out; };

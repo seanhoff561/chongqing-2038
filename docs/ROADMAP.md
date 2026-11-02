@@ -1163,14 +1163,14 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
   - Every item, as it's made, is modelled as close to the real thing as can be: shape, proportions, materials, wear; no placeholder boxes
   - Screenshots of every item in the backpack and in hand
 
-## M6: 3 of 28 done
+## M6: 5 of 28 done
 
 M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffles City, the cableway station, both riverfronts, Dongshuimen Bridge) with every high-security site and loot tier.
 
-- [ ] **M6-01** Jiefangbei district
+- [x] **M6-01** Jiefangbei district
   - CBD towers, malls with enterable floors, pedestrian streets on the ridge and the Liberation Monument plaza
   - A sim test crosses the district by street and by rooftops
-- [ ] **M6-02** Jiefangbei look
+- [x] **M6-02** Jiefangbei look
   - The monument, giant LED screens running the machine's announcements, mall facades and towers
   - A screenshot
 - [ ] **M6-03** Hongyadong
