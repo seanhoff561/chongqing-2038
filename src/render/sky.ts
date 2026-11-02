@@ -10,7 +10,7 @@ const OVERCAST = new THREE.Color(0xb4b8b8), RAIN_SKY = new THREE.Color(0x5a6268)
 const NIGHT_GROUND = new THREE.Color(0x3a2a18), DAY_GROUND = new THREE.Color(0x7a7266);
 /** The underground city's lights: cool white overhead, warmer off the floors. */
 const UNDER_LIT = new THREE.Color(0xc8d8f0), UNDER_FLOOR = new THREE.Color(0x6a6058);
-const c = new THREE.Color(), sunDir = new THREE.Vector3();
+const c = new THREE.Color(), sunDir = new THREE.Vector3(), HEMI_DAY = new THREE.Color(0xc8d4e0), HEMI_NIGHT = new THREE.Color(0x5f74a8);
 
 export class Sky {
   readonly moon = new THREE.Mesh(new THREE.SphereGeometry(6, 12, 8), new THREE.MeshBasicMaterial({ color: 0xd8dce6, fog: false }));
@@ -57,7 +57,7 @@ export class Sky {
     v.sun.color.setHSL(0.09, 0.5 - 0.3 * d, 0.85 + 0.1 * d);
     // (Night's dark enough to need the headlamp off the lit streets, U-032, and the city's glow to see shapes by, U-050.)
     v.hemi.intensity = (0.68 + 0.57 * d - 0.15 * flat * (1 - d)) * (1 - under * 0.85) * (1 + 0.1 * flat * d) * (1 - 0.3 * weather.rain);
-    v.hemi.color.copy(NIGHT_SKY).lerp(new THREE.Color(0xc8d4e0), d).lerp(new THREE.Color(0x5f74a8), (1 - d) * 0.9);
+    v.hemi.color.copy(NIGHT_SKY).lerp(HEMI_DAY, d).lerp(HEMI_NIGHT, (1 - d) * 0.9);
     v.hemi.groundColor.copy(NIGHT_GROUND).lerp(DAY_GROUND, d);
     if (lit > 0) {
       v.hemi.intensity += (0.95 - v.hemi.intensity) * lit;

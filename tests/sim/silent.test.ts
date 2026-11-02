@@ -8,6 +8,7 @@ import { alertOf } from '../../src/sim/district';
 import { unitPose } from '../../src/sim/units';
 import { SILENT } from '../../src/sim/silent';
 import { SCALE } from '../../src/sim/clock';
+import { FLY_SIDE } from '../../src/sim/alert';
 import type { Patrol } from '../../src/world/world';
 
 const beat = (unit: 'quadruped' | 'drone', a: [number, number], b: [number, number], y = 0): Patrol => ({ kind: unit === 'drone' ? 'drone' : 'street', unit, pts: [{ x: a[0], y, z: a[1] }, { x: b[0], y, z: b[1] }], dwell: [2, 2], hours: [0, 24] });
@@ -38,7 +39,9 @@ describe('silent machines (M4-17)', () => {
     for (const u of [t.drone, t.near]) {
       expect(u.trip?.kind).toBe('look');
       const end = u.trip!.path[u.trip!.path.length - 1];
-      expect(Math.hypot(end.x, end.z)).toBeLessThan(1);
+      // (The quadruped to the camera itself; the drone to its stand-off off to one side of it: U-098.)
+      if (u === t.drone) expect(Math.abs(Math.hypot(end.x, end.z) - FLY_SIDE.out)).toBeLessThan(1);
+      else expect(Math.hypot(end.x, end.z)).toBeLessThan(1);
       expect(u.state).toBe('suspicious');
     }
     expect(t.far.trip).toBeUndefined();

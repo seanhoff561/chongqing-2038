@@ -1,6 +1,6 @@
 // M5-01..M5-03: L opens Anna's laptop over the view (time going on behind it) and shuts it again. Its pages turn with
-// ← →; the Status page reads his body as the sim has it (logs/laptop.png); Logs is locked without binoculars and says
-// so; Notes lists his hideouts.
+// Q E or ← →, past the greyed ones (U-098); the Status page reads his body as the sim has it (logs/laptop.png); Logs is greyed without binoculars and says
+// what it needs; Notes lists his hideouts.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=gym&seed=1', 'laptop');
   await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 21.5 * 3600; g.state.body.hp = 73; g.state.body.leg = 'sprain'; g.state.body.legHealAt = g.state.time + 86400; window.__cq.runFrames(5); })()`);
@@ -13,16 +13,17 @@ export default async function ({ open, fail, screenshot }) {
   if (!(r.t > t0)) fail('laptop', 'the game stopped while it was open');
   if (!r.hp.endsWith(String(r.want)) || !r.leg.includes('sprained') || !r.fed.endsWith(String(r.wantFed))) fail('laptop', `status doesn't match the sim: ${JSON.stringify(r)}`);
   await screenshot(page, 'laptop');
-  // Three pages on: the patrol logs, locked without binoculars.
-  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
-  const logs = await page.evaluate(`(() => { window.__cq.runFrames(3); return document.querySelector('#laptop .lt-body').textContent; })()`);
-  if (!logs.includes('binoculars')) fail('laptop', `the locked page doesn't say what it needs: ${logs}`);
-  // A bedroll laid down: Notes (three more on) lists that hideout.
+  // E turns the pages (U-098), past the greyed ones he can't open yet: from Status, Scan and Map, then Notes (Logs, Cams
+  // and Drone skipped); a greyed tab says what it needs.
+  for (let i = 0; i < 3; i++) await page.keyboard.press('KeyE');
+  const turned = await page.evaluate(`(() => { window.__cq.runFrames(3); return { body: document.querySelector('#laptop .lt-body').textContent, logs: document.querySelector('#laptop [data-page="3"]')?.getAttribute('title') ?? '' }; })()`);
+  if (!turned.body.includes('Hideouts')) fail('laptop', `E didn't turn past the locked pages to Notes: ${turned.body.slice(0, 120)}`);
+  if (!turned.logs.includes('binoculars')) fail('laptop', `the greyed Logs tab doesn't say what it needs: ${turned.logs}`);
+  // A bedroll laid down: Notes (still the page shown) lists that hideout.
   await page.keyboard.press('KeyL');
   await page.evaluate(`(() => { const g = window.__cq.game; window.__cq.give('bedroll'); const st = g.state.inv.pack.items.find(i => i.id === 'bedroll'); g.input.pitch = -1; g.runFrames(3); g.input.cmds.push({ c: 'use', uid: st.uid }); g.runFrames(3); })()`);
   await page.keyboard.press('KeyL');
-  await page.evaluate('window.__cq.runFrames(3)'); // (open first: the sim takes the L)
-  for (let i = 0; i < 3; i++) await page.keyboard.press('ArrowRight');
+  await page.evaluate('window.__cq.runFrames(3)');
   const notes = await page.evaluate(`(() => { window.__cq.runFrames(3); return document.querySelector('#laptop .lt-body').textContent; })()`);
   if (!notes.includes('Hideouts') || notes.includes('None yet')) fail('laptop', `Notes doesn't list the hideout: ${notes}`);
   await page.keyboard.press('KeyL');

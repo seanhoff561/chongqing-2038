@@ -16,6 +16,7 @@ type Trigger = keyof typeof REMARKS.lines;
 const FLY = new Set(['drone', 'hunter', 'fpv', 'bomber']);
 
 export function stepRemarks(s: SimState, w: World) {
+  if (s.ended) return;
   const R = (s.remarks ??= { last: {}, hp: s.body.hp, bleed: false, leg: s.body.leg, tag: false, low: false });
   const say = (k: Trigger) => {
     if ((s.time - (R.last[k] ?? -Infinity)) / SCALE < REMARKS.every) return;

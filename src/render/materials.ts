@@ -3,6 +3,7 @@
 // in facades.ts and glow at night.
 import * as THREE from 'three';
 import { SEASON_U } from './season';
+import { snowPatch } from './snowcover';
 import { canvasTexture, noise, blotches, streaks } from './textures';
 import { mulberry } from './rand';
 import { MAT } from '../world/mats';
@@ -169,6 +170,13 @@ function lodCut(m: THREE.Material, lod: Lod) {
   m.customProgramCacheKey = () => lod;
 }
 
+/** Snow lying on what it draws, where it faces up open to the sky (U-097). */
+function snowy(m: THREE.MeshPhongMaterial) {
+  const before = m.onBeforeCompile, key0 = m.customProgramCacheKey;
+  m.onBeforeCompile = (sh, rr) => { before.call(m, sh, rr); snowPatch(sh); };
+  m.customProgramCacheKey = () => `${key0.call(m)}:snow`;
+}
+
 /** A world material; vc for meshes that carry vertex colours (the merged world); lod splits near and far. */
 /** The insides' linings (M5-35), in one atlas, so a chunk's inside walls draw in one go whatever their linings. */
 export const LININGS: number[] = [MAT.plaster, MAT.wallpaper, MAT.tile, MAT.brick, MAT.concrete];
@@ -239,6 +247,7 @@ export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPh
     // Water shows from below too (M3-48).
     m = new THREE.MeshPhongMaterial({ map: tex, vertexColors: vc, transparent: id === MAT.water, opacity: id === MAT.water ? 0.82 : 1, side: id === MAT.water ? THREE.DoubleSide : THREE.FrontSide, ...DRY });
     lodCut(m, lod);
+    if (id !== MAT.water) snowy(m);
   }
   if (id === MAT.cable) {
     // Cables sway: every vertex drifts a few centimetres, slow and quick together, by where it is (M3-37).
@@ -278,7 +287,8 @@ gTex.rgb = mix(gTex.rgb, vec3(dot(gTex.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62)
 sampledDiffuseColor = mix(sampledDiffuseColor, gTex, smoothstep(0.35, 0.65, vCover.x + (gTex.g - 0.36) * 1.2));
 diffuseColor *= mix(sampledDiffuseColor, rTex, smoothstep(0.35, 0.65, vCover.y + (rTex.r - 0.42) * 1.2));`);
   };
-  m.customProgramCacheKey = () => `ground${lod}`;
+  snowy(m);
+  m.customProgramCacheKey = () => `ground${lod}:snow`;
   mats.set(key, m);
   return m;
 }

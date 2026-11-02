@@ -10,9 +10,9 @@ canvas { display: block; }
 #hud .ring .fill { stroke: rgba(235,230,215,0.9); stroke-dasharray: 1; stroke-dashoffset: 1; stroke-linecap: round; }
 #hud .prompt { position: absolute; left: 50%; top: 56%; transform: translateX(-50%); font-size: 13px; color: rgba(230,225,210,0.85); text-shadow: 0 0 3px #000; }
 #hud .held { position: absolute; right: 18px; bottom: 14px; font-size: 12px; color: rgba(200,195,180,0.6); }
-#hud .subs { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); max-width: 70%; text-align: center; font-size: 18px; color: #eee; text-shadow: 0 0 4px #000, 0 0 2px #000; }
+#hud .subs { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); max-width: 70%; text-align: center; font-size: calc(18px * var(--sub, 1)); color: #eee; text-shadow: 0 0 4px #000, 0 0 2px #000; }
 #hud .subs b { color: #e8c070; font-weight: normal; }
-#hud .subs span { font-size: 15px; color: #bbb; }
+#hud .subs span { font-size: calc(15px * var(--sub, 1)); color: #bbb; }
 #dev { position: fixed; top: 8px; left: 8px; width: 230px; max-height: 92vh; overflow: auto; background: rgba(8,10,12,0.86); border: 1px solid #333; font-size: 11px; color: #9c9; padding: 6px; z-index: 10; }
 #dev button, #dev select, #dev input { font: inherit; background: #111; color: #9c9; border: 1px solid #364; margin: 1px; }
 #dev .row { margin: 3px 0; }
@@ -45,9 +45,13 @@ canvas { display: block; }
 #boot .bt-title { font-size: 28px; color: #c9c0a4; letter-spacing: 6px; margin-bottom: 14px; }
 #boot button { font: inherit; font-size: 13px; width: 260px; text-align: left; background: #111314; color: #c2baa2; border: 1px solid #2e312b; padding: 6px 10px; cursor: pointer; }
 #boot button:hover { border-color: #75694a; }
+#boot .bt-panel { width: min(520px, 90vw); max-height: 70vh; overflow: auto; color: #a89a78; font-size: 12px; background: #0c0d0d; border: 1px solid #2e312b; padding: 8px 12px; }
+#boot .bt-h { color: #c9c0a4; margin-bottom: 6px; }
+#boot .bt-panel p { margin: 4px 0; }
 #death { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 30; }
 #death .d-title { font-size: 34px; color: #a33; letter-spacing: 10px; }
 #death .d-title.out { color: #c8b47a; }
+#letterbox { position: fixed; inset: 0; pointer-events: none; z-index: 20; box-shadow: inset 0 11vh 0 #000, inset 0 -11vh 0 #000; }
 #death .d-sub { font-size: 14px; color: #998f78; }
 #death .d-sum { font-size: 12px; color: #6f6a5d; margin-bottom: 14px; }
 #death button { font: inherit; font-size: 13px; background: #0d0d0d; color: #b9b19a; border: 1px solid #333; padding: 6px 14px; cursor: pointer; }
@@ -55,16 +59,16 @@ canvas { display: block; }
 #pause { position: fixed; inset: 0; background: rgba(5,6,7,0.86); display: flex; align-items: flex-start; justify-content: center; gap: 28px; padding-top: 6vh; z-index: 15; overflow-y: auto; }
 #pause .pz-col { display: flex; flex-direction: column; gap: 4px; width: 280px; }
 #pause .pz-row { display: flex; gap: 4px; }
-#pause .pz-slide { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #c8c0a8; }
-#pause .pz-slide input { width: 120px; }
-#pause .pz-binds div { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #c8c0a8; }
-#pause .pz-binds button { min-width: 96px; padding: 2px 6px; }
+#pause .pz-slide, #boot .pz-slide { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #c8c0a8; }
+#pause .pz-slide input, #boot .pz-slide input { width: 120px; }
+#pause .pz-binds div, #boot .pz-binds div { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #c8c0a8; }
+#pause .pz-binds button, #boot .pz-binds button { min-width: 96px; padding: 2px 6px; }
 #pause select { background: #1b1d20; color: #ddd; border: 1px solid #444; padding: 4px; }
 #pause .pz-row button { flex: 1; text-align: center; padding: 5px 4px; }
 #pause button.on { border-color: #c9a64a; color: #e8dcb8; }
 #pause .pz-credit { margin-top: auto; font-size: 10px; opacity: 0.6; }
 #pause .pz-title { font-size: 24px; color: #c9c0a4; letter-spacing: 5px; margin-bottom: 10px; }
-#pause .pz-h { font-size: 11px; color: #8a8270; margin: 10px 0 2px; letter-spacing: 1px; }
+#pause .pz-h, #boot .pz-h { font-size: 11px; color: #8a8270; margin: 10px 0 2px; letter-spacing: 1px; }
 #pause .pz-note { font-size: 11px; color: #7d7563; }
 #pause button { font: inherit; font-size: 13px; text-align: left; background: #111314; color: #c2baa2; border: 1px solid #2e312b; padding: 5px 10px; cursor: pointer; }
 #pause button:hover { border-color: #75694a; }

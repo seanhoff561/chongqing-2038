@@ -91,6 +91,8 @@ export interface Shelter {
 export interface SimState {
   version: number;
   seed: number;
+  /** the seed the city was built with (its building types, M5-35); a new run in place keeps the city's (D-123) */
+  worldSeed?: number;
   rng: Rng;
   tick: number;
   /** game seconds since day 1, 00:00 */
@@ -139,7 +141,7 @@ export interface SimState {
   dead: string | null;
   /** events emitted during the latest tick */
   events: SimEvent[];
-  flags: { god: boolean; noclip: boolean; rain: number; fog?: number; clear?: boolean };
+  flags: { god: boolean; noclip: boolean; rain: number; fog?: number; clear?: boolean; snow?: number };
   /** Anna's laptop (M5-01): open or shut, its battery (0 to 1) */
   laptop?: { open: boolean; charge: number };
   /** what Anna's scanned ('unit:<kind>', 'item:<id>'), what she's scanning now and how long he's looked, and the last (M5-04) */
@@ -194,5 +196,6 @@ export interface SimState {
   /** the kinds of machine whose weak points she knows, from scanning one disabled (M5-12) */
   weak?: Partial<Record<import('../data/units').UnitKind, true>>;
   /** fog and rain now, 0 to 1 (M3-12): from the seeded schedule, forced up by the dev flags */
-  weather: { fog: number; rain: number };
+  /** snow falling 0 to 1 (U-097), and how much lies on what's open to the sky, 0 to 1 (as of game time `at`) */
+  weather: { fog: number; rain: number; snow?: number; cover?: number; at?: number };
 }

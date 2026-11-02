@@ -1,7 +1,7 @@
 // Anna's laptop on screen (M5-01, M5-02, DESIGN section 12): over the view, the game going on behind it. A dim, dense,
 // bilingual terminal: monospace, near-black, low amber and grey, box-drawn rules, no buttons. Its header (Anna, the
-// battery, the hour), its pages along the top (← → turn them, or a click when the pointer's free; a locked one says
-// what it needs), and the page.
+// battery, the hour), its pages along the top (Q E or ← → turn them, or a click when the pointer's free; a locked
+// one is greyed and skipped, U-098), and the page.
 import * as THREE from 'three';
 import type { Game } from '../game';
 import { clockText, daylight } from '../sim/clock';
@@ -140,7 +140,7 @@ export class LaptopUI {
     this.root.style.display = 'none';
     document.body.appendChild(this.root);
     this.flying.id = 'dronehud'; this.flying.style.display = 'none'; document.body.appendChild(this.flying);
-    this.root.addEventListener('click', e => { const t = (e.target as HTMLElement).closest<HTMLElement>('[data-page]'); if (t) { this.page = Number(t.dataset.page); this.shown = ''; } });
+    this.root.addEventListener('click', e => { const t = (e.target as HTMLElement).closest<HTMLElement>('[data-page]'); if (t && !PAGES[Number(t.dataset.page)].needs?.(this.game)) { this.page = Number(t.dataset.page); this.shown = ''; } });
     this.map.width = MAPV.w; this.map.height = MAPV.h;
     this.glow.position.set(0, -0.25, -0.45);
     game.view.fp.cam.add(this.glow);
@@ -161,7 +161,13 @@ export class LaptopUI {
   }
 
   /** The next page (+1) or the last (-1), round. */
-  turn(by: number) { this.page = (this.page + by + PAGES.length) % PAGES.length; }
+  turn(by: number) {
+    // (Past the pages it can't open yet: a greyed page isn't selectable, U-098.)
+    for (let k = 1; k <= PAGES.length; k++) {
+      const i = (((this.page + by * k) % PAGES.length) + PAGES.length) % PAGES.length;
+      if (!PAGES[i].needs?.(this.game)) { this.page = i; return; }
+    }
+  }
 
   /** Flying the drone (M5-11): its battery, its height, whether it's being watched. */
   private flying = document.createElement('div');
@@ -181,7 +187,7 @@ export class LaptopUI {
     this.glow.intensity = open ? 1.4 * night.k : 0;
     if (!open) { if (this.shown) { this.root.style.display = 'none'; this.shown = ''; } return; }
     const pct = Math.round(L!.charge * 100), P = PAGES[this.page], locked = P.needs?.(g);
-    const tabs = PAGES.map((q, i) => `<span data-page="${i}" class="${i === this.page ? 'on' : ''}${q.needs?.(g) ? ' locked' : ''}">${q.zh} ${q.en}</span>`).join('');
+    const tabs = PAGES.map((q, i) => { const n = q.needs?.(g); return `<span data-page="${i}" class="${i === this.page ? 'on' : ''}${n ? ' locked' : ''}"${n ? ` title="${n[0]} · ${n[1]}"` : ''}>${q.zh} ${q.en}</span>`; }).join('');
     const body = locked ? `<div class="lt-locked">锁定 · ${locked[0]}<br><span>Locked · ${locked[1]}</span></div>` : P.draw(g);
     const html = `<div class="lt-head"><span>安娜 ANNA</span><span>电量 ${bar(L!.charge)} ${pct}%</span><span>${clockText(g.state.time)}</span></div>` +
       `<div class="lt-tabs">${tabs}</div><div class="lt-body" data-on="${P.id}">${body}</div>` +

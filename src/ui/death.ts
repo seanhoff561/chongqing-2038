@@ -1,7 +1,8 @@
 // Death: the save is gone. A short black screen with the run summary, then a fresh run in place: the city as it
 // stands, no reload (U-048). An ending (M7-01) the same: its name, the summary, the save gone.
 import type { Game } from '../game';
-import { deleteSave } from '../sim/save';
+import { deleteSave, readSave } from '../sim/save';
+import { bootMenu } from './boot-menu';
 import { clockText } from '../sim/clock';
 import { ENDINGS, summary } from '../sim/escape';
 
@@ -28,10 +29,10 @@ export class DeathScreen {
     el.id = 'death';
     el.innerHTML = `<div class="d-title${end ? ' out' : ''}">${end ? '逃出去了' : '你死了'}</div><div class="d-sub">${zh} · ${en}</div>
       <div class="d-sum">${clockText(s.time)} · survived ${sum.days} nights · got into ${sum.sites} site${sum.sites === 1 ? '' : 's'} · seen ${sum.seen} time${sum.seen === 1 ? '' : 's'}</div>
-      <div class="d-new">Esc · 新的开始 New run</div>`;
+      <div class="d-new">Esc · 主菜单 Main menu</div>`;
     document.body.appendChild(el);
     this.game.input.uiOpen = true;
-    // Black at once and every sound stopped (U-077); Esc for a new run.
+    // Black at once and every sound stopped (U-077); Esc for the main menu (U-098).
     this.game.audio.mute(true);
     document.exitPointerLock?.();
     const key = (e: KeyboardEvent) => {
@@ -43,7 +44,9 @@ export class DeathScreen {
       this.shown = false;
       this.game.audio.mute(false);
       this.game.input.uiOpen = false;
-      this.game.input.capture();
+      // A run's death: back to the main menu, the fresh run waiting under it (U-098); a test scene starts over.
+      if (this.game.scenario.run) bootMenu(this.game, readSave(localStorage));
+      else this.game.input.capture();
     };
     addEventListener('keydown', key, true);
   }

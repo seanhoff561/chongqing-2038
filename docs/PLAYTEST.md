@@ -258,3 +258,17 @@ Report: does the city feel full and layered now, or still too open anywhere? Do 
 - Seasons: play a few days on: leaves turning and falling, grass drying, earlier dusk, more fog.
 - The zipline kit between two roofs: string it, ride it, take it down.
 
+
+## M8 sound (M8-07 to M8-09): headphones on
+- Footsteps: walk on a metal stair or catwalk, wooden boards, grass, rubble, and through shallow water. Does each surface sound right? In the rain, out from under cover, do the steps sound wet?
+- Go hungry (satiety under 25): does the stomach growl now and then without getting annoying? A machine searching right beside your hiding place can hear it.
+- In the pause menu, move each volume slider (master, voice, effects, ambience, music) while it plays. Does the change take effect at once?
+- Ambience: stand on the bank at Chaotianmen at night and listen for the river lapping. In the Grand Tunnel, listen for water dripping in the dark. Is either one too much?
+
+## U-097 and U-098: snow, laptop keys, drones
+- Snow (`?scenario=snow`): does it look and feel like real snow, both the flakes falling and the snow lying on streets, roofs and ledges? Do the footsteps crunch? Is anything indoors wrongly white?
+- Are the orange falling leaves gone?
+- In settings, rebind Anna's laptop key away from L. Does the new key open the laptop? With the laptop open, do Q and E turn its pages and skip the greyed ones?
+- When a drone comes to look for you, does it come round to one side rather than hanging straight overhead?
+- Die in a run and press Esc: does the main menu come up?
+- Do lockers now open in silence?

@@ -1031,7 +1031,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
   - A screenshot from the edge looking out
 
-## M5: 38 of 38 done
+## M5: 39 of 39 done
 
 M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and patrol logs, hacking cameras and drones, jamming, crafting at the workbench, healing items, weapons, and the full item set.
 
@@ -1139,6 +1139,10 @@ M5 Anna and tech: the laptop interface, scanning, food checks, the auto-map and 
 - [x] **M5-36** Every tool has two uses
   - A data test: every tool lists at least two uses and each use maps to an implemented action
   - No single tool opens every lock grade or hazard
+- [x] **M5-37** Winter snow (U-097)
+  - In winter some days snow instead of rain, from the seeded weather schedule (a unit test finds snow days in winter and none in autumn)
+  - Realistic falling snow: soft flakes of different sizes drifting and tumbling down round him outdoors, thicker in heavy snow, and snow settling over time on the ground, roofs and ledges open to the sky (not indoors), melting after
+  - A screenshot of a snowy street
 - [x] **M5-29** Water
   - Bottles refill clean at taps, or from the river (sickness 50% unless purified with a tablet)
   - A sim test covers it
@@ -1248,7 +1252,7 @@ M6 The city: the rest of the map (Jiefangbei, Hongyadong, Chaotianmen and Raffle
   - Swimming more than 60 m from either bank outside a route draws river drone boats with sonar and thermal; unprepared crossings fail
   - A sim test covers it
 
-## M7: 1 of 15 done
+## M7: 2 of 15 done
 
 M7 Escapes: every escape route end to end, each with its ending.
 
@@ -1289,11 +1293,11 @@ M7 Escapes: every escape route end to end, each with its ending.
   - A sim test covers the choice
 - [ ] **M7-14** Solvability proofs
   - For every route a test proves each required component exists and is reachable, each lock has a key or bypass, and each gap is within movement limits or bridgeable with a carried item
-- [ ] **M7-15** Ending sequences
+- [x] **M7-15** Ending sequences
   - Each of the four endings plays a short scripted sequence with subtitles, then the run summary and the menu
   - The smoke test plays each through ?scenario=ending-*
 
-## M8: 6 of 16 done
+## M8: 14 of 16 done
 
 M8 Story and sound: the intro cutscene, endings, the voice system with subtitles, a procedural audio pass (including pursuit music that rises with the alert state), menus, and settings.
 
@@ -1304,13 +1308,13 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [x] **M8-01** Dialogue data
   - src/data/dialogue holds every line (id, speaker, zh, en) for the intro, Anna, Li Wei, his father, announcements and endings; Li Wei's lines use Chongqing dialect
   - A unit test checks every referenced id exists and every line has both languages
-- [ ] **M8-02** Voice playback chain
+- [x] **M8-02** Voice playback chain
   - Playback uses public/audio/vo/<id>.mp3 if it exists, then Web Speech zh-CN, then subtitles alone; never blocks
   - The smoke test plays a line with no files and no speech voice without errors
 - [x] **M8-03** tools/make-voice
   - A script the director runs locally to generate every mp3 with a TTS of their choice, with distinct voices per speaker
   - A unit test runs it in dry-run mode and lists every line with its voice
-- [ ] **M8-04** Subtitles
+- [x] **M8-04** Subtitles
   - Subtitles show the speaker and text in English, Chinese or both, at the chosen size
   - The smoke test switches the language setting
 - [ ] **M8-05** Intro cutscene
@@ -1321,26 +1325,26 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [ ] **M8-06** Intro skip after the first run
   - After a first run the intro can be skipped with a key; the first run can't skip it
   - The smoke test covers both
-- [ ] **M8-07** Audio mixer and buses
+- [x] **M8-07** Audio mixer and buses
   - Master, voice, effects, ambience and music buses with volume settings applied live
   - The smoke test changes volumes without errors
-- [ ] **M8-08** Sound effects pass
+- [x] **M8-08** Sound effects pass
   - Every parkour action keeps one distinct sound (U-004), mixed in 3D with the rest
   - Footsteps by surface, parkour, landings, tools, weapons, doors, containers and body sounds (breathing, heartbeat, stomach)
   - The smoke test triggers each category without errors
-- [ ] **M8-09** Ambience
+- [x] **M8-09** Ambience
   - City hum, rain, wind, river, tunnel drips and distant announcements, mixed by place, weather and time
   - The smoke test runs ambience in three places
 - [x] **M8-10** Music
   - Ambient day and night pads and a pursuit layer whose intensity follows the alert state
   - A unit test maps each alert state to its intensity
-- [ ] **M8-11** Main menu
+- [x] **M8-11** Main menu
   - Continue (when a save exists), New Run, Settings and Credits, in the game's dim style
   - The smoke test navigates it
-- [ ] **M8-12** Pause menu
+- [x] **M8-12** Pause menu
   - Esc pauses and lists the controls; resume, settings, quit to menu
   - The smoke test opens it
-- [ ] **M8-13** Settings
+- [x] **M8-13** Settings
   - Settings open from the pause menu (= key, U-009)
   - Every control can be rebound; mouse sensitivity is a slider (U-001)
   - Mouse sensitivity, invert Y, FOV, master/voice/effects/ambience volume, subtitle size and language, graphics preset; persisted
@@ -1352,7 +1356,7 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
   - His father's voicemail, friends' marks in the tunnels and Anna's first-night lines play once each per run
   - A sim test triggers each once
 
-## M9: 1 of 11 done
+## M9: 2 of 12 done
 
 M9 Balance and polish: difficulty, performance on budget, solvability proofs, a bug sweep, and the final playtest checklist.
 
@@ -1362,7 +1366,7 @@ M9 Balance and polish: difficulty, performance on budget, solvability proofs, a 
 - [ ] **M9-02** Performance pass
   - Budgets hold at every preset along all four escape routes; instancing and chunk merges fixed where they don't
   - A browser test records draw calls and triangles; real frame rates go to PLAYTEST
-- [ ] **M9-03** Stability soak
+- [x] **M9-03** Stability soak
   - Three game days with every unit: no NaN, no stuck units, no unbounded arrays
   - A slow sim test
 - [ ] **M9-04** Every scenario loads
@@ -1384,3 +1388,6 @@ M9 Balance and polish: difficulty, performance on budget, solvability proofs, a 
   - README, DESIGN and CREDITS match the shipped game; a test checks README lists every scenario and control
 - [ ] **M9-11** Final playtest checklist
   - docs/PLAYTEST.md ends with a full-run checklist for the director
+- [ ] **M9-12** Frame-time pass at High (U-097)
+  - The CPU cost of a frame (sim ticks plus render work) at the high preset measured at 10 viewpoints across the city by day and night, cut wherever it can be (per-frame allocations, redundant updates, draw calls merged or instanced, culling), aiming at 144 fps
+  - A browser test records the frame cost and draw calls at each viewpoint before and after; the real frame rate goes to PLAYTEST

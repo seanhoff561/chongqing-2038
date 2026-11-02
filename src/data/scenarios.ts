@@ -16,9 +16,14 @@ export interface Scenario {
   overcast?: number;
   /** the hour it starts at (default the run's 06:00), and dev flags it starts with (the machines' lineup) */
   hour?: number;
+  /** the day it starts on (default 1), and the snow lying as it starts (U-097) */
+  day?: number;
+  cover?: number;
   flags?: Partial<import('../sim/types').SimState['flags']>;
   /** a machine already on him as it starts, to escape from (M4-32) */
   pursuit?: import('../sim/pursuit').Pursuer;
+  /** the run ending on this route as it starts, its sequence played (M7-15) */
+  ending?: string;
 }
 
 export const scenarios: Scenario[] = [
@@ -33,6 +38,12 @@ export const scenarios: Scenario[] = [
   { name: 'pursuit-drone', world: 'yuzhong', desc: 'a drone tailing him at the top of the Eighteen Stairs: get away', overcast: 0.5, at: 'shibati', hour: 14, pursuit: 'drone' },
   { name: 'pursuit-dog', world: 'yuzhong', desc: 'a quadruped coming for him by the alleys at the top of the Eighteen Stairs: get away', overcast: 0.5, at: 'shibati', hour: 14, pursuit: 'quadruped' },
   { name: 'pursuit-camera', world: 'yuzhong', desc: 'a camera has him at Jiaochangkou: get out of sight before they come', overcast: 0.5, at: 'jiaochangkou', hour: 14, pursuit: 'camera' },
+  // The four endings (M7-15), each played from where its route comes out.
+  { name: 'ending-bridge', world: 'yuzhong', desc: 'Beneath the Bridge: the ending of the rail-deck route', at: 'xiaoshizi', hour: 6, overcast: 0.8, ending: 'bridge', flags: { god: true } },
+  { name: 'ending-cable', world: 'yuzhong', desc: 'The Cable: the ending of the cableway route', at: 'cablewayNorth', hour: 19, overcast: 0.6, ending: 'cable', flags: { god: true } },
+  { name: 'snow', world: 'yuzhong', desc: 'a snowy winter morning at the top of the Eighteen Stairs (U-097)', at: 'shibati', day: 50, hour: 10, cover: 1, overcast: 0.9, flags: { snow: 0.8, god: true } },
+  { name: 'ending-boat', world: 'yuzhong', desc: 'Into the Fog: the ending of the river route', at: 'chaotianmen', hour: 3, overcast: 0.9, ending: 'boat', flags: { god: true } },
+  { name: 'ending-tunnel', world: 'yuzhong', desc: "Tunnel's End: the ending of the underground route", at: 'Tunnel junction (north passage)', hour: 5, overcast: 0.9, ending: 'tunnel', flags: { god: true } },
   { name: 'units', world: 'lineup', desc: "the machines' lineup: every kind on a plaza at noon, walking their beats at him", hour: 12, flags: { god: true, clear: true }, overcast: 0.4 },
   { name: 'reference', world: 'reference', desc: 'the reference hillside (docs/reference/look-01.jpg) from the vantage roof', draw: 700, overcast: 1 },
 ];

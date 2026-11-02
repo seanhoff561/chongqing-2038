@@ -10,6 +10,7 @@ import { bootMenu } from './ui/boot-menu';
 import { die } from './sim/body';
 import { CALIB } from './render/hands3d';
 import { playMove, MOVE_SOUNDS } from './audio/moves';
+import { playStep, type Surface } from './audio/steps';
 import { getWorld } from './world/build';
 
 // The loading screen (U-048): painted before the city is built, each stage named as it starts.
@@ -37,9 +38,10 @@ boot.view = performance.now();
 // The player's settings put back: volumes, sensitivity, keys (U-079).
 applySettings(game);
 if (dev) new DevPanel(game);
-if (saved) bootMenu(game, saved);
+// The main menu on a boot into the game itself (M8-11); a test's ?scenario= load goes straight in.
+if (!q.get('scenario')) bootMenu(game, saved);
 // (A save that couldn't be read, set aside: said so, M9-05.)
-else if (setAside) game.hud.say(`上次的存档无法读取，已另存`, `Your last save couldn't be read (${setAside}): it's been set aside`);
+if (setAside) game.hud.say(`上次的存档无法读取，已另存`, `Your last save couldn't be read (${setAside}): it's been set aside`);
 game.start();
 // Ctrl+W (crouching forward) would close the tab: while he plays, the browser asks first (U-059: no forced fullscreen).
 addEventListener('beforeunload', e => { if (document.pointerLockElement && !game.state.dead) e.preventDefault(); });
@@ -56,7 +58,7 @@ requestAnimationFrame(() => requestAnimationFrame(() => { loading?.remove(); boo
   calib: CALIB,
   kill: (cause = 'test') => die(game.state, cause),
   cues: () => Object.keys(MOVE_SOUNDS),
-  playCue: (id: string) => playMove(game.audio, id),
+  playCue: (id: string, surf?: Surface, wet = false) => (surf ? playStep(game.audio, id, surf, wet) : playMove(game.audio, id)),
   give: (id: string, n = 1) => addItem(game.state, game.state.inv.pack, id, n),
   unitPose,
 };

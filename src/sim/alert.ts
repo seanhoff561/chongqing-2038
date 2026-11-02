@@ -26,12 +26,20 @@ export const ALERT = { suspicious: 0.3, engaged: 1, scan: 8, checkFor: 24 * 3600
 /** The way from a to b for a kind: its nav path on the ground, then on toward the point itself if that's within its
  *  step up or down (a quadruped's metre's jump, half a metre for the rest: none climbs), as far as nothing's in the
  *  way; straight for a drone (8 m over the point) or without a nav graph. */
+/** Where a flyer makes for when it goes to look at a place in the open (U-098): this far out from it, this high
+ *  over it, turned this far (radians) off the line it came in on. */
+export const FLY_SIDE = { out: 10, up: 6, turn: 0.5 };
+
 export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
   if (UNITS[kind].fly) {
-    // Straight to 8 m over it if the air's clear; under cover or below ground, along the way a walker would go, low
-    // over it (M4-46: through alleys and tunnels after him).
-    const top = { x: b.x, y: b.y + 8, z: b.z }, d = Math.hypot(top.x - a.x, top.y - a.y, top.z - a.z);
-    if (!w.nav || d < 0.1 || !raycast(w.index, a.x, a.y, a.z, (top.x - a.x) / d, (top.y - a.y) / d, (top.z - a.z) / d, d)) return [top];
+    // Straight there if the air's clear: to a stand-off off to one side of it on the way in, looking at it across the
+    // gap (U-098: round the sides, not hanging over his head), or 8 m over it where the side's blocked; under cover
+    // or below ground, along the way a walker would go, low over it (M4-46: through alleys and tunnels after him).
+    const clear = (p: V3, q: V3) => { const d = Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z); return d < 0.1 || !raycast(w.index, p.x, p.y, p.z, (q.x - p.x) / d, (q.y - p.y) / d, (q.z - p.z) / d, d); };
+    const top = { x: b.x, y: b.y + 8, z: b.z }, h = Math.atan2(a.z - b.z, a.x - b.x) + (Math.floor(b.x * 0.7 + b.z * 1.3) % 2 ? FLY_SIDE.turn : -FLY_SIDE.turn);
+    const side = { x: b.x + Math.cos(h) * FLY_SIDE.out, y: b.y + FLY_SIDE.up, z: b.z + Math.sin(h) * FLY_SIDE.out }, eye = { x: b.x, y: b.y + 1.2, z: b.z };
+    if (clear(a, side) && clear(side, eye)) return [side];
+    if (!w.nav || clear(a, top)) return [top];
     const p = navPath(w.nav, a, b, 'street');
     return p ? [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }] : [top];
   }
@@ -175,7 +183,9 @@ export function stepAlert(s: SimState, w: World) {
           continue;
         } else { t.cover = undefined; t.strafe = false; }
         const end = t.path[t.path.length - 1];
-        if (!t.cover && (!end || Math.hypot(end.x - u.seen.x, end.z - u.seen.z) > 2)) { t.path = way(w, u.kind, t.pos, u.seen); t.i = 0; t.scan = 0; t.visits = undefined; }
+        // (A flyer's way ends at its stand-off off to the side of him, or over him: on again once he's moved off it.)
+        const off = end ? Math.hypot(end.x - u.seen.x, end.z - u.seen.z) : Infinity, fly = UNITS[u.kind].fly;
+        if (!t.cover && (fly ? off > 2 && Math.abs(off - FLY_SIDE.out) > 2 : off > 2)) { t.path = way(w, u.kind, t.pos, u.seen); t.i = 0; t.scan = 0; t.visits = undefined; }
       } else if (t.cover && a < SIGHT.min) t.cover = undefined;
       walk(s, w, u);
       continue;

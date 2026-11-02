@@ -13,6 +13,8 @@ export const ACTIONS: { id: string; label: string; bits: number; keys: string[] 
   { id: 'leanR', label: '右探 Lean right', bits: B.LEAN_R, keys: ['KeyE'] }, { id: 'reload', label: '装弹 Reload', bits: B.RELOAD, keys: ['KeyR'] },
   { id: 'lamp', label: '头灯 Headlamp', bits: B.HEADLAMP, keys: ['KeyH'] }, { id: 'chimney', label: '撑墙 Chimney', bits: B.CHIMNEY, keys: ['KeyX'] },
   { id: 'sleep', label: '睡觉 Sleep rough', bits: B.SLEEP, keys: ['KeyB'] },
+  // (Menus, not movement: rebindable too, U-097.)
+  { id: 'laptop', label: '安娜的笔记本 Anna\'s laptop', bits: 0, keys: ['KeyL'] }, { id: 'pack', label: '背包 Backpack', bits: 0, keys: ['Tab'] },
 ];
 /** Each action's keys just now. */
 export const binds: Record<string, string[]> = Object.fromEntries(ACTIONS.map(a => [a.id, [...a.keys]]));
@@ -34,6 +36,8 @@ export class Input {
   pitch = 0;
   sensitivity = 0.0022;
   invertY = false;
+  /** the laptop's open: the lean keys turn its pages (U-098) */
+  tabKeys = false;
   /** UI (backpack, laptop, menus) takes the mouse; movement keys still work */
   uiOpen = false;
   private held = new Set<string>();
@@ -81,7 +85,11 @@ export class Input {
   private key(e: KeyboardEvent, down: boolean) {
     if (e.ctrlKey && document.pointerLockElement) e.preventDefault();
     if (e.repeat) { if (['Tab', 'Space'].includes(e.code)) e.preventDefault(); return; }
-    if (down && ['Tab', 'KeyL', 'KeyI', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.code)) { this.uiKeys.push(e.code); e.preventDefault(); return; }
+    // (The laptop's and the backpack's keys as bound, by name; the laptop's pages on the arrows.)
+    const ui = binds.laptop.includes(e.code) ? 'laptop' : binds.pack.includes(e.code) ? 'pack' : ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.code) ? e.code : null;
+    if (down && ui) { this.uiKeys.push(ui); e.preventDefault(); return; }
+    // (The laptop open: its pages on the lean keys, Q and E by default, not leaning: U-098.)
+    if (down && this.tabKeys && (binds.letgo.includes(e.code) || binds.leanR.includes(e.code))) { this.uiKeys.push(binds.letgo.includes(e.code) ? 'ArrowLeft' : 'ArrowRight'); return; }
     // (Enter for the laptop's Cams page, M5-09; not while typing in a box.)
     if (down && e.code === 'Enter' && !(e.target instanceof HTMLInputElement)) this.uiKeys.push(e.code);
     // ` always puts whatever he holds away (U-009).

@@ -35,4 +35,19 @@ describe('weather schedule (M3-12)', () => {
     run(state, world, 1);
     expect(state.weather.rain).toBe(1);
   });
+  it('in winter some days snow instead of rain (U-097), none in autumn; it lies, then melts', () => {
+    const days = (d0: number, d1: number) => { let snow = 0, rain = 0; for (const seed of [1, 2, 3, 4, 5, 6]) for (let t = d0 * DAY; t < d1 * DAY; t += HOUR) { const w = weatherAt(seed, t); if (w.snow > 0.2) snow++; if (w.rain > 0.2) rain++; } return { snow, rain }; };
+    expect(days(1, 25).snow, 'autumn').toBe(0);
+    const winter = days(35, 60);
+    expect(winter.snow, 'winter').toBeGreaterThan(20);
+    // Lying: the dev flag makes it snow; three hours of heavy snow cover everything, and it melts once it stops.
+    const { world, state } = setup([floor()]);
+    state.flags.clear = true; state.flags.snow = 1;
+    run(state, world, 2);
+    state.time += 3 * HOUR; run(state, world, 2);
+    expect(state.weather.cover).toBeGreaterThan(0.95);
+    state.flags.snow = 0; state.time += 7 * HOUR; run(state, world, 2);
+    expect(state.weather.cover).toBeGreaterThan(0.3);
+    expect(state.weather.cover).toBeLessThan(0.7);
+  });
 });

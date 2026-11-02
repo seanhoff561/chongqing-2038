@@ -10,6 +10,8 @@ export interface Body {
   hp: number;
   /** seconds a light bleed has run, or -1 */
   lightBleed: number;
+  /** real seconds to his stomach's next growl when he's hungry (M8-08) */
+  growl?: number;
   heavyBleed: boolean;
   tourniquet: boolean;
   leg: 'ok' | 'sprain' | 'fracture';
@@ -86,6 +88,9 @@ export function breakBone(state: SimState, arm: boolean) {
   else { b.leg = 'fracture'; b.legSplint = false; b.legHealAt = Infinity; }
 }
 
+/** His stomach (M8-08): below this satiety it growls about every `every` real seconds, heard `r` m off. */
+export const STOMACH = { below: 25, every: 45, r: 3 };
+
 /** Apply this tick's events, then bleeding, needs, sickness and healing. */
 export function stepBody(state: SimState) {
   const b = state.body;
@@ -108,6 +113,15 @@ export function stepBody(state: SimState) {
     if (b.lightBleed >= S.bleed.clot) b.lightBleed = -1;
   }
   if (b.heavyBleed && !b.tourniquet) damage(state, S.bleed.heavy * DT, 'bleeding');
+  // Hungry, his stomach growls now and then: heard a few metres off, by him and by a machine searching beside him.
+  if (b.satiety < STOMACH.below) {
+    b.growl = (b.growl ?? STOMACH.every / 2) - DT;
+    if (b.growl <= 0) {
+      b.growl = STOMACH.every * (0.6 + rand(state.rng) * 0.8);
+      const p = state.player.pos;
+      state.events.push({ t: 'sfx', id: 'stomach' }, { t: 'noise', x: p.x, y: p.y + 1, z: p.z, r: STOMACH.r, kind: 'stomach' });
+    }
+  } else b.growl = undefined;
   passTime(state, GAME_PER_TICK / 3600, false);
 }
 

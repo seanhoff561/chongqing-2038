@@ -7,7 +7,7 @@ import { hideNear } from './sim/hide';
 import { lineInReach } from './sim/zip';
 import { createState, step } from './sim/sim';
 import { B, DT, type SimState, type Vec3 } from './sim/types';
-import { GAME_PER_TICK } from './sim/clock';
+import { GAME_PER_TICK, daylight } from './sim/clock';
 import type { World } from './world/world';
 import { getWorld } from './world/build';
 import { scenarioByName, scenarios, type Scenario } from './data/scenarios';
@@ -18,14 +18,20 @@ import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
 import { announce } from './audio/pa';
 import { startPursuit } from './sim/pursuit';
+import { endRun } from './sim/escape';
 import { LaptopUI } from './ui/laptop';
 import { CraftUI } from './ui/craft-ui';
+import { speak } from './audio/voice';
+import { EndingSequence } from './ui/ending';
 import { WorldFx } from './render/worldfx';
-import { Leaves } from './render/season';
+import { setSeason } from './render/season';
+import { Snow } from './render/snow';
+import { buildTops } from './render/snowcover';
 import { seasonOf } from './sim/season';
 import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
+import { playStep, underfoot } from './audio/steps';
 import { RaidLight } from './render/raidlight';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
@@ -98,6 +104,7 @@ export class Game {
   private readonly rigged = new THREE.Group();
   readonly sleep: SleepUI;
   readonly death = new DeathScreen(this);
+  ending!: EndingSequence;
   readonly pause: PauseMenu;
   readonly furniture = new Furniture();
   readonly rain: Rain;
@@ -114,7 +121,7 @@ export class Game {
   readonly motion = new HeldMotion();
   readonly marks = new Marks();
   private fx!: WorldFx;
-  private leaves!: Leaves;
+  private snow!: Snow;
   private grabAge = 0;
   private readied = false;
   private prev: Vec3 = { x: 0, y: 0, z: 0 };
@@ -139,23 +146,26 @@ export class Game {
     this.view.scene.add(this.marks.group);
     this.fx = new WorldFx(this.view.scene, this.marks);
     this.rain = new Rain(this.view.scene);
-    this.leaves = new Leaves(this.view.scene);
+    this.snow = new Snow(this.view.scene);
     this.bodyFx = new BodyFx(this.view.renderer.domElement);
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.pause = new PauseMenu(this);
     this.laptop = new LaptopUI(this);
     this.craft = new CraftUI(this);
+    this.ending = new EndingSequence(this);
     this.load(opts.scenario, opts.seed);
   }
 
-  load(name: string, seed: number) {
+  load(name: string, seed: number, worldSeed = seed) {
     const sc = scenarioByName(name);
     if (!sc) throw new Error(`unknown scenario ${name}`);
     this.scenario = sc;
-    this.world = getWorld(sc.world, seed);
+    this.world = getWorld(sc.world, worldSeed);
     this.state = createState(seed, this.world);
-    if (sc.hour !== undefined) this.state.time = sc.hour * 3600;
+    this.state.worldSeed = worldSeed;
+    if (sc.hour !== undefined) this.state.time = ((sc.day ?? 1) - 1) * 86400 + sc.hour * 3600;
+    if (sc.cover !== undefined) Object.assign(this.state.weather, { cover: sc.cover, at: this.state.time });
     Object.assign(this.state.flags, sc.flags);
     if (sc.run) startRun(this.state, this.world);
     if (sc.furnished) furnish(this.state, this.world);
@@ -163,6 +173,9 @@ export class Game {
     if (sp) teleport(this.state.player, sp.x, sp.y, sp.z);
     this.state.player.yaw = this.input.yaw = sp?.yaw ?? this.world.spawn.yaw;
     if (sc.pursuit) startPursuit(this.state, this.world, sc.pursuit);
+    // (An ending scenario ends the run as it starts, to play its sequence: M7-15.)
+    if (sc.ending) endRun(this.state, sc.ending);
+    if (this.ending) this.ending.done = false;
     this.input.pitch = 0;
     this.prev = { ...this.state.player.pos };
     this.sky.overcast = sc.overcast ?? 0;
@@ -201,8 +214,10 @@ export class Game {
     this.marks.clear();
     const sc = scenarioByName(name) ?? scenarios.find(x => x.run)!;
     const save = sc.run ? readSave(localStorage) : null;
+    // (A new run in the city already built keeps it, its building types as rolled: no minute's rebuild, D-123.)
+    const seed = Math.floor(Math.random() * 1e9), same = this.scenario && scenarioByName(this.scenario.name)?.world === sc.world;
     if (save) this.loadSave(save);
-    else this.load(sc.name, Math.floor(Math.random() * 1e9));
+    else this.load(sc.name, seed, same ? this.state.worldSeed ?? this.state.seed : seed);
     const q = new URLSearchParams(location.search);
     q.delete('seed');
     if (sc.run) q.delete('scenario'); else q.set('scenario', sc.name);
@@ -219,10 +234,11 @@ export class Game {
   }
 
   private uiKeys() {
+    this.input.tabKeys = !!this.state.laptop?.open;
     for (const k of this.input.uiKeys.splice(0)) {
-      if (k === 'Tab') this.inv.toggle();
+      if (k === 'pack') this.inv.toggle();
       // Anna's laptop, opened and shut without stopping anything (M5-01).
-      else if (k === 'KeyL') this.input.cmds.push({ c: 'act', name: this.state.flight ? 'land' : 'laptop' });
+      else if (k === 'laptop') this.input.cmds.push({ c: 'act', name: this.state.flight ? 'land' : 'laptop' });
       // Its pages, one way or the other (M5-02).
       else if ((k === 'ArrowLeft' || k === 'ArrowRight') && this.state.laptop?.open) this.laptop.turn(k === 'ArrowLeft' ? -1 : 1);
       // The Cams page's cameras, and looping one (M5-09); the Drone page's launch (M5-11).
@@ -232,7 +248,7 @@ export class Game {
 
   /** Resume an ironman save. */
   loadSave(f: SaveFile) {
-    this.load(f.scenario, f.state.seed);
+    this.load(f.scenario, f.state.seed, f.state.worldSeed ?? f.state.seed);
     this.state = f.state;
     syncWorld(this.state, this.world);
     this.input.yaw = this.state.player.yaw;
@@ -248,7 +264,16 @@ export class Game {
     this.ticks++;
     for (const e of this.state.events) {
       if (e.t === 'land') this.view.fp.landed(e.h);
-      else if (e.t === 'sfx') playMove(this.audio, e.id);
+      else if (e.t === 'sfx') {
+        // (Footsteps and landings by what's underfoot, wet in the rain out from under cover: M8-08.)
+        const p = this.state.player.pos;
+        if (e.id.startsWith('step-') || e.id.startsWith('land')) {
+          // (Out in the open on lying snow, it crunches: U-097.)
+          const open = !this.sound.env.covered, surf = underfoot(this.world.index, this.world, p.x, p.y, p.z);
+          playStep(this.audio, e.id, open && (this.state.weather.cover ?? 0) > 0.3 && surf !== 'water' ? 'snow' : surf, this.state.weather.rain > 0.3 && open);
+        }
+        else playMove(this.audio, e.id);
+      }
       else if (e.t === 'mark') this.marks.add(e);
       // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
       else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
@@ -261,7 +286,7 @@ export class Game {
       else if (e.t === 'scan') this.laptop.showScan();
       else if (e.t === 'bench') this.craft.toggle(true);
       else if (e.t === 'logged') { const U = UNITS[e.kind], [zh, en] = compass(e.head); this.hud.say(`安娜：已记录${U.zh}，往${zh}`, `Anna: ${U.en} logged, heading ${en}`); }
-      else if (e.t === 'say') { const l = lineById.get(e.id); if (l) this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); }
+      else if (e.t === 'say') { const l = lineById.get(e.id); if (l) { this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); speak(this.audio, e.id); } }
       // (The street speakers: heard, not read: U-092.)
       else if (e.t === 'pa') {
         // (From the lampposts' speakers round him, the nearest three: U-094.)
@@ -272,7 +297,9 @@ export class Game {
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
-    if (this.state.dead || this.state.ended) this.death.show();
+    if (this.state.dead) this.death.show();
+    // (An ending plays its sequence first, then the summary: M7-15.)
+    else if (this.state.ended) this.ending.start(this.state.ended.route);
   }
 
   render(alpha: number, dt: number) {
@@ -290,6 +317,7 @@ export class Game {
     this.flew = !!fl;
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
     if (fl) { this.view.fp.cam.position.set(fl.x, fl.y, fl.z); this.view.fp.cam.rotation.set(this.input.pitch, this.input.yaw, 0); }
+    this.ending.update(dt);
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);
     this.gun.update(dt, this.hands.group, gun);
@@ -327,7 +355,9 @@ export class Game {
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
-    this.leaves.update(seasonOf(this.state.time), this.state.tick / 60, cam, covered);
+    setSeason(seasonOf(this.state.time), this.state.weather.cover ?? 0);
+    if ((this.state.weather.cover ?? 0) > 0) buildTops(this.world.index);
+    this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);
     this.view.setLamp(this.state.player.lamp);
     this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);

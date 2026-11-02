@@ -61,7 +61,6 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   'water-run': (a, t) => { a.noise(t + 0.1, 1.4, 0.12, 'bandpass', 1800, 0.8, 1300); a.noise(t + 0.1, 1.4, 0.06, 'highpass', 4500, 0.7); },
   'open-wardrobe': (a, t) => { a.noise(t, 0.05, 0.12, 'highpass', 2200); a.noise(t + 0.04, 0.55, 0.07, 'bandpass', 700, 6, 450); a.tone(t + 0.06, 0.5, 0.035, 330, 240, 'sawtooth'); },
   'open-cabinet': (a, t) => { a.noise(t, 0.04, 0.12, 'highpass', 2500); a.noise(t + 0.03, 0.4, 0.06, 'bandpass', 900, 6, 600); a.tone(t + 0.05, 0.35, 0.03, 420, 300, 'sawtooth'); },
-  'open-locker': (a, t) => { a.tone(t, 0.04, 0.2, 900, 600, 'square'); a.tone(t + 0.05, 0.6, 0.18, 410, 395, 'triangle'); a.tone(t + 0.05, 0.5, 0.08, 1130, 1100); a.noise(t + 0.05, 0.08, 0.2, 'highpass', 2000); },
   'open-crate': (a, t) => { a.noise(t, 0.35, 0.16, 'bandpass', 700, 2, 1200); a.tone(t + 0.3, 0.1, 0.2, 130, 70, 'triangle'); },
   'open-fridge': (a, t) => { a.noise(t, 0.08, 0.1, 'lowpass', 1200); a.tone(t, 0.06, 0.12, 180, 110); a.noise(t + 0.06, 0.3, 0.03, 'bandpass', 3000, 1, 2000); },
   'open-car': (a, t) => { a.tone(t, 0.05, 0.25, 700, 400, 'square'); a.noise(t, 0.05, 0.25, 'highpass', 2500); a.noise(t + 0.08, 0.5, 0.08, 'bandpass', 500, 3, 300); a.tone(t + 0.55, 0.12, 0.2, 110, 60); },
@@ -89,6 +88,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   'blow-knife-metal': (a, t) => { a.tone(t + 0.1, 0.3, 0.14, 3300, 3150); a.noise(t + 0.1, 0.12, 0.2, 'highpass', 4000); },
   'blow-knife-hard': (a, t) => a.noise(t + 0.1, 0.26, 0.22, 'bandpass', 3600, 2, 2400),
   'blow-knife-soft': (a, t) => { a.tone(t + 0.1, 0.07, 0.25, 320, 150); a.noise(t + 0.1, 0.06, 0.15, 'lowpass', 1200); },
+  // His stomach growling, hungry (M8-08): a low gurgling rumble.
+  stomach: (a, t) => { a.tone(t, 0.9, 0.12, 95, 70, 'sawtooth'); a.noise(t + 0.1, 0.7, 0.08, 'bandpass', 180, 2, 120); a.tone(t + 0.5, 0.5, 0.08, 120, 85, 'triangle'); },
   dyno: (a, t) => { a.tone(t, 0.1, 0.35, 130, 60, 'triangle'); breath(a, t, 0.14, 0.22, 800); },
 };
 

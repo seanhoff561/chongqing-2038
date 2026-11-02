@@ -1,5 +1,8 @@
 // The only on-screen interface during play: a centre dot, context prompts, the held item and subtitles; a ring round
 // the dot filling while he works at something (U-051).
+/** A subtitle: a line of dialogue (its speaker, Chinese and English) or a short message, and its seconds. */
+interface Sub { zh: string; en: string; speaker: string; secs: number }
+
 export class Hud {
   readonly root: HTMLDivElement;
   private prompt: HTMLDivElement;
@@ -40,24 +43,30 @@ export class Hud {
     if (v >= 0) this.ring.style.strokeDashoffset = String(1 - v);
   }
 
-  private queue: { html: string; secs: number }[] = [];
+  private queue: Sub[] = [];
+  private now?: Sub;
+  private subShown = '';
   private left = 0;
   /** Subtitles: a line of dialogue (its speaker, Chinese over English) or a short message, one after another, each
    *  for as long as it takes to read. */
+  /** Which language the lines of dialogue show in, and how big (M8-04, settings.ts). */
+  subLang: 'both' | 'zh' | 'en' = 'both';
+  subSize = 1;
   say(zh: string, en: string, speaker = '') {
-    const esc = (t: string) => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
-    const html = `${speaker ? `<b>${esc(speaker)}</b> ` : ''}${esc(zh)}${en ? `<br><span>${esc(en)}</span>` : ''}`;
     // A short message takes the place of the one showing, at once, and goes soon (U-077); lines of dialogue queue.
-    if (!speaker && !en) { this.queue = [{ html, secs: Math.min(2.5, 1 + [...zh].length * 0.03) }]; this.left = 0; return; }
-    this.queue.push({ html, secs: 1.5 + [...zh].length * 0.18 });
+    if (!speaker && !en) { this.queue = [{ zh, en, speaker, secs: Math.min(2.5, 1 + [...zh].length * 0.03) }]; this.left = 0; return; }
+    this.queue.push({ zh, en, speaker, secs: 1.5 + [...zh].length * 0.18 });
   }
-  /** Every frame: the next subtitle when this one's time is up. */
+  /** Every frame: the next subtitle when this one's time is up, drawn in the language and size set just now. */
   tick(dt: number) {
-    if ((this.left -= dt) > 0) return;
-    const next = this.queue.shift();
-    this.left = next?.secs ?? 0;
-    const html = next?.html ?? '';
-    if (this.subs.innerHTML !== html) this.subs.innerHTML = html;
+    if ((this.left -= dt) <= 0) { this.now = this.queue.shift(); this.left = this.now?.secs ?? 0; }
+    const n = this.now, esc = (t: string) => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
+    // (A line of dialogue in the language chosen: Chinese, English or both; a short message as it is.)
+    const line = !n ? '' : !n.en || this.subLang === 'both' ? `${esc(n.zh)}${n.en ? `<br><span>${esc(n.en)}</span>` : ''}` : this.subLang === 'zh' ? esc(n.zh) : `<span>${esc(n.en)}</span>`;
+    const html = n?.speaker ? `<b>${esc(n.speaker)}</b> ${line}` : line;
+    if (this.subShown !== html) this.subs.innerHTML = this.subShown = html;
+    const size = `${this.subSize}`;
+    if (this.subs.style.getPropertyValue('--sub') !== size) this.subs.style.setProperty('--sub', size);
   }
 
   setPrompt(text: string) { if (this.prompt.textContent !== text) this.prompt.textContent = text; }

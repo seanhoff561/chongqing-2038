@@ -29,7 +29,8 @@ export const interKinds = () => [...handlers.keys()];
  *  iron, a first blow at a window, stones shifting under the crowbar, a mattress's springs, a knock on a table. (What
  *  follows, a door swinging, a grate grinding, glass going, the handlers play.) */
 export const START_SOUND: Record<string, (it: Inter) => string> = {
-  container: it => `open-${(it.data?.type as string | undefined) ?? 'crate'}`,
+  // (A locker opens in silence: its clang grated, U-098.)
+  container: it => (it.data?.type === 'locker' ? '' : `open-${(it.data?.type as string | undefined) ?? 'crate'}`),
   pickup: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
   // (M5: a wreck's metal, a junction box's catch, a terminal's keys, the bench, a rope's coil, a ladder's knock, a
   // scooter's deck, a cable clamp.)

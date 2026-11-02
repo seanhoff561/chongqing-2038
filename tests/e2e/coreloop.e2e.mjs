@@ -17,18 +17,24 @@ export default async function ({ open, fail }) {
   const b = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state, w = g.world, home = s.player.pos;
     const u = s.units.find(u => u.kind === 'humanoid' && !u.extra && u.patrol >= 0 && !u.quiet && w.patrols[u.patrol].kind === 'street' && window.__cq.unitPose(w, u, s.time).active && Math.hypot(w.patrols[u.patrol].pts[0].x - home.x, w.patrols[u.patrol].pts[0].z - home.z) > 300);
     const q = window.__cq.unitPose(w, u, s.time);
-    // (On a point of its own beat, solid ground, about 12 m off.)
-    const at = w.patrols[u.patrol].pts.map(p => ({ p, d: Math.abs(Math.hypot(p.x - q.x, p.z - q.z) - 12) })).sort((a, b) => a.d - b.d)[0].p;
+    // (On a point of its own beat, solid ground, about 12 m off, ahead of it where it's looking: one behind it, it can
+    // walk away from him unseeing, as the real-time frames between these steps decide.)
+    const fx = Math.sin(q.yaw), fz = Math.cos(q.yaw), ahead = p => { const dx = p.x - q.x, dz = p.z - q.z, d = Math.hypot(dx, dz) || 1; return (dx * fx + dz * fz) / d; };
+    const at = w.patrols[u.patrol].pts.map(p => ({ p, d: Math.abs(Math.hypot(p.x - q.x, p.z - q.z) - 12) + (ahead(p) > 0.7 ? 0 : 50) })).sort((a, b) => a.d - b.d)[0].p;
     Object.assign(s.player.pos, { x: at.x, y: at.y + 0.05, z: at.z }); s.player.vel = { x: 0, y: 0, z: 0 }; s.player.mode = 'ground';
     let engaged = false;
     for (let i = 0; i < 60 && !engaged; i++) { g.runFrames(30); engaged = u.state === 'engaged'; }
     // (Engaged, he's shot dead: the dev hook's kill, the rifle's own work being gunfire.test's.)
     if (engaged) { window.__cq.kill('shot'); g.runFrames(2); }
-    return { engaged, dead: !!s.dead }; })()`);
-  if (!b.engaged) fail('coreloop', 'the humanoid never had him');
+    const o = window.__cq.unitPose(w, u, s.time);
+    return { engaged, dead: !!s.dead, why: { aware: u.aware, state: u.state, d: Math.round(Math.hypot(o.x - s.player.pos.x, o.z - s.player.pos.z)), dy: Math.round(o.y - s.player.pos.y), fog: s.weather.fog, mode: s.player.mode, trip: u.trip?.kind } }; })()`);
+  if (!b.engaged) fail('coreloop', `the humanoid never had him: ${JSON.stringify(b.why)}`);
   if (!b.dead) fail('coreloop', 'he did not die');
   if (!(await page.$('#death .d-new'))) fail('coreloop', 'no death screen');
+  // Esc: the main menu (U-098), and New Run from it.
   await page.keyboard.press('Escape');
+  await page.waitForSelector('#boot .new', { timeout: 240000 });
+  await page.click('#boot .new');
   await page.waitForFunction('!window.__cq.game.state.dead && window.__cq.game.state.time < 86400', { timeout: 240000 });
   const c = await page.evaluate(`(() => { const s = window.__cq.game.state; return { shelters: s.shelters.map(h => h.id), placed: s.placed.length }; })()`);
   if (c.shelters.join() !== 'airraid-mattress' || c.placed) fail('coreloop', `the new run isn't a fresh start in the hideout: ${JSON.stringify(c)}`);

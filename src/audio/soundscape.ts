@@ -4,7 +4,8 @@
 import * as THREE from 'three';
 import type { Audio } from './audio';
 import { MachineVoices } from './machines';
-import { Ambience, whereIs, type Where } from './ambience';
+import { Ambience, whereIs, SHORE, type Where } from './ambience';
+import { heightAt } from '../world/heightfield';
 import { Dread } from './dread';
 import { Heart } from './heart';
 import { Music, nightOf } from './music';
@@ -24,6 +25,8 @@ export class Soundscape {
   readonly music: Music;
   /** where he is, looked at twice a second, and whether there's cover over him */
   env: { where: Where; covered: boolean; height: number } = { where: 'street', covered: false, height: 0 };
+  /** metres to the river's water, if it's within earshot (M8-09) */
+  river?: number;
   private envIn = 0;
   private shotsAt = 0;
   private shots = 0;
@@ -44,7 +47,8 @@ export class Soundscape {
   update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean) {
     const head = cam.position;
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
-    this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24 });
+    if (this.envIn === 0.5) this.river = riverOff(w, head.x, head.y, head.z);
+    this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24, river: this.river });
     // The music for where he is (M4-86): high up, in the streets, underground.
     this.music.update(this.env.where, this.env.height, s.hive.districts[districtOf(head.x, head.z)]?.state ?? 'unaware', nightOf(daylight(s.time)));
     this.voices.update(dt, s, w, head, cam.getWorldDirection(this.fwd));
@@ -73,4 +77,20 @@ export class Soundscape {
     const walls = d > 0.5 && !!raycast(w.index, e.x, e.y + 1, e.z, (head.x - e.x) / d, (head.y - e.y - 1) / d, (head.z - e.z) / d, d - 0.5);
     machineShot(this.a, e, d, !!e.crack, walls, this.env.where);
   }
+}
+
+/** Metres from his head to the river's edge (where the ground runs down under the rivers' surface), if within
+ *  earshot: looked for round him every 6 m out, 16 ways. */
+function riverOff(w: World, x: number, y: number, z: number): number | undefined {
+  const g = w.ground, sea = w.water.find(q => q.x1 - q.x0 > 1000);
+  if (!g || !sea) return undefined;
+  let best = Infinity;
+  for (let d = 0; d <= SHORE.heard; d += 6) {
+    for (let k = 0; k < (d ? 16 : 1); k++) {
+      const a = (k / 16) * Math.PI * 2, h = heightAt(g, x + Math.cos(a) * d, z + Math.sin(a) * d);
+      if (h !== null && h <= sea.y1) best = Math.min(best, Math.hypot(d, y - sea.y1));
+    }
+    if (best <= d) break;
+  }
+  return best < SHORE.heard ? best : undefined;
 }

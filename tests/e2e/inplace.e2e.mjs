@@ -14,7 +14,7 @@ export default async function ({ open, fail }) {
       ${how}
       const t = performance.now();
       ${how.includes('kill') ? "window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Escape' })); // (dead, Esc: U-077)" : "document.querySelector('#pause [data-a=newrun]').click();"}
-      ${how.includes('kill') ? '' : "document.querySelector('#pause [data-a=newrun]').click();"}
+      ${how.includes('kill') ? "document.querySelector('#boot .new').click(); // (the main menu: U-098)" : "document.querySelector('#pause [data-a=newrun]').click();"}
       const ms = performance.now() - t;
       g.runFrames(2);
       const p = g.state.player.pos, sp = g.world.spawn;
