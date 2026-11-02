@@ -4,93 +4,25 @@
 import * as THREE from 'three';
 import { item } from '../data/items';
 import { surface } from './surfaces';
+import { armsModels, fit } from './items3d-arms';
+import { foodModels } from './items3d-food';
+import { gearModels } from './items3d-gear';
+import { rigModels } from './items3d-rig';
+import { techModels } from './items3d-tech';
+import { partsModels } from './items3d-parts';
+import { keysModels } from './items3d-keys';
 
-const M = (color: number, rough = 0.6, metal = 0) => new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal });
-const steel = M(0x4a4f55, 0.45, 0.6), dark = M(0x1d1f22, 0.5, 0.3), rubber = M(0x222222, 0.9), red = M(0x9a2420, 0.6), wood = M(0x6b4a2e, 0.8);
-const yellow = M(0xc9a227, 0.6), white = M(0xd8d4c8, 0.8), plastic = M(0x2d4a5a, 0.6), olive = M(0x4a5236, 0.8), glass = M(0x6f9fb0, 0.2, 0.1);
-
-const box = (w: number, h: number, d: number, m: THREE.Material, x = 0, y = 0, z = 0) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); return o; };
-const cyl = (r: number, l: number, m: THREE.Material, axis: 'x' | 'y' | 'z' = 'x', x = 0, y = 0, z = 0, r2 = r) => {
-  const g = new THREE.CylinderGeometry(r, r2, l, 14);
-  if (axis === 'x') g.rotateZ(Math.PI / 2); else if (axis === 'z') g.rotateX(Math.PI / 2);
-  const o = new THREE.Mesh(g, m); o.position.set(x, y, z); return o;
-};
-const group = (...o: THREE.Object3D[]) => { const g = new THREE.Group(); g.add(...o); return g; };
-
-/** The QSZ-92 (M4-21b, U-032): a raked polymer grip with its magazine's base, the frame and trigger guard, the steel
- *  slide (named, to run back as it fires) with its sights and ejection port, and the barrel's crown. (No muzzle
- *  flash: U-058.) */
-function pistol() {
-  const poly = M(0x383b3f, 0.7, 0.05), slideMat = M(0x595f67, 0.4, 0.5);
-  const grip = group(box(0.105, 0.03, 0.036, poly), box(0.012, 0.032, 0.038, dark, 0.058, 0, 0.002), ...[0, 1, 2, 3].map(k => box(0.006, 0.031, 0.037, rubber, -0.03 + k * 0.022, 0, 0)));
-  grip.rotation.y = -0.32; grip.position.set(0.012, 0, 0.012);
-  const slide = group(box(0.032, 0.028, 0.19, slideMat), box(0.008, 0.006, 0.006, dark, -0.019, 0, -0.088), box(0.008, 0.012, 0.006, dark, -0.019, 0, 0.088), box(0.004, 0.004, 0.004, white, -0.024, 0, 0.088),
-    box(0.012, 0.0285, 0.035, dark, -0.004, 0, -0.005), ...[0, 1, 2, 3, 4].map(k => box(0.02, 0.0285, 0.003, dark, 0, 0, 0.06 + k * 0.007)));
-  slide.name = 'slide'; slide.position.set(-0.066, 0, -0.062);
-  return group(grip, box(0.026, 0.026, 0.16, poly, -0.042, 0, -0.07), box(0.004, 0.022, 0.05, poly, -0.012, 0, -0.04), box(0.032, 0.022, 0.004, poly, -0.03, 0, -0.065), box(0.016, 0.006, 0.006, steel, -0.022, 0, -0.03),
-    slide, cyl(0.0065, 0.012, steel, 'z', -0.07, 0, -0.16), cyl(0.0035, 0.013, rubber, 'z', -0.07, 0, -0.161));
-}
-
-/** A plain fixed-blade knife (U-084): a black rubber grip with a steel guard and pommel, and a steel blade standing up
- *  out of the fist, its spine straight, its edge (forward) sweeping up to the point. */
-function knife() {
-  const s = new THREE.Shape(), T = 0.003;
-  s.moveTo(0, -0.011); s.lineTo(0.098, -0.011); s.quadraticCurveTo(0.117, -0.009, 0.126, -0.002);
-  s.quadraticCurveTo(0.104, 0.013, 0.07, 0.014); s.lineTo(0, 0.013); s.closePath();
-  const blade = new THREE.ExtrudeGeometry(s, { depth: T, bevelEnabled: true, bevelThickness: 0.0007, bevelSize: 0.0009, bevelSegments: 1, curveSegments: 12 })
-    .translate(0, 0, -T / 2).rotateX(Math.PI / 2).rotateY(Math.PI).translate(-0.058, 0, 0);
-  return group(box(0.1, 0.026, 0.022, rubber, 0.004), ...[0, 1, 2].map(k => box(0.008, 0.028, 0.024, rubber, -0.025 + k * 0.025)), box(0.008, 0.024, 0.05, steel, -0.054, 0, 0.004),
-    cyl(0.012, 0.012, steel, 'x', 0.06), new THREE.Mesh(blade, M(0xc4cacf, 0.35, 0.45)));
-}
-
-const models: Record<string, () => THREE.Object3D> = {
-  crowbar: () => group(cyl(0.012, 0.6, steel, 'x', -0.2), box(0.012, 0.03, 0.07, steel, -0.5, 0, -0.03), box(0.05, 0.012, 0.03, steel, 0.1, 0, -0.02)),
-  knife: () => knife(),
-  pistol: () => pistol(),
-  rpg: () => group(cyl(0.045, 1.0, M(0x4a5236, 0.7), 'z', -0.07, 0, -0.1), cyl(0.055, 0.08, dark, 'z', -0.07, 0, -0.62), cyl(0.055, 0.08, dark, 'z', -0.07, 0, 0.42), box(0.06, 0.03, 0.08, dark, -0.13, 0, -0.1)),
-  shotgun: () => group(box(0.04, 0.12, 0.05, wood, 0, -0.02, 0.08), cyl(0.013, 0.7, dark, 'z', 0, 0.05, -0.3), box(0.05, 0.05, 0.3, wood, 0, 0.03, 0.25)),
-  nailgun: () => group(box(0.12, 0.04, 0.04, yellow, 0.01), box(0.08, 0.06, 0.26, yellow, -0.07, 0, -0.08), box(0.03, 0.03, 0.05, dark, -0.07, 0, -0.23)),
-  boltcutters: () => group(cyl(0.012, 0.45, rubber, 'x', -0.1), cyl(0.012, 0.45, rubber, 'x', -0.1, 0, -0.04), box(0.12, 0.02, 0.05, steel, -0.38, 0, -0.02)),
-  grapple: () => group(cyl(0.012, 0.18, steel, 'x', -0.08), ...[0, 1, 2].map(k => { const t = new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.008, 6, 10, Math.PI), steel); t.rotation.set((k * Math.PI * 2) / 3, 0, -Math.PI / 2); t.position.x = -0.18; return t; })),
-  rope: () => { const t = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.03, 8, 16), M(0x8a7a50, 0.9)); t.rotation.y = Math.PI / 2; return t; },
-  ladder: () => group(box(0.5, 0.03, 0.05, steel, 0.15, -0.12, 0), box(0.5, 0.03, 0.05, steel, 0.15, 0.12, 0), ...[0, 1, 2].map(k => box(0.02, 0.24, 0.02, steel, -0.05 + k * 0.2))),
-  extinguisher: () => group(cyl(0.06, 0.32, red, 'x', 0.14), box(0.03, 0.05, 0.06, dark, -0.04, 0, 0)),
-  firecrackers: () => group(...Array.from({ length: 8 }, (_, k) => cyl(0.009, 0.05, red, 'y', 0.03 + k * 0.03, -0.03 * (k % 2)))),
-  grenade: () => group(new THREE.Mesh(new THREE.SphereGeometry(0.04, 12, 10), olive), box(0.02, 0.03, 0.02, steel, 0, 0.045, 0)),
-  emp: () => group(cyl(0.04, 0.18, dark, 'x', 0.06), new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.01, 6, 14), M(0xb36a2a, 0.4, 0.8))),
-  jammer: () => group(box(0.13, 0.03, 0.08, dark, 0.04), ...[0, 1, 2].map(k => cyl(0.004, 0.12, rubber, 'y', -0.0 + k * 0.04, 0.07, -0.03))),
-  sdr: () => group(box(0.06, 0.012, 0.02, plastic), cyl(0.003, 0.08, rubber, 'y', 0.03, 0.04)),
-  dronectl: () => group(box(0.16, 0.03, 0.1, dark, 0.04), cyl(0.008, 0.02, rubber, 'y', 0.0, 0.025, -0.02), cyl(0.008, 0.02, rubber, 'y', 0.08, 0.025, -0.02)),
-  binoculars: () => group(cyl(0.025, 0.11, dark, 'z', 0, 0, 0), cyl(0.025, 0.11, dark, 'z', 0.06, 0, 0)),
-  headlamp: () => group(cyl(0.02, 0.03, dark, 'z'), new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.006, 6, 18), rubber)),
-  water: () => group(cyl(0.032, 0.21, glass, 'x', -0.03), cyl(0.014, 0.03, white, 'x', -0.15)),
-  riverwater: () => group(cyl(0.032, 0.21, M(0x7a7a5a, 0.3), 'x', -0.03), cyl(0.014, 0.03, white, 'x', -0.15)),
-  bottle: () => group(cyl(0.032, 0.21, glass, 'x', -0.03), cyl(0.014, 0.03, white, 'x', -0.15)),
-  energy: () => cyl(0.027, 0.13, M(0xc9a227, 0.4, 0.4), 'x'),
-  luncheon: () => cyl(0.045, 0.1, M(0xb02a24, 0.4, 0.5), 'x'),
-  noodles: () => cyl(0.05, 0.1, M(0xd8483a, 0.7), 'x', 0, 0, 0, 0.042),
-  bread: () => box(0.2, 0.09, 0.1, M(0xb57a3c, 0.9), 0.04),
-  chocolate: () => box(0.14, 0.012, 0.06, M(0x5a3020, 0.6), 0.03),
-  firstaid: () => group(box(0.18, 0.1, 0.07, M(0xd0d0c8, 0.7), 0.04), box(0.06, 0.02, 0.075, red, 0.04), box(0.02, 0.06, 0.075, red, 0.04)),
-  bandage: () => cyl(0.03, 0.06, white, 'x'),
-  painkillers: () => cyl(0.018, 0.06, white, 'x'),
-  phone: () => box(0.075, 0.15, 0.008, dark, 0, 0.04),
-  cameratap: () => group(box(0.05, 0.03, 0.02, plastic), box(0.02, 0.005, 0.03, steel, 0.035)),
-  cloner: () => box(0.08, 0.05, 0.015, plastic, 0.02, 0.01),
-  grinder: () => group(cyl(0.03, 0.22, M(0x2a6a9a, 0.6), 'x', -0.05), cyl(0.06, 0.006, M(0x777777, 0.4, 0.5), 'z', -0.17, 0, -0.04)),
-  oxygen: () => group(cyl(0.05, 0.4, M(0x3a7a4a, 0.4, 0.3), 'x', 0.12), box(0.04, 0.04, 0.04, steel, -0.1)),
-  jerrycan: () => box(0.22, 0.3, 0.12, M(0x6a7a3a, 0.7), 0.05, -0.1),
-  carbattery: () => box(0.28, 0.18, 0.17, dark, 0.06, -0.08),
-  mylar: () => box(0.08, 0.04, 0.05, M(0xc0c4c8, 0.2, 0.9)),
-};
-
-const CAT_COLOR: Record<string, number> = { food: 0xb08a3a, drink: 0x5a8ab0, tool: 0x5a5e62, weapon: 0x2a2c2e, ammo: 0x8a7a40, med: 0xd0ccc0, part: 0x40707a, key: 0xc8a840, wear: 0x4a5a3a, throw: 0x6a4a3a, device: 0x2a3a40, misc: 0x707070 };
+/** Every item's model, each as close to the real thing as can be (U-053): built in its own file by kind. */
+const models: Record<string, () => THREE.Object3D> = { ...armsModels, ...foodModels, ...gearModels, ...rigModels, ...techModels, ...partsModels, ...keysModels };
 
 // Where the left hand grips on two-handed items (model space); others get a fist stacked above the right one.
 const SUPPORT: Record<string, [number, number, number]> = {
-  crowbar: [-0.18, 0, 0], boltcutters: [-0.12, 0, -0.04], shotgun: [0, 0.05, -0.32], nailgun: [-0.07, 0, -0.15], pistol: [0.045, -0.072, 0.01],
-  extinguisher: [0.1, -0.06, 0], oxygen: [0.12, -0.05, 0], grinder: [-0.12, 0, 0], ladder: [0.05, -0.2, 0], jerrycan: [0.05, -0.2, 0], carbattery: [0.06, -0.22, 0],
-  binoculars: [0.09, 0, 0], water: [-0.09, 0, 0], riverwater: [-0.09, 0, 0], bottle: [-0.09, 0, 0],
+  crowbar: [-0.18, 0, 0], boltcutters: [-0.12, -0.045, 0], shotgun: [0.002, 0, -0.36], nailgun: [-0.07, 0, -0.15], pistol: [0.045, -0.072, 0.01], rpg: [0, 0, -0.21], mrifle: [-0.07, 0, -0.38],
+  extinguisher: [0.1, -0.06, 0], oxygen: [0.12, -0.05, 0], grinder: [-0.18, 0.08, -0.01], ladder: [0, -0.16, 0], jerrycan: [0, -0.1, 0], carbattery: [0, -0.08, 0],
+  binoculars: [0.065, 0, 0], water: [-0.09, 0, 0], riverwater: [-0.09, 0, 0], bottle: [-0.09, 0, 0],
+  // (Things carried by a handle, a loop or an edge: both fists on it, or the left steadying it.)
+  toolbox: [0, -0.07, 0], firstaid: [0, -0.06, 0], bedroll: [0.2, -0.1, 0], mattress: [0.02, -0.06, 0], hikingpack: [0.25, -0.15, 0], dronectl: [0.035, -0.145, -0.005],
+  drone: [-0.13, -0.13, 0], solar: [0, -0.12, 0], zipkit: [0.11, -0.11, 0], sensorhead: [-0.1, -0.11, 0], armour: [-0.1, -0.12, 0],
 };
 
 /** Small things (keys, cards, pills, a phone, small devices) and the knife are held in one hand (U-007). */
@@ -108,57 +40,25 @@ export function supportPoint(id: string): THREE.Vector3 | null {
   return new THREE.Vector3(-Math.min(0.25, Math.max(0.09, Math.max(d.w, d.h) * 0.04)), 0, 0);
 }
 
-/** The pistol's attachments on it (U-058), in its model space (-x up, -z forward): a suppressor on the muzzle, a reflex
- *  sight's housing and window on the slide, or a 4x scope on its mount; a sight marks the model (userData.optic) so the
- *  aim looks through it. */
-function fit(gun: THREE.Object3D, mods: string[]) {
-  const scopeMat = M(0x1c1e20, 0.35, 0.5), lens = new THREE.MeshBasicMaterial({ color: 0x3a6a8a, transparent: true, opacity: 0.45 });
-  if (mods.includes('suppressor')) gun.add(cyl(0.016, 0.15, scopeMat, 'z', -0.07, 0, -0.24));
-  if (mods.includes('reddot')) {
-    gun.add(box(0.012, 0.03, 0.05, dark, -0.088, 0, 0.0), box(0.042, 0.004, 0.012, dark, -0.11, 0.013, -0.018), box(0.042, 0.004, 0.012, dark, -0.11, -0.013, -0.018), box(0.004, 0.026, 0.012, dark, -0.131, 0, -0.018));
-    // (Its window placed after it's made: a mesh's position can't be assigned over, and doing so threw every frame: U-088.)
-    const win = new THREE.Mesh(new THREE.PlaneGeometry(0.026, 0.038).rotateY(Math.PI / 2).rotateX(Math.PI / 2), lens);
-    win.position.set(-0.11, 0, -0.018);
-    gun.add(win);
-    gun.userData.optic = true;
-  }
-  if (mods.includes('scope4x')) {
-    gun.add(box(0.016, 0.012, 0.012, dark, -0.09, 0, -0.04), box(0.016, 0.012, 0.012, dark, -0.09, 0, 0.03), cyl(0.014, 0.17, scopeMat, 'z', -0.11, 0, -0.01), cyl(0.018, 0.03, scopeMat, 'z', -0.11, 0, -0.09), cyl(0.017, 0.03, scopeMat, 'z', -0.11, 0, 0.07));
-    gun.userData.optic = true;
-  }
-  return gun;
-}
-
-/** Tins, pots and bars with a printed label (their own materials, so it goes on no other model). */
-const LABELLED = new Set(['energy', 'luncheon', 'noodles', 'chocolate']);
-/** Each of a model's materials given its surface once (M4-99): metal worn and scratched, rubber and polymer grips
- *  stippled, wood grained, a tin's label printed, food, drink, medicine and ammunition without a shape of their own
- *  boxed in cardboard, the rest scuffed plastic. */
-function dress(o: THREE.Object3D, id: string): THREE.Object3D {
-  const cat = item(id).cat, boxed = !models[id] && ['food', 'drink', 'med', 'ammo'].includes(cat);
+/** Each of a model's materials given its surface once (M4-99): printed, cardboard or woven if it's named so (a label,
+ *  a box, a bag's nylon), else metal worn and scratched, rubber and polymer grips stippled, wood grained, the rest
+ *  scuffed plastic. */
+function dress(o: THREE.Object3D): THREE.Object3D {
   o.traverse(m => {
     const mat = (m as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
     if (!mat || !('roughness' in mat) || mat.map) return;
-    const c = mat.color, warm = c.r > c.b * 1.3 && c.r > 0.25;
-    mat.map = surface(LABELLED.has(id) ? 'label' : boxed ? 'cardboard' : mat.metalness >= 0.3 ? 'metal' : mat.roughness >= 0.85 && c.r < 0.2 ? 'stipple' : warm && mat.roughness >= 0.75 ? 'wood' : 'plastic');
+    const c = mat.color, warm = c.r > c.b * 1.3 && c.r > 0.25, own = mat.name as 'label' | 'cardboard' | 'fabric' | '';
+    mat.map = surface(own || (mat.metalness >= 0.3 ? 'metal' : mat.roughness >= 0.85 && c.r < 0.2 ? 'stipple' : warm && mat.roughness >= 0.75 ? 'wood' : 'plastic'));
     mat.needsUpdate = true;
   });
   return o;
 }
 
-/** The item model for a held item: a dedicated shape, or a box sized from its backpack footprint; a pistol with its
- *  attachments. */
+/** The model of a held or dropped item; a pistol with its attachments. */
 export function itemModel(id: string, mods?: string[]): THREE.Object3D {
-  return dress(model(id, mods), id);
-}
-
-function model(id: string, mods?: string[]): THREE.Object3D {
   const make = models[id];
-  if (make) return id === 'pistol' && mods?.length ? fit(make(), mods) : make();
-  const d = item(id);
-  if (d.cat === 'key') return box(0.085, 0.054, 0.004, M(0xc8a840, 0.5, 0.3), 0.02, 0.02);
-  const long = Math.max(d.w, d.h), short = Math.min(d.w, d.h);
-  return box(0.04 + long * 0.05, 0.03 + short * 0.025, 0.04 + short * 0.03, M(CAT_COLOR[d.cat] ?? 0x777777, 0.7), 0.03);
+  if (!make) throw new Error(`no model for ${id}`);
+  return dress(id === 'pistol' && mods?.length ? fit(make(), mods) : make());
 }
 
 export const modelledItems = () => Object.keys(models);
