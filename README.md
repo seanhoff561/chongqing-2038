@@ -8,7 +8,6 @@ Support (I'm a student): bc1pzld427zjykqtpse877h5yf9sklm32z4dt38k496sujegu8jq9cq
 \
 Flags:\
 ?dev=1 (dev mode)\
-?scenario=<name> (scenario)\
 ?seed=<n> (run seed)\
 \
 Key Files:\
