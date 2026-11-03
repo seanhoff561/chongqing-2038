@@ -1,7 +1,7 @@
 Repository: https://github.com/seanhoff561/chongqing-2038 \
 Browser: https://seanhoff561.github.io/chongqing-2038/ \
 Installer: (download link) \
-Guide: open the settings with esc, check your laptop for tutorial\
+Guide: open the settings with esc, test things out\
 Discord: https://discord.gg/MfQhmwQcp \
 X: https://x.com/seanryanhoffman \
 Support (I'm a student): bc1pzld427zjykqtpse877h5yf9sklm32z4dt38k496sujegu8jq9cqx8pxyu (BTC)\
