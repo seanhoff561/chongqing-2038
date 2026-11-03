@@ -1,4 +1,3 @@
-Chongqing 2038: a dystopian parkour/stealth/survival game you can play for free in your browser. (Open Source)\
 Repository: https://github.com/seanhoff561/chongqing-2038 \
 Browser: https://seanhoff561.github.io/chongqing-2038/ \
 Installer: (download link) \
