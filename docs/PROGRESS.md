@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-20 No more raids (U-104).
-Features done: 351 / 429 | Last done: M10-19
+**Status:** building M10. Next: M10-21 The Li family flat, a place to visit (U-104).
+Features done: 352 / 429 | Last done: M10-20
 <!-- /status -->
 
 ## What's built
@@ -49,3 +49,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-18: Anna in the laptop's corner, drawn and animated: idle, blinking, waving, laughing, pouting, blushing
 - M10-59: the game's icon is Anna's face (installer, window, browser tab); version 0.3.0 for the next release
 - M10-19: ice blue: every menu, the map, the headlamp's dim mode, and the neon by the family flat lit only at night
+- M10-20: no more raids: tracked (tagged, or at a hideout given away), he's hunted where he is

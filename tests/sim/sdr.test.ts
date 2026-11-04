@@ -11,10 +11,10 @@ import { SCALE } from '../../src/sim/clock';
 import type { Patrol } from '../../src/world/world';
 
 describe('the SDR dongle (M5-08)', () => {
-  it('hears a tag, then the district drones and their dock times; and picks the tag off', () => {
+  it('hears the district drones and their dock times; and picks the tag off', () => {
     const beat: Patrol = { kind: 'drone', unit: 'drone', pts: [{ x: -60, y: 0, z: -60 }, { x: 60, y: 0, z: -60 }, { x: 60, y: 0, z: 60 }], dwell: [0, 0, 0], hours: [0, 24], dock: 0 };
     const { world: w, state: s } = setup([floor(0, 200)], { x: 0, y: 0, z: 0, yaw: 0 }, { patrols: [beat], docks: [{ x: 30, y: 0, z: 30 }] });
-    s.time = 12 * 3600; s.flags.god = true; s.player.tag = true;
+    s.time = 12 * 3600; s.flags.god = true;
     addItem(s, s.inv.pack, 'sdr', 1);
     const msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); else if (e.t === 'blocked') msgs.push(e.why); else if (e.t === 'say') msgs.push(e.id); } };
     // The laptop shut: nothing.
@@ -34,7 +34,8 @@ describe('the SDR dongle (M5-08)', () => {
     expect(unitPose(w, u, (d.back + d.out) / 2).docked).toBe(true);
     expect(unitPose(w, u, d.out + 60 * SCALE).docked).toBeFalsy();
     if (d.back > s.time) expect(unitPose(w, u, d.back - 60 * SCALE).docked).toBeFalsy();
-    // Used: the tag picked off.
+    // Used: the tag picked off. (Tagged from the start, he'd have been hunted, the drone off its beat: U-104.)
+    s.player.tag = true;
     run(s, w, 1, { cmds: [{ c: 'act', name: 'laptop' }, { c: 'use', uid: s.inv.pack.items.find(i => i.id === 'sdr')!.uid }] });
     run(s, w, secs(TAG.remove + 0.2));
     expect(s.player.tag).toBe(false);
