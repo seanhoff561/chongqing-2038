@@ -1,8 +1,8 @@
 // M5-27: a hideout's power. With no battery the laptop doesn't charge there; a car battery (out of a car, with its
 // charge) and an inverter wired in, it charges, drawing the battery; electronics at the bench want the power and draw
-// it; a solar charger puts back 5% a day.
+// it; a solar charger puts back 5% a day. M10-28: one battery pack charges the laptop and all he carries full.
 import { describe, it, expect } from 'vitest';
-import { setup, floor, run, secs } from './helpers';
+import { setup, floor, run, secs, LMB } from './helpers';
 import { addItem } from '../../src/sim/inventory';
 import { claimBed } from '../../src/sim/shelter';
 import { POWER } from '../../src/sim/power';
@@ -46,5 +46,32 @@ describe('hideout power (M5-27)', () => {
     const b0 = h.battery;
     run(s, w, secs(86400 / 40 / 4));
     expect(h.battery - b0).toBeCloseTo(POWER.solar / 4, 0);
+  });
+
+  it('one battery pack charges a flat laptop, phone and headlamp full, and is used up (M10-28)', () => {
+    const { world: w, state: s } = setup([floor()]);
+    const use = () => run(s, w, 1, { cmds: [{ c: 'use', uid: s.inv.pack.items.find(i => i.id === 'battpack')!.uid }] });
+    const charge = (id: string) => s.inv.pack.items.find(i => i.id === id)!.charge;
+    s.laptop = { open: false, charge: 0 };
+    addItem(s, s.inv.pack, 'phone', 1, { charge: 0 });
+    addItem(s, s.inv.pack, 'headlamp', 1, { charge: 0 });
+    addItem(s, s.inv.pack, 'battpack', 2);
+    use();
+    expect(s.laptop.charge).toBe(1);
+    expect(charge('phone')).toBe(100);
+    expect(charge('headlamp')).toBe(100);
+    expect(s.inv.pack.items.filter(i => i.id === 'battpack').reduce((n, i) => n + i.n, 0)).toBe(1);
+    // With everything full, a pack isn't used.
+    let why = '';
+    run(s, w, 1, { cmds: [{ c: 'use', uid: s.inv.pack.items.find(i => i.id === 'battpack')!.uid }] }, st => { for (const e of st.events) if (e.t === 'blocked') why = e.why; });
+    expect(why).toBe('nothing needs charging');
+    expect(s.inv.pack.items.some(i => i.id === 'battpack')).toBe(true);
+    // Held and used, the last one goes from his hand.
+    s.laptop.charge = 0.2;
+    s.inv.hotbar[0] = s.inv.pack.items.find(i => i.id === 'battpack')!.uid; s.inv.held = 1;
+    run(s, w, 1, { pressed: LMB, buttons: LMB });
+    expect(s.laptop.charge).toBe(1);
+    expect(s.inv.pack.items.some(i => i.id === 'battpack')).toBe(false);
+    expect(s.inv.held).toBe(0);
   });
 });

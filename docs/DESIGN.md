@@ -222,7 +222,7 @@ Grid backpack 8 x 6 (the hiking pack: 10 x 7); items are rotatable rectangles wi
 | Mylar blanket | beats thermal while worn |
 | Knife, pistol, shotgun, nail gun | weapons |
 | Car battery + inverter | power at a hideout (bench, charging) |
-| Battery pack | one charges everything he carries that takes charge, the laptop included, full (U-104); jammer, EMP, drone and grinder power |
+| Battery pack | used (in hand or from the backpack), one charges everything he carries that takes a charge (laptop, phone, headlamp, jammer, drone) full and is used up; with nothing to charge it isn't used (U-104); jammer, EMP, drone and grinder power |
 | Angle grinder, breaching charge | blast doors, bars |
 | Oxygen kit, jerrycan, boat key / CAN interface | the river and underground routes |
 | Healing: bandage, tourniquet, splint, painkillers, first-aid kit | section 5 |

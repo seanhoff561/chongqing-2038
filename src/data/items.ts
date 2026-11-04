@@ -101,7 +101,7 @@ export const items: ItemDef[] = [
   I('breach', '破拆炸药', 'Breaching charge', 1, 1, 1, 'throw', 'Construction blasting charge.', { uses: ['breach', 'blast-door'] }),
 
   // Parts.
-  I('battpack', '电池组', 'Battery pack', 2, 1, 2, 'part', 'Lithium cells from a scooter.', { uses: ['power-device'] }),
+  I('battpack', '电池组', 'Battery pack', 2, 1, 2, 'part', 'Scooter lithium cells. One charges the laptop and all he carries full.', { uses: ['power-device'] }),
   I('scootercells', '电动车电芯', 'Scooter cells', 2, 1, 1.8, 'part', 'Loose 18650 cells.'),
   I('board', '电路板', 'Circuit board', 1, 1, 0.1, 'part', 'A general-purpose controller board.'),
   I('rfamp', '射频功放', 'RF amplifier', 1, 1, 0.3, 'part', 'Broadband power amplifier.'),
