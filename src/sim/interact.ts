@@ -10,13 +10,14 @@ export const REACH = 2.0;
 export const ROUGH = 'rough', ROUGH_HOLD = 0.5;
 
 type Handler = (s: SimState, w: World, it: Inter) => void;
-interface Kind { now?: Handler; done?: Handler; dur?: (s: SimState, it: Inter) => number; can?: (s: SimState, it: Inter) => string | null; grip?: boolean }
+interface Kind { now?: Handler; done?: Handler; dur?: (s: SimState, it: Inter) => number; can?: (s: SimState, it: Inter) => string | null; no?: (s: SimState, it: Inter) => string; grip?: boolean }
 const handlers = new Map<string, Kind>();
 
 /**
  * Register a kind. `dur` > 0 makes it a hold-E action that calls `done` when finished; otherwise `now` runs at once.
- * `can` returns null when allowed or a short reason shown instead of acting. `label` names what E does now, if that
- * changes; `grip` lets him work it hanging from a ladder or a hold (a grate over his head).
+ * `can` returns null when allowed or a short reason, never shown (U-104), instead of acting; `no` is the sound it
+ * makes then, if any (a locked door's handle clicking, M10-42); `grip` lets him work it hanging from a ladder or a hold
+ * (a grate over his head).
  */
 export function onInteract(kind: string, h: Kind) {
   handlers.set(kind, h);
@@ -138,7 +139,7 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   if (!h) return;
   const why = h.can?.(s, it) ?? null;
   // (What it needs is never said: U-104.)
-  if (why) { s.events.push({ t: 'blocked', why }); return; }
+  if (why) { const no = h.no?.(s, it); s.events.push({ t: 'blocked', why }); if (no) s.events.push({ t: 'sfx', id: no }); return; }
   const dur = h.dur?.(s, it) ?? 0, sound = START_SOUND[it.kind]?.(it);
   if (sound) s.events.push({ t: 'sfx', id: sound });
   if (dur > 0) s.task = { id: it.id, t: 0, dur };

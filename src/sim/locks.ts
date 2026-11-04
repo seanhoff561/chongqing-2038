@@ -20,7 +20,8 @@ export const gradeOf = (it: Inter): Grade => (it.data?.key ? 'secure' : hashStri
 /** Whether he has a door's card, or a clone of it. */
 export const hasCard = (s: SimState, key: string) => has(s.inv.pack, key) || !!s.cloned?.includes(key);
 
-/** How he'd open a door's lock now: the tool and its seconds (0 for none needed), loud or not; or why he can't. */
+/** How he'd open a door's lock now: the tool and its seconds (0 for none needed), loud or not; or what stops him
+ *  (for the tests: never shown, nor what it needs, U-104). */
 export function lockWay(s: SimState, it: Inter, lock: string | undefined): { how: string; secs: number; loud: boolean } | string {
   const key = it.data?.key as string | undefined;
   if (key && !s.wstate.unlocked?.[it.id]) {
@@ -35,7 +36,7 @@ export function lockWay(s: SimState, it: Inter, lock: string | undefined): { how
   if (pickable && pick && held !== 'crowbar' && held !== 'boltcutters') return { how: pick, secs: pick === 'lockpick' ? LOCKS.pick : LOCKS.picks, loud: false };
   // (Bolt cutters through the chain, quietly, M5-25; the crowbar prises it, loudly.)
   if (lock === 'chained') return has(s.inv.pack, 'boltcutters') && held !== 'crowbar' ? { how: 'cut', secs: LOCKS.cut, loud: false } : crowbar ? { how: 'force', secs: 2.2, loud: true } : 'chained shut';
-  return crowbar ? { how: 'force', secs: 1.6, loud: true } : gradeOf(it) === 'bad' ? 'locked: a cheap lock, a pick would open it' : 'locked: a good lock, it needs the crowbar';
+  return crowbar ? { how: 'force', secs: 1.6, loud: true } : gradeOf(it) === 'bad' ? 'locked: a cheap lock' : 'locked: a good lock';
 }
 
 /** Picked or cloned: the picks used up one, the card copied. */

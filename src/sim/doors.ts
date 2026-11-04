@@ -1,6 +1,7 @@
-// Doors: open and close with E; their collision solid switches with them. Locked doors need their key; a lock is
-// forced with the crowbar and a jammed door shouldered, held and loud; a chain is prised or cut with the crowbar or
-// bolt cutters; a collapsed doorway holds (M3-36, U-066). Windows' glass breaks out the same.
+// Doors: open and close at once with F; their collision solid switches with them; one he can't open only clicks, nothing
+// said (M10-42). Locked doors need their key; a lock is forced with the crowbar and a jammed door shouldered, held and
+// loud; a chain is prised or cut with the crowbar or bolt cutters; a collapsed doorway holds (M3-36, U-066). Windows'
+// glass breaks out the same.
 import type { SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { onInteract } from './interact';
@@ -56,7 +57,7 @@ function swing(s: SimState, w: World, it: Inter, loud = false) {
 
 onInteract('door', {
   can: (s, it) => {
-    if (it.data?.shutter) return s.wstate.open[it.id] ? 'prised up: crawl under it' : has(s.inv.pack, 'crowbar') ? null : 'a roller shutter, locked down: prise it up with a crowbar';
+    if (it.data?.shutter) return s.wstate.open[it.id] ? 'prised up' : has(s.inv.pack, 'crowbar') ? null : 'locked down';
     if (s.wstate.open[it.id]) return null;
     const lock = lockOf(s, it);
     if (lock === 'collapsed') return 'collapsed';
@@ -66,7 +67,10 @@ onInteract('door', {
     const way = lockWay(s, it, lock);
     return typeof way === 'string' ? way : null;
   },
-  // Forced, picked or cloned: held; forced is loud.
+  // Shut but no way through it: just the handle's click, nothing said (M10-42, D-133); a collapsed doorway, an open
+  // shutter: nothing.
+  no: (s, it) => (s.wstate.open[it.id] || lockOf(s, it) === 'collapsed' ? '' : 'click'),
+  // Opened or shut: at once. Forced, picked or cloned: held; forced is loud.
   dur: (s, it) => {
     if (it.data?.shutter) return SHUTTER.pry;
     if (s.wstate.open[it.id]) return 0;

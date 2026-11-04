@@ -27,13 +27,26 @@ describe('doors', () => {
     run(state, world, secs(1.5), { my: 1, yaw: Math.PI });
     expect(state.player.pos.z).toBeLessThan(-3);
   });
-  it('a locked door refuses without its key and opens with it', () => {
+  it('open on the press, at once: no hold (M10-42)', () => {
+    const { world, state } = doorway();
+    run(state, world, 3);
+    run(state, world, 1, { pressed: B.INTERACT });
+    expect(state.wstate.open.d1).toBe(true);
+    expect(state.task).toBeNull();
+    expect(state.events.some(e => e.t === 'sfx' && e.id === 'door-open')).toBe(true);
+  });
+  it('a locked door only clicks without its key, and opens at once with it', () => {
     const { world, state } = doorway('policecard');
     run(state, world, 3);
     run(state, world, 1, { pressed: B.INTERACT });
     expect(state.wstate.open.d1).toBeFalsy();
-    // (Why is never shown: U-104.)
-    expect(state.events.some(e => e.t === 'blocked' && e.why.startsWith('locked'))).toBe(true);
+    expect(state.task).toBeNull();
+    // (Nothing said, nor what it needs: U-104, M10-42; the reason only as an unseen 'blocked', the handle's click.)
+    expect(state.events.some(e => e.t === 'msg')).toBe(false);
+    expect(state.events.some(e => e.t === 'blocked')).toBe(true);
+    expect(state.events.some(e => e.t === 'sfx' && e.id === 'click')).toBe(true);
+    run(state, world, secs(1), { buttons: B.INTERACT });
+    expect(state.wstate.open.d1).toBeFalsy();
     addItem(state, state.inv.pack, 'policecard');
     run(state, world, 1, { pressed: B.INTERACT });
     expect(state.wstate.open.d1).toBe(true);
