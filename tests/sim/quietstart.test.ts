@@ -1,21 +1,26 @@
-// U-075: a new run starts quiet. For its first minutes no machine whose beat comes near where he starts is out (none
-// seen there), and the cameras round it are dark; after, they're back on their beats.
+// U-075, U-104: a new run starts with the machines out on their beats everywhere from the first second, except that for
+// its first minutes none is out within about 40 m of the hideout's way out (the grate he climbs out by); after, those
+// are back on their beats too. (Was: everything whose beat came within 160 m of the start was off; U-104 wants the
+// machines out from the start, just not at his door.)
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { createState } from '../../src/sim/sim';
 import { startRun, QUIET } from '../../src/sim/run';
-import { unitPose } from '../../src/sim/units';
-import { teleport } from '../../src/sim/player';
+import { unitPose, isOff } from '../../src/sim/units';
 import { SCALE } from '../../src/sim/clock';
 
-describe('quiet start (U-075)', () => {
-  it('keeps the machines near the start away for its first minutes', () => {
-    const w = getWorld('yuzhong'), s = createState(1, w), home = w.teleports.find(t => t.name.startsWith("Friends' hideout"))!;
-    teleport(s.player, home.x, home.y, home.z);
+describe('quiet start (U-075, U-104)', () => {
+  it('has machines out everywhere from the first second, but none within 40 m of the way out for its first minutes', () => {
+    const w = getWorld('yuzhong'), s = createState(1, w), out = w.inter.find(i => i.id === 'airraid-grate')!;
     startRun(s, w);
-    const near = (t: number) => s.units.filter(u => { const q = unitPose(w, u, t); return q.active && u.cam === undefined && Math.hypot(q.x - home.x, q.z - home.z) < QUIET.r * 0.8; }).length;
-    for (const m of [0, 3, 7]) expect(near(s.time + m * 60 * SCALE), `${m} min`).toBe(0);
-    expect(s.units.filter(u => u.quiet).length).toBeGreaterThan(5);
-    expect(near(s.time + (QUIET.minutes + 2) * 60 * SCALE) + near(s.time + (QUIET.minutes + 6) * 60 * SCALE)).toBeGreaterThan(0);
+    expect(QUIET.r).toBe(40);
+    const on = (t: number) => s.units.filter(u => !isOff({ time: t }, u)).map(u => unitPose(w, u, t)).filter(q => q.active);
+    const d = (q: { x: number; z: number }) => Math.hypot(q.x - out.x, q.z - out.z);
+    expect(on(s.time).filter(q => d(q) > QUIET.r).length).toBeGreaterThan(20);
+    for (const m of [0, 3, 7]) expect(on(s.time + m * 60 * SCALE).filter(q => d(q) <= QUIET.r).length, `${m} min`).toBe(0);
+    // Those kept in are back out on their beats when the quiet minutes are up.
+    const kept = s.units.filter(u => u.quiet !== undefined);
+    expect(kept.length).toBeGreaterThan(0);
+    for (const u of kept) expect(u.quiet).toBe(s.time + QUIET.minutes * 60 * SCALE);
   });
 });

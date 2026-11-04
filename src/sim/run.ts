@@ -40,21 +40,22 @@ export function startRun(s: SimState, w: World) {
   s.events.length = 0;
 }
 
-/** A new run's first minutes (U-075): no machine whose beat comes near where he starts is out yet, so he can get his
- *  bearings (getting killed as he came up out of the hideout was common). */
-export const QUIET = { r: 160, minutes: 8 };
+/** A new run's first minutes (U-075, U-104): the machines are out on their beats everywhere from the first second, but
+ *  none whose beat comes within QUIET.r of the hideout's way out (the grate he climbs out by) is out yet, so he isn't
+ *  killed as he comes up. */
+export const QUIET = { r: 40, minutes: 8 };
 export function quietStart(s: SimState, w: World) {
-  const at = s.player.pos, until = s.time + QUIET.minutes * 60 * SCALE;
+  const at = w.inter.find(i => i.id === 'airraid-grate') ?? s.player.pos, until = s.time + QUIET.minutes * 60 * SCALE;
   for (const u of s.units) {
     const p = u.patrol >= 0 ? w.patrols[u.patrol] : undefined, c = u.cam !== undefined ? w.cameras[u.cam] : undefined, near = (q: { x: number; z: number }) => Math.hypot(q.x - at.x, q.z - at.z) < QUIET.r;
-    // (And the columns marching through, the hunters on the docks round it, the cameras and sensors, dark for now.)
+    // (And the columns marching past it, the hunters on a dock by it, the cameras and sensors on it, dark for now.)
     const col = u.convoy ? w.convoys?.[u.convoy.path] : undefined, dock = u.reserve?.dock !== undefined ? w.docks[u.reserve.dock] : undefined;
     // A beat counts if any leg of it passes near, not just its stops (a sky drone's legs run long).
     const leg = (pts: { x: number; z: number }[]) => pts.some((a, i) => {
       const b = pts[(i + 1) % pts.length], dx = b.x - a.x, dz = b.z - a.z, f = Math.max(0, Math.min(1, ((at.x - a.x) * dx + (at.z - a.z) * dz) / (dx * dx + dz * dz || 1)));
       return near({ x: a.x + dx * f, z: a.z + dz * f });
     });
-    if ((p && leg(p.pts)) || (c && near(c)) || (col && col.pts.some(near)) || (dock && near(dock))) u.quiet = until;
+    if ((p && leg(p.pts)) || (c && near(c)) || (col && leg(col.pts)) || (dock && near(dock))) u.quiet = until;
   }
 }
 
