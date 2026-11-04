@@ -37,13 +37,24 @@ export function buildTops(idx: SolidIndex) {
 }
 
 /** Into a material's shaders: the snow over what it draws. */
-export function snowPatch(sh: THREE.WebGLProgramParametersWithUniforms) {
-  sh.uniforms.uSnow = SEASON_U.snow; sh.uniforms.uTops = TOPS.map; sh.uniforms.uTopsO = TOPS.o; sh.uniforms.uTopsS = TOPS.s;
+export function snowPatch(sh: THREE.WebGLProgramParametersWithUniforms, leaves = 0) {
+  sh.uniforms.uSnow = SEASON_U.snow; sh.uniforms.uLitter = SEASON_U.litter; sh.uniforms.uStraw = SEASON_U.straw; sh.uniforms.uTops = TOPS.map; sh.uniforms.uTopsO = TOPS.o; sh.uniforms.uTopsS = TOPS.s;
   sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;')
     .replace('#include <project_vertex>', '#include <project_vertex>\nvSnowW = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvSnowUp = normalize(mat3(modelMatrix) * objectNormal).y;');
-  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;\nuniform float uSnow;\nuniform sampler2D uTops;\nuniform vec2 uTopsO, uTopsS;\nfloat snowHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;\nuniform float uSnow;\nuniform float uLitter;\nuniform float uStraw;\nuniform sampler2D uTops;\nuniform vec2 uTopsO, uTopsS;\nfloat snowHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
     .replace('#include <color_fragment>', `#include <color_fragment>
-if (uSnow > 0.001) {
+${leaves >= 1 ? `// (The grass drying to straw, as the open ground's does: M5-28.)
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62), uStraw * 0.8);
+` : ''}${leaves > 0 ? `// Fallen leaves (U-104): one here and there on a 30 cm grid, lying flat, gold, brown and rust; in drifts.
+if (uLitter > 0.001 && vSnowUp > 0.7) {
+  vec2 lc = vSnowW.xz * 3.3, li = floor(lc), lf = fract(lc) - 0.5;
+  float lh = snowHash(li), lh2 = fract(lh * 97.13), drift = snowHash(floor(vSnowW.xz * 0.35));
+  float ang = lh2 * 6.2832; vec2 lr = vec2(cos(ang) * lf.x - sin(ang) * lf.y, sin(ang) * lf.x + cos(ang) * lf.y);
+  float leaf = step(lh, uLitter * ${leaves.toFixed(2)} * (0.45 + 0.7 * step(0.55, drift))) * (1.0 - smoothstep(0.26, 0.32, length(lr * vec2(1.0, 1.9))));
+  vec3 leafCol = mix(mix(vec3(0.55, 0.30, 0.09), vec3(0.66, 0.48, 0.13), lh2), vec3(0.42, 0.15, 0.06), step(0.7, fract(lh * 13.7)));
+  diffuseColor.rgb = mix(diffuseColor.rgb, leafCol * (0.7 + 0.3 * lh2), leaf);
+}
+` : ''}if (uSnow > 0.001) {
   float open = step(texture2D(uTops, (vSnowW.xz - uTopsO) * uTopsS).r - 0.3, vSnowW.y);
   // (Patchy as it starts to lie, in drifts a metre or two across, with a grain of its own; whole once it's deep.)
   vec2 q = vSnowW.xz * 0.6, f = fract(q), e = f * f * (3.0 - 2.0 * f), c = floor(q);

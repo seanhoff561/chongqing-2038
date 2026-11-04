@@ -178,11 +178,14 @@ function lodCut(m: THREE.Material, lod: Lod) {
 }
 
 /** Snow lying on what it draws, where it faces up open to the sky (U-097). */
-function snowy(m: THREE.MeshPhongMaterial) {
+/** Snow lying on it in winter, and fallen leaves on it in late autumn as thick as `leaves` (0 none, 1 grass's). */
+function snowy(m: THREE.MeshPhongMaterial, leaves = 0) {
   const before = m.onBeforeCompile, key0 = m.customProgramCacheKey;
-  m.onBeforeCompile = (sh, rr) => { before.call(m, sh, rr); snowPatch(sh); };
-  m.customProgramCacheKey = () => `${key0.call(m)}:snow`;
+  m.onBeforeCompile = (sh, rr) => { before.call(m, sh, rr); snowPatch(sh, leaves); };
+  m.customProgramCacheKey = () => `${key0.call(m)}:snow${leaves}`;
 }
+/** How thick fallen leaves lie on each (U-104): on the grass, on the ground and the paving under the trees. */
+const LEAVES: Record<number, number> = { [MAT.grass]: 1, [MAT.stone]: 0.3, [MAT.tile]: 0.25, [MAT.concrete]: 0.15, [MAT.asphalt]: 0.12 };
 
 /** A world material; vc for meshes that carry vertex colours (the merged world); lod splits near and far. */
 /** The insides' linings (M5-35), in one atlas, so a chunk's inside walls draw in one go whatever their linings. */
@@ -289,7 +292,7 @@ export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPh
     // Water shows from below too (M3-48).
     m = new THREE.MeshPhongMaterial({ map: tex, vertexColors: vc, transparent: id === MAT.water, opacity: id === MAT.water ? 0.82 : 1, side: id === MAT.water ? THREE.DoubleSide : THREE.FrontSide, ...DRY });
     lodCut(m, lod);
-    if (id !== MAT.water) snowy(m);
+    if (id !== MAT.water) snowy(m, LEAVES[id] ?? 0);
   }
   if (id === MAT.cable) {
     // Cables sway: every vertex drifts a few centimetres, slow and quick together, by where it is (M3-37).
@@ -330,8 +333,8 @@ gTex.rgb = mix(gTex.rgb, vec3(dot(gTex.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62)
 sampledDiffuseColor = mix(sampledDiffuseColor, gTex, smoothstep(0.35, 0.65, vCover.x + (gTex.g - 0.36) * 1.2));
 diffuseColor *= mix(sampledDiffuseColor, rTex, smoothstep(0.35, 0.65, vCover.y + (rTex.r - 0.42) * 1.2));`);
   };
-  snowy(m);
-  m.customProgramCacheKey = () => `ground${lod}:snow`;
+  snowy(m, 0.45);
+  m.customProgramCacheKey = () => `ground${lod}:snow:leaves`;
   mats.set(key, m);
   return m;
 }

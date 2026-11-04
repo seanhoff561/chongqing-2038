@@ -1,5 +1,5 @@
-// M5-28 (U-032): the calendar, stepped. Day 1 is autumn, the leaves a third turned and a few falling; by the 23rd most
-// are coming down and the grass is drying; by the 45th it's winter: the trees mostly bare, the grass straw, dusk
+// M5-28 (U-032), M10-22 (U-104): the calendar, stepped. Day 1 is late autumn: the leaves mostly turned and thinning,
+// fallen leaves lying; by the 23rd most are down and the grass is drying; by the 45th it's winter: the trees mostly bare, the grass straw, dusk
 // earlier and dawn later than at the start; and the weeks toward winter foggier than the first.
 import { describe, it, expect } from 'vitest';
 import { seasonOf } from '../../src/sim/season';
@@ -12,9 +12,9 @@ describe('the seasons (M5-28)', () => {
   it('turn from autumn into winter, day by day', () => {
     const a = seasonOf(at(1)), m = seasonOf(at(23)), w = seasonOf(at(46));
     expect(a.name).toBe('autumn'); expect(w.name).toBe('winter');
-    expect(a.turn).toBeCloseTo(0.3, 1); expect(a.bare).toBe(0); expect(a.falling).toBeGreaterThan(0);
-    expect(m.falling).toBeGreaterThan(0.8); expect(m.straw).toBeGreaterThan(0.5); expect(m.bare).toBeGreaterThan(0.3);
-    expect(w.bare).toBeGreaterThan(0.8); expect(w.straw).toBe(1); expect(w.falling).toBeLessThan(0.1);
+    expect(a.turn).toBeGreaterThan(0.75); expect(a.bare).toBeGreaterThan(0.2); expect(a.bare).toBeLessThan(0.45); expect(a.litter).toBeGreaterThan(0.4);
+    expect(m.litter).toBeGreaterThan(a.litter); expect(m.straw).toBeGreaterThan(0.5); expect(m.bare).toBeGreaterThan(0.5);
+    expect(w.bare).toBeGreaterThan(0.8); expect(w.straw).toBe(1); expect(w.litter).toBeLessThan(m.litter);
     // The days draw in: at 18:15 day 1 is still full daylight, deep winter's is fading; at 06:45 the reverse.
     expect(daylight(at(1, 18.15))).toBe(1);
     expect(daylight(at(46, 18.15))).toBeLessThan(1);
