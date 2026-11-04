@@ -283,6 +283,7 @@ This log has two parts. First, the director's notes (U-###), newest first, each 
 - **D-134** (M10-25): Picking a placed bedroll, mattress, folding crate or toolbox back up is crouch + Interact (plain Interact already opens the sleep menu or the crate): back in the backpack if it fits; a crate only empty; a bed's hideout (and the power wired in there, returned too) goes with it.
 - **D-135** (M10-30): The second of two cables a route would lay side by side outside the start hideout is drawn from the dice into nothing, so the frozen city is otherwise unchanged (U-053).
 - **D-136** (M10-37): The takeover's timeline, as the found documents tell it: the ASI news in January 2038 (celebrated in Jiefangbei); the city's services run by the Municipal Dispatch Platform (its drone docks on the roofs); the cordon in late August (the bridges, ferries and cableway shut); registration at Jiaochangkou in early September; the machines taking over round 9-10 September. Clues, never stated outright.
+- **D-137** (M10-48): Machines take fewer hits (U-104): quadrupeds and humanoids half (a dog 15 pistol rounds to the body, 2 to the head; a humanoid 60 and 2), the other ground machines a third fewer, drones (the crawler among them) as they were. A humanoid's knee breaks at 60 damage and its battery at 90 (were 100 and 120), so they still come before it dies.
 
 ## Removed or replaced
 
