@@ -320,7 +320,7 @@ A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a cam
 
 ## 13. Audio
 
-Synthesised with Web Audio, one master volume: footsteps by surface (low and soft), breathing and heartbeat, rotor buzz with Doppler, servo whine, gunfire, rain, the rivers, city hum, tunnel drips. The street speakers' announcements are recorded (Kokoro, Chinese) and play from the lampposts round him, unsubtitled. Anna's lines play in the same voice, clear. The game has no music of its own: the laptop's Songs. A trailer track of about 90 s ships for the director's trailer (cold open, introduction, escalation, climax, button).
+Synthesised with Web Audio, one master volume: footsteps by surface (low and soft), breathing and heartbeat, rotor buzz with Doppler, servo whine, gunfire, rain, the rivers, city hum, tunnel drips. The street speakers' announcements are recorded (Kokoro, Chinese) and play from the lampposts round him, unsubtitled. Anna's lines play in the same voice, clear. The game has no music of its own: the laptop's Songs. A trailer track of 90 s ships for the director's trailer, public/audio/trailer.ogg, made by `node tools/trailer.mjs` (synthesised sample by sample, A minor, 120 bpm, the menu's motif): cold open 0-12 s, introduction 12-35, escalation 35-65, climax 65-85, button 85-90 (a hard cut, a last A, a servo and a rotor leaving).
 
 ## 14. Art direction
 
