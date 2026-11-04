@@ -312,7 +312,7 @@ A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a cam
 
 ## 12. Menus, maps and the tutorial (U-104)
 
-**Main menu**, on plain black (U-105), everything paused under it: 重庆 2038; Continue (the save's date and time); New Run; Settings; Maps; the version number, which opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository. Ice blue on near-black, like every menu.
+**Main menu**, on plain black (U-105), everything paused under it, its own quiet music looping (a slow A-minor piece: pad, bass, an echoing electric-piano line; it fades out as play starts, M10-60): 重庆 2038; Continue (the save's date and time); New Run; Settings; Maps; the version number, which opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository. Ice blue on near-black, like every menu.
 
 **Maps.** Lists the maps in the maps folder (the desktop game's maps/ folder; the browser's saved maps), the tutorial among them. Double click plays one; a single click selects it to edit, delete or copy; New makes one.
 

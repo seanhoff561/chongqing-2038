@@ -33,6 +33,7 @@ import { seasonOf } from './sim/season';
 import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
+import { MenuMusic } from './audio/menu';
 import { playStep, underfoot } from './audio/steps';
 import { RaidLight } from './render/raidlight';
 import { Sky } from './render/sky';
@@ -98,6 +99,8 @@ export class Game {
   readonly bodyFx: BodyFx;
   readonly inv: InventoryUI;
   readonly audio = new Audio();
+  /** the main menu's music (M10-60) */
+  readonly menuMusic = new MenuMusic(this.audio);
   /** the machines heard where they are (M4-33) */
   readonly sound = new Soundscape(this.audio);
   /** red light flashing round the chamber while a raid breaks in (M4-63) */
@@ -397,7 +400,8 @@ export class Game {
     this.view.setLamp(this.state.player.lamp);
     this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
-    // What he hears of the city and its machines (audio/soundscape.ts).
+    // What he hears of the city and its machines (audio/soundscape.ts); the main menu's own music while it's up.
+    this.menuMusic.update(this.menuUp());
     this.alarmBoards();
     this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5);
     this.view.render(this.state.tick / 60, this.state.wstate.open);

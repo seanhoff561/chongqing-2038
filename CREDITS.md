@@ -11,6 +11,7 @@ Chongqing 2038 is coded entirely by Claude (Anthropic) from the director's promp
 | The street speakers' voice (lines from src/data/announce.ts) | public/audio/pa/*.ogg | [Kokoro-82M v1.1-zh](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh) (ONNX build: onnx-community), voice zf_001 | hexgrad | Apache-2.0 |
 | Streets, buildings, parks, rail, bridges, the cableway, the river banks | src/data/geo/osm.json | © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors | | ODbL 1.0 (the extract is a derivative database) |
 | The ground's height | src/data/geo/ground.ts | Terrain Tiles on AWS Open Data (Mapzen / Tilezen) from SRTM (NASA/USGS, public domain), GMTED2010 and ETOPO1, smoothed by tools/geo-fetch.mjs | | public domain |
+| The main menu's music | src/audio/menu.ts | composed for the game and played by Web Audio synthesis | Claude (Anthropic) | the game's own |
 | Rendering | three.js | [threejs.org](https://threejs.org) | three.js authors | MIT |
 
 ## Used to make it, not shipped
