@@ -259,7 +259,7 @@ export function tickProps(t: number, open: Record<string, boolean> = {}) {
 const SMALL = new Set(['jbox', 'chalkmouse', 'weeds', 'trash', 'debris', 'boxes', 'bags', 'pot', 'scooter', 'bike', 'sign', 'bin', 'rebar', 'shrub', 'garden', 'bench', 'mahjong', 'drum', 'stall',
   'cablebundle', 'dish', 'antenna', 'stilts', 'laundry', 'dronewreck', 'bangbang']);
 
-/** Loose litter and clutter, nothing in the way or to hide in: the graphics preset draws a share of it (M3-17). */
+/** Loose litter and clutter, nothing in the way or to hide in: the graphics draw a share of it (GFX.props). */
 const LITTER = new Set(['weeds', 'trash', 'debris', 'pot', 'scooter', 'bike', 'sign', 'rebar', 'shrub', 'cablebundle', 'dish', 'antenna', 'laundry', 'dronewreck', 'bangbang']);
 const keep = (p: Prop, share: number) => share >= 1 || !LITTER.has(p.kind) || (((Math.round(p.x * 7) * 73856093) ^ (Math.round(p.z * 7) * 19349663)) >>> 0) % 1000 / 1000 < share;
 
@@ -277,7 +277,8 @@ export function buildProps(props: Prop[], share = 1): THREE.Group {
     o.position.set(p.x, p.y, p.z);
     o.rotation.y = p.yaw;
     const merger = SMALL.has(p.kind) ? small : big;
-    if (o.userData.tick) ticking.push(o.userData.tick);
+    // (Out of sight, its cell hidden, it waits: M10-04. Its own visibility it may set itself, so only its parents'.)
+    if (o.userData.tick) { const f = o.userData.tick as Tick; ticking.push((t, open) => { if (o.parent?.visible !== false && o.parent?.parent?.visible !== false) f(t, open); }); }
     // Grates and hatches that open and the bags over them (M3-72, M3-73a, M3-83), hundreds of them in the basements: drawn near only.
     if (p.kind === 'grate' || p.kind === 'cover' || p.kind === 'hatch') o.userData.chunk = o.userData.detail = true;
     if ((o as THREE.Mesh).isMesh && !o.userData.tick && o.children.length === 0) merger.add(o as THREE.Mesh);

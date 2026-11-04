@@ -12,7 +12,7 @@ import type { World } from './world/world';
 import { getWorld } from './world/build';
 import { scenarioByName, scenarios, type Scenario } from './data/scenarios';
 import { Input } from './input/input';
-import { View, PRESETS, type Preset } from './render/view';
+import { View, GFX } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
 import { lineById, SPEAKERS } from './data/dialogue';
@@ -195,19 +195,13 @@ export class Game {
     board.value = boardOf(paKind(st ?? 'unaware', this.state.time / 3600));
   }
 
-  /** The draw distance: the scenario's, or the graphics preset's. With far stand-ins the whole city shows through
+  /** The draw distance: the scenario's, or the graphics'. With far stand-ins the whole city shows through
    *  aerial haze and the draw distance is the detail radius. */
   private applyDraw() {
-    this.drawDistance = this.scenario.draw ?? PRESETS[this.view.preset].draw;
+    this.drawDistance = this.scenario.draw ?? GFX.draw;
     lodRadius.value = this.world.far.length ? this.drawDistance : 1e9;
     this.view.fp.cam.far = this.hazeDistance() + 100;
     this.view.fp.cam.updateProjectionMatrix();
-  }
-
-  /** Switch graphics preset (M3-17): the world built again if it draws a different share of the props. */
-  setPreset(p: Preset) {
-    if (this.view.setPreset(p)) this.view.setWorld(this.world);
-    this.applyDraw();
   }
 
   /** Switch scenario in place: '' is the game, resumed from its ironman save if there is one. */

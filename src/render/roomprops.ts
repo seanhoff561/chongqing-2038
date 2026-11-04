@@ -224,18 +224,28 @@ const MODELS: Record<string, Model> = {
 };
 
 /** One piece, in place: built on its kit, knocked over onto its back if fallen, then moved and turned. */
+/** Each kind and size of piece, built once in three variants and copied (M10-04: building a room's furniture from
+ *  scratch as he came near cost frames). */
+const made = new Map<string, THREE.BufferGeometry>();
 function piece(p: Prop): THREE.BufferGeometry | null {
   const kind = p.kind.slice(2), m = MODELS[kind];
   if (!m) return null;
-  const k = new Kit((Math.round(p.x * 31) * 73856093) ^ (Math.round(p.z * 17) * 19349663) ^ Math.round(p.y * 7));
-  // (Furniture and what's in it as it is: it stands out against the faded city, M3-63.)
-  k.muted = false;
-  m(k, p.w ?? 0.5, p.h ?? 0.5, p.d ?? 0.5);
-  const g = k.geometry(), M = new THREE.Matrix4();
-  // On its back: its front up, lying where its footprint now runs out from the wall.
-  // (Front up, then its top turned to point out of the wall; its back's edge stays at the wall.)
-  if (p.text === 'fallen') g.applyMatrix4(M.makeRotationX(-Math.PI / 2)).applyMatrix4(M.makeRotationY(Math.PI)).applyMatrix4(M.makeTranslation(0, (p.d ?? 0.5) / 2, -(p.d ?? 0.5) / 2));
-  return g.applyMatrix4(M.makeRotationY(p.yaw)).applyMatrix4(M.makeTranslation(p.x, p.y, p.z));
+  const seed = (Math.round(p.x * 31) * 73856093) ^ (Math.round(p.z * 17) * 19349663) ^ Math.round(p.y * 7), w = p.w ?? 0.5, h = p.h ?? 0.5, d = p.d ?? 0.5;
+  const key = `${kind}|${w.toFixed(2)}|${h.toFixed(2)}|${d.toFixed(2)}|${p.text === 'fallen'}|${(seed >>> 0) % 3}`;
+  let base = made.get(key);
+  if (!base) {
+    const k = new Kit(seed);
+    // (Furniture and what's in it as it is: it stands out against the faded city, M3-63.)
+    k.muted = false;
+    m(k, w, h, d);
+    base = k.geometry();
+    // On its back: its front up, lying where its footprint now runs out from the wall.
+    // (Front up, then its top turned to point out of the wall; its back's edge stays at the wall.)
+    if (p.text === 'fallen') { const M = new THREE.Matrix4(); base.applyMatrix4(M.makeRotationX(-Math.PI / 2)).applyMatrix4(M.makeRotationY(Math.PI)).applyMatrix4(M.makeTranslation(0, d / 2, -d / 2)); }
+    made.set(key, base);
+  }
+  const M = new THREE.Matrix4();
+  return base.clone().applyMatrix4(M.makeRotationY(p.yaw)).applyMatrix4(M.makeTranslation(p.x, p.y, p.z));
 }
 
 const TILE = 24, NEAR = 40, FAR = 52;

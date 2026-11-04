@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-04 150 fps on medium (U-104).
-Features done: 331 / 424 | Last done: M10-03
+**Status:** building M10. Next: M10-05 Settings, word for word (U-104).
+Features done: 332 / 424 | Last done: M10-04
 <!-- /status -->
 
 ## What's built
@@ -29,3 +29,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-01: death returns him to his last sleep, the death count kept.
 - M10-02: a lean repository and a ten times faster check (one built city per test worker: 631 tests in under 4 minutes).
 - M10-03: the director's docs rewritten: DESIGN, PROGRESS, DECISIONS
+- M10-04: 150 fps on medium: a leaner sim tick and frame

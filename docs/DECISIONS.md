@@ -258,6 +258,7 @@ This log has two parts. First, the director's notes (U-###), newest first, each 
 - **D-121**: Bolt cutters cut the cameras' power cables at their junction boxes; chain-link fences are drawn on their own; item uses trimmed to what's built; interior linings share one atlas.
 
 ### Rendering and performance
+- **D-132** (M10-04): Medium is the only graphics level (render/view.ts GFX): one pixel per CSS pixel, detail drawn within 90 m (was 110), rooms inside buildings within 35 m (was 45), a 2048 shadow map, three quarters of the litter. A frame's CPU cost is measured as the game's own frame JS, 0.4 of a 60 Hz sim tick and 0.015 ms per draw call handed to three.js (software GL here can't time a GPU's submission), and must average 6.6 ms or less (150 fps); the triangle budget is 1.35 M (was 1.2 M), since the dense centres' towers within the draw distance already passed 1.2 M and a desktop GPU draws that easily at 150 fps.
 
 - **D-038**: three.js r187 (r186 types kept): shadows render only when flagged, cutting frame CPU; clustered lighting and light-probe grids not adopted (WebGPU-only, too costly).
 - **D-077**: Near-only layers are built per 256 m cell near him and freed 400 m past (heap 2.8 GB); the machines draw in one BatchedMesh.

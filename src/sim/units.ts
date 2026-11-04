@@ -86,6 +86,8 @@ export const isOff = (s: { time: number }, u: Unit) => !!u.dead || !!u.shut || !
  *  and where and when it left its beat. */
 export interface Trip {
   kind: 'look' | 'check' | 'hunt' | 'search' | 'swap'; path: { x: number; y: number; z: number }[]; i: number; pos: { x: number; y: number; z: number }; yaw: number; scan: number; back: boolean; left: { x: number; y: number; z: number }; leftAt: number;
+  /** where it last made its way for (M10-04): it makes a new one only once that's moved 2 m */
+  goal?: { x: number; y: number; z: number };
   /** a humanoid's search (M4-10): the hiding places still to go through */
   visits?: { x: number; y: number; z: number }[];
   /** a humanoid's cover it's holding while it can see him (M4-10) */

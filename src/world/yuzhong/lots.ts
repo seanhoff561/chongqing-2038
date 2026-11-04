@@ -74,6 +74,15 @@ export function districtAt(x: number, z: number): { district: string; cyber: boo
   }
   return best;
 }
+/** Just the district's name, nothing allocated (M10-04: the sim asks it for every machine, many times a tick). */
+export function districtName(x: number, z: number): string {
+  let best = 'yuzhong', bd = Infinity;
+  for (const [k, reach] of DISTRICTS) {
+    const L = GEO.landmarks[k], dx = L.x - x, dz = L.z - z, d = dx * dx + dz * dz;
+    if (d < reach * reach && d < bd) { bd = d; best = k; }
+  }
+  return best;
+}
 
 /** APRON: the gap kept round each lot (half the narrowest alley: obbOverlap pads both); LEVEL: how far round it the ground is levelled, more than a
  *  ground cell's diagonal so its edges never lean on unlevelled ground. */

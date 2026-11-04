@@ -7,11 +7,11 @@
 // one, and 15% a limb (a sprained leg, or a graze to an arm that only bleeds).
 import type { SimState } from './types';
 import type { World } from '../world/world';
-import { UNITS, WEAPONS, SIGHT } from '../data/units';
+import { UNITS, WEAPONS, SIGHT, TAG } from '../data/units';
 import { sprainLeg } from './body';
 import { rand } from './rng';
 import { unitPose, isOff } from './units';
-import { visibility } from './perception';
+import { visibility, farFromBeat } from './perception';
 import { districtOf } from './district';
 import { DT } from './types';
 import { launcher } from './tag';
@@ -32,8 +32,8 @@ export function stepFire(s: SimState, w: World) {
     const wpn = UNITS[u.kind].weapon;
     if (!wpn) continue;
     // (Neither it nor any district engaged, it holds fire without being placed: M9-12, most of them most ticks.)
-    const calm = u.state !== 'engaged' && !hot.size;
-    const at = calm || isOff(s, u) || (u.reserve && !u.trip) ? null : unitPose(w, u, s.time);
+    const calm = u.state !== 'engaged' && !hot.size, W0 = WEAPONS[wpn];
+    const at = calm || farFromBeat(w, u, p.pos.x, p.pos.z, Math.max(W0.reach, u.kind === 'quadruped' ? TAG.reach : 0) + 3) || isOff(s, u) || (u.reserve && !u.trip) ? null : unitPose(w, u, s.time);
     if (!at || !at.active || at.docked || (u.state !== 'engaged' && !(hot.size && hot.has(districtOf(at.x, at.z))))) { u.aim = false; u.fire = undefined; u.left = undefined; continue; }
     // (A prod's reach from its body to his middle: not up through a ledge he's on.)
     const W = WEAPONS[wpn], d = wpn === 'prod' ? Math.hypot(p.pos.x - at.x, p.pos.y + 0.9 - at.y - 0.6, p.pos.z - at.z) : Math.hypot(p.pos.x - at.x, p.pos.y + 1 - at.y, p.pos.z - at.z);

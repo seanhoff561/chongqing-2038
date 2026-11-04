@@ -86,9 +86,10 @@ function wireTrips(s: SimState, c: { x: number; y: number; z: number; to?: { x: 
 
 /** Each beat's ground, its dock's too (a box, x and z). */
 const beatBoxes = new WeakMap<Patrol, { x0: number; z0: number; x1: number; z1: number }>();
-/** Whether a unit walking its beat is too far from him anywhere along it, or on the way to and from its dock, to see
- *  him (a unit off its beat, a column's or a fixed sensor is always placed and looked at). */
-function offBeat(s: SimState, w: World, u: Unit) {
+/** Whether a unit walking its beat is nowhere along it (or on the way to and from its dock) within r of (x, z): then
+ *  it can't see, hear or shoot there, and needn't be placed to know it (M10-04: most of the city's machines most
+ *  ticks). A unit off its beat, a column's or a fixed sensor never is. */
+export function farFromBeat(w: World, u: Unit, x: number, z: number, r: number) {
   if (u.trip || u.stop || u.crash || u.convoy || u.cam !== undefined || u.reserve || u.patrol < 0) return false;
   const P = w.patrols[u.patrol];
   let b = beatBoxes.get(P);
@@ -97,9 +98,10 @@ function offBeat(s: SimState, w: World, u: Unit) {
     b = { x0: Math.min(...pts.map(q => q.x)), z0: Math.min(...pts.map(q => q.z)), x1: Math.max(...pts.map(q => q.x)), z1: Math.max(...pts.map(q => q.z)) };
     beatBoxes.set(P, b);
   }
-  const r = rangeOf(s, u.kind) + 3, p = s.player.pos;
-  return p.x < b.x0 - r || p.x > b.x1 + r || p.z < b.z0 - r || p.z > b.z1 + r;
+  return x < b.x0 - r || x > b.x1 + r || z < b.z0 - r || z > b.z1 + r;
 }
+/** Whether a unit walking its beat is too far from him anywhere along it to see him. */
+const offBeat = (s: SimState, w: World, u: Unit) => farFromBeat(w, u, s.player.pos.x, s.player.pos.z, rangeOf(s, u.kind) + 3);
 
 /** How far a unit sees now: its day range by day, its night range by night (between them at dusk), cut by fog and rain. */
 export function rangeOf(s: SimState, kind: UnitKind) {
@@ -148,6 +150,8 @@ export function stepSight(s: SimState, w: World, every = 6) {
       continue;
     }
     if ((u.id + s.tick) % every) continue;
+    // (A fixed sensor too far from him to see him: M10-04.)
+    if (u.cam !== undefined && u.kind !== 'pir') { const c = w.cameras[u.cam], R = rangeOf(s, u.kind) + 3; if (Math.abs(c.x - s.player.pos.x) > R || Math.abs(c.z - s.player.pos.z) > R) { u.aware = Math.max(0, (u.aware ?? 0) - SIGHT.decay * dt); continue; } }
     // Blinded (M4-19), or nowhere on its whole beat within sight of him (M9-12: most of the city's machines, not
     // placed at all), it sees nothing.
     if (u.blind || offBeat(s, w, u)) { u.aware = Math.max(0, (u.aware ?? 0) - SIGHT.decay * dt); continue; }
@@ -175,7 +179,8 @@ export function stepHearing(s: SimState, w: World) {
     if (e.t !== 'noise') continue;
     const hostile = HEARING.hostile.has(e.kind);
     for (const u of s.units) {
-      if (isOff(s, u)) continue;
+      const hear = SENSES[u.kind].hear;
+      if (!hear || farFromBeat(w, u, e.x, e.z, e.r * hear + 2) || isOff(s, u)) continue;
       const at = unitPose(w, u, s.time);
       if (!at.active || at.docked) continue;
       const S = SENSES[u.kind], ear = { x: at.x, y: at.y + Math.max(0.3, S.eye), z: at.z }, d = Math.hypot(e.x - ear.x, e.y + 0.5 - ear.y, e.z - ear.z), r = e.r * S.hear;

@@ -11,8 +11,9 @@ import type { SimState } from './types';
 import type { World } from '../world/world';
 import { STATIC, SPREAD } from '../data/units';
 import { unitPose, isOff, type Unit } from './units';
-import { districtAt } from '../world/yuzhong/lots';
+import { districtName } from '../world/yuzhong/lots';
 import { remember } from './hive';
+import { farFromBeat } from './perception';
 import { SCALE, nextHour } from './clock';
 
 type V3 = { x: number; y: number; z: number };
@@ -25,7 +26,7 @@ export interface District { state: Alert; since: number; contact: number; until:
 export const DISTRICT = { lost: 4, search: 150, calm: 6 };
 
 /** Which district a place is in: the city's, round its landmarks (anywhere else 'yuzhong'). */
-export const districtOf = (x: number, z: number) => districtAt(x, z).district;
+export const districtOf = districtName;
 const where = (w: World, s: SimState, u: Unit): V3 => (STATIC.has(u.kind) ? w.cameras[u.cam!] : unitPose(w, u, s.time));
 
 export const alertOf = (s: SimState, d: string): Alert => s.hive.districts[d]?.state ?? 'unaware';
@@ -75,6 +76,15 @@ const xz = (p: V3): [number, number] => [p.x, p.z];
 
 /** The network told where he was at t: its last known position, and the way he's going (from where he was when it
  *  last moved him a metre or more), passed to every machine in the district and every other within 300 m. */
+/** The districts a beat's points (and its dock) are in. */
+const beatDist = new WeakMap<object, Set<string>>();
+function beatDistricts(w: World, u: Unit) {
+  const P = w.patrols[u.patrol];
+  let d = beatDist.get(P);
+  if (!d) { d = new Set([...P.pts, ...(P.dock !== undefined ? [w.docks[P.dock]] : [])].map(q => districtOf(q.x, q.z))); beatDist.set(P, d); }
+  return d;
+}
+
 function tell(s: SimState, w: World, k: string, t: number, at: V3) {
   const was = s.hive.lkp;
   if (was && t <= was.t) return;
@@ -83,6 +93,8 @@ function tell(s: SimState, w: World, k: string, t: number, at: V3) {
   if (d >= 1) { hx = dx / d; hz = dz / d; ax = at.x; az = at.z; }
   s.hive.lkp = { x: at.x, y: at.y, z: at.z, t, hx, hz, ax, az };
   for (const u of s.units) {
+    // (One walking a beat that's nowhere near and wholly in other districts can't be told: M10-04.)
+    if (u.patrol >= 0 && farFromBeat(w, u, at.x, at.z, SPREAD) && !beatDistricts(w, u).has(k)) continue;
     if (isOff(s, u)) continue;
     const p = where(w, s, u);
     if (Math.hypot(p.x - at.x, p.z - at.z) <= SPREAD || districtOf(p.x, p.z) === k) u.told = s.time;

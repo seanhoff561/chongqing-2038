@@ -1,6 +1,6 @@
 import './style.css';
-import { PRESETS } from './render/view';
 import { Game } from './game';
+import { GFX } from './render/view';
 import { unitPose } from './sim/units';
 import { scenarios, scenarioByName } from './data/scenarios';
 import { DevPanel } from './dev/panel';
@@ -58,10 +58,10 @@ requestAnimationFrame(() => requestAnimationFrame(() => { loading?.remove(); boo
   player: () => game.state.player,
   calib: CALIB,
   kill: (cause = 'test') => die(game.state, cause),
-  presets: PRESETS,
   cues: () => Object.keys(MOVE_SOUNDS),
   playCue: (id: string, surf?: Surface, wet = false) => (surf ? playStep(game.audio, id, surf, wet) : playMove(game.audio, id)),
   give: (id: string, n = 1) => addItem(game.state, game.state.inv.pack, id, n),
   save: () => writeSave(localStorage, game.scenario.name, game.state),
   unitPose,
+  gfx: GFX,
 };

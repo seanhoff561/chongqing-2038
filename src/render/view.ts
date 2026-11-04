@@ -42,7 +42,9 @@ export class View {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     // (Each shader's compile log read back at once stalls the GPU: only for dev tools and the browser tests, M9-12.)
     this.renderer.debug.checkShaderErrors = navigator.webdriver || location.search.includes('dev=1');
-    this.setPreset(loadPreset());
+    // (Medium for everyone, U-104: one pixel per CSS pixel, the sun's shadow map.)
+    this.renderer.setPixelRatio(GFX.ratio);
+    this.sun.shadow.mapSize.set(GFX.shadow, GFX.shadow);
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     // Filmic response: highlights roll off, shadows keep detail (U-012).
@@ -96,7 +98,7 @@ export class View {
     // In the big city the trims, the rooms and the small props (half its geometry, all drawn only near) are built a
     // 256 m cell at a time as he nears it and let go once he's well away (M4-01c); small worlds build them all now.
     this.stream.clear();
-    this.share = PRESETS[this.preset].props;
+    this.share = GFX.props;
     const trims = w.decor.filter(s => small(s) && !inner(s)), insides = w.solids.filter(inner).concat(w.decor.filter(inner));
     if (this.hasFar) {
       // (By its middle in the world, as its chunk is chosen: a turned solid's box is its bounds.)
@@ -105,7 +107,7 @@ export class View {
       for (const s of insides) mid(s).rooms.push(s);
     } else { const near = nearLayers(trims, insides, [], 1); if (near.length) meshes.add(...near); }
     if (w.ground) meshes.add(...buildGroundMeshes(w.ground, this.hasFar ? 'near' : 'all', w.marks), ...buildStreetMeshes(w.ground, w.streets, this.hasFar ? 'near' : 'all', w.lawns));
-    const share = PRESETS[this.preset].props, props = buildProps(w.props.filter(p => !p.kind.startsWith('f:') && !(this.hasFar && isSmall(p))), share);
+    const share = GFX.props, props = buildProps(w.props.filter(p => !p.kind.startsWith('f:') && !(this.hasFar && isSmall(p))), share);
     if (this.hasFar) for (const p of w.props) if (isSmall(p)) this.cellAt0(p.x, p.z).props.push(p);
     this.rooms?.dispose();
     this.rooms = new RoomProps(w.props.filter(p => p.kind.startsWith('f:')));
@@ -173,27 +175,8 @@ export class View {
     this.renderer.compileAsync(this.scene, this.fp.cam).catch(() => {});
   }
 
-  /** The graphics preset (M3-17), remembered between visits. Returns whether the share of props drawn changed (the
-   *  world then wants building again). */
-  preset: Preset = 'medium';
   /** Whether the sun casts shadows at all (Sky turns them off at night and underground). */
   shadows = true;
-  setPreset(p: Preset): boolean {
-    const was = PRESETS[this.preset], q = PRESETS[p];
-    this.preset = p;
-    this.renderer.setPixelRatio(p === 'high' ? Math.min(devicePixelRatio, q.ratio) : q.ratio);
-    this.renderer.setSize(innerWidth, innerHeight);
-    this.shadows = q.shadow > 0;
-    if (this.shadows && this.sun.shadow.mapSize.x !== q.shadow) {
-      this.sun.shadow.map?.dispose();
-      this.sun.shadow.map = null;
-      this.sun.shadow.mapSize.set(q.shadow, q.shadow);
-      this.shadowKey = '';
-    }
-    this.visFar = -1;
-    try { localStorage.setItem(PRESET_KEY, p); } catch { /* private mode: not remembered */ }
-    return was.props !== q.props;
-  }
 
   /** 0 off, 1 white (bright, 40 m), 2 red (dim, 12 m: keeps night vision, shows less). */
   setLamp(mode: number) {
@@ -227,7 +210,7 @@ export class View {
   }
   /** One step of the streaming within a time budget; false if nothing near was left to build. */
   private streamStep(c: THREE.Vector3, budget: number): boolean {
-    const reach = PRESETS[this.preset].detail, d = (q: { x: number; z: number }) => Math.hypot(Math.max(q.x - c.x, 0, c.x - q.x - 256), Math.max(q.z - c.z, 0, c.z - q.z - 256));
+    const reach = GFX.detail, d = (q: { x: number; z: number }) => Math.hypot(Math.max(q.x - c.x, 0, c.x - q.x - 256), Math.max(q.z - c.z, 0, c.z - q.z - 256));
     let next: StreamCell | null = null;
     for (const q of this.stream.values()) {
       const dq = d(q);
@@ -262,7 +245,7 @@ export class View {
     if (this.stream.size) this.streamCells(c);
     if (far !== this.visFar || Math.hypot(c.x - this.visAt.x, c.z - this.visAt.z) > 4) {
       this.visFar = far; this.visAt.copy(c);
-      const within = (o: THREE.Object3D) => { const [x0, z0, x1, z1] = o.userData.rect; return Math.hypot(Math.max(x0 - c.x, 0, c.x - x1), Math.max(z0 - c.z, 0, c.z - z1)) < (o.userData.inner ? Math.min(far, PRESETS[this.preset].inner) : o.userData.detail ? Math.min(far, PRESETS[this.preset].detail) : far); };
+      const within = (o: THREE.Object3D) => { const [x0, z0, x1, z1] = o.userData.rect; return Math.hypot(Math.max(x0 - c.x, 0, c.x - x1), Math.max(z0 - c.z, 0, c.z - z1)) < (o.userData.inner ? Math.min(far, GFX.inner) : o.userData.detail ? Math.min(far, GFX.detail) : far); };
       for (const cell of this.cells) if ((cell.visible = within(cell))) for (const m of cell.children) m.visible = within(m);
     }
     tickProps(t, open);
@@ -320,9 +303,13 @@ function freeze(o: THREE.Object3D): boolean {
   return live;
 }
 
-/** three.js's transform update, passing over frozen subtrees (their matrices were set when the world was built). */
+/** three.js's transform update, passing over frozen subtrees (their matrices were set when the world was built) and
+ *  hidden ones (M10-04: most of the city's moving props are in cells out of sight); a subtree passed over while hidden
+ *  is brought up to date whole when it shows again. */
 function liveWalk(o: THREE.Object3D, force: boolean) {
   if (o.userData.frozen) return;
+  if (!o.visible) { o.userData.stale = true; return; }
+  if (o.userData.stale) { o.userData.stale = false; force = true; }
   if (o.matrixAutoUpdate) o.updateMatrix();
   if (o.matrixWorldNeedsUpdate || force) {
     if (o.parent) o.matrixWorld.multiplyMatrices(o.parent.matrixWorld, o.matrix); else o.matrixWorld.copy(o.matrix);
@@ -332,28 +319,11 @@ function liveWalk(o: THREE.Object3D, force: boolean) {
   for (const c of o.children) liveWalk(c, force);
 }
 
-export type Preset = 'low' | 'medium' | 'high';
-/** Graphics presets (M3-17): pixels drawn per CSS pixel (high: the display's own, up to 1.5), the radius detail is
- *  drawn in (blocks beyond it are painted boxes), how far small trims and the rooms inside buildings are drawn, the
- *  sun's shadow map (0: no shadows) and the share of loose litter and clutter drawn. Medium is what the budgets are
- *  measured at. */
-export const PRESETS: Record<Preset, { ratio: number; draw: number; detail: number; inner: number; shadow: number; props: number; /** draw calls and triangles a frame (M6-26: DESIGN section 16's at Medium) */ budget: { calls: number; tris: number } }> = {
-  low: { ratio: 0.7, draw: 110, detail: 70, inner: 30, shadow: 0, props: 0.4, budget: { calls: 200, tris: 1_000_000 } },
-  medium: { ratio: 1, draw: 160, detail: 110, inner: 45, shadow: 2048, props: 0.75, budget: { calls: 250, tris: 1_200_000 } },
-  high: { ratio: 1.5, draw: 230, detail: 150, inner: 60, shadow: 4096, props: 1, budget: { calls: 340, tris: 1_900_000 } },
-};
-const PRESET_KEY = 'cq2038.preset';
-function loadPreset(): Preset {
-  try {
-    const p = localStorage.getItem(PRESET_KEY);
-    if (p === 'low' || p === 'medium' || p === 'high') return p;
-    // (The old resolution setting.)
-    const r = localStorage.getItem('cq2038.resolution');
-    if (r === 'high') return 'high';
-    if (r === 'fast') return 'low';
-  } catch { /* default */ }
-  return 'medium';
-}
+/** The graphics, medium for everyone (U-104; the presets of M3-17 are gone): pixels drawn per CSS pixel, the radius
+ *  detail is drawn in (blocks beyond it are painted boxes), how far small trims and the rooms inside buildings are
+ *  drawn, the sun's shadow map and the share of loose litter and clutter drawn; the draw calls and triangles a frame
+ *  may take (tests/e2e/budgets.e2e.mjs). */
+export const GFX = { ratio: 1, draw: 160, detail: 90, inner: 35, shadow: 2048, props: 0.75, budget: { calls: 250, tris: 1_350_000 } };
 
 /** A street pole: a concrete post (its face on the grip line, 0.08 m in front) with step bolts either side up it. */
 function poleGeometry(h: number): THREE.BufferGeometry {

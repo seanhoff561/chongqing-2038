@@ -14,6 +14,7 @@ import { heightAt } from '../world/heightfield';
 import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint } from './combat';
+import { farFromBeat } from './perception';
 import { SCALE } from './clock';
 import { DT } from './types';
 
@@ -135,8 +136,9 @@ function walk(s: SimState, w: World, u: Unit) {
 export function stepAlert(s: SimState, w: World) {
   const think = s.tick % 6;
   for (const u of s.units) {
-    // (A reserve waits on its dock or in its garage until it's sent: M4-14, M4-47.)
-    if (isOff(s, u) || (u.reserve && !u.trip)) continue;
+    // (A camera or sensor that's seen nothing has nothing to do: M10-04, two thirds of the units. A reserve waits on
+    // its dock or in its garage until it's sent: M4-14, M4-47.)
+    if ((u.cam !== undefined && !u.aware && u.state === 'unaware' && u.checked === undefined) || (u.reserve && !u.trip) || isOff(s, u)) continue;
     // (The helicopter flies where it's sent: M4-92, sim/heli.ts.)
     if (u.kind === 'heli') { if (u.trip) walk(s, w, u); continue; }
     const a = u.aware ?? 0;
@@ -185,7 +187,9 @@ export function stepAlert(s: SimState, w: World) {
         const end = t.path[t.path.length - 1];
         // (A flyer's way ends at its stand-off off to the side of him, or over him: on again once he's moved off it.)
         const off = end ? Math.hypot(end.x - u.seen.x, end.z - u.seen.z) : Infinity, fly = UNITS[u.kind].fly;
-        if (!t.cover && (fly ? off > 2 && Math.abs(off - FLY_SIDE.out) > 2 : off > 2)) { t.path = way(w, u.kind, t.pos, u.seen); t.i = 0; t.scan = 0; t.visits = undefined; }
+        // (A way that can't end on him, up on a roof or through a wall, isn't made again until he's moved: M10-04.)
+        const moved = !t.goal || Math.hypot(t.goal.x - u.seen.x, t.goal.y - u.seen.y, t.goal.z - u.seen.z) > 2;
+        if (!t.cover && moved && (fly ? off > 2 && Math.abs(off - FLY_SIDE.out) > 2 : off > 2)) { t.path = way(w, u.kind, t.pos, u.seen); t.goal = { ...u.seen }; t.i = 0; t.scan = 0; t.visits = undefined; }
       } else if (t.cover && a < SIGHT.min) t.cover = undefined;
       walk(s, w, u);
       continue;
@@ -196,6 +200,8 @@ export function stepAlert(s: SimState, w: World) {
     }
     // Checking where the hive saw him, as it passes nearest the place on its beat (each unit in turn).
     if ((u.id + think) % 6 || u.state !== 'unaware' || u.reserve || !s.hive.seen.length) continue;
+    // (Nowhere on its beat near any of them: not placed to know it, M10-04.)
+    if (s.hive.seen.every(h => farFromBeat(w, u, h.x, h.z, ALERT.checkWithin))) continue;
     const at = unitPose(w, u, s.time);
     if (!at.active || (u.checked !== undefined && s.time - u.checked < loopOf(w, u) * SCALE)) continue;
     for (const h of s.hive.seen) {

@@ -326,7 +326,7 @@ No visible draw distance: detail near him, the rest as cheap stand-ins in aerial
 
 ## 15. Performance
 
-Medium graphics for everyone. Target 150 fps on medium on the director's machine (U-104): a frame's CPU work (sim ticks and render) averages at most 6.6 ms in the city by day and night (tests/e2e/framecost.e2e.mjs), the giant spiders and crowds included; draw calls and triangles are held by tests/e2e/budgets.e2e.mjs. City solids merge per material per 128 m chunk, props instance and merge, far chunks are stand-ins, the shadow map redraws only when needed.
+Medium graphics for everyone (render/view.ts GFX: detail within 90 m, rooms within 35 m, a 2048 shadow map). Target 150 fps on the director's machine (U-104): a frame's CPU work (the game's frame JS, 0.4 of a sim tick, 0.015 ms a draw call) averages at most 6.6 ms at ten viewpoints in the city by day and night, with at most 250 draw calls and 1.35 M triangles at each (tests/e2e/framecost.e2e.mjs). The sim skips machines whose whole beat is out of reach of what's being asked (sight, hearing, fire, the hive's word), a hunting machine plans its way again only when its target has moved, and rooms' furniture is copied from pieces built once. City solids merge per material per 128 m chunk, props instance and merge, far chunks are stand-ins, the shadow map redraws only when needed.
 
 ## 16. The desktop game (U-104)
 
