@@ -87,7 +87,7 @@ canvas { display: block; }
 #settings .st-slide { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--ice); margin-top: 4px; }
 #settings .st-slide input { width: 250px; accent-color: var(--ice); }
 
-#boot { position: fixed; inset: 0; background: rgba(4, 8, 11, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; z-index: 20; }
+#boot { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; z-index: 20; }
 #boot .bt-title { font-size: 30px; color: var(--ice-hi); letter-spacing: 8px; margin-bottom: 16px; }
 #boot button { font: inherit; font-size: 13px; width: 280px; text-align: left; background: var(--ice-btn); color: var(--ice); border: 1px solid var(--ice-line); padding: 7px 12px; cursor: pointer; }
 #boot button:hover { border-color: var(--ice-dim); color: var(--ice-hi); }

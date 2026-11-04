@@ -51,7 +51,7 @@ Movement keys are fixed: WASD to move, the mouse to look, Space to jump, the lef
 
 There is no "let go" key: a hand lets go when its button is released.
 
-**Settings.** Esc in play, and Settings on the main menu, open the same panel, centred, ice blue on near-black, and nothing else is in it, top to bottom: 设置 SETTINGS; 主菜单 Menu (last sleep saved); 音量 Volume (one master slider, long); 灵敏度 Sensitivity (long, a fairly low default); 按键 Keys (the twelve above). With `?dev=1` it also has toggles for the dev UI and the crosshair, for filming. Settings is a panel over the running game: the world goes on (he can be hurt and die), only his own movement and look stop. Esc closes it. Graphics are medium for everyone.
+**Settings.** Esc in play, and Settings on the main menu, open the same panel, centred, ice blue on near-black, and nothing else is in it, top to bottom: 设置 SETTINGS; 继续 Resume (in play: closes it, the mouse taken back; U-105); 主菜单 Menu (last sleep saved); 音量 Volume (one master slider, long); 灵敏度 Sensitivity (long, a fairly low default); 按键 Keys (the twelve above). With `?dev=1` it also has toggles for the dev UI and the crosshair, for filming. Settings is a panel over the running game: the world goes on (he can be hurt and die), only his own movement and look stop. Esc closes it. Closing any menu takes the mouse back for looking round. Graphics are medium for everyone.
 
 **Prompts.** Looking at something he can act on shows its name alone (门 Door), never a key or a hint. A locked door gives no word, only a click; an unlocked door opens at once.
 
@@ -288,11 +288,11 @@ There is one spare HV fuse (a second in the Raffles hub). The construction site 
 
 ## 11. The laptop (U-104)
 
-**In his hands.** Tab takes it out: he holds it in both hands (seen in first person) and can't grab, sprint or jump while it's out. Its screen is ice blue on near-black, minimal; its glow (ice blue) lights him at night (0.5). A full battery lasts 8 game hours open; one battery pack charges it (and all he carries) full; a powered hideout charges it shut. Its corner shows the battery, the time and date, and a skull with the death count; Anna stands in the other.
+**In his hands.** Tab takes it out: he holds it out low in front of him, its screen tipped back toward his eyes (no arms drawn); it goes with his body and the way he faces, not his look, so he looks down to read it and over it to see ahead, and can't grab, sprint or jump while it's out; the page lies on its glass in perspective. Its screen is ice blue on near-black, minimal; its glow (ice blue) lights him at night (0.5). A full battery lasts 8 game hours open; one battery pack charges it (and all he carries) full; a powered hideout charges it shut. Its corner shows the battery, the time and date, and a skull with the death count; Anna stands in the other.
 
 **Standing,** the lean keys turn its four pages: Map, Status, Scan, Notes. Nothing says how.
 
-**Sitting (focus).** Q with it out sits him down where he is (low, as crouched; he goes nowhere until he gets up) and the view closes in on the screen; the mouse moves a cursor; Q or Esc stands him up, back on the four standing pages. The nine dots in the screen's corner open a launcher of every tab; one he can't use yet says what it needs:
+**Sitting (focus).** Q with it out sits him down where he is (low, as crouched; he goes nowhere until he gets up), his eyes come level and the view closes in on the screen; the mouse moves a cursor; Q or Esc stands him up, back on the four standing pages. The nine dots in the screen's corner open a launcher of every tab; one he can't use yet says what it needs:
 
 | Tab | Standing | Sitting |
 |---|---|---|
@@ -310,7 +310,7 @@ A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a cam
 
 ## 12. Menus, maps and the tutorial (U-104)
 
-**Main menu**, over the city, everything paused: 重庆 2038; Continue (the save's date and time); New Run; Settings; Maps; the version number, which opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository. Ice blue on near-black, like every menu.
+**Main menu**, on plain black (U-105), everything paused under it: 重庆 2038; Continue (the save's date and time); New Run; Settings; Maps; the version number, which opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository. Ice blue on near-black, like every menu.
 
 **Maps.** Lists the maps in the maps folder (the desktop game's maps/ folder; the browser's saved maps), the tutorial among them. Double click plays one; a single click selects it to edit, delete or copy; New makes one.
 

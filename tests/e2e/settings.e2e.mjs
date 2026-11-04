@@ -1,4 +1,4 @@
-// M10-05 (U-104): Esc opens the settings, centred, holding exactly what the director listed, word for word: Menu (last
+// M10-05 (U-104, U-105): Esc opens the settings, centred, holding exactly what the director listed, word for word: Resume, Menu (last
 // sleep saved), Volume, Sensitivity and the twelve keys with their defaults; one key rebound to mouse button 4; after
 // a reload the volume, sensitivity and keys are as set. M10-06: the world runs under the settings, not the main menu.
 export default async function ({ open, fail }) {
@@ -10,7 +10,7 @@ export default async function ({ open, fail }) {
     const el = document.querySelector('#settings .st-panel'), b = el.getBoundingClientRect();
     return { rows: [...el.children].map(c => c.tagName === 'LABEL' ? c.childNodes[0].textContent.trim() : c.textContent.trim()), centre: [b.left + b.width / 2, b.top + b.height / 2, innerWidth / 2, innerHeight / 2] };
   })()`);
-  const want = ['设置 SETTINGS', '主菜单 Menu (last sleep saved)', '音量 Volume', '灵敏度 Sensitivity', '按键 Keys',
+  const want = ['设置 SETTINGS', '继续 Resume', '主菜单 Menu (last sleep saved)', '音量 Volume', '灵敏度 Sensitivity', '按键 Keys',
     '冲刺 SprintShift', '蹲下 CrouchCtrl', '爬行 CrawlC', '互动 InteractE', '左探/左页 Lean/Tab LeftMouse4', '右探/右页 Lean/Tab RightMouse5',
     '装弹 ReloadR', '头灯/专注 Headlamp/Focus LaptopQ', '撑墙 ChimneyX', '露宿 Sleep RoughZ', '笔记本 LaptopTab', '背包 BackpackAlt'];
   if (JSON.stringify(r.rows) !== JSON.stringify(want)) fail('settings', `rows: ${JSON.stringify(r.rows)}`);

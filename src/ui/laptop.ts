@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import type { Game } from '../game';
 import { dateText } from '../sim/clock';
 import { night } from '../render/materials';
+import { quadMatrix } from '../render/laptop3d';
 import { MapTools } from './maptools';
 import { Feed } from './feeds';
 import { FLIGHT } from '../sim/flight';
@@ -24,7 +25,11 @@ export class LaptopUI {
   private bar = document.createElement('div');
   private body = document.createElement('div');
   private shown = '';
-  private barShown = '';
+  /** the bar's parts, kept (a click's press and release must land on the same element): the nine dots, the page's
+   *  name, the corner */
+  private dots = document.createElement('button');
+  private title = document.createElement('span');
+  private corner = document.createElement('span');
   /** which page: an index into PAGES */
   page = 0;
   /** The screen's glow on what's round him, after dark: ice blue (U-104). */
@@ -45,6 +50,10 @@ export class LaptopUI {
     this.root.style.display = 'none';
     this.root.style.width = `${SCREEN.w}px`; this.root.style.height = `${SCREEN.h}px`;
     this.bar.className = 'lt-bar'; this.body.className = 'lt-body';
+    this.dots.className = 'lt-dots'; this.dots.innerHTML = '<i></i>'.repeat(9); this.corner.className = 'lt-corner';
+    const left = document.createElement('span');
+    left.append(this.dots, this.title);
+    this.bar.append(left, this.corner);
     this.root.append(this.bar, this.body);
     document.body.appendChild(this.root);
     this.map = new MapTools(game);
@@ -66,7 +75,7 @@ export class LaptopUI {
   private seat(sit: boolean) {
     this.sat = sit; this.launcher = false; this.map.seat(sit);
     if (sit) document.exitPointerLock?.();
-    else { this.game.input.capture(); if (!PAGES[this.page].standing) this.page = 0; }
+    else if (!PAGES[this.page].standing) this.page = 0;
   }
 
   /** Her Scan page, when a scan's done. */
@@ -101,24 +110,27 @@ export class LaptopUI {
   }
 
   /** Every frame: on the glass while it's out, its corner and page kept up to date. */
-  update() {
+  update(dt: number) {
     this.flyHud();
     const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight, sit = open && !!L?.sit;
     if (sit !== this.sat) this.seat(sit);
+    // (Sat down, he looks straight ahead at it: U-105.)
+    if (sit) g.input.pitch *= Math.exp(-8 * dt);
     this.root.classList.toggle('sit', sit);
     this.glow.intensity = open ? 1.4 * night.k : 0;
-    const r = open ? g.laptop3d.rect(g.view.fp.cam, innerWidth, innerHeight) : null;
-    if (!r) { if (this.root.style.display !== 'none') { this.root.style.display = 'none'; this.shown = this.barShown = ''; } return; }
+    const r = open ? g.laptop3d.corners(g.view.fp.cam, innerWidth, innerHeight) : null;
+    if (!r) { if (this.root.style.display !== 'none') { this.root.style.display = 'none'; this.shown = ''; } return; }
     this.root.style.display = 'block';
-    // (The page scaled onto the glass, wherever his hands hold it.)
-    this.root.style.transform = `translate(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px) scale(${(r.w / SCREEN.w).toFixed(4)}, ${(r.h / SCREEN.h).toFixed(4)})`;
+    // (The page laid onto the glass in perspective, wherever it's held.)
+    this.root.style.transform = quadMatrix(SCREEN.w, SCREEN.h, r);
     const P = PAGES[this.page], pct = Math.round(L!.charge * 100), locked = P.needs?.(g);
-    const dots = sit ? `<button class="lt-dots">${'<i></i>'.repeat(9)}</button>` : '';
     const on = sit && this.launcher ? 'launcher' : P.id;
     const html = on === 'launcher' ? `<div class="lt-launch">${PAGES.map(q => `<button data-tab="${q.id}">${q.zh}<br><span>${q.en}</span></button>`).join('')}</div>`
       : locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : (on === 'map' && sit ? this.map.tools() : '') + P.draw(g);
-    const bar = `<span>${dots}${P.zh} ${P.en}</span><span class="lt-corner">▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span>`;
-    if (bar !== this.barShown) { this.bar.innerHTML = bar; this.barShown = bar; }
+    const title = `${P.zh} ${P.en}`, corner = `▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}`;
+    if (this.title.textContent !== title) this.title.textContent = title;
+    if (this.corner.textContent !== corner) this.corner.textContent = corner;
+    this.dots.style.display = sit ? '' : 'none';
     const fresh = html !== this.shown;
     if (fresh) { this.body.innerHTML = html; this.body.dataset.on = on; this.shown = html; }
     // The map, drawn into its place on the page a few times a second.

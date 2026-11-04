@@ -79,6 +79,8 @@ export class Input {
     addEventListener('contextmenu', e => e.preventDefault());
     // (The mouse let go of, its buttons up: none left held down, aiming for good.)
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el) this.mouse = 0; });
+    // (A lock asked for as a menu closed that lands after another's opened is let go again: U-105.)
+    document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement === el && (this.uiOpen || this.frozen)) document.exitPointerLock(); });
     addEventListener('mousemove', e => {
       if (document.pointerLockElement !== el || this.frozen) return;
       this.yaw -= e.movementX * this.sensitivity;

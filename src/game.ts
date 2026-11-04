@@ -89,6 +89,8 @@ export class Game {
   laptop!: LaptopUI;
   /** his laptop held in both hands while it's out (U-104) */
   laptop3d!: Laptop3D;
+  /** a menu was up last frame */
+  private wasUi = false;
   craft!: CraftUI;
   /** whether he was flying the drone last frame (M5-11) */
   private flew = false;
@@ -155,7 +157,7 @@ export class Game {
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.settings = new Settings(this, opts.dev);
-    this.laptop3d = new Laptop3D(this.view.fp.cam);
+    this.laptop3d = new Laptop3D(this.view.scene);
     this.laptop = new LaptopUI(this);
     this.craft = new CraftUI(this);
     this.ending = new EndingSequence(this);
@@ -332,6 +334,9 @@ export class Game {
     // (Settings stop his own input, the world going on; the main menu stops everything: U-104.)
     this.input.frozen = this.settings.open || this.menuUp();
     this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot') || !!this.state.laptop?.sit;
+    // (A menu closed, the mouse taken back for looking round: U-105.)
+    if (this.wasUi && !this.input.uiOpen) this.input.capture();
+    this.wasUi = this.input.uiOpen;
     const pos = { x: this.prev.x + (p.pos.x - this.prev.x) * alpha, y: this.prev.y + (p.pos.y - this.prev.y) * alpha, z: this.prev.z + (p.pos.z - this.prev.z) * alpha };
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
     const gun = this.heldId === 'pistol' ? this.heldModel : null;
@@ -359,9 +364,9 @@ export class Game {
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
-    this.laptop3d.update(!!this.state.laptop?.open, !!this.state.laptop?.sit, dt);
+    this.laptop3d.update(!!this.state.laptop?.open, !!this.state.laptop?.sit, dt, this.view.fp.cam);
     if (this.heldModel) this.heldModel.visible = !this.state.laptop?.open;
-    this.laptop.update();
+    this.laptop.update(dt);
     this.craft.update();
     this.updatePrompt();
     this.updateHeld();
@@ -430,11 +435,11 @@ export class Game {
 
   private updateHands(dt: number) {
     const p = this.state.player, cam = this.view.fp.cam;
-    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight;
+    // (No arms while the laptop's out: U-105.)
+    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight && !this.state.laptop?.open;
     this.hideView.update(p.mode === 'hidden' && p.hideId >= 0 ? this.world.hides[p.hideId] ?? null : null);
     if (!this.hands.ready || !this.hands.group.visible) return;
-    // (With the laptop out, both hands hold it: U-104.)
-    const out = !!this.state.laptop?.open, held = out ? null : heldStack(this.state), support = held ? supportPoint(held.id) : null;
+    const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;
     // (Whether a hold's in reach, for the hands raised ready: looked for every fourth frame, it costs a millisecond.)
     if (++this.grabAge >= 4) { this.grabAge = 0; this.readied = !held && findGrab(this.world, p) !== null; }
     const readied = !held && this.readied;
@@ -447,7 +452,7 @@ export class Game {
     const room = hit ? hit.t : 0.6;
     p.hands.forEach((h, i) => {
       const g = h.grip ? gripPose(cam, h.grip.x, h.grip.y, h.grip.z, h.grip.nx, h.grip.nz, i === 0 ? -1 : 1) : null;
-      const pose = poseFor(p, i, readied, out ? 'laptop' : held?.id ?? '', g, this.view.fp.bob, support, reload);
+      const pose = poseFor(p, i, readied, held?.id ?? '', g, this.view.fp.bob, support, reload);
       if (!g && -pose.pos.z > room - 0.12) pose.pos.z = -Math.max(0.12, room - 0.12);
       this.hands.setPose(i, pose, k);
     });

@@ -1,9 +1,9 @@
-// M10-12 (U-104): Tab pulls Anna's laptop out, held in both hands, the page on its glass, time going on behind it; the
+// M10-12 (U-104): Tab pulls Anna's laptop out, held out low in front of him (he looks down at it), the page on its glass, time going on behind it; the
 // corner shows the battery, the date and time and the skull; the lean keys (Mouse4/5) turn Map, Status, Scan and
 // Notes round, with no tabs or hints; Status reads his body as the sim has it (logs/laptop.png). Tab puts it away.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=hideout&seed=1', 'laptop');
-  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 21.5 * 3600; g.state.deaths = 2; g.state.body.hp = 73; g.state.body.leg = 'sprain'; g.state.body.legHealAt = g.state.time + 86400; window.__cq.runFrames(5); })()`);
+  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 21.5 * 3600; g.state.deaths = 2; g.state.body.hp = 73; g.state.body.leg = 'sprain'; g.state.body.legHealAt = g.state.time + 86400; g.input.pitch = -0.55; window.__cq.runFrames(5); })()`);
   await page.keyboard.press('Tab');
   const t0 = await page.evaluate(`(() => { window.__cq.runFrames(30); return window.__cq.game.state.time; })()`);
   const side = b => page.evaluate(`(() => { for (const t of ['mousedown', 'mouseup']) window.dispatchEvent(new MouseEvent(t, { button: ${b}, bubbles: true, cancelable: true })); window.__cq.runFrames(3); })()`);

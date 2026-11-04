@@ -49,6 +49,7 @@ export class Settings {
 
   private key(e: KeyboardEvent) {
     if (e.repeat || e.code !== 'Escape' || this.binding) return;
+    this.escAt = performance.now();
     // (A lost pointer lock can open it just before the key arrives: don't reopen-and-close.)
     // (Esc closes whatever menu's up; with none, it opens these: U-104.)
     if (this.open) { if (!this.byLock || performance.now() - this.openedAt > 400) this.hide(); }
@@ -59,10 +60,17 @@ export class Settings {
     e.stopImmediatePropagation();
   }
 
-  /** The browser let go of the mouse while he was playing. */
+  /** The browser let go of the mouse while he was playing (its Esc, which it keeps): that Esc closes the laptop if
+   *  it's out (the mouse taken back), else opens these. */
   private auto() {
-    if (!this.open && !this.game.input.uiOpen && !this.game.state.dead && this.game.ticks > 0) { this.show(); this.byLock = true; }
+    // (The same Esc, already handled as a key: it's done its work.)
+    if (performance.now() - this.escAt < 400) return;
+    if (this.open || this.game.input.uiOpen || this.game.state.dead || !this.game.ticks) return;
+    if (this.game.closeMenu()) { this.game.input.capture(); return; }
+    this.show(); this.byLock = true;
   }
+  /** when an Esc last came as a key */
+  private escAt = -1e9;
   /** opened by the browser letting go of the mouse (its own Esc may follow at once) */
   private byLock = false;
 
@@ -88,6 +96,7 @@ export class Settings {
     const slider = (id: string, label: string, v: number, min: number, max: number, step: number) => `<label class="st-slide">${label}<input type="range" data-set="${id}" min="${min}" max="${max}" step="${step}" value="${v}"></label>`;
     const toggle = (id: string, label: string, on: boolean) => `<button class="st-key" data-dev="${id}">${label}<b>${on ? '开 On' : '关 Off'}</b></button>`;
     this.el.innerHTML = `<div class="st-panel"><div class="st-title">设置 SETTINGS</div>` +
+      (document.getElementById('boot') ? '' : `<button class="st-menu" data-a="resume">继续 Resume</button>`) +
       `<button class="st-menu" data-a="menu">主菜单 Menu (last sleep saved)</button>` +
       slider('vol', '音量 Volume', g.audio.volumes.master, 0, 1, 0.01) +
       slider('sens', '灵敏度 Sensitivity', g.input.sensitivity, SENS.min, SENS.max, 0.00005) +
@@ -95,6 +104,9 @@ export class Settings {
       ACTIONS.map(a => `<button class="st-key" data-bind="${a.id}">${a.label}<b>${names(binds[a.id])}</b></button>`).join('') +
       (this.dev ? toggle('ui', '开发界面 Dev UI', this.devUi) + toggle('cross', '准星 Crosshair', this.crosshair) : '') + `</div>`;
     // (From the main menu itself, it just closes.)
+    // (Back to play, the mouse taken back: U-105.)
+    const resume = this.el.querySelector<HTMLButtonElement>('[data-a="resume"]');
+    if (resume) resume.onclick = () => this.hide();
     this.el.querySelector<HTMLButtonElement>('[data-a="menu"]')!.onclick = () => { const inMenu = !!document.getElementById('boot'); this.hide(); if (!inMenu) bootMenu(g, readSave(localStorage)); };
     this.el.querySelectorAll<HTMLInputElement>('input[data-set]').forEach(i => {
       i.oninput = () => {
