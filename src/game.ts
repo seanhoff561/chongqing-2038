@@ -241,6 +241,9 @@ export class Game {
     }
   }
 
+  /** The main menu's up: nothing runs under it (U-104). */
+  menuUp() { return !!document.getElementById('boot'); }
+
   /** A new run (U-104): day one in the city already built (D-123), saved as it starts. */
   newRun() {
     deleteSave(localStorage);
@@ -308,6 +311,8 @@ export class Game {
     const p = this.state.player;
     // (A menu's up only while one's really showing: never left set by one menu closing over another, which took the
     // prompts, the hands and the mouse away for good.)
+    // (Settings stop his own input, the world going on; the main menu stops everything: U-104.)
+    this.input.frozen = this.settings.open || this.menuUp();
     this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot');
     const pos = { x: this.prev.x + (p.pos.x - this.prev.x) * alpha, y: this.prev.y + (p.pos.y - this.prev.y) * alpha, z: this.prev.z + (p.pos.z - this.prev.z) * alpha };
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
@@ -445,7 +450,7 @@ export class Game {
       const dt = this.last ? Math.min(0.25, (now - this.last) / 1000) : DT;
       this.last = now;
       this.acc += dt;
-      if (this.settings.open) this.acc = 0;
+      if (this.menuUp()) this.acc = 0;
       const t0 = performance.now();
       while (this.acc >= DT) { this.tick(); this.acc -= DT; }
       const t1 = performance.now();

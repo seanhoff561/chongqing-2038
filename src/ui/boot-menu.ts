@@ -17,6 +17,8 @@ export function bootMenu(game: Game, save: SaveFile | null) {
   el.id = 'boot';
   document.body.appendChild(el);
   game.input.uiOpen = true;
+  // (Nothing runs under it, the view included: U-104.)
+  document.exitPointerLock?.();
   const close = () => { el.remove(); game.input.uiOpen = false; };
   const back = '<button class="back">返回 Back</button>';
   const menu = () => {

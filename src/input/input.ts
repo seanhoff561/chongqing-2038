@@ -47,6 +47,8 @@ export class Input {
   tabKeys = false;
   /** UI (backpack, laptop, menus) takes the mouse; movement keys still work */
   uiOpen = false;
+  /** the settings or the main menu up (U-104): none of his input reaches the game */
+  frozen = false;
   private held = new Set<string>();
   private buttons = 0;
   private pressed = 0;
@@ -78,7 +80,7 @@ export class Input {
     // (The mouse let go of, its buttons up: none left held down, aiming for good.)
     document.addEventListener('pointerlockchange', () => { if (document.pointerLockElement !== el) this.mouse = 0; });
     addEventListener('mousemove', e => {
-      if (document.pointerLockElement !== el) return;
+      if (document.pointerLockElement !== el || this.frozen) return;
       this.yaw -= e.movementX * this.sensitivity;
       this.pitch -= e.movementY * this.sensitivity;
       this.pitch = Math.max(-1.5, Math.min(1.5, this.pitch));
@@ -127,6 +129,7 @@ export class Input {
   /** The frame for the next tick; clears edge-triggered state. */
   frame(): InputFrame {
     const f = emptyInput();
+    if (this.frozen) { f.yaw = this.yaw; f.pitch = this.pitch; this.pressed = 0; this.slot = -1; return f; }
     const any = (id: string) => (FIXED[id].some(k => this.held.has(k)) ? 1 : 0);
     f.my = any('forward') - any('back');
     f.mx = any('right') - any('left');

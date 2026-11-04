@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-06 Settings don't pause; the main menu does (U-104).
-Features done: 333 / 424 | Last done: M10-05
+**Status:** building M10. Next: M10-07 Prompts say just the thing (U-104).
+Features done: 334 / 424 | Last done: M10-06
 <!-- /status -->
 
 ## What's built
@@ -31,3 +31,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-03: the director's docs rewritten: DESIGN, PROGRESS, DECISIONS
 - M10-04: 150 fps on medium: a leaner sim tick and frame
 - M10-05: settings word for word
+- M10-06: settings over a running world; the main menu stops everything
