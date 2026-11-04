@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-22 Late autumn (U-104).
-Features done: 353 / 429 | Last done: M10-21
+**Status:** building M10. Next: M10-24 The telescoping ladder in front of the wall (U-104).
+Features done: 355 / 429 | Last done: M10-23
 <!-- /status -->
 
 ## What's built
@@ -51,3 +51,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-19: ice blue: every menu, the map, the headlamp's dim mode, and the neon by the family flat lit only at night
 - M10-20: no more raids: tracked (tagged, or at a hideout given away), he's hunted where he is
 - M10-21: the Li family flat, walked into from the street (its doors forced) and a key place on the map once he knows of it
+- M10-22, M10-23: late autumn at the start, fallen leaves on the grass and paving; machines out everywhere from the first second but not at his door
