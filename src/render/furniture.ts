@@ -1,9 +1,8 @@
-// Furniture he puts down (U-013): beds, crates, and the toolbox that turns a table into a workbench; and what he
-// drops, lying where it fell (M3-72).
+// Furniture he puts down (U-013): beds, crates, and the toolbox that turns a table into a workbench (square on its
+// top, M10-25); and what he drops, lying where it fell (M3-72).
 import * as THREE from 'three';
 import { itemModel } from './items3d';
 import type { SimState } from '../sim/types';
-import type { World } from '../world/world';
 
 const lam = (c: number) => new THREE.MeshLambertMaterial({ color: c });
 const box = (w: number, h: number, d: number, m: THREE.Material, y = h / 2) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.y = y; return o; };
@@ -20,9 +19,8 @@ export class Furniture {
   private sig = '';
 
   /** Rebuild when what's placed changes. */
-  sync(s: SimState, w: World) {
-    const benches = Object.keys(s.wstate.benches ?? {});
-    const sig = s.placed.map(p => p.id).join() + '|' + benches.join() + '|' + s.dropped.map(d => d.stack.uid).join();
+  sync(s: SimState) {
+    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join();
     if (sig === this.sig) return;
     this.sig = sig;
     this.group.clear();
@@ -37,13 +35,6 @@ export class Furniture {
       const m = itemModel(d.stack.id);
       m.position.set(d.x, d.y + 0.05, d.z);
       m.rotation.set(Math.PI / 2, 0, d.stack.uid * 2.4);
-      this.group.add(m);
-    }
-    for (const id of benches) {
-      const t = w.inter.find(i => i.id === id);
-      if (!t) continue;
-      const m = MODELS.toolbox();
-      m.position.set(t.x, t.y, t.z);
       this.group.add(m);
     }
   }

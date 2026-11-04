@@ -227,7 +227,7 @@ Grid backpack 8 x 6 (the hiking pack: 10 x 7); items are rotatable rectangles wi
 | Oxygen kit, jerrycan, boat key / CAN interface | the river and underground routes |
 | Healing: bandage, tourniquet, splint, painkillers, first-aid kit | section 5 |
 | Water bottle, purification tablets | drink; refill at taps or the river (purify first) |
-| Toolbox, bedroll, mattress, folding crate | make a bench, a bed, storage; picked back up again (the crate when empty) |
+| Toolbox, bedroll, mattress, folding crate | make a bench (the toolbox lies in the middle of the table's top, along its long side), a bed, storage; crouched, E at one (the toolbox: its table) packs it back into the backpack if it fits (the crate only when empty) |
 | Documents | read in the backpack (section 2) |
 
 Food spoils from its date of manufacture (noodles 180 d, luncheon meat 1000 d, chocolate 300 d, bread 3 d, steamed buns 2 d, raw pork 1 d...); spoiled food makes him sick; the laptop's Scan says how much life a scanned packet has left.
@@ -238,7 +238,7 @@ Food spoils from its date of manufacture (noodles 180 d, luncheon meat 1000 d, c
 
 ## 8. Hideouts
 
-He wakes in an unknown hideout: the brick-arched air-raid chamber under Jiaochangkou (his friends' once; he doesn't know it), its vent shaft up to a grate in the plaza. It has a crate (firecrackers, tape, a rag) and a table beside it, no bed, no power. He starts with no headlamp. From there he makes his own hideouts anywhere: a bed (one he finds, or a bedroll or mattress he places) makes a hideout; a toolbox on a table makes a bench; the containers within 15 m nearer its bed than any other's are its storage; a car battery and inverter power it. Sleeping in any of his beds saves the run. Being tracked there gives him away (section 6): he's hunted where he is, so leading them home is still the mistake.
+He wakes in an unknown hideout: the brick-arched air-raid chamber under Jiaochangkou (his friends' once; he doesn't know it), its vent shaft up to a grate in the plaza. It has a crate (firecrackers, tape, a rag) and a table beside it, no bed, no power. He starts with no headlamp. From there he makes his own hideouts anywhere: a bed (one he finds, or a bedroll or mattress he places) makes a hideout; a toolbox on a table makes a bench; the containers within 15 m nearer its bed than any other's are its storage; a car battery and inverter power it. Packing up a bed he laid ends its hideout, and the power wired in there comes out with it (the battery holding its charge). Sleeping in any of his beds saves the run. Being tracked there gives him away (section 6): he's hunted where he is, so leading them home is still the mistake.
 
 ## 9. The city
 

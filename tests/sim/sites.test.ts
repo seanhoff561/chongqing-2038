@@ -3,7 +3,7 @@ import { getWorld } from '../../src/world/build';
 import { createState } from '../../src/sim/sim';
 import { districtAt } from '../../src/world/yuzhong/lots';
 import { teleport } from '../../src/sim/player';
-import { stashIds } from '../../src/sim/shelter';
+import { stashIds, tableTop } from '../../src/sim/shelter';
 import { loot } from '../../src/data/loot';
 import { run, aim } from './helpers';
 import { free } from '../../src/sim/physics';
@@ -27,6 +27,22 @@ describe('shelter sites (M3-29, U-013)', () => {
   it('loot can turn up a sleeping bag, a mattress and a toolbox', () => {
     const all = Object.values(loot).flatMap(t => t.items.map(e => e.id));
     for (const id of ['bedroll', 'mattress', 'toolbox', 'foldcrate']) expect(all, id).toContain(id);
+  });
+  it("a toolbox goes on the middle of a table's top, square to it (M10-25)", () => {
+    const tables = w.inter.filter(i => i.kind === 'table');
+    let drawn = 0;
+    for (const t of tables) {
+      const [x, z, yaw] = tableTop(w, t);
+      // Its box found: the middle a half-depth back from where he reaches it at its front.
+      expect(Math.hypot(x - t.x, z - t.z), t.id).toBeGreaterThan(0.3);
+      expect(Math.hypot(x - t.x, z - t.z), t.id).toBeLessThan(0.9);
+      // A room's table is drawn there, turned the same way (or half round: the toolbox looks the same).
+      const m = w.props.find(p => p.kind === 'f:table' && Math.hypot(p.x - x, p.z - z) < 1e-3);
+      if (!m) continue;
+      drawn++;
+      expect(Math.abs(Math.sin(m.yaw - yaw)), t.id).toBeLessThan(1e-3);
+    }
+    expect(drawn).toBeGreaterThan(3);
   });
   it('sets up a shelter in a site: claims its bed, its containers become the stash', () => {
     // Stand a metre from a site's bed on its own floor (a site's rooms span floors since M3-36, its bed may not be on

@@ -42,6 +42,9 @@ export const START_SOUND: Record<string, (it: Inter) => string> = {
 /** Interactables that live in sim state rather than the static world (placed furniture). */
 export const extraInters: ((s: SimState) => Inter[])[] = [];
 
+/** What a crouched F does to a thing first, if anything: true when it did (packing up what he put down, M10-25). */
+export const crouchActs: ((s: SimState, w: World, it: Inter) => boolean)[] = [];
+
 /** Every interactable: the world's and the ones in state. */
 export function allInters(s: SimState, w: World): Inter[] {
   return extraInters.length ? w.inter.concat(...extraInters.map(f => f(s))) : w.inter;
@@ -127,6 +130,7 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   // B starts the rough-sleep hold (U-066: its own key).
   if ((input.pressed & B.SLEEP) && p.mode === 'ground') { s.task = { id: ROUGH, t: 0, dur: ROUGH_HOLD }; return; }
   if (!it || !(input.pressed & B.INTERACT)) return;
+  if (p.posture === 'crouch' && crouchActs.some(f => f(s, w, it))) { input.pressed &= ~B.INTERACT; return; }
   // Crouched by a wardrobe or crate he can curl up in, F hides him in it rather than searching it (U-072).
   if (p.posture === 'crouch' && hideNear(w, p) >= 0) return;
   input.pressed &= ~B.INTERACT;
