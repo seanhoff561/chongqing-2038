@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-25 Placed things picked back up (U-104).
-Features done: 360 / 429 | Last done: M10-36
+**Status:** building M10. Next: M10-26 Loot and places finished (U-104).
+Features done: 363 / 429 | Last done: M10-35
 <!-- /status -->
 
 ## What's built
@@ -53,3 +53,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-21: the Li family flat, walked into from the street (its doors forced) and a key place on the map once he knows of it
 - M10-22, M10-23: late autumn at the start, fallen leaves on the grass and paving; machines out everywhere from the first second but not at his door
 - M10-24, M10-27, M10-28, M10-30, M10-36: the ladder in front of the wall; no bed in the start hideout, a table by the crate; one pack charges everything; one cable outside the hideout; the cutscene's leftovers gone
+- M10-25, M10-29, M10-35: placed things picked back up; never stuck in a window's corner; the trailer's music
