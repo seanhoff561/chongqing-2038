@@ -2,7 +2,6 @@
 // While gripping he hangs and reels toward the grip; W pulls up (and over a lip), S lets the arms out,
 // Space launches a leg-driven dyno, Q or releasing both buttons drops. Grip endurance drains while hanging.
 // Grabbing keeps momentum; the hands can only pull so hard (see stepGrip).
-import { tooFast } from './parkour';
 import { damage } from './body';
 import { B, DT, type InputFrame, type SimState } from './types';
 import type { World } from '../world/world';
@@ -11,7 +10,7 @@ import { movement as M } from '../data/movement';
 import { raycast, topAt, topOver, frameIn, frameOut, frameDirOut, query } from '../world/geom';
 import { heightAt } from '../world/heightfield';
 import { free, moveHorizontal, moveVertical, groundGap } from './physics';
-import { startAction, kickOff } from './parkour';
+import { tooFast, startAction, kickOff, fitOn } from './parkour';
 import { lim, sfx, lookDelta } from './move';
 import { heldStack } from './use';
 import { chalkHands } from './chalk';
@@ -156,6 +155,9 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
   const p = s.player, L = lim();
   const grips = p.hands.map(h => h.grip).filter((g): g is Grip => g !== null);
   if (!grips.length) { releaseAll(p); return; }
+  // He hangs at full length once there's room for it: crouched in a window, he's moved crouched until he's out of
+  // it, not wedged under its lintel (M10-29).
+  if (p.posture !== 'stand' && free(world.index, p.pos.x, p.pos.y + 1e-3, p.pos.z, M.height.stand)) p.posture = 'stand';
   const scale = (grips.every(g => g.kind === 'rung') ? G.ladderScale : 1) / L.climbScale;
   // Chalked hands hold longer (U-053).
   p.endurance -= (grips.length > 1 ? G.drainTwo : G.drainOne) * scale * chalkHands(s) * DT;
@@ -170,8 +172,8 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
   const atTop = lip.kind === 'lip' || lip.y >= lip.top - 0.3;
   if (atTop && p.pos.y >= lip.top - L.mantleFrom - 1e-3 && ((input.buttons & B.JUMP) || input.my > 0) && (input.my > 0 || (input.pressed & B.JUMP))) {
     const back = lip.kind === 'lip' ? HW + 0.05 : HW + 0.12;
-    const b = onto(world, lip, back);
-    if (free(world.index, b.x, b.y, b.z, M.height.crouch) && free(world.index, p.pos.x, Math.max(p.pos.y, lip.top) + 1e-3, p.pos.z, M.height.crouch)) {
+    const b = fitOn(world, onto(world, lip, back), lip.nx, lip.nz);
+    if (b && free(world.index, p.pos.x, Math.max(p.pos.y, lip.top) + 1e-3, p.pos.z, M.height.crouch)) {
       p.hands[0].grip = p.hands[1].grip = null;
       startAction(p, 'climbup', G.climbTime, b, 'ground', 'crouch', 0);
       sfx(s, 'pullover');
@@ -250,10 +252,10 @@ export function stepGrip(s: SimState, world: World, input: InputFrame) {
     sfx(s, 'slip');
     return;
   }
-  const blocked = moveHorizontal(world.index, p.pos, M.height.stand, p.vel.x * DT, p.vel.z * DT, 0.05);
+  const blocked = moveHorizontal(world.index, p.pos, M.height[p.posture], p.vel.x * DT, p.vel.z * DT, 0.05);
   if (blocked & 1) p.vel.x = 0;
   if (blocked & 2) p.vel.z = 0;
-  if (moveVertical(world.index, p.pos, M.height.stand, p.vel.y * DT) !== 0) p.vel.y = 0;
+  if (moveVertical(world.index, p.pos, M.height[p.posture], p.vel.y * DT) !== 0) p.vel.y = 0;
   p.fallFrom = p.pos.y;
   // A hand whose hold has drifted out of reach lets go.
   for (const h of p.hands) if (h.grip && Math.hypot(h.grip.x - p.pos.x, h.grip.y - eyeY(p), h.grip.z - p.pos.z) > G.rayReach + 0.8) h.grip = null;
@@ -295,9 +297,9 @@ function swing(s: SimState, ax: number, ay: number, az: number, input: InputFram
   if (hs2 > G.swingMax) { p.vel.x *= G.swingMax / hs2; p.vel.z *= G.swingMax / hs2; }
   x = ax + dx * p.pull; y = ay + dy * p.pull; z = az + dz * p.pull;
   const mx = x - p.pos.x, mz = z - p.pos.z;
-  const blocked = moveHorizontal(world.index, p.pos, M.height.stand, mx, mz, 0.05);
+  const blocked = moveHorizontal(world.index, p.pos, M.height[p.posture], mx, mz, 0.05);
   if (blocked & 1) p.vel.x = 0;
   if (blocked & 2) p.vel.z = 0;
-  if (moveVertical(world.index, p.pos, M.height.stand, y - p.pos.y) !== 0) p.vel.y = 0;
+  if (moveVertical(world.index, p.pos, M.height[p.posture], y - p.pos.y) !== 0) p.vel.y = 0;
   p.fallFrom = p.pos.y;
 }

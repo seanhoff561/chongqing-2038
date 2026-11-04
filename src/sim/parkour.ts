@@ -4,7 +4,7 @@ import type { World } from '../world/world';
 import type { Player, Posture, Mode } from './player';
 import { movement as M } from '../data/movement';
 import { raycast } from '../world/geom';
-import { free, moveHorizontal, moveVertical } from './physics';
+import { free, moveHorizontal, moveVertical, groundGap } from './physics';
 import { forward, setPosture, noise, lim, sfx } from './move';
 
 const HW = M.width / 2;
@@ -55,9 +55,19 @@ function onTop(l: Ledge, back: number): Vec3 {
   return { x: l.fx - l.nx * (back - PROBE), y: l.top + 1e-3, z: l.fz - l.nz * (back - PROBE) };
 }
 
+/** Where he fits crouched on a top: at `b`, or failing that a little along the edge (normal nx, nz) on what's there,
+ *  so a pull-up by a window's jamb comes up in the opening rather than not at all (M10-29); null if nowhere. */
+export function fitOn(world: World, b: Vec3, nx: number, nz: number): Vec3 | null {
+  for (let d = 0; d < 0.33; d += 0.05) for (const s of d ? [1, -1] : [0]) {
+    const q = { x: b.x - nz * d * s, y: b.y, z: b.z + nx * d * s };
+    if (free(world.index, q.x, q.y, q.z, M.height.crouch) && (!s || groundGap(world.index, q, 0.05) !== Infinity)) return q;
+  }
+  return null;
+}
+
 function tryMantle(world: World, p: Player, l: Ledge, dur: number): boolean {
-  const b = onTop(l, HW + 0.05);
-  if (!free(world.index, b.x, b.y, b.z, M.height.crouch)) return false;
+  const b = fitOn(world, onTop(l, HW + 0.05), l.nx, l.nz);
+  if (!b) return false;
   // Room to rise straight up in place first.
   if (!free(world.index, p.pos.x, Math.max(p.pos.y, l.top) + 1e-3, p.pos.z, M.height.crouch)) return false;
   startAction(p, 'mantle', dur, b, 'ground', 'crouch', 0);

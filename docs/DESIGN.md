@@ -76,6 +76,7 @@ Parkour with the legs, climbing with the hands (U-002 to U-005). His collision i
 | Vault | 0.5 to 1.2 m high, at most 1.2 m deep, at 2.5 m/s or more: 0.45 s, keeps 85% speed; over a parapet with a drop beyond he flies on with a 1.8 m/s lift; window openings (1.4 x 1.9 m, sill at 0.8 m) take a hop or a vault |
 | Slide | Ctrl at 6 m/s+ (3 m/s+ down a grade of 0.2+): starts at 7.5 m/s, friction 3.5 m/s^2, gathers speed downhill (to 14 m/s); 0.5 m tall; releasing Ctrl stands him up keeping 80% speed |
 | Crawl | passes 0.6 m gaps |
+| Window corners (M10-29) | a hop or pull-up beside a jamb lands up to 0.3 m along the sill, in the opening; Ctrl held at an edge keeps half a move only where he fits; hanging while crouched in an opening moves him crouched until there's room to stand: never wedged in the frame |
 | Wall cling | moving into a wall in the air holds him 0.35 s sliding 1.4 m/s, once per wall per airtime, keeping his speed along it |
 | Wall moves (Space in the air within 0.8 m of a wall, 2 per airtime) | facing it: up-kick +4.6 m/s; along it at 5.5 m/s+: wall-run up to 3 steps (0.9 s) at 6.5 m/s, 60% gravity; facing away: kick off at 5.5 m/s toward the camera |
 | Grab | hold a mouse button looking at a lip, sill, pipe, rung, pole, branch or vine within 1.6 m of the eye and 0.2 to 2.2 m above the feet (2.8 m with a jump, about 3.8 m with an up-kick) |

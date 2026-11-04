@@ -213,21 +213,19 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   }
   const into = { x: p.vel.x, z: p.vel.z };
   const wasGround = p.onGround;
-  const x0 = p.pos.x, z0 = p.pos.z;
+  const x0 = p.pos.x, y0 = p.pos.y, z0 = p.pos.z;
   const blocked = moveHorizontal(idx, p.pos, h, p.vel.x * DT, p.vel.z * DT, p.onGround ? M.stepHeight : 0.05);
   if (blocked & 1) p.vel.x = 0;
   if (blocked & 2) p.vel.z = 0;
   // Crouch held on the ground, he won't step off an edge (U-035, as Minecraft's sneak): a move that leaves nothing
-  // under him within a step down is taken back, an axis at a time, so he edges along it.
+  // under him within a step down is taken back, an axis at a time, so he edges along it. (Half a move is kept only
+  // where he fits: at a ledge's end against a wall, a window's sill by its jamb, it would put him in the wall: M10-29.)
   if (wasGround && !jumped && p.slide < 0 && p.posture !== 'stand' && (input.buttons & B.CROUCH) && groundGap(idx, p.pos, M.snapDown) === Infinity) {
-    const x1 = p.pos.x;
-    p.pos.x = x0;
-    if (groundGap(idx, p.pos, M.snapDown) !== Infinity) p.vel.x = 0;
-    else {
-      p.pos.x = x1; p.pos.z = z0;
-      if (groundGap(idx, p.pos, M.snapDown) !== Infinity) p.vel.z = 0;
-      else { p.pos.x = x0; p.vel.x = p.vel.z = 0; }
-    }
+    const x1 = p.pos.x, z1 = p.pos.z;
+    const keep = (x: number, z: number) => { p.pos.x = x; p.pos.z = z; return groundGap(idx, p.pos, M.snapDown) !== Infinity && free(idx, x, p.pos.y, z, h); };
+    if (keep(x0, z1)) p.vel.x = 0;
+    else if (keep(x1, z0)) p.vel.z = 0;
+    else { p.pos.x = x0; p.pos.y = y0; p.pos.z = z0; p.vel.x = p.vel.z = 0; }
   }
   // Jumping into a wall clings for a moment (U-005).
   if (blocked && !p.onGround && !p.clung && p.posture === 'stand' && !jumped) {
