@@ -4,17 +4,18 @@ export type UnitKind = 'quadruped' | 'humanoid' | 'heavy' | 'drone' | 'hunter' |
 /** The machines that stay where they're put (M4-07, M4-11). */
 export const STATIC = new Set<UnitKind>(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
+// HP (M10-48, U-104): dogs and humanoids half what they had, the other ground machines a third less, drones as they were.
 export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: boolean; fly: number; zh: string; en: string; hp: number; weapon?: Weapon }> = {
   // Its shock prod (M4-18; its tag launcher is M4-22's).
-  quadruped: { patrol: 1.8, chase: 5, stairs: true, fly: 0, zh: '四足机器人', en: 'Quadruped', hp: 150, weapon: 'prod' },
+  quadruped: { patrol: 1.8, chase: 5, stairs: true, fly: 0, zh: '四足机器人', en: 'Quadruped', hp: 75, weapon: 'prod' },
   // Armoured (its plates take a tenth of a hit: ZONES) and armed with a rifle (M4-18).
-  humanoid: { patrol: 1.8, chase: 3.6, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 300, weapon: 'rifle' },
+  humanoid: { patrol: 1.8, chase: 3.6, stairs: true, fly: 0, zh: '人形机器人', en: 'Humanoid', hp: 150, weapon: 'rifle' },
   // A street heavy (M4-26b, U-038): a 3 m walker on the main streets, heavily armoured, a rotary cannon on its arm.
-  heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 900, weapon: 'cannon' },
+  heavy: { patrol: 1.6, chase: 3, stairs: false, fly: 0, zh: '重型机甲', en: 'Heavy walker', hp: 600, weapon: 'cannon' },
   drone: { patrol: 3.5, chase: 6, stairs: true, fly: 30, zh: '巡逻无人机', en: 'Patrol drone', hp: 25 },
   // Giants (M4-48, U-050): a spider walker on eight legs with twin guns, and a colossus 9 m tall with a cannon.
-  spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 4000, weapon: 'cannon' },
-  colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 3000, weapon: 'cannon' },
+  spider: { patrol: 2.5, chase: 4, stairs: false, fly: 0, zh: '蛛形机甲', en: 'Spider walker', hp: 2700, weapon: 'cannon' },
+  colossus: { patrol: 1.2, chase: 2, stairs: false, fly: 0, zh: '巨型机甲', en: 'Colossus', hp: 2000, weapon: 'cannon' },
   heli: { patrol: 22, chase: 22, stairs: true, fly: 60, zh: '运兵直升机', en: 'Helicopter', hp: 2500 },
   crawler: { patrol: 2, chase: 4.5, stairs: true, fly: 0, zh: '蛛形无人机', en: 'Crawler drone', hp: 60, weapon: 'prod' },
   // Kept on the docks and launched on contact (M4-14), armed with a submachine gun.
@@ -23,12 +24,12 @@ export const UNITS: Record<UnitKind, { patrol: number; chase: number; stairs: bo
   // FPV that dives at him and blows up, and a bomb dropper that drops grenades on him from above.
   fpv: { patrol: 16, chase: 16, stairs: true, fly: 30, zh: '自杀无人机', en: 'Strike drone', hp: 10 },
   bomber: { patrol: 7, chase: 7, stairs: true, fly: 30, zh: '投弹无人机', en: 'Bomb drone', hp: 35 },
-  delivery: { patrol: 2, chase: 2, stairs: false, fly: 0, zh: '配送机器人', en: 'Delivery robot', hp: 80 },
-  carrier: { patrol: 1.6, chase: 1.6, stairs: false, fly: 0, zh: '运输机器人', en: 'Carrier', hp: 200 },
+  delivery: { patrol: 2, chase: 2, stairs: false, fly: 0, zh: '配送机器人', en: 'Delivery robot', hp: 55 },
+  carrier: { patrol: 1.6, chase: 1.6, stairs: false, fly: 0, zh: '运输机器人', en: 'Carrier', hp: 135 },
   camera: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '监控摄像头', en: 'Camera', hp: 20 },
   sweeper: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '旋转摄像头', en: 'Sweeping camera', hp: 20 },
   lamppost: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '智慧灯杆', en: 'Smart lamppost', hp: 20 },
-  turret: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '自动炮塔', en: 'Turret', hp: 500, weapon: 'turret' },
+  turret: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '自动炮塔', en: 'Turret', hp: 335, weapon: 'turret' },
   pir: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '红外感应器', en: 'Motion sensor', hp: 20 },
   tripwire: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '激光绊线', en: 'Laser tripwire', hp: 20 },
   acoustic: { patrol: 0, chase: 0, stairs: false, fly: 0, zh: '声学传感器', en: 'Acoustic sensor', hp: 20 },
@@ -47,9 +48,9 @@ export const ZONES: Record<UnitKind, Record<string, number>> = {
 };
 /** What breaks (M4-19, M4-62): the damage at a place that blinds it, lames it, shuts it down, puts its weapon out of
  *  action (a humanoid's rifle shot out of its hands, a quadruped's launcher wrecked, a turret's barrels bent), or
- *  brings a drone down out of the air. */
+ *  brings a drone down out of the air. A humanoid's knees and battery break well before its HP runs out (M10-48). */
 export const BREAKS: Partial<Record<UnitKind, { head?: number; knee?: number; battery?: number; weapon?: number; rotors?: number }>> = {
-  quadruped: { head: 60, weapon: 20 }, humanoid: { head: 75, knee: 100, battery: 120, weapon: 20 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100, weapon: 25 },
+  quadruped: { head: 60, weapon: 20 }, humanoid: { head: 75, knee: 60, battery: 90, weapon: 20 }, heavy: { head: 150, knee: 250, battery: 300 }, turret: { head: 100, weapon: 25 },
   drone: { rotors: 20 }, hunter: { rotors: 30 }, bomber: { rotors: 20 }, heli: { rotors: 400 },
 };
 /** A downed drone's blast (M4-62): how far it hurts and how much at its heart, and how far it's heard. */

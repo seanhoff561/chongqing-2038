@@ -196,7 +196,7 @@ Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, 
 | Quadruped tag launcher | 1 / 6 s, 20 m | 0 | sticks a tracking tag (above) |
 | Quadruped shock prod | 1.5 m | 15 + 1 s stun | |
 
-Each hit: 30% heavy bleed, otherwise light; 15% a limb (sprain or graze). Machines have hit zones (sensor heads blind them, batteries shut them down); U-104 lowers most machines' health (dogs and humanoids most, drones as they are). His weapons: knife (40, takedown from behind: 2 s within 1.5 m of a quadruped or humanoid not Engaged), crowbar (55, slow), pistol (25, 15 rounds, heard 150 m), pump shotgun (8 x 12, 5 shells), nail gun (14, quiet, 15 m), grenade (6 m, 200), EMP (6 m: drones crash, robots off 30 s, cameras 60 s; 3 charges). Ammunition is scarce.
+Each hit: 30% heavy bleed, otherwise light; 15% a limb (sprain or graze). Machines have hit zones (sensor heads blind them, batteries shut them down); U-104 lowers most machines' health (dogs and humanoids half, other ground machines a third, drones as they are): pistol rounds to kill, body (head), are quadruped 15 (2), humanoid 60 (2), heavy 480 (12), turret 268 (7), delivery robot 3, patrol drone 1. His weapons: knife (40, takedown from behind: 2 s within 1.5 m of a quadruped or humanoid not Engaged), crowbar (55, slow), pistol (25, 15 rounds, heard 150 m), pump shotgun (8 x 12, 5 shells), nail gun (14, quiet, 15 m), grenade (6 m, 200), EMP (6 m: drones crash, robots off 30 s, cameras 60 s; 3 charges). Ammunition is scarce.
 
 ## 7. Items, crafting and loot
 

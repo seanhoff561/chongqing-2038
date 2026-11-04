@@ -5,7 +5,7 @@ import { setup, floor, run, secs } from './helpers';
 import { hurtUnit } from '../../src/sim/damage';
 import { unitPose, isOff, type Unit } from '../../src/sim/units';
 import { stepHearing } from '../../src/sim/perception';
-import { UNITS, ZONES, type UnitKind } from '../../src/data/units';
+import { UNITS, ZONES, BREAKS, type UnitKind } from '../../src/data/units';
 import type { Camera, Patrol } from '../../src/world/world';
 
 /** A machine of a kind 10 m in front of him (looking at him), at noon. */
@@ -55,15 +55,16 @@ describe('machine damage and weak points (M4-19)', () => {
     expect(t.u.aware ?? 0).toBeGreaterThanOrEqual(0.35);
     // Its legs take 0.6 of a hit, its belly battery 1.5.
     const a = one('quadruped');
-    hurtUnit(a.state, a.world, a.u, 'legs', 100);
+    // (Its HP halved by U-104: 75, so less here than there was.)
+    hurtUnit(a.state, a.world, a.u, 'legs', 50);
     hurtUnit(a.state, a.world, a.u, 'battery', 10);
-    expect(a.u.hp).toBeCloseTo(150 - 60 - 15);
+    expect(a.u.hp).toBeCloseTo(UNITS.quadruped.hp - 30 - 15);
   });
   it('slows a humanoid with a knee broken, immobilises it with both (it still shoots), shuts it down at its battery', () => {
     const t = one('humanoid');
-    hurtUnit(t.state, t.world, t.u, 'kneeL', 100 / 0.8 + 0.1);
+    hurtUnit(t.state, t.world, t.u, 'kneeL', BREAKS.humanoid!.knee! / 0.8 + 0.1);
     expect([t.u.limp, t.u.lame]).toEqual([true, undefined]);
-    hurtUnit(t.state, t.world, t.u, 'kneeR', 100 / 0.8 + 0.1);
+    hurtUnit(t.state, t.world, t.u, 'kneeR', BREAKS.humanoid!.knee! / 0.8 + 0.1);
     expect(t.u.lame).toBe(true);
     const at = unitPose(t.world, t.u, t.state.time);
     run(t.state, t.world, secs(6));
@@ -73,9 +74,10 @@ describe('machine damage and weak points (M4-19)', () => {
     let shots = 0;
     run(t.state, t.world, secs(4), {}, s => { shots += s.events.filter(e => e.t === 'shot').length; });
     expect(shots).toBeGreaterThan(0);
-    // 120 to its back battery (60 at double) and it's down for good.
+    // 90 to its back battery (45 at double) and it's down for good (U-104: less than its 150 HP now, so it's shut
+    // down before it's destroyed).
     const b = one('humanoid');
-    hurtUnit(b.state, b.world, b.u, 'battery', 59);
+    hurtUnit(b.state, b.world, b.u, 'battery', 44);
     expect(b.u.shut).toBeFalsy();
     hurtUnit(b.state, b.world, b.u, 'battery', 1.5);
     expect(b.u.shut).toBe(true);

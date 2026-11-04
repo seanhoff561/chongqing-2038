@@ -54,8 +54,10 @@ describe('pistol (M4-21)', () => {
       const r = range(25, 15, 0), pitch = Math.atan2(0.6 - 1.62, 25);
       // (Held where it stands: shot at, it would come for him off the line.)
       r.u.stop = { x: 0, y: 0, z: -25, yaw: 0, t: 0 };
+      // (And kept from being destroyed: since U-104 a dog takes few enough rounds that the aimed ones would finish it.)
+      r.u.hp = 1e6;
       let h = 0;
-      for (let k = 0; k < 15; k++) { const hp = r.u.hp ?? 150; shoot(r, pitch, aimed); if ((r.u.hp ?? 150) < hp) h++; }
+      for (let k = 0; k < 15; k++) { const hp = r.u.hp; shoot(r, pitch, aimed); if (r.u.hp < hp) h++; }
       return h;
     };
     expect(hits(true)).toBeGreaterThan(hits(false));
