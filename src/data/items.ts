@@ -60,7 +60,7 @@ export const items: ItemDef[] = [
   I('chalk', '镁粉袋', 'Chalk bag', 1, 1, 0.2, 'wear', 'Chalked hands: hanging and pipes cost half while the chalk lasts.', { uses: ['grip'] }),
   I('chalkblock', '镁粉块', 'Chalk block', 1, 1, 0.06, 'misc', 'Crumbled into a chalk bag, fills it.', { stack: 3, uses: ['refill-chalk'] }),
   I('insgloves', '绝缘手套', 'Insulated gloves', 1, 1, 0.4, 'wear', 'Rated for live electrical work.', { uses: ['insulate', 'grip'] }),
-  I('headlamp', '头灯', 'Headlamp', 1, 1, 0.1, 'wear', 'White or dim red light.', { uses: ['light', 'read-dark'] }),
+  I('headlamp', '头灯', 'Headlamp', 1, 1, 0.1, 'wear', 'White or dim blue light.', { uses: ['light', 'read-dark'] }),
   I('binoculars', '望远镜', 'Binoculars', 2, 1, 0.6, 'tool', '10x. Anna logs what you watch.', { uses: ['zoom', 'patrol-log'] }),
   I('sdr', 'SDR 接收器', 'SDR dongle', 1, 1, 0.05, 'device', 'Software radio receiver.', { uses: ['drone-routes', 'find-tag', 'jammer-part'] }),
   I('cameratap', '摄像头分接器', 'Camera tap', 1, 1, 0.1, 'device', 'Clips into a camera junction box.', { uses: ['camera-feed', 'camera-loop'] }),

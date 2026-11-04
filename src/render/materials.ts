@@ -350,6 +350,14 @@ export function lampPool() {
   return (pool = new THREE.MeshBasicMaterial({ map: tex, color: 0xd6e4ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
 }
 
+/** Neon that's dark glass by day and burns ice blue only after dark (the sign by his family's flat: U-104). */
+const iceNeons: THREE.MeshBasicMaterial[] = [];
+const ICE_DAY = new THREE.Color(0x26323a), ICE_NIGHT = new THREE.Color(0xbfe6f5).multiplyScalar(1.6);
+export function iceNeon() {
+  if (!iceNeons.length) iceNeons.push(new THREE.MeshBasicMaterial({ color: ICE_DAY.clone(), toneMapped: false }));
+  return iceNeons[0];
+}
+
 /** 0 by day to 1 at night: lit windows glow, signs burn brighter, the street lamps throw their pools (U-050: bright
  *  enough to see by after dark). */
 export function setNight(k: number) {
@@ -357,6 +365,7 @@ export function setNight(k: number) {
   for (const m of glowing) m.emissiveIntensity = k * 2.2;
   for (const m of signs) m.emissiveIntensity = m.userData.day * (1 + 1.8 * k);
   if (pool) pool.opacity = 0.85 * k;
+  for (const m of iceNeons) m.color.copy(ICE_DAY).lerp(ICE_NIGHT, Math.max(0, (k - 0.35) / 0.65));
 }
 /** 0 by day to 1 at night, for lights that only burn after dark (floodlit beams). */
 export const night = { k: 0 };

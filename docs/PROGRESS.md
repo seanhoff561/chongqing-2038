@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-19 Ice blue (U-104).
-Features done: 350 / 429 | Last done: M10-59
+**Status:** building M10. Next: M10-20 No more raids (U-104).
+Features done: 351 / 429 | Last done: M10-19
 <!-- /status -->
 
 ## What's built
@@ -48,3 +48,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-17: his own songs from the laptop (a folder in the browser, the songs folder on desktop); the game's own music removed
 - M10-18: Anna in the laptop's corner, drawn and animated: idle, blinking, waving, laughing, pouting, blushing
 - M10-59: the game's icon is Anna's face (installer, window, browser tab); version 0.3.0 for the next release
+- M10-19: ice blue: every menu, the map, the headlamp's dim mode, and the neon by the family flat lit only at night

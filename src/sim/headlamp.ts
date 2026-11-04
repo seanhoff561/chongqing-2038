@@ -1,6 +1,6 @@
-// The headlamp (U-019, DESIGN section 2): H cycles off, white, red while one is in the backpack. White lasts 8
-// game hours on a charge, red 24; a battery pack (held, left mouse) recharges it. It goes off when he sleeps.
-// The render puts a spot light on his head; perception reads player.lamp (white 1.0, red 0.4 light).
+// The headlamp (U-019, DESIGN section 2): its key cycles off, white, dim blue (U-104) while one is in the backpack. White lasts 8
+// game hours on a charge, blue 24; a battery pack (held, left mouse) recharges it. It goes off when he sleeps.
+// The render puts a spot light on his head; perception reads player.lamp (white 1.0, blue 0.4 light).
 import { B, type InputFrame, type SimState } from './types';
 import { GAME_PER_TICK } from './clock';
 import { sfx } from './move';

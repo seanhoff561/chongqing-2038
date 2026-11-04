@@ -27,6 +27,31 @@ function floorAround(w: World, x: number, y: number, z: number): [number, number
   return out;
 }
 
+/** The neon by the flat (U-104): an ice-blue blade sign on the building's outside, at the flat's window height, on the
+ *  nearest outer wall: out from the room through its walls till there's open air ahead and overhead (15 m at most). */
+function flatNeon(w: World, s: { x: number; y: number; z: number }) {
+  const y = s.y + 1.2;
+  let best: { x: number; z: number; yaw: number; d: number } | null = null;
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2, dx = Math.sin(a), dz = Math.cos(a);
+    let t = 0;
+    for (let k = 0; k < 8 && t < 15; k++) {
+      const hit = raycast(w.index, s.x + dx * t, y, s.z + dz * t, dx, 0, dz, 15 - t);
+      if (!hit) break;
+      // (Through this wall: its far face.)
+      const at = t + hit.t + 1, back = raycast(w.index, s.x + dx * at, y, s.z + dz * at, -dx, 0, -dz, 1);
+      if (!back) break;
+      t = at - back.t + 0.01;
+      const ox = s.x + dx * (t + 0.6), oz = s.z + dz * (t + 0.6);
+      if (!raycast(w.index, s.x + dx * t, y, s.z + dz * t, dx, 0, dz, 3) && !raycast(w.index, ox, y, oz, 0, 1, 0, 3)) {
+        if (!best || t < best.d) best = { x: s.x + dx * t, z: s.z + dz * t, yaw: a, d: t };
+        break;
+      }
+    }
+  }
+  if (best) w.props.push({ kind: 'flatneon', x: best.x, y, z: best.z, yaw: best.yaw });
+}
+
 export function liFlat(w: World) {
   const top = w.teleports.find(t => t.name === 'Shibati top')!, g = w.ground!;
   // A living room or bedroom on an upper floor (not the ground floor) of a house in Shibati, the nearest to the top
@@ -55,6 +80,7 @@ export function liFlat(w: World) {
     const [bx, bz] = take(), [qx, qz] = take();
     w.features.push({ kind: 'li:badge', x: bx, y: s.y + 0.03, z: bz, group: w.features.length }, { kind: 'li:phone', x: qx, y: s.y + 0.03, z: qz, group: w.features.length + 1 });
     w.teleports.push({ name: 'Li family flat', x: s.x, y: s.y + 1.5, z: s.z, yaw: Math.atan2(s.x - bx, s.z - bz) });
+    flatNeon(w, s);
     return s;
   }
   throw new Error('no flat for the Li family in upper Shibati');

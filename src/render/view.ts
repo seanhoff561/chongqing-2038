@@ -180,8 +180,9 @@ export class View {
 
   /** 0 off, 1 white (bright, 40 m), 2 red (dim, 12 m: keeps night vision, shows less). */
   setLamp(mode: number) {
-    this.lamp.intensity = mode === 1 ? 90 : mode === 2 ? 5 : 0;
-    this.lamp.color.setHex(mode === 2 ? 0xff2814 : 0xfff4e6);
+    this.lamp.intensity = mode === 1 ? 90 : mode === 2 ? 7 : 0;
+    // (Its dim mode ice blue: U-104.)
+    this.lamp.color.setHex(mode === 2 ? 0x6fc4ec : 0xfff4e6);
     this.lamp.distance = mode === 2 ? 12 : 40;
   }
 

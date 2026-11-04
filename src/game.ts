@@ -266,6 +266,9 @@ export class Game {
     return true;
   }
 
+  /** A line of the story said: heard, and Anna's read in English (U-104). */
+  sayLine(id: string) { const l = lineById.get(id); if (!l) return; if (l.speaker === 'anna') this.hud.say(l.en); speak(this.audio, id); }
+
   /** The main menu's up: nothing runs under it (U-104). */
   menuUp() { return !!document.getElementById('boot'); }
 
@@ -317,7 +320,7 @@ export class Game {
       else if (e.t === 'bench') this.craft.toggle(true);
       else if (e.t === 'logged') this.hud.notice('logged');
       // (Spoken; only Anna's story lines are read, in English: U-104.)
-      else if (e.t === 'say') { const l = lineById.get(e.id); if (l) { if (l.speaker === 'anna') this.hud.say(l.en); speak(this.audio, e.id); } }
+      else if (e.t === 'say') this.sayLine(e.id);
       // (The street speakers: heard, not read: U-092.)
       else if (e.t === 'pa') {
         // (From the lampposts' speakers round him, the nearest three: U-094.)

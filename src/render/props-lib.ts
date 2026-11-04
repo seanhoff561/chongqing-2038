@@ -8,7 +8,7 @@ import { PLANTS } from './plants';
 import { quad, slot, signs, SIGN_PROPS } from './signs';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { propAtlas, atlasMaterial } from './prop-atlas';
-import { alarm, lampPool } from './materials';
+import { alarm, lampPool, iceNeon } from './materials';
 import { SCREEN_EDICT } from './edicts';
 
 // One material for every library prop: the atlas carries every surface, leaves included (alpha-tested).
@@ -391,6 +391,19 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
   },
   // A shop's neon sign on a gantry (old commercial neon, not the occupier's cyan): a box sign of glowing glyphs
   // on both faces with a lit strip under it, on two thin posts; length w along x, h the height of its bottom.
+  // The neon by his family's flat (U-104): an old blade sign out from the wall (+z), its tubes tracing a frame and 小
+  // ("little", a noodle bar's sign), ice blue, lit only after dark.
+  flatneon: p => {
+    const k = new Kit(seedOf(p)).use('metal'), t = new Kit(seedOf(p) + 1);
+    k.box(0.05, 0.05, 0.75, 0x2a2d30, 0, 1.62, 0.37).box(0.05, 0.05, 0.75, 0x2a2d30, 0, 0.12, 0.37);
+    k.use('paint').box(0.07, 1.5, 0.55, 0x0e1317, 0, 0.17, 0.42);
+    const T = 0.03;
+    for (const x of [0.045, -0.045]) {
+      t.box(T, T, 0.5, 0xffffff, x, 1.6, 0.42).box(T, T, 0.5, 0xffffff, x, 0.2, 0.42).box(T, 1.43, T, 0xffffff, x, 0.19, 0.18).box(T, 1.43, T, 0xffffff, x, 0.19, 0.66);
+      t.box(T, 0.85, T, 0xffffff, x, 0.55, 0.42).box(T, 0.3, T, 0xffffff, x, 1.0, 0.3, 0, -0.5).box(T, 0.3, T, 0xffffff, x, 1.0, 0.54, 0, 0.5).box(T, T, 0.1, 0xffffff, x, 0.56, 0.38);
+    }
+    return group([{ geo: k.geometry(), mat: PROP_MAT }, { geo: t.geometry(), mat: iceNeon() }]);
+  },
   neonsign: p => {
     const k = new Kit(seedOf(p)).use('metal'), r = k.r, w = p.w ?? 3, y = p.h ?? 4, c = [0xff4fa0, 0xffb040, 0x80ff90][Math.floor(r() * 3)];
     for (const x of [-w / 2 + 0.1, w / 2 - 0.1]) k.box(0.08, y, 0.08, 0x3a3a3a, x, 0);

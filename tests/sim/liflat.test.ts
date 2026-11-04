@@ -10,6 +10,7 @@ import { districtAt } from '../../src/world/yuzhong/lots';
 import { B } from '../../src/sim/types';
 import { VOICEMAIL } from '../../src/data/dialogue';
 import { run, aim, LMB } from './helpers';
+import { localLight } from '../../src/sim/light';
 
 const w = getWorld('yuzhong'), flat = w.teleports.find(t => t.name === 'Li family flat')!, top = w.teleports.find(t => t.name === 'Shibati top')!;
 const things = w.features.filter(f => f.kind.startsWith('li:'));
@@ -20,6 +21,15 @@ describe('the Li family flat (M3-19)', () => {
     expect(districtAt(flat.x, flat.z).district).toBe('shibati');
     expect(flat.y - 1.5).toBeGreaterThan(heightAt(w.ground!, flat.x, flat.z)! + 2.5);
     expect(Math.hypot(flat.x - top.x, flat.z - top.z)).toBeLessThan(150);
+  });
+  it('has its ice-blue neon on the outside of the building, lit only after dark (U-104)', () => {
+    const n = w.props.find(p => p.kind === 'flatneon')!;
+    expect(n).toBeTruthy();
+    expect(Math.hypot(n.x - flat.x, n.z - flat.z)).toBeLessThan(9);
+    // Out in the open in front of it: lit at night, not by day.
+    const x = n.x + Math.sin(n.yaw) * 1.5, z = n.z + Math.cos(n.yaw) * 1.5;
+    expect(localLight(w, x, n.y, z, 23 * 3600)).toBeGreaterThan(0.2);
+    expect(localLight(w, x, n.y, z, 12 * 3600)).toBeLessThan(localLight(w, x, n.y, z, 23 * 3600));
   });
   it('has been turned over', () => {
     const near = w.props.filter(p => p.kind.startsWith('f:') && Math.hypot(p.x - flat.x, p.z - flat.z) < 5 && Math.abs(p.y - (flat.y - 1.5)) < 0.2);

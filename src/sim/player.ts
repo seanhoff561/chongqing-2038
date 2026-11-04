@@ -56,7 +56,7 @@ export interface Player {
   coyote: number;
   /** seconds into a slide, or -1 */
   slide: number;
-  /** headlamp (U-019): 0 off, 1 white, 2 red */
+  /** headlamp (U-019): 0 off, 1 white, 2 dim blue (U-104) */
   lamp: 0 | 1 | 2;
   /** wrapped in a mylar blanket (M4-06): his heat hidden from thermal sight */
   mylar: boolean;

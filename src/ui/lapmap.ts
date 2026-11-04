@@ -76,7 +76,7 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
   const { w: W, h: H } = MAPV, { cx, cz, m } = v, X = (x: number) => W / 2 + (x - cx) / m, Z = (z: number) => H / 2 + (z - cz) / m;
   const vx0 = cx - (W / 2) * m, vx1 = cx + (W / 2) * m, vz0 = cz - (H / 2) * m, vz1 = cz + (H / 2) * m;
   const inView = (x: number, z: number) => x > vx0 && x < vx1 && z > vz0 && z < vz1;
-  ctx.fillStyle = '#080908'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#061016'; ctx.fillRect(0, 0, W, H);
   ctx.font = "11px 'Courier New', monospace"; ctx.textBaseline = 'top'; ctx.lineWidth = 1;
   // The buildings: every one, by its type (U-104).
   ctx.globalAlpha = here === -1 ? 0.35 : 1;
@@ -84,20 +84,20 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
     if (b.x1 < vx0 || b.x0 > vx1 || b.z1 < vz0 || b.z0 > vz1) continue;
     ctx.fillStyle = b.p.type ? TYPE[b.p.type][0] : SEALED;
     ctx.beginPath(); b.p.corners.forEach(([x, z], i) => (i ? ctx.lineTo(X(x), Z(z)) : ctx.moveTo(X(x), Z(z)))); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = '#3a3326'; ctx.stroke();
+    ctx.strokeStyle = '#1d2c34'; ctx.stroke();
   }
   // Underground: the tunnels he's walked.
   if (here === -1) {
-    ctx.globalAlpha = 1; ctx.fillStyle = '#9a8250';
+    ctx.globalAlpha = 1; ctx.fillStyle = '#4f7a8c';
     const c0 = Math.floor(vx0 / MAP.cell), c1 = Math.floor(vx1 / MAP.cell), r0 = Math.floor(vz0 / MAP.cell), r1 = Math.floor(vz1 / MAP.cell), cs = MAP.cell / m;
     for (let i = c0; i <= c1; i++) for (let j = r0; j <= r1; j++) if (ex[`${i},${j},-1`]) ctx.fillRect(X(i * MAP.cell), Z(j * MAP.cell), cs, cs);
   }
   ctx.globalAlpha = 1;
   // The ways down he's come across: a ring each.
-  ctx.strokeStyle = '#c8a96a';
+  ctx.strokeStyle = '#7aa6b8';
   for (const i of prep(w).grates) if (inView(i.x, i.z) && near(ex, i.x, i.z, i.x, i.z)) { ctx.beginPath(); ctx.arc(X(i.x), Z(i.z), 2.5, 0, Math.PI * 2); ctx.stroke(); }
   // The districts, named.
-  ctx.fillStyle = '#7d7563';
+  ctx.fillStyle = '#7aa6b8';
   for (const [k, [zh, en]] of Object.entries(DISTRICT_NAMES)) { const L = GEO.landmarks[k]; if (L && inView(L.x, L.z)) ctx.fillText(`${zh} ${en}`, X(L.x) - 30, Z(L.z) - 6); }
   // The key places (U-102): a diamond each, named.
   // (Off the map: at its edge, the way it lies, and how far.)
@@ -109,7 +109,7 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
       ctx.fillStyle = '#a89070'; ctx.fillText(`${q.zh} ${Math.round(Math.hypot(q.x - p.x, q.z - p.z))}m`, Math.min(W - 70, Math.max(2, ex - 30)), Math.min(H - 12, Math.max(14, ez + (ez > H / 2 ? -14 : 4))));
       continue;
     }
-    ctx.fillStyle = '#e8a04a'; ctx.strokeStyle = '#080908';
+    ctx.fillStyle = '#e8a04a'; ctx.strokeStyle = '#061016';
     ctx.beginPath(); ctx.moveTo(X(q.x), Z(q.z) - 5); ctx.lineTo(X(q.x) + 5, Z(q.z)); ctx.lineTo(X(q.x), Z(q.z) + 5); ctx.lineTo(X(q.x) - 5, Z(q.z)); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#e8c090'; ctx.fillText(`${q.zh} ${q.en}`, X(q.x) + 7, Z(q.z) - 5);
   }
@@ -130,11 +130,11 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
   if (v.hi) { ctx.strokeStyle = MARK; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(X(v.hi.x), Z(v.hi.z), 9, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1; }
   // Him, and which way he faces; the layer he's on; a scale.
   const f = forward(s.player.yaw), hx = X(p.x), hz = Z(p.z);
-  ctx.fillStyle = ctx.strokeStyle = '#ffd890'; ctx.fillRect(hx - 2, hz - 2, 4, 4);
+  ctx.fillStyle = ctx.strokeStyle = '#e6f7ff'; ctx.fillRect(hx - 2, hz - 2, 4, 4);
   ctx.beginPath(); ctx.moveTo(hx, hz); ctx.lineTo(hx + f.x * 10, hz + f.z * 10); ctx.stroke();
   const L = LAYERS.find(q => q.l === here)!;
-  ctx.fillStyle = '#c8a96a'; ctx.fillText(`${L.zh} ${L.en} · 北 N ↑`, 4, 4);
-  ctx.strokeStyle = '#7d7563'; ctx.beginPath(); ctx.moveTo(W - 4 - 100 / m, H - 8); ctx.lineTo(W - 4, H - 8); ctx.stroke(); ctx.fillStyle = '#7d7563'; ctx.fillText('100 m', W - 4 - 100 / m, H - 22);
+  ctx.fillStyle = '#bfe6f5'; ctx.fillText(`${L.zh} ${L.en} · 北 N ↑`, 4, 4);
+  ctx.strokeStyle = '#7aa6b8'; ctx.beginPath(); ctx.moveTo(W - 4 - 100 / m, H - 8); ctx.lineTo(W - 4, H - 8); ctx.stroke(); ctx.fillStyle = '#7aa6b8'; ctx.fillText('100 m', W - 4 - 100 / m, H - 22);
 }
 
 /** His marks: a pin, a straight line, or words. */
@@ -152,7 +152,7 @@ function drawMarks(ctx: CanvasRenderingContext2D, marks: Mark[], X: (x: number) 
 /** Under the map: what the colours are, and what he's explored. */
 export function mapKey(g: Game): string {
   const n = Object.keys(g.state.explored ?? {}).length;
-  return `<div>${Object.values(TYPE).map(([c, zh, en]) => `<i style="color:${c}">■</i> ${zh} <span>${en}</span>`).join(' ')} <i style="color:${SEALED}">■</i> <span>sealed</span> <i style="color:#c8a96a">○</i> <span>way down</span> <i style="color:#e8a04a">◆</i> <span>key place</span></div>` +
+  return `<div>${Object.values(TYPE).map(([c, zh, en]) => `<i style="color:${c}">■</i> ${zh} <span>${en}</span>`).join(' ')} <i style="color:${SEALED}">■</i> <span>sealed</span> <i style="color:#7aa6b8">○</i> <span>way down</span> <i style="color:#e8a04a">◆</i> <span>key place</span></div>` +
     `<div data-k="cells">已探索 ${n} 格 <span>${n} cells explored</span></div>` + docks(g);
 }
 

@@ -38,7 +38,7 @@ export interface Secure { id: string; prefix: string; x: number; z: number; ways
 
 /** A light, for perception (M3-16): lit up to v within r of its box (a lamppost's is its pole's height under the
  *  lamp, a strip light's its strip). */
-export interface Light { kind: 'post' | 'neon' | 'lamp' | 'flood'; box: Box; r: number; v: number }
+export interface Light { kind: 'post' | 'neon' | 'lamp' | 'flood'; box: Box; r: number; v: number; /** lit only after dark */ night?: boolean }
 
 /** Areas with special rules: 'under' = underground (no sky light). */
 export interface Zone { kind: string; box: Box; /** an underground space with its own lights (M3-58) */ lit?: boolean }

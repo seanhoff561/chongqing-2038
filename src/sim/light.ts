@@ -28,6 +28,8 @@ export function lightsOf(w: World): Light[] {
     // (A gate's floodlight, 11 m up its mast, lights the apron 8 m out in front.)
     else if (p.kind === 'floodlight') out.push({ kind: 'flood', box: point(p.x + fx * 8, p.y - 10, p.z + fz * 8), r: 10, v: 1 });
     else if (p.kind === 'lamp') out.push({ kind: 'lamp', box: point(p.x, p.y + 0.5, p.z), r: 5, v: 0.5 });
+    // (The neon by his family's flat, only after dark: U-104.)
+    else if (p.kind === 'flatneon') out.push({ kind: 'neon', box: point(p.x + fx * 0.6, p.y + 0.9, p.z + fz * 0.6), r: 5, v: 0.35, night: true });
   }
   for (const s of w.decor) {
     if (s.mat === MAT.lamp) out.push({ kind: 'lamp', box: s, r: 6, v: 0.5 });
@@ -52,12 +54,13 @@ function grid(w: World) {
 }
 
 /** The strongest light on a point from the lights near it: full within half its reach, falling to none at it. */
-export function localLight(w: World, x: number, y: number, z: number): number {
+export function localLight(w: World, x: number, y: number, z: number, time?: number): number {
   let best = 0;
+  const dark = time === undefined || daylight(time) < 0.5;
   for (const l of grid(w).get(key(Math.floor(x / CELL), Math.floor(z / CELL))) ?? []) {
     const b = l.box, dx = Math.max(b.x0 - x, 0, x - b.x1), dy = Math.max(b.y0 - y, 0, y - b.y1), dz = Math.max(b.z0 - z, 0, z - b.z1);
     const d = Math.hypot(dx, dy, dz);
-    if (d < l.r) best = Math.max(best, l.v * Math.min(1, 2 * (1 - d / l.r)));
+    if (d < l.r && (dark || !l.night)) best = Math.max(best, l.v * Math.min(1, 2 * (1 - d / l.r)));
   }
   return best;
 }
@@ -76,8 +79,8 @@ export function ambientAt(w: World, x: number, y: number, z: number, time: numbe
 
 /** How lit a point is (its foot), 0..1, at game time `time`; `own` is a light he carries (his headlamp). */
 export function lightAt(w: World, pos: { x: number; y: number; z: number }, time: number, own = 0): number {
-  return Math.min(1, ambientAt(w, pos.x, pos.y, pos.z, time) + Math.max(own, localLight(w, pos.x, pos.y + 1, pos.z)));
+  return Math.min(1, ambientAt(w, pos.x, pos.y, pos.z, time) + Math.max(own, localLight(w, pos.x, pos.y + 1, pos.z, time)));
 }
 
-/** His headlamp's light on him: white 1.0, red 0.4. */
+/** His headlamp's light on him: white 1.0, dim blue 0.4. */
 export const LAMP_LIGHT = [0, 1, 0.4] as const;

@@ -60,6 +60,7 @@ requestAnimationFrame(() => requestAnimationFrame(() => { loading?.remove(); boo
   kill: (cause = 'test') => die(game.state, cause),
   cues: () => Object.keys(MOVE_SOUNDS),
   playCue: (id: string, surf?: Surface, wet = false) => (surf ? playStep(game.audio, id, surf, wet) : playMove(game.audio, id)),
+  say: (id: string) => game.sayLine(id),
   give: (id: string, n = 1) => addItem(game.state, game.state.inv.pack, id, n),
   save: () => writeSave(localStorage, game.scenario.name, game.state),
   unitPose,
