@@ -36,6 +36,10 @@ async function open(query, where) {
     await held.page.evaluate(`(() => { const g = window.__cq.game; Object.assign(g.state.flags, ${held.flags}); for (const k of Object.keys(g.state.flags)) if (!(k in ${held.flags})) delete g.state.flags[k]; g.state.player.lamp = 0; g.state.time = ${held.time}; window.__cq.runFrames(2); })()`);
     return held.page;
   }
+  // (Two cities in memory at most, the one held and the one loading: each takes some 4.7 GB in software-rendered
+  // Chrome, and a third runs the machine out of memory (its page dies and every check after it times out). So before a
+  // city that's held, or any other whole-city page, loads, the one held goes.)
+  if (SHARED.has(query) || /scenario=(?!gym|hideout)/.test(query)) for (const [q, old] of [...shared.entries()]) { shared.delete(q); await old.close(); }
   const page = await browser.newPage(), label = { v: where };
   await page.setViewport({ width: 960, height: 540 });
   page.on('console', m => { if (m.type() === 'error') fails.push(`${label.v}: console ${m.text().slice(0, 200)}`); });
@@ -43,13 +47,6 @@ async function open(query, where) {
   await page.goto(base + query, { waitUntil: 'load', timeout: 240000 });
   await page.waitForFunction('window.__cq && window.__cq.ready', { timeout: 240000 });
   if (SHARED.has(query)) {
-    // Two cities held open at most: each takes some 4.7 GB in software-rendered Chrome, and a third runs the
-    // machine out of memory (its page dies and every check after it times out). The least recently used goes.
-    if (shared.size >= 2) {
-      const [q, old] = [...shared.entries()].sort((a, b) => a[1].used - b[1].used)[0];
-      shared.delete(q);
-      await old.close();
-    }
     const [flags, time] = await page.evaluate('[JSON.stringify(window.__cq.game.state.flags), window.__cq.game.state.time]');
     const close = page.close.bind(page);
     page.close = async () => {};

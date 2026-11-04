@@ -178,14 +178,14 @@ function lodCut(m: THREE.Material, lod: Lod) {
 }
 
 /** Snow lying on what it draws, where it faces up open to the sky (U-097). */
-/** Snow lying on it in winter, and fallen leaves on it in late autumn as thick as `leaves` (0 none, 1 grass's). */
-function snowy(m: THREE.MeshPhongMaterial, leaves = 0) {
+/** Snow lying on it in winter; fallen leaves on it in late autumn and its grass drying (GLSL: snowcover.ts). */
+function snowy(m: THREE.MeshPhongMaterial, leaves = '', straw = '') {
   const before = m.onBeforeCompile, key0 = m.customProgramCacheKey;
-  m.onBeforeCompile = (sh, rr) => { before.call(m, sh, rr); snowPatch(sh, leaves); };
-  m.customProgramCacheKey = () => `${key0.call(m)}:snow${leaves}`;
+  m.onBeforeCompile = (sh, rr) => { before.call(m, sh, rr); snowPatch(sh, leaves, straw); };
+  m.customProgramCacheKey = () => `${key0.call(m)}:snow${leaves}${straw}`;
 }
 /** How thick fallen leaves lie on each (U-104): on the grass, on the ground and the paving under the trees. */
-const LEAVES: Record<number, number> = { [MAT.grass]: 1, [MAT.stone]: 0.3, [MAT.tile]: 0.25, [MAT.concrete]: 0.15, [MAT.asphalt]: 0.12 };
+const LEAVES: Record<number, number> = { [MAT.grass]: 1, [MAT.stone]: 0.35, [MAT.tile]: 0.3, [MAT.concrete]: 0.12, [MAT.asphalt]: 0.05 };
 
 /** A world material; vc for meshes that carry vertex colours (the merged world); lod splits near and far. */
 /** The insides' linings (M5-35), in one atlas, so a chunk's inside walls draw in one go whatever their linings. */
@@ -243,7 +243,9 @@ vec2 aG = vMapUv * vec2(0.25, 1.0 / ${R}) * 0.97;
 vec4 sampledDiffuseColor = textureGrad(map, (cell + 0.015 + fract(vMapUv) * 0.97) * vec2(0.25, 1.0 / ${R}), dFdx(aG), dFdy(aG));
 diffuseColor *= sampledDiffuseColor;`);
   };
-  snowy(mm);
+  // (Each cell its own: leaves on the grass and paving, the grass drying.)
+  const byCell = Object.entries(LEAVES).map(([id, k]) => `abs(vCell - ${atlasCell(+id)}.0) < 0.5 ? ${k.toFixed(2)} : `).join('') + '0.0';
+  snowy(mm, byCell, `abs(vCell - ${atlasCell(MAT.grass)}.0) < 0.5 ? 1.0 : 0.0`);
   const key1 = mm.customProgramCacheKey;
   mm.customProgramCacheKey = () => `${key1.call(mm)}:atlas`;
   mats.set(key, mm);
@@ -292,7 +294,7 @@ export function material(id: number, vc = false, lod: Lod = 'all'): THREE.MeshPh
     // Water shows from below too (M3-48).
     m = new THREE.MeshPhongMaterial({ map: tex, vertexColors: vc, transparent: id === MAT.water, opacity: id === MAT.water ? 0.82 : 1, side: id === MAT.water ? THREE.DoubleSide : THREE.FrontSide, ...DRY });
     lodCut(m, lod);
-    if (id !== MAT.water) snowy(m, LEAVES[id] ?? 0);
+    if (id !== MAT.water) snowy(m, LEAVES[id] ? LEAVES[id].toFixed(2) : '', id === MAT.grass ? '1.0' : '');
   }
   if (id === MAT.cable) {
     // Cables sway: every vertex drifts a few centimetres, slow and quick together, by where it is (M3-37).
@@ -333,7 +335,7 @@ gTex.rgb = mix(gTex.rgb, vec3(dot(gTex.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62)
 sampledDiffuseColor = mix(sampledDiffuseColor, gTex, smoothstep(0.35, 0.65, vCover.x + (gTex.g - 0.36) * 1.2));
 diffuseColor *= mix(sampledDiffuseColor, rTex, smoothstep(0.35, 0.65, vCover.y + (rTex.r - 0.42) * 1.2));`);
   };
-  snowy(m, 0.45);
+  snowy(m, '0.45');
   m.customProgramCacheKey = () => `ground${lod}:snow:leaves`;
   mats.set(key, m);
   return m;
