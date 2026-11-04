@@ -93,6 +93,8 @@ export interface SimState {
   seed: number;
   /** the seed the city was built with (its building types, M5-35); a new run in place keeps the city's (D-123) */
   worldSeed?: number;
+  /** times he's died this run (U-104): never rolled back by waking at the last save */
+  deaths?: number;
   rng: Rng;
   tick: number;
   /** game seconds since day 1, 00:00 */

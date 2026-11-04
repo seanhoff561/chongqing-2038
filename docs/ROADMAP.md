@@ -176,6 +176,196 @@ M1 Movement: the first-person controller and the full parkour set, in a dev "gym
   - Buttons: resume (back into fullscreen), the movement gym and a list of its areas to jump to, and the game
   - The smoke test opens it and switches to the gym
 
+## M10: 1 of 53 done
+
+
+
+- [x] **M10-01** Death returns him to his last sleep (U-104)
+  - Sleeping (in a bed or rough) saves the run; a new run saves as it starts; nothing else saves the run
+  - Dying shows what killed him, then he is back as he was at his last save, with the run's death count one higher; the count is never rolled back by a reload and a new run starts it at 0
+  - The laptop shows a skull and the death count beside the date and time
+  - A sim test sleeps, moves on, dies, and finds him back where and as he slept with one death
+- [ ] **M10-02** A lean repository (U-104)
+  - Dead code, unused files, stale tools and duplicates removed across src, tools, tests, public and docs, with no loss of game function
+  - docs/ROADMAP.md, docs/QUESTIONS.md and docs/PLAYTEST.md removed (questions and playtest requests go to the director in chat); one CREDITS.md at the root; CLAUDE.md follows the new process
+  - Overlapping tests merged; the fast check shares one built city across test files and runs at least twice as fast (times logged)
+- [ ] **M10-03** Docs the director reads, rewritten (U-104)
+  - README.md, CREDITS.md, docs/DESIGN.md, docs/PROGRESS.md and docs/DECISIONS.md rewritten as short, clear, current paragraphs with specific details: DESIGN says exactly how everything works or will work (U-104 included), PROGRESS what's done, DECISIONS the director's notes in order in their words and the design calls still in force (removed things noted once)
+  - BRIEF.md left as the director's original prompt
+- [ ] **M10-04** 150 fps on medium (U-104)
+  - Medium is the only graphics level
+  - The CPU cost of a frame (sim ticks plus render work) at the framecost viewpoints by day and night averages at most 6.6 ms, measured before and after in a browser test
+  - Real frame rate asked of the director in chat
+- [ ] **M10-05** Settings, word for word (U-104)
+  - Esc in play, or Settings on the main menu, opens one centred ice-blue panel holding exactly, top to bottom: 设置 SETTINGS; 主菜单 Menu (last sleep saved); 音量 Volume (one master slider, long); 灵敏度 Sensitivity (long, a fairly low default); 按键 Keys: Sprint Shift, Crouch Ctrl, Crawl C, Interact E, Lean/Tab Left Mouse4, Lean/Tab Right Mouse5, Reload R, Headlamp/Focus Laptop Q, Chimney X, Sleep Rough Z, Laptop Tab, Backpack Alt
+  - Only those twelve are rebindable, to keys or mouse buttons 4 and 5; mouse 4 and 5 never take the browser back or forward and Alt never opens its menu; no controls list, subtitle, invert Y, per-sound or graphics settings; no 'let go' action
+  - With ?dev=1 two more toggles: the dev UI and the crosshair, for filming
+  - A browser test finds exactly those rows, rebinds a key to mouse 4, and after a reload finds volume, sensitivity and keys as set
+- [ ] **M10-06** Settings don't pause; the main menu does (U-104)
+  - With settings open the world goes on: machines move and he can be hurt and die; his own movement and look stop while it's open
+  - On the main menu nothing runs: the sim is still, the camera doesn't move, no input reaches the game; Menu in settings returns to it (the run since the last sleep is not kept: Continue loads the last save)
+  - A browser test: time passes under settings, not under the main menu, and mouse movement on the main menu doesn't turn the view
+- [ ] **M10-07** Prompts say just the thing (U-104)
+  - The interact prompt names the thing alone (门 Door), never its key
+  - A browser test reads a prompt with no key in it
+- [ ] **M10-08** Menus close the way they opened (U-104)
+  - Esc closes the backpack, laptop, crafting, sleep and settings; each also closes with the key that opened it
+  - The sleep menu has no stay-awake button: the key or interaction that opened it, or Esc, leaves it; each choice says how many hours he'll sleep and the time he'll wake
+  - A browser test opens and closes each by its key and by Esc
+- [ ] **M10-09** Subtitles only for Anna's story lines (U-104)
+  - Anna's remarks are gone (no word on scans, injuries, battery, drones, tags) with their lines and code; the subtitle settings are gone
+  - The subtitle line shows only Anna's scripted story lines, always in English, at one size; how-to and hint messages are removed game-wide, and the few notices kept are short and neutral
+  - Sim tests: no remark is spoken over a day of play; e2e: a story line shows in English
+- [ ] **M10-10** Main menu (U-104)
+  - Top to bottom: 重庆 2038; Continue with the saved date and time (if there is a save); New Run; Settings (the same panel as Esc); Maps (once M10-35 is built); the version number
+  - Clicking the version opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, with a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository
+  - A browser test checks the order and opens the changelog
+- [ ] **M10-11** Desktop download and updates (U-104)
+  - A Windows installer (.exe) of the game, built by GitHub Actions for each release and attached to its GitHub Release; the README links the latest download
+  - The installed game updates itself from the Releases on start; it runs uncapped by the screen's refresh; it keeps songs/ and maps/ folders the game reads
+  - The CI build passes; the director installs and plays it (asked in chat)
+- [ ] **M10-12** The laptop in his hands (U-104)
+  - Opening it he holds the laptop in both hands, seen in first person; while it's out he can't grab, sprint or jump
+  - The lean keys turn its pages Map, Status, Scan, Notes (no others standing); nothing on screen says how to turn pages or close it
+  - Its corner shows the battery, the time and date, and a skull with the death count
+  - Sim test: with it out a sprint and a jump do nothing and no hold is taken; e2e: the pages cycle in that order
+- [ ] **M10-13** Focus: sitting down at the laptop (U-104)
+  - Q with the laptop out sits him down and the view closes in on its screen; the mouse moves a cursor on it; Q or Esc stands him up
+  - Sitting, a nine-dot launcher opens every tab: Map, Status, Scan, Notes, Drone, Cams, Logs, Songs, Training Room; a tab he can't use yet opens to a hint at what unlocks it
+  - A browser test sits down, opens each tab from the launcher and stands up
+- [ ] **M10-14** Map tools (U-104)
+  - Standing, the map shows the city (every building's type from the start), him, and his own marks; hideouts are not marked
+  - Sitting, he can place markers, draw straight lines, write text and erase them, zoom with the wheel and drag with the right button; the marks are kept with the run
+  - A browser test places a marker, a line and a text, erases one, zooms and drags
+- [ ] **M10-15** Status, Scan and Notes when sitting (U-104)
+  - Status: hovering an injury tells what it is and how it's treated
+  - Scan: standing shows the last thing scanned; sitting he can pick any item in his backpack to scan
+  - Notes: a blank page he writes and edits sitting and only reads standing, kept with the run
+  - A browser test does each
+- [ ] **M10-16** Drone, Cams and Logs when sitting (U-104)
+  - Drone: launched, flown and landed from its tab sitting; Cams: a tapped camera's feed picked, looped from its tab; Logs: sightings listed and picked to show on the map
+  - Each, locked, opens to a hint at what unlocks it
+  - A browser test uses each
+- [ ] **M10-17** Songs (U-104)
+  - The game's own music is removed
+  - A Songs tab: in the desktop game it plays the files in its songs/ folder in random order as background audio (the folder starts empty); play and skip, the file's name shown; in the browser he picks a folder of songs to play the same way
+  - A browser test plays two picked files and skips
+- [ ] **M10-18** Anna in the corner (U-104)
+  - Anna is a small animated anime girl (straight black shoulder-length hair, white collared shirt) in the laptop's corner: idle, blinking, waving, laughing, pouting with arms crossed, blushing red; drawn frames switched like a gif
+  - She never speaks outside the opening scene, her tab introductions and the map's key places (M10-54, M10-55)
+  - A screenshot of each pose
+- [ ] **M10-19** Ice blue (U-104)
+  - Every menu (main menu, settings, laptop, backpack, crafting, sleep, map, death screen) is light ice blue on the dark minimal style
+  - The laptop's screen glow on him is ice blue; the headlamp's second mode is blue (not red); the neon by his family's flat is light blue and lit only at night
+  - Screenshots of each
+- [ ] **M10-20** No more raids (U-104)
+  - The raid on a hideout is removed with everything only it used
+  - Being tracked (a tag on him, followed home, seen there) gives his position away: the machines come hunting him where he is
+  - A sim test: tagged and at a hideout, he's hunted there that hour; no raid code remains
+- [ ] **M10-21** The Li family flat, a place to visit (U-104)
+  - The flat in upper Shibati can be walked into from the street (stairs and a door) and is a key place on the map once he knows of it
+  - A sim test walks in from the street
+- [ ] **M10-22** Late autumn (U-104)
+  - A run starting in late autumn has its trees in autumn colours, thinning, and fallen leaves lying over the grass and patches of the ground (winter's snow as before)
+  - Screenshots at the start
+- [ ] **M10-23** Machines from the start, but not at his door (U-104)
+  - A new run has machines on their beats everywhere from the first second except within about 40 m of the hideout's way out for its first minutes
+  - A sim test counts machines out at the start beyond 40 m and none within it
+- [ ] **M10-24** The telescoping ladder in front of the wall (U-104)
+  - A ladder set against a wall stands in front of it, wholly visible, never inside it
+  - A sim test sets it against walls at several angles and finds it clear of them
+- [ ] **M10-25** Placed things picked back up (U-104)
+  - A placed toolbox (its bench), bedroll and folding crate (if empty) can be picked back up into the backpack
+  - The toolbox sits on the table's top, square to it
+  - Sim tests place and pick up each
+- [ ] **M10-26** Loot and places finished (U-104)
+  - Every site has its loot (the construction site's tier 2 tools with the steel hook: M6-10 built here)
+  - Every item can be found somewhere (a loot table or a placed spot), e.g. the hiking pack
+  - A unit test lists each item's sources and finds none without
+- [ ] **M10-27** The start hideout, no bed (U-104)
+  - The hideout he wakes in has no bed; a table stands beside the crate where a toolbox makes a bench
+  - A sim test finds no bed and the table by the crate
+- [ ] **M10-28** Charging made easy (U-104)
+  - One battery pack charges everything he carries that takes a charge (the laptop, phone and devices) full, used up doing it
+  - A sim test charges a flat laptop and phone with one pack
+- [ ] **M10-29** Never stuck in a window's corner (U-104)
+  - Running, jumping or climbing into a window's corners never leaves him stuck
+  - A sim test pushes into window corners from several angles and gets out each time
+- [ ] **M10-30** One wire outside the hideout (U-104)
+  - Of the two side-by-side wires outside the start hideout, one is removed and the other kept
+  - A sim test finds one
+- [ ] **M10-31** The movement gym removed (U-104)
+  - The movement gym world, its scenario and its tests are gone (the map editor's flat ground takes its place)
+- [ ] **M10-32** The map editor (U-104)
+  - From the Maps menu: a flat empty ground to build on: one large empty apartment to fill; movement-gym platforms of any size; pipes, ladders, poles, ledges, rails, ropes and every other climbing and parkour piece; props and decorations; containers with chosen loot; red signs for floors and walls with editable text, read by interacting; a spawn point
+  - Place, move, turn, size and delete; save, export and import maps (JSON); play the map from the editor
+  - A browser test builds a small map, plays it, saves, exports and imports it
+- [ ] **M10-33** Maps menu (U-104)
+  - Maps on the main menu lists the maps in the maps folder (the desktop game's maps/ folder; in the browser, its saved maps) with the tutorial built in; double click plays one; a single click selects it to edit, delete or copy; New makes one
+  - A browser test makes, copies, deletes and plays a map
+- [ ] **M10-34** Training room (U-104)
+  - A Training Room tab, only when sitting: he puts on VR goggles and the screen fades into the tutorial map (the director's, built with the editor); leaving it fades back to where he sat
+  - A browser test enters and leaves
+- [ ] **M10-35** Trailer music (U-104)
+  - A track of about 90 s in public/audio, its sections timed to the trailer: cold open, introduction, escalation, climax, button
+  - The director listens (asked in chat)
+- [ ] **M10-36** No opening cutscene (U-104)
+  - The intro cutscene and its skip are removed from the game, data, tools and docs
+- [ ] **M10-37** Found documents (U-104)
+  - Worldbuilding documents turn up now and then in homes, offices, workshops and military posts, each fitting where it's found (a journal about the sewer grate only where there's one), never twice in a world; story documents lie at the key places
+  - Each is an item read in the backpack (its text); the list goes to the director in chat for review
+  - A sim test: no duplicates in a world, each where it may be
+- [ ] **M10-38** Key places, hand designed (U-104)
+  - Each key place has its own hand-made layout (maze-like: stairways, locked doors, collapses), its story told by what's in it; the Li family flat tells what happened to his family
+  - Sim tests walk each from its ways in to its heart
+- [ ] **M10-39** His sister's trail (U-104)
+  - His sister is alive; each run she has gone to one of the exits, her notes leading from the family flat through places on the way to it, each with clues but not the whole answer
+  - At her exit he can leave with her or without her
+  - The trail's notes go to the director in chat for review; a sim test follows each exit's trail
+- [ ] **M10-40** Key places on the map as he learns of them (U-104)
+  - No key place is on the map at the start; a clue found that names or shows one marks it the next time he opens the map (with Anna's word on it), and walking into one marks it
+  - Sim/e2e: a clue marks its place; entering marks it
+- [ ] **M10-41** No headlamp at the start (U-104)
+  - He starts without a headlamp; it's found
+- [ ] **M10-42** Locked doors just click; doors open at once (U-104)
+  - A locked door gives no word at all, only a click; an unlocked door opens at once; nothing says what a lock needs
+  - Sim test
+- [ ] **M10-43** Spiders only in the sewers and the giants (U-104)
+  - No small spider machines on the streets: crawlers stay underground; crawlers made eldritch and creepy
+  - Sim test: over a day no crawler is above ground
+- [ ] **M10-44** Eldritch machines (U-104)
+  - Every machine redrawn eldritch and futuristic: all white, pointed, unfamiliar shapes, no eyes or faces; more variety of shapes and sizes within each kind (humanoids especially)
+  - Screenshots of each
+- [ ] **M10-45** Machines keep out of each other and of him (U-104)
+  - No machine enters another's body or his; paths bend organically at small scale and never pass through walls
+  - A sim test runs crowds and finds no overlaps
+- [ ] **M10-46** Every enemy attacks like it means it (U-104)
+  - Each kind has its own attack pattern (wind-up, strike, recovery, repositioning), keeping its distance rather than running into him
+  - Sim tests per kind
+- [ ] **M10-47** Dead and broken read at a glance (U-104)
+  - A destroyed machine or a dead camera fades to grey-black; a machine that dies falls as a ragdoll
+  - Screenshots and a sim test
+- [ ] **M10-48** Less health (U-104)
+  - Most machines take fewer hits (dogs and humanoids most of all); drones as they are
+  - Sim test of hits to kill
+- [ ] **M10-49** Many machines without the lag (U-104)
+  - Frame cost with the giant spiders and crowds in view cut so they no longer drop the frame rate
+  - Browser test of frame cost in a crowd
+- [ ] **M10-50** Real trees, vines and street poles to climb (U-104)
+  - The added metal climbing poles are removed; the trees, vines and street poles already in the city are what he climbs
+  - Sim test climbs a tree, a vine and a street pole
+- [ ] **M10-51** The endings (U-104)
+  - Every exit can be reached and ends the run (its sequence and summary), with his sister or without
+  - Sim tests take each
+- [ ] **M10-52** The opening scene (U-104)
+  - A new run fades in from black on him lying in the hideout at night, looking up, the room flooded with blue light; debris, the crate (just 'Crate') and the table; the shaft of blue light down through the hole with the ladder; rubbish that can't be passed and isn't labelled
+  - Beside him the backpack with the laptop open on it: Anna says her three lines (English subtitles, the speakers' voice, clear), then a blip to black and he has control; he takes the laptop and the bag by interacting, then 'Tab to open laptop'
+  - Opening it, Anna is mid-sentence: her lines as written, red, arms crossed, then off to the corner; the status page, the training room and Q
+  - A browser test plays it through
+- [ ] **M10-53** Anna's tab introductions and the map's first place (U-104)
+  - The first time he turns to each tab Anna says a short snarky line on it; the map's first time she marks the family flat with her line
+  - Later clues: the next map visit she marks the place with a line
+
 ## M2: 24 of 24 done
 
 M2 Hideout and survival: the hideout set piece, the day and night clock, sleep, hunger, thirst, fatigue, health and injuries, the grid inventory with item shapes and rotation, the stash, the ironman save, and permadeath.
@@ -1025,7 +1215,7 @@ M4 The machines: cameras, drones and their docks, ground robots, turrets; percep
 - [-] **M4-35** Tower searchlights
   - Rooftop searchlights sweep at night, adding full light inside their cone; on contact they converge on the last known position
   - A sim test covers sweep and convergence
-- [ ] **M4-83b** 144 fps on the director's machine (U-061)
+- [-] **M4-83b** 144 fps on the director's machine (U-061)
   - The game holds around 144 fps on the director's machine: the CPU cost of a frame (sim ticks plus render work) measured in the city in daylight and at night stays under 6.9 ms on average, with no frame over 2x that from the game's own work (no garbage-collection stalls from per-frame allocation)
 - [x] **M4-100** Beyond the city's edge (U-077)
   - Where the city ends there's something to see past its border: more city, hills and river in the distance (stand-ins, not walkable), so it doesn't stop dead
@@ -1317,12 +1507,12 @@ M8 Story and sound: the intro cutscene, endings, the voice system with subtitles
 - [x] **M8-04** Subtitles
   - Subtitles show the speaker and text in English, Chinese or both, at the chosen size
   - The smoke test switches the language setting
-- [ ] **M8-05** Intro cutscene
+- [-] **M8-05** Intro cutscene
   - The scripted intro from DESIGN section 13 and docs/cinematics/INTRO.md (news of the AI, the city fighting back and the rubble it left, the factory and the convoys out (U-030), Li Wei at the construction site, his father's call, the attack, the flight through Shibati, the subway and the underground city, Anna wakes) ending on day 1 at 06:00 in the grate hideout under Shibati (U-018)
   - The smoke test plays it to the end
   - Plays the generated clips in public/cinematics when present (subtitled, zh and en), else the in-engine version
   - U-038: the intro shows the start hideout under the alley: the ladder, the grate under the rubbish bags, its bolts and the friends' rule chalked by it (shut it, cover it, leave no trace; INTRO.md S06-01a)
-- [ ] **M8-06** Intro skip after the first run
+- [-] **M8-06** Intro skip after the first run
   - After a first run the intro can be skipped with a key; the first run can't skip it
   - The smoke test covers both
 - [x] **M8-07** Audio mixer and buses

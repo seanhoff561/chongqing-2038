@@ -189,7 +189,7 @@ export class LaptopUI {
     const pct = Math.round(L!.charge * 100), P = PAGES[this.page], locked = P.needs?.(g);
     const tabs = PAGES.map((q, i) => { const n = q.needs?.(g); return `<span data-page="${i}" class="${i === this.page ? 'on' : ''}${n ? ' locked' : ''}"${n ? ` title="${n[0]} · ${n[1]}"` : ''}>${q.zh} ${q.en}</span>`; }).join('');
     const body = locked ? `<div class="lt-locked">锁定 · ${locked[0]}<br><span>Locked · ${locked[1]}</span></div>` : P.draw(g);
-    const html = `<div class="lt-head"><span>安娜 ANNA</span><span>电量 ${bar(L!.charge)} ${pct}%</span><span>${clockText(g.state.time)}</span></div>` +
+    const html = `<div class="lt-head"><span>安娜 ANNA</span><span>电量 ${bar(L!.charge)} ${pct}%</span><span>${clockText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span></div>` +
       `<div class="lt-tabs">${tabs}</div><div class="lt-body" data-on="${P.id}">${body}</div>` +
       `<div class="lt-foot">← → 翻页 pages · L 合上 close</div>`;
     const fresh = html !== this.shown;

@@ -117,7 +117,7 @@ Health, hunger, thirst and fatigue show through breathing, heartbeat, blur, vign
 
 **Sleep.** At a mattress, choose a wake time (default 06:00). Sleep is a time skip: needs drain at sleep rates, healing applies, machines return to their schedules, and if the shelter is compromised the raid happens (section 9). The ironman save is written on waking.
 
-**Death and runs.** One ironman save in localStorage, written on wake and deleted on death. A run seed drives loot placement, food ages, weather and small patrol offsets (each route's phase shifts by up to 8% of its loop). The city and the patrol logic never change. After the first run the intro is skippable.
+**Death and runs (U-104).** One save in localStorage, written as a run starts and each time he wakes from sleep in a bed or rough (not from collapsing). Dying shows what killed him and the run's death count (a skull and the number, also on the laptop by the date and time) for 3 s or until a key or click, then he wakes as he was at the last save; the count is written into the save at once, so no reload rolls it back, and a new run starts it at 0. A run seed drives loot placement, food ages, weather and small patrol offsets (each route's phase shifts by up to 8% of its loop). The city and the patrol logic never change. After the first run the intro is skippable.
 
 ## 5. Perception, alert states and the hivemind
 
@@ -272,7 +272,7 @@ The intro ends at 06:00 on day 1 in his friends' old hideout: the brick-arched a
 - **Bed.** Claim a bed where one is (a mattress in a flat, a bunk in a site office), or carry a bedroll or mattress there and place it. Sleeping rough anywhere else works but restores 40% less energy, and he is exposed while asleep.
 - **Workbench.** Any table or bench becomes a workbench once a toolbox is placed on it.
 - **Storage.** Each hideout keeps its own: the containers within 15 m of its bed and nearer it than any other hideout's (or a crate he places). Everything stays put between trips.
-- A hideout is a claimed bed; the bench, storage, power (car battery and inverter, per hideout) and a lamp count when within 15 m. Sleeping in any of his beds saves the run (ironman). The inventory screen lists his hideouts, nearest first, until Anna's journal does (M5-02).
+- A hideout is a claimed bed; the bench, storage, power (car battery and inverter, per hideout) and a lamp count when within 15 m. Sleeping in any of his beds saves the run. The inventory screen lists his hideouts, nearest first, until Anna's journal does (M5-02).
 - Every furnished floor of an enterable block and every roof hut is a recorded site (world `sites`): its bed, table and containers, exits, windows (light leak at night) and street-facing walls (ground patrols); M4 adds patrol and drone routes, Anna's rating reads them.
 - The fixed air-raid shelter of earlier builds (`?scenario=hideout`) stays as a furnished test scene.
 
@@ -369,7 +369,7 @@ An open-source model running locally on his scuffed laptop. The laptop opens wit
 - **Intro (skippable after the first run; U-018).** Written shot by shot in docs/cinematics/INTRO.md for an AI video generator (3D Chinese anime), and cut again as the trailer: the news of Siming's rise seen through one family's screens (2031-2037); the night every screen changed and the wall around Chongqing; Li Wei's last ordinary morning (his mother, his sister Xiaoyu, his father 李国荣's "look after yourself first"); the attack at dusk from the crane, his father's broken call ("go to your tunnel"), the drones over the ridge, the flash at the family's window; the chase down Shibati's stairs, the Jiaochangkou subway, the running tunnel, Haozi's chalk mouse on the third maintenance door, the Grand Tunnel; the grate hideout, the dead phone with one voicemail, Anna waking. Day 1, 06:00, in the hideout. Generated clips play from public/cinematics/intro/ when present, else the in-engine version.
 - **In the world.** The Li family flat in upper Shibati (his father's badge, a voicemail on a cracked phone); friends' marks on the tunnel walls; LED boards with the machine's announcements; Anna's remarks on what he scans.
 - **Endings.** A 桥下 Beneath the Bridge: dawn on the Nan'an bank under the truss, the city behind in fog. B 索道 The Cable: the cabin or trolley reaches Shangxin Street as the line alarm sounds behind him. C 雾中 Into the Fog: the boat drifts down the Yangtze with the engine off, Chaotianmen's lights fading. D 隧道尽头 Tunnel's End: he climbs out of a vent beyond the border wall into rain. Each ends with Anna and Li Wei's last exchange, then the run summary (days survived, sites entered, times seen).
-- **Death.** A short black screen with the run summary; the save is gone.
+- **Death.** Black at once, silent: what killed him and the skull count; then he wakes at the last save. An ending shows its name and the run's summary and ends the run (the save gone).
 
 ## 14. Audio and voice
 

@@ -5,7 +5,7 @@ import type { Game } from '../game';
 import { teleport } from '../sim/player';
 import type { Preset } from '../render/view';
 import { settingsHTML, wireSettings } from './settings';
-import { deleteSave, readSave } from '../sim/save';
+import { readSave } from '../sim/save';
 import { bootMenu } from './boot-menu';
 
 const CONTROLS: [string, string][] = [
@@ -105,8 +105,7 @@ export class PauseMenu {
     // New run (U-025): a second click confirms; the save is gone and day 1 starts in the friends' hideout.
     if (d.a === 'newrun') {
       if (!this.confirmNew) { this.confirmNew = true; this.render(); return; }
-      deleteSave(localStorage);
-      g.switchTo('');
+      g.newRun();
     }
     this.confirmNew = false;
     if (d.preset) { g.setPreset(d.preset as Preset); this.render(); return; }

@@ -1,4 +1,5 @@
-// The ironman save: one slot, written when he wakes, deleted when he dies. Storage is injected so tests can use a shim.
+// The save (U-104): one slot, written as a run starts and each time he wakes from sleep (a bed or rough, not a
+// collapse); dying takes him back to it, his death count carried on. Storage is injected so tests can use a shim.
 // One that can't be read (an older version's, or broken) is set aside under its own key and said so (M9-05).
 import type { SimState } from './types';
 import { STATE_VERSION } from './sim';
@@ -44,3 +45,13 @@ export function readSave(st: Storage): SaveFile | null {
 }
 
 export const deleteSave = (st: Storage) => st.removeItem(SAVE_KEY);
+
+/** He died: the save to wake at, its death count one more than the run's so far (written back, so a reload never
+ *  rolls it back); null if there's none. */
+export function afterDeath(st: Storage, dying: SimState): SaveFile | null {
+  const f = readSave(st);
+  if (!f) return null;
+  f.state.deaths = (dying.deaths ?? 0) + 1;
+  writeSave(st, f.scenario, f.state);
+  return f;
+}

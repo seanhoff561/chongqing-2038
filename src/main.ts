@@ -6,7 +6,7 @@ import { scenarios, scenarioByName } from './data/scenarios';
 import { DevPanel } from './dev/panel';
 import { applySettings } from './ui/settings';
 import { addItem } from './sim/inventory';
-import { readSave, setAside } from './sim/save';
+import { readSave, writeSave, setAside } from './sim/save';
 import { bootMenu } from './ui/boot-menu';
 import { die } from './sim/body';
 import { CALIB } from './render/hands3d';
@@ -62,5 +62,6 @@ requestAnimationFrame(() => requestAnimationFrame(() => { loading?.remove(); boo
   cues: () => Object.keys(MOVE_SOUNDS),
   playCue: (id: string, surf?: Surface, wet = false) => (surf ? playStep(game.audio, id, surf, wet) : playMove(game.audio, id)),
   give: (id: string, n = 1) => addItem(game.state, game.state.inv.pack, id, n),
+  save: () => writeSave(localStorage, game.scenario.name, game.state),
   unitPose,
 };

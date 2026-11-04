@@ -2,7 +2,6 @@
 // ironman save), New Run, Settings and Credits, in the game's dim style over the city.
 import type { Game } from '../game';
 import type { SaveFile } from '../sim/save';
-import { deleteSave } from '../sim/save';
 import { clockText } from '../sim/clock';
 import { settingsHTML, wireSettings } from './settings';
 
@@ -26,7 +25,7 @@ export function bootMenu(game: Game, save: SaveFile | null) {
       (save ? `<button class="cont">继续 Continue · ${clockText(save.savedAt)}</button>` : '') +
       `<button class="new">新的开始 New Run</button><button class="set">设置 Settings</button><button class="cred">鸣谢 Credits</button>`;
     el.querySelector<HTMLButtonElement>('.cont')?.addEventListener('click', () => { game.loadSave(save!); close(); });
-    el.querySelector<HTMLButtonElement>('.new')!.onclick = () => { deleteSave(localStorage); close(); };
+    el.querySelector<HTMLButtonElement>('.new')!.onclick = () => { game.newRun(); close(); };
     el.querySelector<HTMLButtonElement>('.set')!.onclick = () => settings();
     el.querySelector<HTMLButtonElement>('.cred')!.onclick = () => { el.innerHTML = `<div class="bt-panel">${CREDITS}</div>${back}`; el.querySelector<HTMLButtonElement>('.back')!.onclick = menu; };
   };

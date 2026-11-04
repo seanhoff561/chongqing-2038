@@ -1,10 +1,11 @@
-// M4-31 (U-013): the core loop end to end, in a new run in the city. One: a bed laid down claims a shelter; out in the
-// street a humanoid has him, he's killed (the dev hook's shot); the death screen, Esc, a new run in the friends' hideout. Two: up and out,
-// a container searched and emptied into his pack, back down, the bed slept in, the run saved.
+// M4-31 (U-013), M10-01 (U-104): the core loop end to end, in a new run in the city, saved as it starts. One: a bed laid
+// down claims a shelter; out in the street a humanoid has him, he's killed (the dev hook's shot); the death screen, then
+// he wakes as the run was saved (no bed laid), one death. Two: up and out, a container searched and emptied into his
+// pack, back down, the bed slept in, the run saved; killed again, he wakes by the bed, two deaths.
 export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=1', 'coreloop');
   const look = (x, y, z) => `(() => { const g = window.__cq.game, p = g.state.player.pos, dx = ${x} - p.x, dz = ${z} - p.z; g.input.yaw = Math.atan2(-dx, -dz); g.input.pitch = Math.atan2(${y} - p.y - 1.6, Math.hypot(dx, dz)); })()`;
-  await page.evaluate(`(() => { localStorage.removeItem('cq2038.save'); const s = window.__cq.game.state; s.flags.god = false; s.flags.clear = false; s.time = 12 * 3600; })()`);
+  await page.evaluate(`(() => { const s = window.__cq.game.state; window.__cq.save(); s.flags.god = false; s.flags.clear = false; s.time = 12 * 3600; })()`);
 
   // A bedroll laid on the floor in front of him claims a bed: a shelter of his own.
   const a = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state; window.__cq.give('bedroll');
@@ -30,14 +31,12 @@ export default async function ({ open, fail }) {
     return { engaged, dead: !!s.dead, why: { aware: u.aware, state: u.state, d: Math.round(Math.hypot(o.x - s.player.pos.x, o.z - s.player.pos.z)), dy: Math.round(o.y - s.player.pos.y), fog: s.weather.fog, mode: s.player.mode, trip: u.trip?.kind } }; })()`);
   if (!b.engaged) fail('coreloop', `the humanoid never had him: ${JSON.stringify(b.why)}`);
   if (!b.dead) fail('coreloop', 'he did not die');
-  if (!(await page.$('#death .d-new'))) fail('coreloop', 'no death screen');
-  // Esc: the main menu (U-098), and New Run from it.
-  await page.keyboard.press('Escape');
-  await page.waitForSelector('#boot .new', { timeout: 240000 });
-  await page.click('#boot .new');
-  await page.waitForFunction('!window.__cq.game.state.dead && window.__cq.game.state.time < 86400', { timeout: 240000 });
-  const c = await page.evaluate(`(() => { const s = window.__cq.game.state; return { shelters: s.shelters.map(h => h.id), placed: s.placed.length }; })()`);
-  if (c.shelters.join() !== 'airraid-mattress' || c.placed) fail('coreloop', `the new run isn't a fresh start in the hideout: ${JSON.stringify(c)}`);
+  if (!(await page.$('#death'))) fail('coreloop', 'no death screen');
+  // A key: he wakes as the run was saved (U-104), one death on the count.
+  await page.keyboard.press('KeyW');
+  await page.waitForFunction('!window.__cq.game.state.dead', { timeout: 240000 });
+  const c = await page.evaluate(`(() => { const s = window.__cq.game.state; return { shelters: s.shelters.map(h => h.id), placed: s.placed.length, deaths: s.deaths }; })()`);
+  if (c.shelters.join() !== 'airraid-mattress' || c.placed || c.deaths !== 1) fail('coreloop', `he didn't wake as saved at the start, one death: ${JSON.stringify(c)}`);
 
   // Up and out: the nearest container holding something, searched (F held) and emptied into his pack.
   const box = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state, w = g.world, home = { ...s.player.pos };
@@ -75,6 +74,12 @@ export default async function ({ open, fail }) {
   if (slept.target !== 'airraid-mattress') fail('coreloop', `not at the bed: ${slept.target}`);
   if (!slept.slept || slept.dead) fail('coreloop', `no night's sleep: ${JSON.stringify(slept)}`);
   if (!slept.save) fail('coreloop', 'the run was not saved on waking');
+  // Killed again: he wakes by the bed he slept in, two deaths.
+  await page.evaluate(`(() => { const s = window.__cq.game.state; s.player.pos.x += 30; window.__cq.kill('shot'); window.__cq.runFrames(2); })()`);
+  await page.mouse.click(10, 10);
+  await page.waitForFunction('!window.__cq.game.state.dead', { timeout: 240000 });
+  const e = await page.evaluate(`(() => { const s = window.__cq.game.state, p = s.player.pos; return { d: Math.hypot(p.x - ${d.x}, p.z - ${d.z}), deaths: s.deaths, saved: JSON.parse(localStorage.getItem('cq2038.save')).state.deaths }; })()`);
+  if (e.d > 3 || e.deaths !== 2 || e.saved !== 2) fail('coreloop', `he didn't wake by the bed with two deaths: ${JSON.stringify(e)}`);
   await page.evaluate(`localStorage.removeItem('cq2038.save')`);
   await page.close();
 }

@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M4. Next: M4-83b 144 fps on the director's machine (U-061).
-Features done: 328 / 371 | Last done: M6-20
+**Status:** building M10. Next: M10-02 A lean repository (U-104).
+Features done: 329 / 424 | Last done: M10-01
 <!-- /status -->
 
 ## Log
@@ -140,3 +140,4 @@ Features done: 328 / 371 | Last done: M6-20
 - M6-14: the telecom exchange: gas in the server hall, the camera mesh, the district relay
 - M6-15: the Xinhua Road substation: live busbars, the spare HV fuse, his father's badge
 - M6-20: the river-police pier; director's notes U-099 to U-103
+- M10-01: death returns him to his last sleep, the death count kept

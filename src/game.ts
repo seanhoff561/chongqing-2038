@@ -43,7 +43,7 @@ import { MAGS, UNITS } from './data/units';
 import { Audio } from './audio/audio';
 import { startRun, furnish } from './sim/run';
 import { teleport } from './sim/player';
-import { writeSave, readSave, type SaveFile } from './sim/save';
+import { writeSave, readSave, deleteSave, type SaveFile } from './sim/save';
 import { syncWorld } from './sim/doors';
 import { playMove } from './audio/moves';
 import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
@@ -247,7 +247,14 @@ export class Game {
     }
   }
 
-  /** Resume an ironman save. */
+  /** A new run (U-104): day one in the city already built (D-123), saved as it starts. */
+  newRun() {
+    deleteSave(localStorage);
+    this.load('run', Math.floor(Math.random() * 1e9), this.state.worldSeed ?? this.state.seed);
+    writeSave(localStorage, 'run', this.state);
+  }
+
+  /** Resume a save. */
   loadSave(f: SaveFile) {
     this.load(f.scenario, f.state.seed, f.state.worldSeed ?? f.state.seed);
     this.state = f.state;
@@ -282,7 +289,7 @@ export class Game {
       else if (e.t === 'fire') { this.sound.fired(!!e.quiet); this.gun.fired(); }
       else if (e.t === 'open') this.inv.toggle(true);
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
-      else if (e.t === 'slept' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
+      else if (e.t === 'slept' && e.where !== 'collapse' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.say(e.text, '');
       else if (e.t === 'scan') this.laptop.showScan();
       else if (e.t === 'bench') this.craft.toggle(true);
