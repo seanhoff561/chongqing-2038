@@ -6,7 +6,8 @@ import type { SimState } from '../sim/types';
 
 const N = 6;
 
-/** A ladder 1 m long up y (two rails, rungs every 0.3 m), 0.45 m wide: scaled to its length. */
+/** A ladder 1 m long up y (two rails, rungs every 0.3 m), 0.44 m wide and 3 cm deep (sim/ladder.ts's RAIL and DEPTH,
+ *  which keep it off the wall): scaled to its length. */
 function ladderGeo() {
   const parts: THREE.BufferGeometry[] = [];
   for (const x of [-0.2, 0.2]) parts.push(new THREE.BoxGeometry(0.04, 1, 0.03).translate(x, 0.5, 0));
@@ -47,9 +48,10 @@ export class Rigs {
     for (const q of hung) {
       const m = q.kind === 'ladder' ? this.ladders[l++] : this.ropes[r++];
       if (!m) continue;
-      m.visible = true; m.position.set(q.x + q.nx * 0.04, q.y0, q.z + q.nz * 0.04); m.scale.set(1, q.y1 - q.y0, 1);
-      // (A ladder leans a little into its wall; its face along the wall.)
-      m.rotation.set(q.kind === 'ladder' ? -0.12 : 0, Math.atan2(q.nx, q.nz), 0, 'YXZ');
+      // (A ladder upright where the sim stood it, its rails just off the wall (sim/ladder.ts), its face along the wall.)
+      const off = q.kind === 'ladder' ? 0 : 0.04;
+      m.visible = true; m.position.set(q.x + q.nx * off, q.y0, q.z + q.nz * off); m.scale.set(1, q.y1 - q.y0, 1);
+      m.rotation.set(0, Math.atan2(q.nx, q.nz), 0);
     }
     for (const q of flat) {
       const m = this.ladders[l++];

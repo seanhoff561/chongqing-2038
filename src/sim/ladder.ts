@@ -14,9 +14,13 @@ import { addItem, takeStack } from './inventory';
 import { MAT } from '../world/mats';
 import { PLANK_W } from './plank';
 
+/** Its rails' outer half-width and their depth, as render/rigs.ts draws them; how far out the wall is felt from. */
+export const RAIL = 0.22, DEPTH = 0.03;
+const FEEL = 0.6;
 /** How high against a wall (m), the longest gap, how far from him a wall or an edge is looked for, how far the other
- *  side may sit above or below his, and the ladder's width across a gap. */
-export const LADDER = { wall: 4, gap: 3.8, reach: 1.4, level: 0.6, width: PLANK_W };
+ *  side may sit above or below his, the ladder's width across a gap; stood against a wall, its rails' middle this far
+ *  off whatever's behind them (their half-depth and a hair), and the most it stands out past something on the wall. */
+export const LADDER = { wall: 4, gap: 3.8, reach: 1.4, level: 0.6, width: PLANK_W, off: DEPTH / 2 + 0.015, standOff: 0.3 };
 
 function floorUnder(w: World, x: number, y: number, z: number) {
   const a = raycast(w.index, x, y, z, 0, -1, 0, 200), g = w.ground ? rayGround(w.ground, x, y, z, 0, -1, 0, 200) : null;
@@ -29,14 +33,50 @@ onUseId('ladder', (s, w, st) => {
   if (againstWall(s, w, st) || across(s, w, st)) { p.swing = 0.8; return; }
 });
 
-/** Stood against the wall he faces, if one's in reach. */
+/** Stood against the wall he faces, if one's in reach: upright, its rails just off the face (M10-24). Up from its foot
+ *  the world is felt for across its width by rays in at the wall: anything standing out a little (a step, a sill)
+ *  moves it out past it; anything standing out further (a balcony) is where it stops, below. */
 function againstWall(s: SimState, w: World, st: Stack) {
   const p = s.player, e = eyeOf(p), fx = -Math.sin(p.yaw), fz = -Math.cos(p.yaw), y = p.pos.y + 1;
   const h = raycast(w.index, e.x, y, e.z, fx, 0, fz, LADDER.reach);
   if (!h || h.id < 0 || Math.abs(h.ny) > 0.5) return false;
-  const x = e.x + fx * h.t + h.nx * 0.05, z = e.z + fz * h.t + h.nz * 0.05, y0 = floorUnder(w, x + h.nx * 0.3, y, z + h.nz * 0.3), top = topAt(w.index.solids[h.id], x - h.nx * 0.1, z - h.nz * 0.1);
+  const nl = Math.hypot(h.nx, h.nz), nx = h.nx / nl, nz = h.nz / nl, hx = e.x + fx * h.t, hz = e.z + fz * h.t;
+  const top = topAt(w.index.solids[h.id], hx - nx * 0.1, hz - nz * 0.1);
+  // How far out its rails' middle must stand at a height to clear what's there (felt at its edges and middle).
+  const outAt = (yk: number) => {
+    let at = LADDER.off;
+    for (const u of [-RAIL, 0, RAIL]) {
+      const r = raycast(w.index, hx - nz * u + nx * FEEL, yk, hz + nx * u + nz * FEEL, -nx, 0, -nz, FEEL + 0.05);
+      if (r) at = Math.max(at, FEEL - r.t + LADDER.off);
+    }
+    return at;
+  };
+  const tooFar = (yk: number) => outAt(yk) - LADDER.off > LADDER.standOff;
+  let out = LADDER.off, y0 = 0, y1 = 0;
+  // (Twice: standing further out, its foot may find other floor.)
+  for (let pass = 0; pass < 2; pass++) {
+    y0 = Math.max(...[-RAIL, RAIL].map(u => floorUnder(w, hx + nx * out - nz * u, y, hz + nz * out + nx * u)));
+    y1 = Math.min(y0 + LADDER.wall, Math.max(top, y0 + 1));
+    let need = LADDER.off;
+    for (let k = y0 + 0.02; k < y1 + 0.05; k += 0.05) {
+      const yk = Math.min(k, y1);
+      const at = outAt(yk);
+      if (at - LADDER.off > LADDER.standOff) {
+        // Its top just under what stands out.
+        let c = yk - 0.01;
+        while (c > y0 && tooFar(c)) c -= 0.01;
+        y1 = c - 0.01;
+        break;
+      }
+      need = Math.max(need, at);
+    }
+    if (need === out) break;
+    out = need;
+  }
+  if (y1 - y0 < 1) return false;
+  const x = hx + nx * out, z = hz + nz * out;
   takeStack(s.inv.pack, st.uid); s.inv.held = 0;
-  (s.ropes ??= []).push({ kind: 'ladder', x, z, y0, y1: Math.min(y0 + LADDER.wall, Math.max(top, y0 + 1)), nx: h.nx, nz: h.nz, item: st.id });
+  (s.ropes ??= []).push({ kind: 'ladder', x, z, y0, y1, nx, nz, item: st.id });
   s.events.push({ t: 'msg', text: 'ladder up' }, { t: 'noise', x, y: y0, z, r: 6, kind: 'ladder' });
   return true;
 }
