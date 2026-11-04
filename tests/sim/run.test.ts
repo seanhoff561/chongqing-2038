@@ -25,6 +25,8 @@ describe('starting supplies', () => {
     expect(table.kind).toBe('table');
     expect(Math.hypot(table.x - crate.x, table.z - crate.z)).toBeLessThan(2.5);
     for (const [id, n] of FRIENDS_CRATE) expect(count(s.containers[START_CRATE], id), id).toBe(n);
+    // No headlamp to start with (M10-41, U-104): he finds one.
+    expect(count(s.inv.pack, 'headlamp') + count(s.containers[START_CRATE], 'headlamp')).toBe(0);
     // The grate is up a shaft off the chamber (M3-72: set off the roads, in an alley).
     const g = w.props.find(p => p.kind === 'grate' && p.text === 'airraid-grate')!;
     expect(Math.hypot(g.x - sc.x, g.z - sc.z)).toBeLessThan(30);

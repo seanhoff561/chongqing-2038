@@ -17,8 +17,8 @@ const supply = (s: SimState, g: Grid) => {
   for (const [id, n, ageDays] of STARTING_SUPPLIES) addItem(s, g, id, n, ageDays ? { made: s.time - ageDays * 86400 } : {});
 };
 
-/** What the friends left in their crate: a string of firecrackers, tape, a rag, a headlamp at 60%. */
-export const FRIENDS_CRATE: [string, number, number?][] = [['firecrackers', 1], ['tape', 1], ['cloth', 1], ['headlamp', 1, 60]];
+/** What the friends left in their crate: a string of firecrackers, tape, a rag. (No headlamp: he finds one, U-104.) */
+export const FRIENDS_CRATE: [string, number, number?][] = [['firecrackers', 1], ['tape', 1], ['cloth', 1]];
 export const START_CRATE = 'airraid-stash';
 
 export function startRun(s: SimState, w: World) {
