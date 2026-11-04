@@ -3,12 +3,12 @@
 import { describe, it, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { plan, VOICES } from '../../tools/make-voice';
-import { lineById } from '../../src/data/dialogue';
+import { lineById, VOICEMAIL, ENDING_LINES } from '../../src/data/dialogue';
 
 describe('tools/make-voice (M8-03)', () => {
   it('lists every line with its voice, dry', () => {
     const p = plan();
-    expect(p.length).toBeGreaterThan(40);
+    expect(p.map(x => x.id)).toEqual([...VOICEMAIL, ...Object.values(ENDING_LINES).flat()].filter(l => l.speaker !== 'none').map(l => l.id));
     for (const x of p) { expect(lineById.get(x.id)?.zh).toBe(x.text); expect(x.voice).toBe(VOICES[x.speaker]); expect(x.out).toBe(`public/audio/vo/${x.id}.mp3`); }
     const speakers = [...new Set(p.map(x => x.speaker))], voices = new Set(speakers.map(s => VOICES[s]));
     expect(voices.size).toBe(speakers.length);
