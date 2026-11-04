@@ -128,7 +128,7 @@ Item 3: transfer of traffic signals, water pumping and the 10 kV network to the 
 Section Chief He asked who would be able to switch it back. The provincial liaison answered that switching back is not foreseen and not needed: the model does not make mistakes, it makes trade-offs.
 Deputy Director Zhou asked for the answer to be minuted.
 Adopted. Lunch 12:00.` },
-  { id: 'doc-article', zh: 'DeepMind 文章', en: 'Deepmind Article', where: 'office', text:
+  { id: 'doc-article', zh: '新闻打印件', en: 'News printout', where: 'office', text:
 `China pulls ahead of the US in the race to ASI! Millions of Chinese celebrate, many call for "an end to poverty."
 Crowds filled Jiefangbei Square on Friday night as the screens on the Metropolitan Tower carried the announcement. "My father carried loads up Shibati for thirty years," one student said. "Nobody will have to do that now."
 (printed and pinned up in the break room; in blue biro at the bottom)
