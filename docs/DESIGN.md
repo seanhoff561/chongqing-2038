@@ -198,6 +198,8 @@ Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, 
 
 Each hit: 30% heavy bleed, otherwise light; 15% a limb (sprain or graze). Machines have hit zones (sensor heads blind them, batteries shut them down); U-104 lowers most machines' health (dogs and humanoids half, other ground machines a third, drones as they are): pistol rounds to kill, body (head), are quadruped 15 (2), humanoid 60 (2), heavy 480 (12), turret 268 (7), delivery robot 3, patrol drone 1. His weapons: knife (40, takedown from behind: 2 s within 1.5 m of a quadruped or humanoid not Engaged), crowbar (55, slow), pistol (25, 15 rounds, heard 150 m), pump shotgun (8 x 12, 5 shells), nail gun (14, quiet, 15 m), grenade (6 m, 200), EMP (6 m: drones crash, robots off 30 s, cameras 60 s; 3 charges). Ammunition is scarce.
 
+**Wrecks (M10-47).** A destroyed machine or camera reads at a glance: its paint fades to grey-black over 1.5 s (the batch's per-instance colour: its alpha mixes the paint toward grey-black, same draw call) and its lights go out. A machine on the ground comes down where it was hit (the sim's wreck, `u.stop`, set at the moment of death, so scanning and salvage find it there): drawn only (render/ragdoll.ts), its rig's parts let go as rigid boxes, toppling the way its id picks, falling onto the ground under each (the world's raycast), bouncing a little, tipping onto a face and lying still within 2 s. One already a wreck when he comes by is drawn already down. Drones fall as before and grey-black too.
+
 ## 7. Items, crafting and loot
 
 Grid backpack 8 x 6 (the hiking pack: 10 x 7); items are rotatable rectangles with weights; five hotbar slots.
