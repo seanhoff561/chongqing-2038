@@ -31,7 +31,7 @@ describe('lock grades (M5-24)', () => {
     run(s, w, secs(0.7), { buttons: B.INTERACT }, hear);
     expect(s.wstate.open[bad]).toBe(true); expect(loud).toBeLessThanOrEqual(4);
     // Good: no picking it.
-    at(4); work(secs(2)); expect(s.wstate.open[good]).toBeFalsy(); expect(msgs.at(-1)).toMatch(/crowbar/);
+    at(4); work(secs(2)); expect(s.wstate.open[good]).toBeFalsy(); expect(msgs.at(-1)).toBe('locked: a good lock'); // (not what it needs: never said, M10-42)
     // Improvised picks on another bad one: slower, a use gone.
     s.inv.pack.items.splice(s.inv.pack.items.findIndex(i => i.id === 'lockpick'), 1);
     addItem(s, s.inv.pack, 'picks', 1, { charge: 3 });
