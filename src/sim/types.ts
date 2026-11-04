@@ -75,8 +75,8 @@ export type SimEvent =
 /** A stack he dropped (M3-72): lying where he let it go until he picks it up. */
 export interface Dropped { stack: import('./inventory').Stack; x: number; y: number; z: number; /** lying loose in a room from before (U-085), not his */ loose?: boolean }
 
-/** A piece of furniture he placed: its item id and where it stands. */
-export interface Placed { id: string; item: string; x: number; y: number; z: number; yaw: number }
+/** A piece of furniture he placed: its item id and where it stands (a toolbox: on which table). */
+export interface Placed { id: string; item: string; x: number; y: number; z: number; yaw: number; on?: string }
 
 export interface FallOutcome { damage: number; sprain: boolean; fracture: boolean; arm: boolean; lethal: boolean }
 

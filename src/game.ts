@@ -376,7 +376,7 @@ export class Game {
     this.updatePrompt();
     this.updateHeld();
     this.hud.tick(dt);
-    this.furniture.sync(this.state, this.world);
+    this.furniture.sync(this.state);
     this.status.update(this.state, dt);
     const cam = this.view.fp.cam.position;
     this.sky.update(this.state.time, cam, this.hazeDistance(), this.underAmount(dt), this.state.weather, this.lit);

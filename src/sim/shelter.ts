@@ -1,14 +1,15 @@
 // Hideouts (U-013, U-018, DESIGN section 9): he starts in the friends' old one under the vent grate and makes
 // more: claim a bed or lay one down, turn a table into a workbench with a toolbox, keep things in containers
-// near the bed. A hideout is a claimed bed and everything within SHELTER_R of it; he can have any number.
+// near the bed. A hideout is a claimed bed and everything within SHELTER_R of it; he can have any number. What he
+// puts down he can pack up again (M10-25).
 import type { SimState, Shelter } from './types';
 import type { World, Inter } from '../world/world';
 import { onUseId } from './use';
-import { onInteract, extraInters, lookTarget } from './interact';
-import { raycast } from '../world/geom';
+import { onInteract, extraInters, lookTarget, crouchActs } from './interact';
+import { raycast, query, frameIn, frameOut } from '../world/geom';
 import { free } from './physics';
 import { movement as M } from '../data/movement';
-import { takeStack } from './inventory';
+import { takeStack, addItem, type Stack } from './inventory';
 import { districtAt, DISTRICT_NAMES } from '../world/yuzhong/lots';
 
 export const SHELTER_R = 15;
@@ -16,11 +17,11 @@ const PLACE_REACH = 3;
 
 const BEDS = new Set(['bedroll', 'mattress']);
 
-/** Placed furniture as interactables: beds to sleep in, crates to store things. */
+/** Placed furniture as interactables: beds to sleep in, crates to store things (a toolbox is its table's). */
 function placedInters(s: SimState): Inter[] {
-  return s.placed.map(p => BEDS.has(p.item)
-    ? { id: p.id, kind: 'mattress', x: p.x, y: p.y + 0.2, z: p.z, r: 0.9, zh: '床', en: 'Bed' }
-    : { id: p.id, kind: 'container', x: p.x, y: p.y + 0.4, z: p.z, r: 0.6, zh: '折叠箱', en: 'Crate', data: { type: 'crate' } });
+  return s.placed.flatMap(p => BEDS.has(p.item)
+    ? [{ id: p.id, kind: 'mattress', x: p.x, y: p.y + 0.2, z: p.z, r: 0.9, zh: '床', en: 'Bed' }]
+    : p.item === 'foldcrate' ? [{ id: p.id, kind: 'container', x: p.x, y: p.y + 0.4, z: p.z, r: 0.6, zh: '折叠箱', en: 'Crate', data: { type: 'crate' } }] : []);
 }
 extraInters.push(placedInters);
 
@@ -73,6 +74,22 @@ function place(s: SimState, w: World, uid: number, item: string) {
 
 for (const id of ['bedroll', 'mattress', 'foldcrate']) onUseId(id, (s, w, st) => place(s, w, st.uid, id));
 
+/** A table's top: the middle of its box (the solid level with the top nearest where he reaches it) and the yaw
+ *  that lays a thing along its long side. */
+export function tableTop(w: World, t: Inter): [number, number, number] {
+  let top: [number, number, number] = [t.x, t.z, 0], bd = 0.5;
+  for (const i of query(w.index, t.x - 1, t.z - 1, t.x + 1, t.z + 1)) {
+    const b = w.index.solids[i], r = b.rot ?? b, [u, v] = frameIn(b, t.x, t.z);
+    const d = Math.hypot(Math.max(r.x0 - u, 0, u - r.x1), Math.max(r.z0 - v, 0, v - r.z1));
+    if (Math.abs(b.y1 - t.y) > 1e-3 || d >= bd) continue;
+    const [x, z] = frameOut(b, (r.x0 + r.x1) / 2, (r.z0 + r.z1) / 2);
+    // (A turned box's turn, as a yaw, is minus its angle: geom's turn and three.js's go opposite ways.)
+    top = [x, z, (r.x1 - r.x0 >= r.z1 - r.z0 ? 0 : Math.PI / 2) - Math.atan2(b.rot?.s ?? 0, b.rot?.c ?? 1)];
+    bd = d;
+  }
+  return top;
+}
+
 onUseId('toolbox', (s, w, st) => {
   const t = lookTarget(s, w);
   if (!t || t.kind !== 'table') { return; }
@@ -80,7 +97,34 @@ onUseId('toolbox', (s, w, st) => {
   takeStack(s.inv.pack, st.uid);
   s.inv.held = 0;
   (s.wstate.benches ??= {})[t.id] = true;
+  // In the middle of its top, square to it.
+  const [x, z, yaw] = tableTop(w, t);
+  s.placed.push({ id: `placed${s.nextUid++}`, item: 'toolbox', x, y: t.y, z, yaw, on: t.id });
   s.events.push({ t: 'msg', text: 'workbench set up' });
+});
+
+/** Crouched, F at a thing he put down (a toolbox: its table) packs it back into the backpack. A crate only once it's
+ *  empty; a bed ends its hideout, and what power he wired in there comes out with it (the car battery holding the
+ *  charge left); a toolbox ends the bench. All of it fits in the pack or it all stays. */
+crouchActs.push((s, _w, it) => {
+  const p = s.placed.find(q => q.id === it.id || (it.kind === 'table' && q.on === it.id));
+  if (!p) return false;
+  if (s.containers[p.id]?.items.length) { s.events.push({ t: 'blocked', why: 'not empty' }); return true; }
+  const h = s.shelters.find(q => q.id === p.id), back: [string, Partial<Stack>][] = [[p.item, {}]];
+  if (h?.battery) back.push(['carbattery', { charge: h.battery }]);
+  if (h?.inverter) back.push(['inverter', {}]);
+  if (h?.solar) back.push(['solar', {}]);
+  // (Tried in a copy of the pack: each is a stack of one, so none tops up a stack already there.)
+  const pack = { ...s.inv.pack, items: [...s.inv.pack.items] };
+  if (back.some(([id, extra]) => addItem(s, pack, id, 1, extra))) { s.events.push({ t: 'msg', text: 'no room' }); return true; }
+  s.inv.pack.items = pack.items;
+  s.placed.splice(s.placed.indexOf(p), 1);
+  if (h) s.shelters.splice(s.shelters.indexOf(h), 1);
+  if (p.on) delete s.wstate.benches![p.on];
+  delete s.containers[p.id];
+  if (s.openContainer === p.id) s.openContainer = null;
+  s.events.push({ t: 'sfx', id: 'rustle' });
+  return true;
 });
 
 onInteract('table', {
