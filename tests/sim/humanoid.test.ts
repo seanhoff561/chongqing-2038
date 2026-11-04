@@ -25,7 +25,7 @@ const at = (g: ReturnType<typeof world>, i: number) => unitPose(g.world, g.state
 describe('humanoids (M4-10)', () => {
   it('walks at 1.8 m/s to look and runs at 3.6 fighting him (U-075); stairs but no jumps; armoured and armed', () => {
     // (Its armour is its body's hit zone, M4-19.)
-    expect([UNITS.humanoid.patrol, UNITS.humanoid.chase, UNITS.humanoid.hp, ZONES.humanoid.body, UNITS.humanoid.weapon]).toEqual([1.8, 3.6, 300, 0.1, 'rifle']); // (slower since U-075)
+    expect([UNITS.humanoid.patrol, UNITS.humanoid.chase, UNITS.humanoid.hp, ZONES.humanoid.body, UNITS.humanoid.weapon]).toEqual([1.8, 3.6, 150, 0.1, 'rifle']); // (slower since U-075; half the HP since U-104)
     for (const [aware, speed] of [[0.4, 1.8], [1.2, 3.6]] as const) {
       const g = world([post(0, -60)]), u = g.state.units[0];
       teleport(g.state.player, 0, 0, 200);
