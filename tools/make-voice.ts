@@ -6,18 +6,15 @@
 // The lines go to public/audio/vo/<id>.mp3 and public/audio/vo/index.json lists them, which the game reads (voice.ts).
 import fs from 'fs';
 import { execSync } from 'child_process';
-import { VOICEMAIL, INTRO, ENDING_LINES, type Line } from '../src/data/dialogue';
+import { VOICEMAIL, ENDING_LINES, type Line } from '../src/data/dialogue';
 
 /** Each speaker's voice. */
-export const VOICES: Record<string, string> = {
-  anna: 'zf_039', liwei: 'zm_010', liguorong: 'zm_029', xiaoyu: 'zf_017', wangxiuying: 'zf_048', grannywang: 'zf_085',
-  anchor: 'zf_002', commentator: 'zm_014', director: 'zm_031', workmate: 'zm_041', foreman: 'zm_052', billboard: 'zf_022', pa: 'zf_001', none: '',
-};
+export const VOICES: Record<string, string> = { anna: 'zf_039', liwei: 'zm_010', liguorong: 'zm_029', none: '' };
 const OUT = 'public/audio/vo';
 
 /** Every line to be spoken, its voice and where its mp3 goes (lines with no speaker, a caption, are skipped). */
 export function plan(): { id: string; speaker: string; voice: string; text: string; out: string }[] {
-  const lines: Line[] = [...VOICEMAIL, ...INTRO, ...Object.values(ENDING_LINES).flat()];
+  const lines: Line[] = [...VOICEMAIL, ...Object.values(ENDING_LINES).flat()];
   return lines.filter(l => VOICES[l.speaker]).map(l => ({ id: l.id, speaker: l.speaker, voice: VOICES[l.speaker], text: l.zh, out: `${OUT}/${l.id}.mp3` }));
 }
 
