@@ -101,7 +101,9 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
   for (const [k, [zh, en]] of Object.entries(DISTRICT_NAMES)) { const L = GEO.landmarks[k]; if (L && inView(L.x, L.z)) ctx.fillText(`${zh} ${en}`, X(L.x) - 30, Z(L.z) - 6); }
   // The key places (U-102): a diamond each, named.
   // (Off the map: at its edge, the way it lies, and how far.)
-  for (const q of keyPlaces(w)) {
+  // (And his family's flat, once he knows of it: U-104.)
+  const flat = s.known?.liflat ? w.teleports.find(t => t.name === 'Li family flat') : undefined;
+  for (const q of flat ? [...keyPlaces(w), { x: flat.x, z: flat.z, zh: '李家', en: 'the Li flat' }] : keyPlaces(w)) {
     if (!inView(q.x, q.z)) {
       const dx = q.x - cx, dz = q.z - cz, k = Math.min((W / 2 - 8) * m / Math.max(1e-6, Math.abs(dx)), (H / 2 - 8) * m / Math.max(1e-6, Math.abs(dz)));
       const ex = W / 2 + (dx * k) / m, ez = H / 2 + (dz * k) / m;

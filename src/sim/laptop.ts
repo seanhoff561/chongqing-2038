@@ -11,6 +11,9 @@ import { powered } from './power';
  *  hideout, and what it takes from the car battery (percent). */
 export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
 
+// A place come to know of (U-104), from the laptop's map.
+onCmd((s, c) => { if (c.c === 'act' && c.name === 'know' && typeof c.arg === 'string') (s.known ??= {})[c.arg] = true; });
+
 // His notes (M10-15), written sitting at it.
 onCmd((s, c) => {
   if (c.c === 'act' && c.name === 'notes' && s.laptop?.sit && typeof c.arg === 'string') s.notes = c.arg.slice(0, 4000);

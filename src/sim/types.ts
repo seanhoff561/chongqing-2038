@@ -183,6 +183,8 @@ export interface SimState {
   flight?: { x: number; y: number; z: number; yaw: number; pitch: number; seen: number };
   /** the jammer running (M5-13): since when (game time), and whether it's become a beacon */
   jam?: { since: number; beacon?: boolean };
+  /** places he's come to know of (U-104): 'liflat' once Anna's shown it him on the map */
+  known?: Record<string, true>;
   /** when his position last went to the network, tracked (U-104) */
   pinged?: number;
   /** EMP devices rigged as traps (M5-14): the device and where */

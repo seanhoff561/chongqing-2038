@@ -51,6 +51,8 @@ export default async function ({ open, fail, screenshot }) {
     let n = 0; for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 191) + Math.abs(d[i + 1] - 230) + Math.abs(d[i + 2] - 245) < 30) n++;
     return { view: g.laptop.map.view, marks: (g.state.marks ?? []).length, ice: n, tools: [...document.querySelectorAll('#laptop .lt-tools')].some(t => t.offsetParent) }; })()`);
   if (up.view || up.tools || up.marks !== 2) fail('maptools', `standing: ${JSON.stringify(up)}`);
+  // (Seen the map, he knows of his family's flat: a key place on it from now on, M10-21.)
+  if (!(await page.evaluate('!!window.__cq.game.state.known?.liflat'))) fail('maptools', "the family flat isn't known after seeing the map");
   if (!(up.ice > 20)) fail('maptools', `standing, his marks aren't drawn: ${up.ice} px`);
   await page.keyboard.press('Tab');
   await page.close();
