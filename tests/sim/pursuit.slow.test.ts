@@ -17,6 +17,7 @@ import { enterHide } from '../../src/sim/hide';
 import { aimAt } from '../../src/sim/damage';
 import { GRATE, bagsId } from '../../src/sim/grate';
 import { doorSolid } from '../../src/sim/doors';
+import { TAG } from '../../src/data/units';
 
 const w = getWorld('yuzhong');
 type V3 = { x: number; y: number; z: number };
@@ -77,6 +78,20 @@ describe('pursuit escapes (M4-32)', () => {
         }
         expect(done(), `the ${sc.pursuit} dealt with: ${fired} fired, hits ${hits.join(',')}, last ${last}`).toBe(true);
       }
+      // A tag on him from a dog's launcher gives him away wherever he hides (U-104): picked off with the dongle he
+      // carries, before he runs and again once he's out of sight if one stuck to him on the way (knocked down by
+      // what's on him, he tries again once he's up).
+      addItem(s, s.inv.pack, 'sdr', 1);
+      const pickOff = () => {
+        const said: string[] = [];
+        for (let k = 0; k < 10 && s.player.tag; k++) {
+          for (let i = 0; i < 300 && (s.player.mode !== 'ground' || s.task); i++) run(s, w, 1);
+          run(s, w, 1, { cmds: [{ c: 'use', uid: s.inv.pack.items.find(i => i.id === 'sdr')!.uid }] });
+          run(s, w, secs(TAG.remove + 0.3), {}, st => { for (const e of st.events) if (e.t === 'msg') said.push(e.text); });
+        }
+        expect(s.player.tag, `the tag picked off: ${said.join(' / ')}`).toBe(false);
+      };
+      pickOff();
       // The run: along the way at a sprint (5.5 m/s): by the stairs, to the friends' hideout's grate in its alley (he
       // came out that way, so it's unbolted), down through it, and it shut and bolted behind him; from Jiaochangkou, in
       // at a door, up its stairs and into a wardrobe.
@@ -93,6 +108,8 @@ describe('pursuit escapes (M4-32)', () => {
         o[grate.id] = true; o[bagsId(grate)] = true; w.index.off[doorSolid(grate)] = 1;
         run(s, w, secs(GRATE.lift));
         teleport(s.player, bed.x + 1.2, bed.y - 0.2, bed.z);
+        run(s, w, 10);
+        pickOff();
         run(s, w, secs(3));
         o[grate.id] = false; o[bagsId(grate)] = false; w.index.off[doorSolid(grate)] = 0;
         run(s, w, secs(GRATE.shut));

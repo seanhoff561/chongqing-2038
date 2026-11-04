@@ -7,7 +7,7 @@ import { DT, type SimState } from './types';
 import type { World } from '../world/world';
 import { TAG, SIGHT, TRACK } from '../data/units';
 import { SCALE } from './clock';
-import { giveAway } from './district';
+import { giveAway, alertOf, districtOf } from './district';
 import { sendSquad } from './converge';
 import { sleepHooks } from './sleep';
 import { visibility } from './perception';
@@ -42,10 +42,11 @@ onCmd((s, cmd) => {
   s.events.push({ t: 'msg', text: 'jacket off' });
 });
 
-/** Every tick: picking a tag off, if he is (or searching for one by hand: on his feet). */
+/** Every tick: picking a tag off, if he is (or searching for one by hand), on his feet. */
 export function stepTag(s: SimState) {
   if (s.task?.id !== 'untag') return;
-  if (s.player.mode !== 'ground') { s.task = null; s.events.push({ t: 'msg', text: 'interrupted' }); return; }
+  // (A moment off his feet, a step down the stairs, doesn't stop it; climbing or hanging does.)
+  if (s.player.mode !== 'ground' && s.player.mode !== 'air') { s.task = null; s.events.push({ t: 'msg', text: 'interrupted' }); return; }
   s.task.t += DT;
   if (s.task.t < s.task.dur) return;
   s.task = null;
@@ -68,13 +69,14 @@ export function stepTrack(s: SimState, w: World) {
     if (near && h.compromised) home = true;
   }
   // Tracked (U-104): a tag on him, or at a hideout they know, his position goes to them every ten minutes, and they
-  // come hunting him where he is: the machines near, and the nearest garage's squad.
+  // come hunting him where he is: the machines near, and (if it's news to them) the nearest garage's squad.
   if (!s.player.tag && !home) { s.pinged = undefined; return; }
   if (s.pinged !== undefined && s.time - s.pinged < TRACK.ping) return;
   s.pinged = s.time;
-  const at = { x: p.x, y: p.y, z: p.z };
+  const at = { x: p.x, y: p.y, z: p.z }, was = alertOf(s, districtOf(at.x, at.z));
   giveAway(s, w, at);
-  sendSquad(s, w, at);
+  // (News to them, the nearest garage's squad goes too; already after him, they're only kept told.)
+  if (was !== 'engaged' && was !== 'searching') sendSquad(s, w, at);
 }
 
 /** Tracked, asleep: he wakes to them coming (U-104). */
