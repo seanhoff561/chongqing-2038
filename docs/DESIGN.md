@@ -204,7 +204,7 @@ Grid backpack 8 x 6 (the hiking pack: 10 x 7); items are rotatable rectangles wi
 | Item | Uses |
 |---|---|
 | Grappling hook | climb to a ledge up to 20 m above; rappel |
-| Telescoping ladder | lean on a wall (4 m, standing in front of it); bridge a 3.8 m gap; dropped it's loud |
+| Telescoping ladder | stood against a wall, upright in front of it (to 4 m; out past a sill, stopping under a balcony); bridge a 3.8 m gap; dropped it's loud |
 | Crowbar | pry doors, shutters, vents, crates, scooter batteries; melee |
 | Lockpicks | cheap locks, silent, slow |
 | Keys, keycards, his site card, his father's badge | their doors; cards can be cloned |
