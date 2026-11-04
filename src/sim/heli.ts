@@ -7,6 +7,7 @@ import type { SimState } from './types';
 import type { World } from '../world/world';
 import { leave } from './alert';
 import { unitPose } from './units';
+import { layerAt } from './automap';
 import { raycast } from '../world/geom';
 import { SCALE } from './clock';
 
@@ -66,11 +67,12 @@ export function stepHeli(s: SimState, w: World) {
       u.trip = { kind: 'look', path: [{ ...roof }], i: 0, pos: at, yaw: 0, scan: 0, back: false, left: { ...roof }, leftAt: s.time };
       Object.assign(u, { state: 'suspicious', aware: 0.4, seen: undefined, sent: s.time });
     });
-    // The dogs and crawlers into the sewers and tunnels round it, each from a drain to a few more.
+    // The dogs and crawlers into the sewers and tunnels round it, each from a drain to a few more (a crawler only to
+    // those underground: it never comes up, M10-43).
     const below = w.features.filter(f => (f.kind === 'drain' || f.kind === 'underRoute' || f.kind === 'sump') && Math.hypot(f.x - roof.x, f.z - roof.z) < HELI.under)
       .sort((a, b) => Math.hypot(a.x - roof.x, a.z - roof.z) - Math.hypot(b.x - roof.x, b.z - roof.z));
     team.filter(u => (u.kind === 'quadruped' || u.kind === 'crawler') && !u.dead).forEach((u, k) => {
-      const go = below.filter((_, i) => i % 6 === k % 6).slice(0, 4).map(f => ({ x: f.x, y: f.y, z: f.z }));
+      const go = below.filter((f, i) => i % 6 === k % 6 && (u.kind !== 'crawler' || layerAt(w, f.x, f.y + 0.2, f.z) === -1)).slice(0, 4).map(f => ({ x: f.x, y: f.y, z: f.z }));
       if (!go.length) return;
       u.trip = { kind: 'look', path: [go[0]], i: 1, pos: { ...go[0] }, yaw: 0, scan: 0, back: false, left: { ...go[0] }, leftAt: s.time, visits: go.slice(1) };
       Object.assign(u, { state: 'suspicious', aware: 0.5, sent: s.time });

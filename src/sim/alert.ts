@@ -15,6 +15,7 @@ import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint } from './combat';
 import { farFromBeat } from './perception';
+import { layerAt } from './automap';
 import { SCALE } from './clock';
 import { DT } from './types';
 
@@ -44,6 +45,7 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
     const p = navPath(w.nav, a, b, 'street');
     return p ? [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }] : [top];
   }
+  if (kind === 'crawler') return sewerWay(w, a, b);
   if (open(w, kind, a, b)) return [b];
   const p = w.nav ? navPath(w.nav, a, b, kind) : null;
   if (!p) return Math.abs(b.y - a.y) <= STEP[kind] ? [b] : [];
@@ -52,6 +54,18 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
   // On to the point, or as near it as it gets (up to a crate a hiding place is in: M4-15).
   const hit = raycast(w.index, end.x, end.y + 0.5, end.z, (b.x - end.x) / d, (b.y - end.y) / d, (b.z - end.z) / d, d), f = hit ? (hit.t - 0.3) / d : 1;
   return [...p.pts.slice(1), ...(f > 0 ? [{ x: end.x + (b.x - end.x) * f, y: end.y + (b.y - end.y) * f, z: end.z + (b.z - end.z) * f }] : [])];
+}
+
+/** A crawler's way (M10-43, U-104: they never come up out of the sewers): straight down the run, or round its one
+ *  corner either way, all of it underground with nothing in the way; anywhere else is out of its reach, and it looks
+ *  about where it is. */
+function sewerWay(w: World, a: V3, b: V3): V3[] {
+  const below = (p: V3, q: V3) => {
+    const d = Math.hypot(q.x - p.x, q.y - p.y, q.z - p.z);
+    for (let k = 0, n = Math.ceil(d); k <= n; k++) { const f = n ? k / n : 0; if (layerAt(w, p.x + (q.x - p.x) * f, p.y + (q.y - p.y) * f + 0.2, p.z + (q.z - p.z) * f) !== -1) return false; }
+    return d < 0.1 || !raycast(w.index, p.x, p.y + 0.3, p.z, (q.x - p.x) / d, (q.y - p.y) / d, (q.z - p.z) / d, d);
+  };
+  return [[b], [{ x: b.x, y: a.y, z: a.z }, b], [{ x: a.x, y: a.y, z: b.z }, b]].find(ps => ps.every((q, i) => below(i ? ps[i - 1] : a, q))) ?? [];
 }
 
 /** Close by over open ground (across a divided road, a square): nothing in the way at body height and no step up or

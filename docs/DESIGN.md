@@ -177,7 +177,7 @@ Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, 
 | Quadruped | 3 m/s patrol, 8 chase | 120 deg, 30 / thermal 20; hearing x1.5 | streets, stairs, sites |
 | Humanoid | 2.5 / 4.5 m/s | 100 deg, 40 / 22 IR | checkpoints, sites, squads |
 | Heavy walker, giant spider, colossus | slow, on the widest streets | long range | a few in the city |
-| Crawler | the sewers and tunnels only (U-104: never on the streets) | short, thermal | underground |
+| Crawler | the sewers and tunnels only (U-104: never on the streets): it goes only where it can along its run, underground; news of him above it looks about where it is; the helicopter drops it only below. A white eyeless pod on ten thin legs, jerky | short, thermal | underground |
 | Delivery robot | 2 m/s, no stairs | 120 deg, 18 / 10 | flat streets |
 | Turret, PIR, tripwire, pressure plate, acoustic sensor | static | | inside sites |
 | River drone boats, sonar buoys | 4 m/s / static | 50 m sonar | the rivers |

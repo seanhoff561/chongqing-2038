@@ -229,30 +229,29 @@ function delivery(): Rig {
 
 // The drones: a white shell on four arms, a rotor at each tip (two blades, spun), a camera gimbal under with a lit
 // lens; the hunter bigger, ducted, its gun slung under it. Parts: body, four rotors.
-/** A giant spider walker (M4-48, U-050, U-068): building-sized, its broad white armoured body slung 13 m up between eight
- *  thick legs, a head crowded with red eyes; its legs step in two alternating sets, each foot reached by its knee
- *  bending high over it. In the hive's white, like the rest of them. At K 0.22, the crawler drones (M4-92) that
- *  scuttle through the sewers, a metre across. */
-function spider(K: number): Rig {
-  const b = (w: number, h: number, d: number, x: number, y: number, z: number, c: number, glow = 0) => box(w * K, h * K, d * K, x * K, y * K, z * K, c, glow);
-  const upper = part(b(0.28, 3.2, 0.28, 0, -1.6, 0, WHITE), b(0.34, 1.1, 0.34, 0, -0.65, 0, PLATE), cyl(0.24 * K, 0.4 * K, 0, 0, 0, DARK, 'x'));
-  const lower = part(b(0.2, 3.6, 0.2, 0, -1.8, 0, WHITE), b(0.25, 1.2, 0.27, 0, -0.7, 0, PLATE), cyl(0.14 * K, 0.3 * K, 0, -3.6 * K, 0, DARK, 'y'), cyl(0.18 * K, 0.34 * K, 0, 0, 0, DARK, 'x'));
+/** A crawler drone (M4-92, M10-43): a thing of the sewers a metre across, in the hive's white. A smooth eyeless pod,
+ *  ringed like a grub, slung low between ten long needle-thin legs, each jointed high over it like a harvestman's. It
+ *  goes in jerks: its legs snap from hold to hold, and now and then its body twitches. Parts: the body, then each leg's
+ *  upper and lower. */
+function crawler(): Rig {
+  const upper = part(box(0.022, 0.5, 0.022, 0, -0.25, 0, WHITE), cyl(0.028, 0.05, 0, 0, 0, PLATE, 'x'));
+  const lower = part(box(0.016, 0.6, 0.016, 0, -0.3, 0, WHITE), cyl(0.024, 0.04, 0, 0, 0, PLATE, 'x'), cyl(0.012, 0.1, 0, -0.65, 0, PLATE, 'y', 0, 0.002, 6));
   const parts = [
-    part(b(2.4, 1.2, 3.4, 0, 0, 0, WHITE), b(2.0, 0.3, 2.8, 0, 0.7, 0, PLATE), b(2.6, 0.4, 1.2, 0, -0.5, 0, DARK), cyl(0.3 * K, 1.4 * K, 0, 0.9 * K, -0.6 * K, GUN, 'z'), b(0.4, 0.05, 0.05, 0, -0.4, -1.72, RED, 1)),
-    part(b(1.2, 0.8, 0.9, 0, 0, 0.4, WHITE), ...[-0.35, -0.12, 0.12, 0.35].flatMap(x => [b(0.1, 0.1, 0.05, x, 0.12, 0.86, RED, 1), b(0.08, 0.08, 0.05, x * 0.8, -0.1, 0.86, RED, 1)]), cyl(0.06 * K, 0.8 * K, 0.4 * K, -0.3 * K, 0.9 * K, GUN, 'z'), cyl(0.06 * K, 0.8 * K, -0.4 * K, -0.3 * K, 0.9 * K, GUN, 'z')),
-    ...Array.from({ length: 8 }, () => [upper, lower]).flat(),
+    part(cyl(0.11, 0.5, 0, 0, -0.04, WHITE, 'z', 0, 0.05), cyl(0.1, 0.1, 0, 0.005, 0.25, PLATE, 'z', 0, 0.035), ...[-0.18, -0.08, 0.02, 0.12].map(z => cyl(0.12 - Math.abs(z) * 0.2, 0.025, 0, 0, z, PLATE, 'z')),
+      ...[-1, 1].map(x => box(0.012, 0.012, 0.16, x * 0.03, -0.02, 0.34, WHITE, 0, 0.5, x * 0.4, 0))),
+    ...Array.from({ length: 10 }, () => [upper, lower]).flat(),
   ];
   const s = new THREE.Vector3(), t = new THREE.Vector3(), pole = new THREE.Vector3();
   return {
     parts,
     pose: (a, m) => {
-      const A = Math.min(1, a.speed / 2) * 0.9, bob = Math.abs(Math.sin(a.phase)) * 0.08 * A;
-      at(m[0], null, 0, (3.0 + bob) * K, 0);
-      at(m[1], m[0], 0, 0.1 * K, 1.9 * K, 0.06 * Math.sin(a.t * 0.8), 0.3 * Math.sin(a.t * 0.37));
-      for (let k = 0; k < 8; k++) {
-        const side = k < 4 ? -1 : 1, j = k % 4, z0 = 1.2 - j * 0.8, ph = a.phase + ((j + (side > 0 ? 1 : 0)) % 2) * Math.PI;
-        s.set(side * 1.1 * K, 0, z0 * K); t.set(side * 4.0 * K, (-3.0 + Math.max(0, Math.cos(ph)) * 0.6 * A) * K, (z0 * 1.7 + Math.sin(ph) * 0.9 * A) * K); pole.set(side * 3.2 * K, 3.5 * K, z0 * K);
-        reach(m[2 + k * 2], m[3 + k * 2], m[0], s, t, pole, 3.2 * K, 3.6 * K);
+      // (Its stride in three jerks a step; a twitch a few times a minute, its own by the time.)
+      const A = Math.min(1, a.speed / 1.5), ph0 = Math.round(a.phase * 1.5) / 1.5, tw = Math.sin(a.t * 1.7) * Math.sin(a.t * 0.61) > 0.85 ? Math.sin(a.t * 47) : 0;
+      at(m[0], null, 0, 0.4 + Math.abs(Math.sin(ph0)) * 0.03 * A, 0, tw * 0.12, tw * 0.3, tw * 0.1);
+      for (let k = 0; k < 10; k++) {
+        const side = k < 5 ? -1 : 1, j = k % 5, z0 = 0.16 - j * 0.08, ph = ph0 + ((j + (side > 0 ? 1 : 0)) % 2) * Math.PI;
+        s.set(side * 0.09, 0, z0); t.set(side * 0.78, -0.4 + Math.max(0, Math.cos(ph)) * 0.14 * A, z0 * 3.2 + Math.sin(ph) * 0.14 * A); pole.set(side * 0.35, 0.9, z0 * 2);
+        reach(m[1 + k * 2], m[2 + k * 2], m[0], s, t, pole, 0.5, 0.6);
       }
     },
   };
@@ -361,7 +360,7 @@ function heli(): Rig {
 
 /** Every kind's rig. (The smart lampposts' cameras are their props'.) */
 export const RIGS: Record<UnitKind, Rig> = {
-  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: eldritch(), colossus: colossus(), crawler: spider(0.22), heli: heli(),
+  humanoid: humanoid(), heavy: heavy(), quadruped: quadruped(), carrier: carrier(), delivery: delivery(), drone: drone(false), hunter: drone(true), fpv: fpv(), bomber: drone(true), spider: eldritch(), colossus: colossus(), crawler: crawler(), heli: heli(),
   // A camera: its housing under a sun hood on a wall bracket, tipped down, the lens dark, its light red; a sweeper's
   // on a pan motor on a pole.
   camera: still(part(box(0.2, 0.15, 0.34, 0, 0, 0.12, WHITE, 0, 0.35), box(0.24, 0.03, 0.4, 0, 0.1, 0.14, PLATE, 0, 0.35), cyl(0.055, 0.04, 0, -0.06, 0.29, BLACK, 'z'),
