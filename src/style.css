@@ -56,25 +56,6 @@ canvas { display: block; }
 #death .d-sum { font-size: 12px; color: #6f6a5d; margin-bottom: 14px; }
 #death button { font: inherit; font-size: 13px; background: #0d0d0d; color: #b9b19a; border: 1px solid #333; padding: 6px 14px; cursor: pointer; }
 @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
-#pause { position: fixed; inset: 0; background: rgba(5,6,7,0.86); display: flex; align-items: flex-start; justify-content: center; gap: 28px; padding-top: 6vh; z-index: 15; overflow-y: auto; }
-#pause .pz-col { display: flex; flex-direction: column; gap: 4px; width: 280px; }
-#pause .pz-row { display: flex; gap: 4px; }
-#pause .pz-slide, #boot .pz-slide { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #c8c0a8; }
-#pause .pz-slide input, #boot .pz-slide input { width: 120px; }
-#pause .pz-binds div, #boot .pz-binds div { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #c8c0a8; }
-#pause .pz-binds button, #boot .pz-binds button { min-width: 96px; padding: 2px 6px; }
-#pause select { background: #1b1d20; color: #ddd; border: 1px solid #444; padding: 4px; }
-#pause .pz-row button { flex: 1; text-align: center; padding: 5px 4px; }
-#pause button.on { border-color: #c9a64a; color: #e8dcb8; }
-#pause .pz-credit { margin-top: auto; font-size: 10px; opacity: 0.6; }
-#pause .pz-title { font-size: 24px; color: #c9c0a4; letter-spacing: 5px; margin-bottom: 10px; }
-#pause .pz-h, #boot .pz-h { font-size: 11px; color: #8a8270; margin: 10px 0 2px; letter-spacing: 1px; }
-#pause .pz-note { font-size: 11px; color: #7d7563; }
-#pause button { font: inherit; font-size: 13px; text-align: left; background: #111314; color: #c2baa2; border: 1px solid #2e312b; padding: 5px 10px; cursor: pointer; }
-#pause button:hover { border-color: #75694a; }
-#pause .pz-keys { width: 420px; font-size: 12px; color: #b5ad96; }
-#pause .pz-keys div { display: flex; gap: 10px; padding: 1px 0; }
-#pause .pz-keys b { font-weight: normal; color: #d8cfb2; width: 170px; flex: none; }
 #status { position: fixed; left: 14px; bottom: 14px; display: flex; align-items: flex-end; gap: 8px; pointer-events: none; transition: opacity 0.6s; z-index: 3; }
 #status .needs { display: flex; flex-direction: column; gap: 3px; }
 #status .needs span { font-size: 15px; color: #e8dcc0; background: rgba(20,18,16,0.6); border: 1px solid rgba(220,200,160,0.35); padding: 1px 5px; }
@@ -116,3 +97,17 @@ canvas { display: block; }
 #laptop .lt-anna span { color: #7d7563; }
 #laptop .lt-foot { border-top: 1px solid #3a3326; padding-top: 3px; color: #6d6656; font-size: 11px; }
 
+
+/* Ice blue on near-black: every menu and his own things (U-104). */
+:root { --ice: #bfe6f5; --ice-hi: #e6f7ff; --ice-dim: #7aa6b8; --ice-line: #2b4250; --ice-bg: rgba(6, 11, 15, 0.92); --ice-btn: #0c141a; }
+#settings { position: fixed; inset: 0; background: rgba(4, 8, 11, 0.55); display: flex; align-items: center; justify-content: center; z-index: 25; }
+#settings .st-panel { display: flex; flex-direction: column; gap: 5px; width: 420px; padding: 22px 26px; background: var(--ice-bg); border: 1px solid var(--ice-line); font-size: 13px; color: var(--ice); }
+#settings .st-title { text-align: center; font-size: 22px; letter-spacing: 6px; color: var(--ice-hi); margin-bottom: 10px; }
+#settings .st-h { font-size: 11px; color: var(--ice-dim); margin: 12px 0 2px; letter-spacing: 1px; }
+#settings button { font: inherit; text-align: left; background: var(--ice-btn); color: var(--ice); border: 1px solid var(--ice-line); padding: 5px 10px; cursor: pointer; }
+#settings button:hover { border-color: var(--ice-dim); color: var(--ice-hi); }
+#settings .st-menu { text-align: center; }
+#settings .st-key { display: flex; justify-content: space-between; padding: 3px 10px; }
+#settings .st-key b { font-weight: normal; color: var(--ice-hi); min-width: 70px; text-align: right; }
+#settings .st-slide { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--ice); margin-top: 4px; }
+#settings .st-slide input { width: 250px; accent-color: var(--ice); }

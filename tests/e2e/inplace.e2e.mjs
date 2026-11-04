@@ -13,7 +13,7 @@ export default async function ({ open, fail }) {
       const g = window.__cq.game, w = g.world, units = g.view.world.children.length;
       ${how}
       const t = performance.now();
-      ${how.includes('kill') ? "window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' }));" : "document.querySelector('#pause [data-a=newrun]').click(); document.querySelector('#pause [data-a=newrun]').click();"}
+      ${how.includes('kill') ? "window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyW' }));" : "document.querySelector('#settings [data-a=menu]').click(); document.querySelector('#boot .new').click();"}
       const ms = performance.now() - t;
       g.runFrames(2);
       const p = g.state.player.pos, sp = g.world.spawn;
@@ -24,7 +24,7 @@ export default async function ({ open, fail }) {
   };
   // (A fresh run, saved as it starts: the page is shared with the other checks.)
   await page.evaluate("(() => { const g = window.__cq.game; g.load('run', 1); g.runFrames(2); window.__cq.save(); })()");
-  for (const [label, how] of [['after death', "window.__cq.kill('rifle'); g.runFrames(1); if (!document.querySelector('#death')) return { nodeath: true };"], ['from the menu', 'g.pause.show();']]) {
+  for (const [label, how] of [['after death', "window.__cq.kill('rifle'); g.runFrames(1); if (!document.querySelector('#death')) return { nodeath: true };"], ['from the menu', 'g.settings.show();']]) {
     const r = await after(how);
     if (r.nodeath) { fail('inplace', 'no death screen'); continue; }
     if (r.mark !== 1) fail('inplace', `${label}: the page reloaded`);
@@ -34,6 +34,6 @@ export default async function ({ open, fail }) {
     console.log(`inplace ${label}: ${Math.round(r.ms)} ms; boot ${JSON.stringify(boot)}`);
   }
   // (The shared page back as the other checks expect it.)
-  await page.evaluate("(() => { const g = window.__cq.game; g.pause.resume(); g.load('run', 1); g.runFrames(2); })()");
+  await page.evaluate("(() => { const g = window.__cq.game; g.settings.hide(); g.load('run', 1); g.runFrames(2); })()");
   await page.close();
 }

@@ -1,76 +1,129 @@
-// Settings (U-079, M8-13): the volumes, the mouse's sensitivity and Y, the keys, the subtitles
-// (M8-04), kept in this browser and put back each time (the graphics preset keeps itself: view.ts).
-// (The field of view is fixed, always the usual one: no slider, U-101.)
-// Shown in the pause menu: a slider each, and each action's key, clicked to bind it to the next key pressed.
+// Settings (U-104, word for word): Esc in play, or Settings on the main menu, opens one centred panel, and nothing else
+// is in it: Menu (last sleep saved), Volume, Sensitivity and the twelve keys (with ?dev=1, the dev UI and crosshair
+// toggles too, for filming). Volume, sensitivity and keys are kept in this browser and put back each time.
 import type { Game } from '../game';
-import type { Bus } from '../audio/audio';
-import { ACTIONS, binds, bindKey, resetKeys } from '../input/input';
+import { ACTIONS, binds, bindKey, mouseCode } from '../input/input';
+import { readSave } from '../sim/save';
+import { bootMenu } from './boot-menu';
 
 const KEY = 'cq2038.settings';
-const VOLS: ['master' | Bus, string][] = [['master', '总音量 Master'], ['effects', '音效 Effects'], ['ambience', '环境 Ambience'], ['music', '音乐 Music'], ['voice', '人声 Voice']];
-/** The mouse's sensitivity, its least and most. */
-const SENS = { min: 0.0006, max: 0.006 };
+/** The mouse's sensitivity, its least and most (radians a pixel). */
+const SENS = { min: 0.0004, max: 0.004 };
 
-interface Saved { volumes?: Partial<Record<'master' | Bus, number>>; sensitivity?: number; keys?: Record<string, string[]>; subLang?: 'both' | 'zh' | 'en'; subSize?: number; invertY?: boolean }
-
+interface Saved { volume?: number; sensitivity?: number; keys?: Record<string, string[]> }
 function load(): Saved { try { return JSON.parse(localStorage.getItem(KEY) ?? '{}') as Saved; } catch { return {}; } }
 function save(g: Game) {
-  try { localStorage.setItem(KEY, JSON.stringify({ volumes: g.audio.volumes, sensitivity: g.input.sensitivity, keys: binds, subLang: g.hud.subLang, subSize: g.hud.subSize, invertY: g.input.invertY } satisfies Saved)); } catch { /* private mode: not kept */ }
+  try { localStorage.setItem(KEY, JSON.stringify({ volume: g.audio.volumes.master, sensitivity: g.input.sensitivity, keys: binds } satisfies Saved)); } catch { /* private mode: not kept */ }
 }
 
 /** Put back what was saved, at boot. */
 export function applySettings(g: Game) {
   const s = load();
-  Object.assign(g.audio.volumes, s.volumes ?? {});
-  g.audio.applyVolumes();
+  if (s.volume !== undefined) { g.audio.volumes.master = s.volume; g.audio.applyVolumes(); }
   if (s.sensitivity) g.input.sensitivity = s.sensitivity;
-  if (s.subLang) g.hud.subLang = s.subLang;
-  if (s.subSize) g.hud.subSize = s.subSize;
-  if (s.invertY !== undefined) g.input.invertY = s.invertY;
   for (const [id, keys] of Object.entries(s.keys ?? {})) if (binds[id] && keys[0]) bindKey(id, keys[0]);
 }
 
-const name = (code: string) => code.replace(/^Key|^Digit/, '').replace('Left', ' L').replace('Right', ' R');
+/** A key's name as on the keyboard (one for both of a pair: Shift, Ctrl, Alt). */
+const name = (code: string) => code.replace(/^Key|^Digit/, '').replace(/^(Shift|Alt|Meta)(Left|Right)$/, '$1').replace(/^Control(Left|Right)$/, 'Ctrl').replace('Left', ' L').replace('Right', ' R');
+const names = (codes: string[]) => [...new Set(codes.map(name))].join(' / ');
 
-/** The settings' part of the pause menu. */
-export function settingsHTML(g: Game): string {
-  const slider = (id: string, label: string, v: number, min = 0, max = 1, step = 0.05) => `<label class="pz-slide">${label}<input type="range" data-set="${id}" min="${min}" max="${max}" step="${step}" value="${v}"></label>`;
-  return `<div class="pz-h">设置 Settings</div>` + VOLS.map(([b, l]) => slider(b, l, g.audio.volumes[b])).join('') +
-    slider('sens', '鼠标灵敏度 Mouse sensitivity', g.input.sensitivity, SENS.min, SENS.max, 0.0002) +
-    // Subtitles (M8-04): the lines in Chinese, English or both, and their size.
-    `<label class="pz-slide">字幕 Subtitles<select data-sub="lang">${(['both', 'zh', 'en'] as const).map(v => `<option value="${v}"${g.hud.subLang === v ? ' selected' : ''}>${{ both: '中英 Both', zh: '中文 Chinese', en: 'English' }[v]}</option>`).join('')}</select></label>` +
-    slider('subsize', '字幕大小 Subtitle size', g.hud.subSize, 0.8, 1.6, 0.1) +
-    `<label class="pz-slide">反转Y轴 Invert Y<input type="checkbox" data-invert ${g.input.invertY ? 'checked' : ''}></label>` +
-    `<div class="pz-h">按键 Keys</div><div class="pz-binds">${ACTIONS.map(a => `<div><span>${a.label}</span><button data-bind="${a.id}">${binds[a.id].map(name).join(' / ')}</button></div>`).join('')}</div>` +
-    `<button data-keys="reset">按键复原 Reset keys</button>`;
-}
+/** The panel, over the game or the main menu. */
+export class Settings {
+  open = false;
+  private el: HTMLDivElement;
+  private openedAt = 0;
+  /** filming (U-104): the dev panel and the crosshair hidden */
+  devUi = true;
+  crosshair = true;
 
-/** Its sliders and key buttons wired up; `redraw` draws the menu again. */
-export function wireSettings(g: Game, el: HTMLElement, redraw: () => void) {
-  el.querySelectorAll<HTMLInputElement>('input[data-set]').forEach(i => {
-    i.oninput = () => {
-      const v = Number(i.value), id = i.dataset.set!;
-      if (id === 'sens') g.input.sensitivity = v; else if (id === 'subsize') g.hud.subSize = v; else { g.audio.volumes[id as 'master' | Bus] = v; g.audio.applyVolumes(); }
-      save(g);
-    };
-  });
-  const inv = el.querySelector<HTMLInputElement>('input[data-invert]');
-  if (inv) inv.onchange = () => { g.input.invertY = inv.checked; save(g); };
-  const lang = el.querySelector<HTMLSelectElement>('select[data-sub="lang"]');
-  if (lang) lang.onchange = () => { g.hud.subLang = lang.value as 'both' | 'zh' | 'en'; save(g); };
-  el.querySelectorAll<HTMLButtonElement>('button[data-bind]').forEach(b => {
-    b.onclick = e => {
-      e.stopPropagation();
-      b.textContent = '按下按键 Press a key…';
-      const take = (k: KeyboardEvent) => {
-        k.preventDefault(); k.stopImmediatePropagation();
-        removeEventListener('keydown', take, true);
-        if (k.code !== 'Escape') { bindKey(b.dataset.bind!, k.code); save(g); }
-        redraw();
+  constructor(private game: Game, private dev: boolean) {
+    this.el = document.createElement('div');
+    this.el.id = 'settings';
+    this.el.style.display = 'none';
+    document.body.appendChild(this.el);
+    // Capture phase: decide before other menus close themselves on the same Esc.
+    addEventListener('keydown', e => this.key(e), true);
+    document.addEventListener('pointerlockchange', () => { if (!document.pointerLockElement) this.auto(); });
+  }
+
+  private key(e: KeyboardEvent) {
+    if (e.repeat || e.code !== 'Escape' || this.binding) return;
+    // (A lost pointer lock can open it just before the key arrives: don't reopen-and-close.)
+    if (this.open) { if (!this.byLock || performance.now() - this.openedAt > 400) this.hide(); }
+    else if (!this.game.input.uiOpen && !this.game.state.dead) this.show();
+    else return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+
+  /** The browser let go of the mouse while he was playing. */
+  private auto() {
+    if (!this.open && !this.game.input.uiOpen && !this.game.state.dead && this.game.ticks > 0) { this.show(); this.byLock = true; }
+  }
+  /** opened by the browser letting go of the mouse (its own Esc may follow at once) */
+  private byLock = false;
+
+  show() {
+    this.open = true;
+    this.byLock = false;
+    this.openedAt = performance.now();
+    document.exitPointerLock?.();
+    this.render();
+    this.el.style.display = 'flex';
+  }
+
+  hide() {
+    this.open = false;
+    this.binding = false;
+    this.el.style.display = 'none';
+    if (!document.getElementById('boot')) this.game.input.capture();
+  }
+
+  private binding = false;
+  private render() {
+    const g = this.game;
+    const slider = (id: string, label: string, v: number, min: number, max: number, step: number) => `<label class="st-slide">${label}<input type="range" data-set="${id}" min="${min}" max="${max}" step="${step}" value="${v}"></label>`;
+    const toggle = (id: string, label: string, on: boolean) => `<button class="st-key" data-dev="${id}">${label}<b>${on ? '开 On' : '关 Off'}</b></button>`;
+    this.el.innerHTML = `<div class="st-panel"><div class="st-title">设置 SETTINGS</div>` +
+      `<button class="st-menu" data-a="menu">主菜单 Menu (last sleep saved)</button>` +
+      slider('vol', '音量 Volume', g.audio.volumes.master, 0, 1, 0.01) +
+      slider('sens', '灵敏度 Sensitivity', g.input.sensitivity, SENS.min, SENS.max, 0.00005) +
+      `<div class="st-h">按键 Keys</div>` +
+      ACTIONS.map(a => `<button class="st-key" data-bind="${a.id}">${a.label}<b>${names(binds[a.id])}</b></button>`).join('') +
+      (this.dev ? toggle('ui', '开发界面 Dev UI', this.devUi) + toggle('cross', '准星 Crosshair', this.crosshair) : '') + `</div>`;
+    // (From the main menu itself, it just closes.)
+    this.el.querySelector<HTMLButtonElement>('[data-a="menu"]')!.onclick = () => { const inMenu = !!document.getElementById('boot'); this.hide(); if (!inMenu) bootMenu(g, readSave(localStorage)); };
+    this.el.querySelectorAll<HTMLInputElement>('input[data-set]').forEach(i => {
+      i.oninput = () => {
+        const v = Number(i.value);
+        if (i.dataset.set === 'sens') g.input.sensitivity = v; else { g.audio.volumes.master = v; g.audio.applyVolumes(); }
+        save(g);
       };
-      addEventListener('keydown', take, true);
-    };
-  });
-  const reset = el.querySelector<HTMLButtonElement>('button[data-keys="reset"]');
-  if (reset) reset.onclick = e => { e.stopPropagation(); resetKeys(); save(g); redraw(); };
+    });
+    this.el.querySelectorAll<HTMLButtonElement>('button[data-bind]').forEach(b => {
+      b.onclick = e => {
+        e.stopPropagation();
+        b.querySelector('b')!.textContent = '…';
+        this.binding = true;
+        // The next key, or mouse button 4 or 5, is its key; Esc leaves it as it was.
+        const done = (code: string | null) => {
+          removeEventListener('keydown', key, true); removeEventListener('mousedown', mouse, true);
+          if (code) { bindKey(b.dataset.bind!, code); save(g); }
+          setTimeout(() => { this.binding = false; }, 0);
+          this.render();
+        };
+        const key = (k: KeyboardEvent) => { k.preventDefault(); k.stopImmediatePropagation(); done(k.code === 'Escape' ? null : k.code); };
+        const mouse = (m: MouseEvent) => { const c = mouseCode(m.button); if (!c) return; m.preventDefault(); m.stopImmediatePropagation(); done(c); };
+        addEventListener('keydown', key, true); addEventListener('mousedown', mouse, true);
+      };
+    });
+    this.el.querySelectorAll<HTMLButtonElement>('button[data-dev]').forEach(b => {
+      b.onclick = () => {
+        if (b.dataset.dev === 'ui') { this.devUi = !this.devUi; const d = document.getElementById('dev'); if (d) d.style.display = this.devUi ? '' : 'none'; }
+        else { this.crosshair = !this.crosshair; g.hud.setCrosshair(this.crosshair); }
+        this.render();
+      };
+    });
+  }
 }

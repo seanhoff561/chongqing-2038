@@ -20,19 +20,16 @@ export default async function ({ open, fail }) {
   for (const id of want) if (!r.cues.includes(id)) fail('sfx', `no '${id}' cue`);
   if (!(r.heart > 0.8)) fail('sfx', `badly hurt, his heart only ${r.heart}`);
   if (r.growl === undefined) fail('sfx', 'hungry, his stomach never counted down to a growl');
-  // M8-07: the mixer. Each bus's slider in the pause menu, moved while it all plays, sets that bus at once.
+  // M8-07, U-104: one volume, the settings' slider, moved while it all plays, sets it at once.
   await page.keyboard.press('Escape');
   const m = await page.evaluate(`(() => {
-    const a = window.__cq.game.audio, out = {};
-    for (const [b, v] of [['master', 0.6], ['voice', 0.5], ['effects', 0.4], ['ambience', 0.3], ['music', 0.2]]) {
-      const i = document.querySelector('#pause input[data-set="' + b + '"]');
-      if (!i) { out[b] = 'no slider'; continue; }
-      i.value = String(v); i.dispatchEvent(new Event('input'));
-      out[b] = +(b === 'master' ? a.master.gain.value : a.bus[b].gain.value).toFixed(2) === v ? 'ok' : (b === 'master' ? a.master.gain.value : a.bus[b].gain.value);
-    }
+    const a = window.__cq.game.audio, i = document.querySelector('#settings input[data-set="vol"]');
+    if (!i) return 'no slider';
+    i.value = '0.6'; i.dispatchEvent(new Event('input'));
     localStorage.removeItem('cq2038.settings');
-    return out;
+    return +a.master.gain.value.toFixed(2) === 0.6 ? 'ok' : a.master.gain.value;
   })()`);
-  for (const [b, v] of Object.entries(m)) if (v !== 'ok') fail('sfx', `mixer ${b}: ${v}`);
+  if (m !== 'ok') fail('sfx', `volume: ${m}`);
+  await page.keyboard.press('Escape');
   await page.close();
 }

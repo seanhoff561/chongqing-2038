@@ -1,30 +1,34 @@
-// M8-12, M8-13: Esc pauses with the controls listed, resume, settings and Quit to menu; the settings (sensitivity,
-// invert Y, a volume, the subtitles, a key) changed, then a reload: all of them as they were set; no field of view slider, the view always the usual 75 degrees (U-101).
+// M10-05 (U-104): Esc opens the settings, centred, holding exactly what the director listed, word for word: Menu (last
+// sleep saved), Volume, Sensitivity and the twelve keys with their defaults; one key rebound to mouse button 4; after
+// a reload the volume, sensitivity and keys are as set.
 export default async function ({ open, fail }) {
-  const page = await open('?scenario=gym&seed=2', 'settings');
+  const page = await open('?scenario=hideout&seed=2', 'settings');
   await page.evaluate(`localStorage.removeItem('cq2038.settings')`);
   await page.evaluate('window.__cq.runFrames(3)');
   await page.keyboard.press('Escape');
-  const menu = await page.evaluate(`[...document.querySelectorAll('#pause button[data-a]')].map(b => b.dataset.a)`);
-  if (!['resume', 'menu'].every(a => menu.includes(a))) fail('settings', `pause menu: ${menu.join(',')}`);
-  await page.evaluate(`(() => {
-    const set = (k, v) => { const i = document.querySelector('#pause input[data-set="' + k + '"]'); i.value = String(v); i.dispatchEvent(new Event('input')); };
-    set('sens', 0.004);
-    if (document.querySelector('#pause input[data-set="fov"]')) throw new Error('a field-of-view slider (U-101: none)'); set('voice', 0.3); set('subsize', 1.4);
-    const inv = document.querySelector('#pause input[data-invert]'); inv.checked = true; inv.dispatchEvent(new Event('change'));
-    const sel = document.querySelector('#pause select[data-sub="lang"]'); sel.value = 'en'; sel.dispatchEvent(new Event('change'));
+  const r = await page.evaluate(`(() => {
+    const el = document.querySelector('#settings .st-panel'), b = el.getBoundingClientRect();
+    return { rows: [...el.children].map(c => c.tagName === 'LABEL' ? c.childNodes[0].textContent.trim() : c.textContent.trim()), centre: [b.left + b.width / 2, b.top + b.height / 2, innerWidth / 2, innerHeight / 2] };
   })()`);
-  await page.click('#pause button[data-bind="jump"]');
-  await page.keyboard.press('KeyJ');
+  const want = ['设置 SETTINGS', '主菜单 Menu (last sleep saved)', '音量 Volume', '灵敏度 Sensitivity', '按键 Keys',
+    '冲刺 SprintShift', '蹲下 CrouchCtrl', '爬行 CrawlC', '互动 InteractE', '左探/左页 Lean/Tab LeftMouse4', '右探/右页 Lean/Tab RightMouse5',
+    '装弹 ReloadR', '头灯/专注 Headlamp/Focus LaptopQ', '撑墙 ChimneyX', '露宿 Sleep RoughZ', '笔记本 LaptopTab', '背包 BackpackAlt'];
+  if (JSON.stringify(r.rows) !== JSON.stringify(want)) fail('settings', `rows: ${JSON.stringify(r.rows)}`);
+  const [cx, cy, wx, wy] = r.centre;
+  if (Math.abs(cx - wx) > 4 || Math.abs(cy - wy) > 4) fail('settings', `not centred: ${r.centre.map(Math.round)}`);
+  // Volume and sensitivity set; Chimney moved to mouse button 4 (Lean/Tab Left gives it up).
+  await page.evaluate(`(() => {
+    const set = (k, v) => { const i = document.querySelector('#settings input[data-set="' + k + '"]'); i.value = String(v); i.dispatchEvent(new Event('input')); };
+    set('vol', 0.4); set('sens', 0.002);
+  })()`);
+  await page.click('#settings button[data-bind="chimney"]');
+  await page.evaluate(`window.dispatchEvent(new MouseEvent('mousedown', { button: 3, bubbles: true, cancelable: true }))`);
+  const shown = await page.evaluate(`document.querySelector('#settings button[data-bind="chimney"] b').textContent`);
+  if (shown !== 'Mouse4') fail('settings', `chimney shows ${shown}`);
   await page.reload({ waitUntil: 'load' });
   await page.waitForFunction('window.__cq && window.__cq.ready', { timeout: 240000 });
-  const r = await page.evaluate(`(() => { const g = window.__cq.game; return { sens: g.input.sensitivity, fov: g.view.fp.baseFov, voice: g.audio.volumes.voice, sub: g.hud.subSize, inv: g.input.invertY, lang: g.hud.subLang, jump: JSON.parse(localStorage.getItem('cq2038.settings')).keys.jump }; })()`);
-  if (Math.abs(r.sens - 0.004) > 1e-9 || r.fov !== 75 || Math.abs(r.voice - 0.3) > 1e-9 || Math.abs(r.sub - 1.4) > 1e-9 || !r.inv || r.lang !== 'en' || !r.jump.includes('KeyJ')) fail('settings', `after reload: ${JSON.stringify(r)}`);
+  const k = await page.evaluate(`(() => { const g = window.__cq.game, s = JSON.parse(localStorage.getItem('cq2038.settings')); return { vol: g.audio.volumes.master, sens: g.input.sensitivity, chimney: s.keys.chimney, lean: s.keys.leanL }; })()`);
+  if (Math.abs(k.vol - 0.4) > 1e-9 || Math.abs(k.sens - 0.002) > 1e-9 || k.chimney.join() !== 'Mouse4' || k.lean.length) fail('settings', `after reload: ${JSON.stringify(k)}`);
   await page.evaluate(`localStorage.removeItem('cq2038.settings')`);
-  // Quit to menu: the main menu.
-  await page.keyboard.press('Escape');
-  await page.click('#pause button[data-a="menu"]');
-  const boot = await page.evaluate(`[...document.querySelectorAll('#boot button')].map(b => b.textContent).join('|')`);
-  if (!boot.includes('New Run')) fail('settings', `Quit to menu: ${boot}`);
   await page.close();
 }

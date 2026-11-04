@@ -3,7 +3,6 @@
 import type { Game } from '../game';
 import type { SaveFile } from '../sim/save';
 import { clockText } from '../sim/clock';
-import { settingsHTML, wireSettings } from './settings';
 
 /** What's credited (CREDITS.md in full). */
 const CREDITS = `<div class="bt-h">鸣谢 Credits</div>
@@ -29,10 +28,7 @@ export function bootMenu(game: Game, save: SaveFile | null) {
     el.querySelector<HTMLButtonElement>('.set')!.onclick = () => settings();
     el.querySelector<HTMLButtonElement>('.cred')!.onclick = () => { el.innerHTML = `<div class="bt-panel">${CREDITS}</div>${back}`; el.querySelector<HTMLButtonElement>('.back')!.onclick = menu; };
   };
-  const settings = () => {
-    el.innerHTML = `<div class="bt-panel">${settingsHTML(game)}</div>${back}`;
-    wireSettings(game, el, settings);
-    el.querySelector<HTMLButtonElement>('.back')!.onclick = menu;
-  };
+  // (The same panel as Esc in play: U-104.)
+  const settings = () => game.settings.show();
   menu();
 }

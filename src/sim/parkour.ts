@@ -282,7 +282,7 @@ export function stepCling(state: SimState, world: World, input: InputFrame) {
   const p = state.player, w = p.wall;
   w.t += DT;
   if ((input.pressed & B.JUMP) && airWall(state, world)) return;
-  if ((input.pressed & B.DROP) || w.t >= M.cling.time) {
+  if (w.t >= M.cling.time) {
     p.mode = 'air';
     p.vel.y = -M.cling.after;
     return;

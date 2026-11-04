@@ -30,8 +30,11 @@ export class Hud {
    *  binoculars (M5-07), their two. */
   private scope: HTMLDivElement;
   setScope(on: boolean, binos = false) { const v = on ? 'block' : 'none', c = binos ? 'scope binos' : 'scope'; if (this.scope.style.display !== v) this.scope.style.display = v; if (this.scope.className !== c) this.scope.className = c; }
+  /** The crosshair hidden for filming (U-104: settings in dev mode), whatever else. */
+  private noDot = false;
+  setCrosshair(on: boolean) { this.noDot = !on; this.setAiming(false); }
   /** Aiming down the sights or through the scope: the centre dot gone (U-079). */
-  setAiming(on: boolean) { const d = this.root.querySelector<HTMLDivElement>('.dot')!, v = on ? 'none' : ''; if (d.style.display !== v) d.style.display = v; }
+  setAiming(on: boolean) { const d = this.root.querySelector<HTMLDivElement>('.dot')!, v = on || this.noDot ? 'none' : ''; if (d.style.display !== v) d.style.display = v; }
 
   private shown = -1;
   /** The ring: how far along what he's doing (0..1), or hidden (below 0). */

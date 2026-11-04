@@ -8,10 +8,5 @@ export default async function ({ open, fail, screenshot }) {
   await page.setViewport({ width: 960, height: 540 });
   await page.evaluate(`(() => { const g = window.__cq.game; g.view.fp.baseFov = 75; window.__cq.runFrames(10); })()`);
   await screenshot(page, 'reference-play');
-  // (From the gym the pause menu goes back to the game; the reference hillside left the menu with U-019, so it's
-  // reached by ?scenario=reference only.)
-  await page.evaluate(`window.__cq.game.switchTo('gym'); window.__cq.game.pause.show()`);
-  const has = await page.evaluate(`!!document.querySelector('#pause button[data-a="game"]')`);
-  if (!has) fail('reference', "the gym's pause menu lacks the way back to the game");
   await page.close();
 }

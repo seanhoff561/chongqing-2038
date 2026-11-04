@@ -8,7 +8,7 @@ export const DT = 1 / TICK_HZ;
 
 /** Button bits for InputFrame.buttons (held) and InputFrame.pressed (went down since the last tick). */
 export const B = {
-  JUMP: 1, SPRINT: 2, CROUCH: 4, CRAWL: 8, INTERACT: 16, DROP: 32, USE: 64, AIM: 128,
+  JUMP: 1, SPRINT: 2, CROUCH: 4, CRAWL: 8, INTERACT: 16, USE: 64, AIM: 128,
   RELOAD: 256, HEADLAMP: 512, LEAN_L: 1024, LEAN_R: 2048,
   /** chimneying, on its own key (U-060) */
   CHIMNEY: 4096,
