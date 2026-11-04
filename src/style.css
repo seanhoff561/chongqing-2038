@@ -36,6 +36,8 @@ canvas { display: block; }
 .inv-hotbar { display: flex; gap: 4px; margin-top: 6px; font-size: 11px; color: var(--ice-dim); }
 .inv-hotbar span { flex: 1; border: 1px solid var(--ice-line); padding: 2px 4px; white-space: nowrap; overflow: hidden; }
 .inv-tip { position: fixed; display: none; max-width: 260px; background: #08131a; border: 1px solid var(--ice-line); color: var(--ice); font-size: 11px; padding: 5px 7px; z-index: 30; pointer-events: none; }
+.inv-tip.inv-doc { max-width: 340px; font-size: 12px; line-height: 1.45; padding: 8px 10px; }
+.inv-doc div { white-space: pre-line; margin-top: 6px; color: var(--ice-hi); }
 #sleep { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--ice-bg); border: 1px solid var(--ice-line); padding: 10px 12px; z-index: 6; min-width: 240px; }
 #sleep .sl-title { font-size: 12px; color: var(--ice-hi); margin-bottom: 8px; }
 #sleep button { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; background: var(--ice-btn); color: var(--ice); border: 1px solid var(--ice-line); margin: 2px 0; padding: 3px 6px; cursor: pointer; }

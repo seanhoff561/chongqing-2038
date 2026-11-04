@@ -44,7 +44,8 @@ describe('the Li family flat (M3-19)', () => {
     expect(things.map(f => f.kind).sort()).toEqual(['li:badge', 'li:phone']);
     const s = createState(1, w);
     startRun(s, w);
-    expect(s.dropped.map(d => d.stack.id).sort()).toEqual(['badge', 'phone']);
+    // (His family's things: not the found documents lying at the key places, M10-37.)
+    expect(s.dropped.filter(d => !d.loose).map(d => d.stack.id).sort()).toEqual(['badge', 'phone']);
     for (const f of things) {
       teleport(s.player, flat.x, flat.y - 1.45, flat.z);
       run(s, w, 30);

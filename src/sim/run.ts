@@ -8,6 +8,7 @@ import { onUseId } from './use';
 import { VOICEMAIL } from '../data/dialogue';
 import { CONTAINER } from './containers';
 import { claimBed } from './shelter';
+import { placeDocuments } from './documents';
 
 export const STARTING_SUPPLIES: [string, number, number?][] = [
   ['noodles', 2], ['luncheon', 1], ['bread', 1, 1], ['water', 3], ['bandage', 1],
@@ -34,6 +35,8 @@ export function startRun(s: SimState, w: World) {
     const id = f.kind.slice(3);
     s.dropped.push({ stack: { uid: newUid(s), id, n: 1, x: 0, y: 0, rot: false, ...(id === 'phone' ? { charge: 6 } : {}) }, x: f.x, y: f.y, z: f.z });
   }
+  // The found documents, each in its place (M10-37).
+  placeDocuments(s, w);
   quietStart(s, w);
   s.events.length = 0;
 }
