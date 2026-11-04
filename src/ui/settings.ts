@@ -50,7 +50,9 @@ export class Settings {
   private key(e: KeyboardEvent) {
     if (e.repeat || e.code !== 'Escape' || this.binding) return;
     // (A lost pointer lock can open it just before the key arrives: don't reopen-and-close.)
+    // (Esc closes whatever menu's up; with none, it opens these: U-104.)
     if (this.open) { if (!this.byLock || performance.now() - this.openedAt > 400) this.hide(); }
+    else if (this.game.closeMenu()) { /* closed it */ }
     else if (!this.game.input.uiOpen && !this.game.state.dead) this.show();
     else return;
     e.preventDefault();

@@ -1,6 +1,7 @@
 // The backpack (Tab) and an open container side by side. Drag to move (out of the grids drops it), R rotates while dragging,
 // shift-click moves it straight across, 'take all' empties the container into the backpack, 1-5 over an item binds it to
 // the hotbar. Moves go to the sim as commands.
+import { binds } from '../input/input';
 import { hideoutList } from '../sim/shelter';
 import { foodCheck } from '../sim/food';
 import type { Game } from '../game';
@@ -33,8 +34,8 @@ export class InventoryUI {
     document.body.appendChild(this.tip);
     addEventListener('mousemove', e => this.move(e));
     addEventListener('mouseup', e => this.drop(e));
-    // F closes it, as Tab does (U-067); before the game takes the press.
-    addEventListener('keydown', e => { if (this.open && e.code === 'KeyF' && !e.repeat) { this.toggle(false); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    // Interact closes it too, as it opens a container's (U-067, U-104); before the game takes the press.
+    addEventListener('keydown', e => { if (this.open && binds.interact.includes(e.code) && !e.repeat) { this.toggle(false); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
     addEventListener('keydown', e => {
       if (!this.open) return;
       if (e.code === 'KeyR' && this.drag) { this.drag.rot = !this.drag.rot; this.styleGhost(); }
@@ -87,7 +88,7 @@ export class InventoryUI {
     // His jacket off and gone over by hand, for a tracker stuck on it (U-099).
     if (ref === 'pack') {
       const b = document.createElement('button');
-      b.className = 'inv-takeall';
+      b.className = 'inv-takeall inv-search';
       b.textContent = '搜外套 Search jacket';
       b.title = `Take your jacket off and go over it for a tracking tag (${TAG.search} s, standing)`;
       b.onclick = () => { this.game.input.cmds.push({ c: 'act', name: 'search' }); this.toggle(false); };

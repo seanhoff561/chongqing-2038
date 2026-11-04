@@ -38,7 +38,7 @@ export default async function ({ open, fail }) {
   const c = await page.evaluate(`(() => { const s = window.__cq.game.state; return { shelters: s.shelters.map(h => h.id), placed: s.placed.length, deaths: s.deaths }; })()`);
   if (c.shelters.join() !== 'airraid-mattress' || c.placed || c.deaths !== 1) fail('coreloop', `he didn't wake as saved at the start, one death: ${JSON.stringify(c)}`);
 
-  // Up and out: the nearest container holding something, searched (F held) and emptied into his pack.
+  // Up and out: the nearest container holding something, searched (E held) and emptied into his pack.
   const box = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state, w = g.world, home = { ...s.player.pos };
     window.__home = home; s.time = 12 * 3600; s.flags.god = true;
     const its = w.inter.filter(i => i.kind === 'container' && i.data?.loot).sort((a, b) => Math.hypot(a.x - home.x, a.z - home.z) - Math.hypot(b.x - home.x, b.z - home.z)).slice(0, 8);
@@ -53,13 +53,13 @@ export default async function ({ open, fail }) {
     return { id: null }; })()`);
   if (!box.id) fail('coreloop', 'no container to search near the hideout');
   const before = await page.evaluate(`window.__cq.game.state.inv.pack.items.length`);
-  await page.keyboard.down('KeyF');
+  await page.keyboard.down('KeyE');
   for (let i = 0; i < 12; i++) await page.evaluate('window.__cq.runFrames(15)');
-  await page.keyboard.up('KeyF');
+  await page.keyboard.up('KeyE');
   const opened = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state; const n = s.containers['${box.id}']?.items.length ?? -1; g.input.cmds.push({ c: 'takeall' }); g.runFrames(2); return { open: s.openContainer, n, pack: s.inv.pack.items.length }; })()`);
   if (opened.n < 0) fail('coreloop', 'the container was never opened');
   else if (opened.n > 0 && opened.pack <= before) fail('coreloop', `nothing came out of it: ${JSON.stringify(opened)}`);
-  await page.keyboard.press('KeyF');
+  await page.keyboard.press('KeyE');
 
   // Back down to the hideout clean (nothing on him, nothing given away), the bed slept in: the run saved.
   const d = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state, w = g.world, home = window.__home; s.flags.god = false;

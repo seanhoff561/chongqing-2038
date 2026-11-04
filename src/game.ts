@@ -241,6 +241,16 @@ export class Game {
     }
   }
 
+  /** Esc on a menu (U-104): the backpack, the crafting, the sleep menu or the laptop closed; false if none was up. */
+  closeMenu() {
+    if (this.inv.open) this.inv.toggle(false);
+    else if (this.craft.open) this.craft.toggle(false);
+    else if (this.sleep.open) this.sleep.toggle(false);
+    else if (this.state.laptop?.open && !this.state.flight) this.input.cmds.push({ c: 'act', name: 'laptop' });
+    else return false;
+    return true;
+  }
+
   /** The main menu's up: nothing runs under it (U-104). */
   menuUp() { return !!document.getElementById('boot'); }
 

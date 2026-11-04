@@ -1,5 +1,6 @@
 // The workbench's list (M5-15): every recipe, its parts with what he has of each (what he's short of marked), its time,
 // and Make on those he can; a bar while it's being made. Opened at a bench, shut with F or Esc or by walking off.
+import { binds } from '../input/input';
 import type { Game } from '../game';
 import { RECIPES } from '../data/recipes';
 import { item } from '../data/items';
@@ -19,7 +20,7 @@ export class CraftUI {
       const b = (e.target as HTMLElement).closest<HTMLElement>('[data-make]');
       if (b) game.input.cmds.push({ c: 'act', name: 'craft', arg: b.dataset.make });
     });
-    addEventListener('keydown', e => { if (this.open && (e.code === 'KeyF' || e.code === 'Escape') && !e.repeat) { this.toggle(false); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+    addEventListener('keydown', e => { if (this.open && binds.interact.includes(e.code) && !e.repeat) { this.toggle(false); e.preventDefault(); e.stopImmediatePropagation(); } }, true);
   }
 
   toggle(on = !this.open) {
