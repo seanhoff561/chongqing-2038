@@ -150,8 +150,16 @@ export class InventoryUI {
     const mods = st.mods?.length ? `<br>${st.mods.map(m => item(m).en).join(', ')} fitted (right-click: take off)` : st.id === 'pistol' ? '<br>Drop an attachment on it to fit it' : '';
     // Its shelf life, once Anna's read the date (M5-05).
     const fc = foodCheck(this.game.state, st), food = fc ? `<br><i>安娜：${fc[0]} · ${fc[1]}</i>` : '';
-    this.tip.innerHTML = `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${mods}${food}`;
+    // A found document is read here (M10-37): its title, then all it says.
+    const doc = d.cat === 'doc';
+    this.tip.className = doc ? 'inv-tip inv-doc' : 'inv-tip';
+    this.tip.innerHTML = doc ? `<b>${d.zh}</b> ${d.en}<div>${d.desc.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</div>`
+      : `<b>${d.zh}</b> ${d.en}<br>${(d.kg * st.n).toFixed(2)} kg · ${d.desc}${mods}${food}`;
     this.tip.style.cssText = `display:block;left:${r.right + 6}px;top:${r.top}px`;
+    // (Kept on the screen: a long one beside the item, not off its foot or its edge.)
+    const t = this.tip.getBoundingClientRect();
+    if (t.bottom > innerHeight - 4) this.tip.style.top = `${Math.max(4, innerHeight - 4 - t.height)}px`;
+    if (t.right > innerWidth - 4) this.tip.style.left = `${Math.max(4, r.left - 6 - t.width)}px`;
   }
 
   private styleGhost() {

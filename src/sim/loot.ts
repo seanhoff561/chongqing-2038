@@ -11,6 +11,9 @@ import { setFiller } from './containers';
 
 export function rollLoot(s: SimState, it: Inter) {
   const g = s.containers[it.id];
+  // (A found document put in it for the run: M10-37.)
+  const doc = s.docs?.[it.id];
+  if (doc) addItem(s, g, doc, 1);
   for (const [id, n] of (it.data?.items as [string, number][] | undefined) ?? []) addItem(s, g, id, n);
   // (A wreck holds its parts and nothing else: no chocolate in a drone, M5-16.)
   if (it.id.startsWith('wreck:')) return;

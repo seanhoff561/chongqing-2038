@@ -11,7 +11,7 @@ import { MAGS } from '../data/units';
 import { PerceptionOverlay } from './perception';
 
 /** The creative picker's kinds, in order (U-088). */
-const CATS: Record<string, string> = { weapon: 'Weapons', ammo: 'Ammo', part: 'Attachments & parts', tool: 'Tools', device: 'Devices', throw: 'Throwables', med: 'Medical', food: 'Food', drink: 'Drink', wear: 'Wearables', key: 'Keys', misc: 'Misc' };
+const CATS: Record<string, string> = { weapon: 'Weapons', ammo: 'Ammo', part: 'Attachments & parts', tool: 'Tools', device: 'Devices', throw: 'Throwables', med: 'Medical', food: 'Food', drink: 'Drink', wear: 'Wearables', key: 'Keys', misc: 'Misc', doc: 'Documents' };
 
 export class DevPanel {
   readonly el: HTMLDivElement;
