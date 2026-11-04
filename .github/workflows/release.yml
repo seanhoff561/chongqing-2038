@@ -1,0 +1,45 @@
+name: release
+# The Windows game (U-104): when main's package.json version has no release yet, the web game is built, wrapped in the
+# desktop app (desktop/) and published as that version's GitHub Release with its installer; installed games update
+# themselves from it.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  windows:
+    runs-on: windows-latest
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        shell: bash
+        run: |
+          v=$(node -p "require('./package.json').version")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$v" > /dev/null; then echo "new=no" >> "$GITHUB_OUTPUT"; else echo "new=yes" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.v.outputs.new == 'yes'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - if: steps.v.outputs.new == 'yes'
+        run: npm ci
+      - if: steps.v.outputs.new == 'yes'
+        run: npx vite build
+      - if: steps.v.outputs.new == 'yes'
+        shell: bash
+        run: |
+          cp -r dist desktop/web
+          cd desktop
+          npm version "${{ steps.v.outputs.version }}" --no-git-tag-version --allow-same-version
+          npm install
+          npx electron-builder --win --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

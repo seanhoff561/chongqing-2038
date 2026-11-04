@@ -1,0 +1,24 @@
+{
+  "name": "chongqing-2038",
+  "productName": "Chongqing 2038",
+  "version": "0.0.0",
+  "description": "Chongqing 2038, the desktop game",
+  "author": "Claude (Anthropic) for seanhoff561",
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "dependencies": {
+    "electron-updater": "6.8.11"
+  },
+  "devDependencies": {
+    "electron": "45.2.2",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "io.github.seanhoff561.chongqing2038",
+    "productName": "Chongqing 2038",
+    "files": ["main.cjs", "preload.cjs", "web/**/*"],
+    "win": { "target": "nsis", "artifactName": "Chongqing-2038-Setup.${ext}" },
+    "nsis": { "oneClick": true, "perMachine": false },
+    "publish": [{ "provider": "github", "owner": "seanhoff561", "repo": "chongqing-2038", "releaseType": "release" }]
+  }
+}

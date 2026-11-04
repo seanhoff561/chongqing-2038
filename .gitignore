@@ -5,3 +5,6 @@ scratch/
 *.log
 geo-cache/
 .claude/worktrees/
+desktop/node_modules
+desktop/web
+desktop/dist

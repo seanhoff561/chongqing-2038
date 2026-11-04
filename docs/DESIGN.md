@@ -330,7 +330,7 @@ Medium graphics for everyone (render/view.ts GFX: detail within 90 m, rooms with
 
 ## 16. The desktop game (U-104)
 
-A Windows installer (.exe), built by GitHub Actions for each release and attached to its GitHub Release (the README links the latest). The installed game updates itself from the Releases on start, runs uncapped by the screen's refresh, and keeps songs/ and maps/ folders beside it.
+A Windows installer (.exe) from desktop/ (Electron): whenever main's package.json version has no release, GitHub Actions (.github/workflows/release.yml) builds it and publishes it as that version's GitHub Release; the README links the latest (releases/latest/download/Chongqing-2038-Setup.exe). Installed, it updates itself from the Releases on start (the new version installs when it's closed), runs uncapped by the screen's refresh (F11 fullscreen, no menu so Ctrl+W never closes it), and keeps its songs/ and maps/ folders in Documents/Chongqing 2038, which updates never touch. A new release is made by raising the version.
 
 ## 17. Architecture and dev tools
 
