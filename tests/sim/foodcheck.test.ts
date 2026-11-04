@@ -15,6 +15,7 @@ describe('food checks (M5-05)', () => {
     expect(foodCheck(s, a)).toBeNull();
     // Holding it, the laptop open, looking up: two seconds and she's read it.
     s.inv.hotbar[0] = a.uid; s.inv.held = 1;
+    run(s, world, 2); // (landed first: he takes it out on his feet)
     run(s, world, 1, { pitch: 1.2, cmds: [{ c: 'act', name: 'laptop' }] });
     run(s, world, secs(2.3), { pitch: 1.2 });
     expect(s.lastScan).toBe('item:bread');

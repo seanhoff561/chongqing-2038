@@ -12,6 +12,7 @@ describe('robot weak points (M5-12)', () => {
     const [dog, man] = s.units;
     dog.stop = { x: 0, y: 0, z: -8, yaw: 0, t: 0 };
     const look = { pitch: Math.atan2(0.6 - 1.62, 8) };
+    run(s, w, 2); // (landed first: he takes it out on his feet)
     run(s, w, 1, { ...look, cmds: [{ c: 'act', name: 'laptop' }] });
     // Working: what it is, but not its weak points.
     run(s, w, secs(2.3), look);

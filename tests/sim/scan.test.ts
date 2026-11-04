@@ -20,6 +20,7 @@ describe('scanning (M5-04)', () => {
     state.time = 12 * 3600; state.flags.god = true;
     state.units[0].stop = { x: 0, y: 0, z: -8, yaw: 0, t: 0 };
     const look = { pitch: Math.atan2(0.6 - 1.62, 8) };
+    run(state, world, 2); // (landed first: he takes it out on his feet)
     run(state, world, 1, { ...look, cmds: [{ c: 'act', name: 'laptop' }] });
     let scanned = '';
     run(state, world, secs(1), look);

@@ -39,8 +39,12 @@ export function nextHour(t: number, hour: number): number {
 /** The calendar (U-104): day 1 is 1 November 2038, late autumn. A date and the time as a laptop shows them. */
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 export const dateText = (t: number) => {
-  const d = new Date(Date.UTC(2038, 10, dayOf(t))), h = Math.floor(hourOf(t)), m = Math.floor((t % 3600) / 60);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  // (Day 1 is 1 November 2038; counted on through the months, no Date in the sim.)
+  let d = dayOf(t) - 1, m = 10, y = 2038;
+  const len = () => [31, y % 4 ? 28 : 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m];
+  while (d >= len()) { d -= len(); if (++m === 12) { m = 0; y++; } }
+  const h = Math.floor(hourOf(t)), min = Math.floor((t % 3600) / 60);
+  return `${d + 1} ${MONTHS[m]} ${y} ${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`;
 };
 export const clockText = (t: number) => {
   const h = Math.floor(hourOf(t)), m = Math.floor((t % 3600) / 60);
