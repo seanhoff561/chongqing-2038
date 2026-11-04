@@ -40,13 +40,6 @@ canvas { display: block; }
 #sleep button { display: block; width: 100%; text-align: left; font: inherit; font-size: 12px; background: #121416; color: #c2baa2; border: 1px solid #262925; margin: 2px 0; padding: 3px 6px; cursor: pointer; }
 #sleep button:hover { border-color: #6d6447; }
 #sleep .sl-note { font-size: 10px; color: #6c6a60; margin-top: 6px; }
-#boot { position: fixed; inset: 0; background: rgba(5,6,7,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; z-index: 20; }
-#boot .bt-title { font-size: 28px; color: #c9c0a4; letter-spacing: 6px; margin-bottom: 14px; }
-#boot button { font: inherit; font-size: 13px; width: 260px; text-align: left; background: #111314; color: #c2baa2; border: 1px solid #2e312b; padding: 6px 10px; cursor: pointer; }
-#boot button:hover { border-color: #75694a; }
-#boot .bt-panel { width: min(520px, 90vw); max-height: 70vh; overflow: auto; color: #a89a78; font-size: 12px; background: #0c0d0d; border: 1px solid #2e312b; padding: 8px 12px; }
-#boot .bt-h { color: #c9c0a4; margin-bottom: 6px; }
-#boot .bt-panel p { margin: 4px 0; }
 #death { position: fixed; inset: 0; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; z-index: 30; }
 #death .d-title { font-size: 34px; color: #a33; letter-spacing: 10px; }
 #death .d-title.out { color: #c8b47a; }
@@ -110,3 +103,17 @@ canvas { display: block; }
 #settings .st-key b { font-weight: normal; color: var(--ice-hi); min-width: 70px; text-align: right; }
 #settings .st-slide { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--ice); margin-top: 4px; }
 #settings .st-slide input { width: 250px; accent-color: var(--ice); }
+
+#boot { position: fixed; inset: 0; background: rgba(4, 8, 11, 0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; z-index: 20; }
+#boot .bt-title { font-size: 30px; color: var(--ice-hi); letter-spacing: 8px; margin-bottom: 16px; }
+#boot button { font: inherit; font-size: 13px; width: 280px; text-align: left; background: var(--ice-btn); color: var(--ice); border: 1px solid var(--ice-line); padding: 7px 12px; cursor: pointer; }
+#boot button:hover { border-color: var(--ice-dim); color: var(--ice-hi); }
+#boot .ver { width: auto; margin-top: 14px; background: none; border: none; color: var(--ice-dim); font-size: 11px; text-align: center; }
+#boot .bt-panel { width: min(720px, 92vw); max-height: 78vh; overflow: auto; color: var(--ice); font-size: 12px; line-height: 1.5; background: var(--ice-bg); border: 1px solid var(--ice-line); padding: 16px 20px; }
+#boot .bt-panel a { color: var(--ice-hi); }
+#boot .bt-panel .bt-h1 { font-size: 18px; color: var(--ice-hi); margin: 14px 0 6px; }
+#boot .bt-panel .bt-h2, #boot .bt-panel .bt-h3, #boot .bt-panel .bt-h4 { font-size: 13px; color: var(--ice-hi); margin: 12px 0 4px; }
+#boot .bt-panel p, #boot .bt-panel ul { margin: 4px 0 8px; }
+#boot .bt-panel table { border-collapse: collapse; margin: 6px 0; }
+#boot .bt-panel td { border: 1px solid var(--ice-line); padding: 2px 6px; vertical-align: top; }
+#boot .bt-claude { color: var(--ice-hi); margin-top: 16px; }
