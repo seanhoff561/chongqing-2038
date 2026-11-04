@@ -4,7 +4,7 @@ export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=3', 'rough');
   await page.evaluate('localStorage.clear()');
   const start = await page.evaluate(`(() => { const s = window.__cq.game.state; return { n: s.inv.pack.items.length, shelters: s.shelters.map(h => h.id) }; })()`);
-  if (start.n < 5 || start.shelters.join() !== 'airraid-mattress') fail('rough', `start ${JSON.stringify(start)}`);
+  if (start.n < 5 || start.shelters.length) fail('rough', `start ${JSON.stringify(start)}`);
   await page.evaluate(`(() => { const g = window.__cq.game, T = n => g.world.teleports.find(t => t.name === n), s = T('jiaochangkou'); Object.assign(g.state.player.pos, { x: s.x, y: s.y - 1.45, z: s.z }); g.input.pitch = -1.2; window.__cq.runFrames(20); })()`);
   await page.keyboard.down('KeyB');
   for (let i = 0; i < 12; i++) await page.evaluate('window.__cq.runFrames(10)');

@@ -104,7 +104,7 @@ describe('pursuit escapes (M4-32)', () => {
       }
       // In, and waiting there: lost, searched for, given up on, never found again.
       if (home) {
-        const o = s.wstate.open, bed = w.inter.find(i => i.id === 'airraid-mattress')!;
+        const o = s.wstate.open, bed = w.inter.find(i => i.id === 'airraid-table')!;
         o[grate.id] = true; o[bagsId(grate)] = true; w.index.off[doorSolid(grate)] = 1;
         run(s, w, secs(GRATE.lift));
         teleport(s.player, bed.x + 1.2, bed.y - 0.2, bed.z);

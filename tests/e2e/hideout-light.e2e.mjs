@@ -4,7 +4,7 @@ const BEFORE = { day: 4.7, night: 0.3 };
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=run&seed=1', 'hideout-light');
   const lum = hour => page.evaluate(`(() => {
-    const g = window.__cq.game, s = g.state, w = g.world, bed = w.inter.find(i => i.id === 'airraid-mattress'), gr = w.inter.find(i => i.id === 'airraid-grate');
+    const g = window.__cq.game, s = g.state, w = g.world, gr = w.inter.find(i => i.id === 'airraid-grate');
     s.time = Math.floor(s.time / 86400) * 86400 + ${hour} * 3600; s.flags.clear = true; s.player.lamp = 0;
     const sp = w.teleports.find(t => t.name.startsWith("Friends' hideout"));
     Object.assign(s.player.pos, { x: sp.x, y: sp.y, z: sp.z }); s.player.vel = { x: 0, y: 0, z: 0 };

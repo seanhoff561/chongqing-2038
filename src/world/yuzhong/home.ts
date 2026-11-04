@@ -164,7 +164,7 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
   out.at.exit = { x: ex, y: top, z: ez };
   // (The way out from the chamber, for tests: past the shaft's foot, through the rubble, the jog, the vent's foot.)
   ([[13, 0], [17.4, 0], [19.1, 0], [19.1, J], [d - 0.3, J]] as const).forEach(([a, b], n) => { const [x, z] = P(px + a, pz + b); out.features.push({ kind: 'homeExit', x, y: floor, z, group: n }); });
-  out.sites.push({ id: 'airraid', kind: 'cellar', x: out.at.mattress.x, y: floor, z: out.at.mattress.z, bed: 'airraid-mattress', table: null, containers: ['airraid-stash'], exits: 1, windows: 0, streetSides: 0 });
+  out.sites.push({ id: 'airraid', kind: 'cellar', x: out.at.table.x, y: floor, z: out.at.table.z, bed: null, table: 'airraid-table', containers: ['airraid-stash'], exits: 1, windows: 0, streetSides: 0 });
   // The alley's dressing: shop neon on both walls over the grate (a noodle bar's, a mahjong room's), its glow, a bin.
   const ux = -q.az, uz = q.ax, half = q.gap / 2;
   // (Up the walls, U-054: the vertical one's top character on the second floor, under the lower roof; the mahjong

@@ -12,11 +12,25 @@ import { HOME } from '../../src/world/yuzhong/home';
 import { GRATE } from '../../src/sim/grate';
 import { run, secs, aim, settle, LMB, RMB } from './helpers';
 import { B } from '../../src/sim/types';
+import { MAT } from '../../src/world/mats';
 
 const w = getWorld('yuzhong'), grate = w.inter.find(i => i.id === 'airraid-grate')!, site = w.sites.find(s => s.id === 'airraid')!;
 const key = (n: string) => w.features.find(f => f.kind === `key:${n}`)!;
 
 describe("the friends' hideout (M4-22b)", () => {
+  it('has one cable bundle outside it where two ran side by side (M10-30, U-104)', () => {
+    // The cable bundles' walkable segments near the grate, joined into lines; no two lines end to end within a few
+    // metres of each other.
+    const segs = w.solids.filter(q => q.mat === MAT.cable && Math.hypot((q.x0 + q.x1) / 2 - grate.x, (q.z0 + q.z1) / 2 - grate.z) < 50).map(q => [(q.x0 + q.x1) / 2, (q.y0 + q.y1) / 2, (q.z0 + q.z1) / 2]);
+    const lines: number[][][] = [];
+    for (const p of segs) { const near = lines.filter(L => L.some(q => Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]) < 1.3)); if (!near.length) lines.push([p]); else { near[0].push(p, ...near.slice(1).flat()); for (const L of near.slice(1)) lines.splice(lines.indexOf(L), 1); } }
+    const ends = lines.filter(L => L.length > 8).map(L => { const a = L.reduce((m, q) => (q[2] < m[2] ? q : m)), b = L.reduce((m, q) => (q[2] > m[2] ? q : m)); return [a, b]; });
+    for (let i = 0; i < ends.length; i++) for (let j = i + 1; j < ends.length; j++) {
+      const [a, b] = ends[i], [c, d] = ends[j], dd = (p: number[], q: number[]) => Math.hypot(p[0] - q[0], p[2] - q[2]);
+      expect(Math.min(dd(a, c) + dd(b, d), dd(a, d) + dd(b, c)), `cables ${i} and ${j} side by side`).toBeGreaterThan(10);
+    }
+    expect(ends.length).toBeGreaterThan(0);
+  });
   it("is under a real alley: two of the city's buildings either side of the grate, close", () => {
     // Walls within the alley's width on two opposite sides, at head height and over it.
     const hit = (a: number, y: number) => !!raycast(w.index, grate.x, grate.y + y, grate.z, Math.cos(a), 0, Math.sin(a), HOME.wide);
@@ -42,7 +56,7 @@ describe("the friends' hideout (M4-22b)", () => {
     expect(roof.ways).toContain('pipe');
   });
   it('is sealed: no way along the ground into the chamber but the grate, no way down within 60 m', () => {
-    const bed = w.inter.find(i => i.id === 'airraid-mattress')!;
+    const bed = w.inter.find(i => i.id === 'airraid-table')!;
     // The machines' nav graph doesn't reach it; it's 10 m under the alley.
     expect(grate.y - site.y).toBeGreaterThan(HOME.depth - 0.5);
     const n = nearestNav(w.nav!, bed, 30);

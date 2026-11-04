@@ -2,9 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { settle } from './helpers';
 import { buildHideoutScene } from '../../src/world/sets/hideout-scene';
 import { createState } from '../../src/sim/sim';
-import { startRun, furnish, START_BED, START_CRATE, FRIENDS_CRATE } from '../../src/sim/run';
+import { startRun, furnish, START_CRATE, FRIENDS_CRATE } from '../../src/sim/run';
 import { getWorld } from '../../src/world/build';
-import { stashIds } from '../../src/sim/shelter';
 import { count } from '../../src/sim/inventory';
 import { shelfLeft } from '../../src/sim/food';
 
@@ -16,15 +15,16 @@ describe('starting supplies', () => {
     for (const [id, n] of [['noodles', 2], ['luncheon', 1], ['bread', 1], ['water', 3], ['bandage', 1]] as const) expect(count(g, id), id).toBe(n);
     expect(shelfLeft(s, g.items.find(i => i.id === 'bread')!)).toBeCloseTo(2);
   });
-  it("starts in the friends' hideout under the vent grate: their mattress claimed, their crate stocked (U-018)", async () => {
+  it("starts in the friends' hideout under the vent grate: no bed (M10-27, U-104), a table by their crate, the crate stocked (U-018)", async () => {
     await settle();
     const w = getWorld('yuzhong'), s = createState(3, w);
     startRun(s, w);
-    const sc = w.spawn;
-    expect(s.shelters.map(h => h.id)).toEqual([START_BED]);
-    expect(Math.hypot(s.shelters[0].x - sc.x, s.shelters[0].z - sc.z)).toBeLessThan(3);
+    const sc = w.spawn, crate = w.inter.find(i => i.id === START_CRATE)!, table = w.inter.find(i => i.id === 'airraid-table')!;
+    expect(s.shelters).toEqual([]);
+    expect(w.inter.some(i => i.kind === 'mattress' && i.id.startsWith('airraid-'))).toBe(false);
+    expect(table.kind).toBe('table');
+    expect(Math.hypot(table.x - crate.x, table.z - crate.z)).toBeLessThan(2.5);
     for (const [id, n] of FRIENDS_CRATE) expect(count(s.containers[START_CRATE], id), id).toBe(n);
-    expect(stashIds(s, w, s.shelters[0])).toContain(START_CRATE);
     // The grate is up a shaft off the chamber (M3-72: set off the roads, in an alley).
     const g = w.props.find(p => p.kind === 'grate' && p.text === 'airraid-grate')!;
     expect(Math.hypot(g.x - sc.x, g.z - sc.z)).toBeLessThan(30);

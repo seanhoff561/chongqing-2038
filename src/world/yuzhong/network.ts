@@ -283,13 +283,21 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
     if (gap > REACH.span.across || Math.abs(ya - yb) > (gap > 14 ? Math.min(12, gap / 3) : Math.min(4, gap * 0.4)) || Math.min(ya, yb) - gnd < BARE + 1 + gap * 0.02) continue;
     link(i, j, 25 + gap, 'build', { x: pi.x, y: ya, z: pi.z }, { x: pj.x, y: yb, z: pj.z });
   }
+  /** The cable bundles laid so far, end to end. */
+  const cables: [number, number, number][][] = [];
   /** Lay a crossing a path chose: a plank to 7 m, an I-beam to 14, a cable bundle past that. */
   const lay = (e: Edge): string => {
     const A3: [number, number, number] = [e.pa.x, e.pa.y, e.pa.z], B3: [number, number, number] = [e.pb.x, e.pb.y, e.pb.z], gap = Math.hypot(B3[0] - A3[0], B3[2] - A3[2]);
     const kind = gap <= 7 ? 'crossPlank' : gap <= 14 ? 'crossBeam' : 'line';
     if (kind === 'crossPlank') out.solids.push(member(A3, B3, 0.7, 0.08, MAT.wood));
     else if (kind === 'crossBeam') { out.solids.push(member(A3, B3, 0.3, 0.04, MAT.metal)); out.decor.push(member([A3[0], A3[1] - 0.04, A3[2]], [B3[0], B3[1] - 0.04, B3[2]], 0.04, 0.28, MAT.metal)); }
-    else cord(A3, B3, 0.25 + gap * 0.02, r, out, true);
+    else {
+      // (Outside the start hideout, one cable where two would run side by side (U-104): the second still drawn from the
+      // dice, into nothing, so the rest of the city comes out as it always did: the map is frozen, U-053.)
+      const twin = Math.hypot(A3[0] - grate.x, A3[2] - grate.z) < 45 && cables.some(([P, Q]) => Math.min(Math.hypot(P[0] - A3[0], P[2] - A3[2]) + Math.hypot(Q[0] - B3[0], Q[2] - B3[2]), Math.hypot(P[0] - B3[0], P[2] - B3[2]) + Math.hypot(Q[0] - A3[0], Q[2] - A3[2])) < 10);
+      cord(A3, B3, 0.25 + gap * 0.02, r, twin ? { solids: [], decor: [], far: [], climbables: [], features: [] } : out, true);
+      cables.push([A3, B3]);
+    }
     out.features.push({ kind: 'routeLink', x: A3[0], y: A3[1], z: A3[2], group: out.features.length, nx: (B3[0] - A3[0]) / gap, nz: (B3[2] - A3[2]) / gap },
       { kind: 'routeLink', x: B3[0], y: B3[1], z: B3[2], group: out.features.length, nx: (A3[0] - B3[0]) / gap, nz: (A3[2] - B3[2]) / gap });
     // Built now: cheap for the paths after, both ways.
