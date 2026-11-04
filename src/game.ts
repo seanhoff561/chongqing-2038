@@ -20,6 +20,7 @@ import { announce } from './audio/pa';
 import { startPursuit } from './sim/pursuit';
 import { endRun } from './sim/escape';
 import { LaptopUI } from './ui/laptop';
+import { Laptop3D } from './render/laptop3d';
 import { CraftUI } from './ui/craft-ui';
 import { speak } from './audio/voice';
 import { EndingSequence } from './ui/ending';
@@ -86,6 +87,8 @@ export class Game {
   readonly input: Input;
   readonly hud = new Hud();
   laptop!: LaptopUI;
+  /** his laptop held in both hands while it's out (U-104) */
+  laptop3d!: Laptop3D;
   craft!: CraftUI;
   /** whether he was flying the drone last frame (M5-11) */
   private flew = false;
@@ -152,6 +155,7 @@ export class Game {
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.settings = new Settings(this, opts.dev);
+    this.laptop3d = new Laptop3D(this.view.fp.cam);
     this.laptop = new LaptopUI(this);
     this.craft = new CraftUI(this);
     this.ending = new EndingSequence(this);
@@ -352,6 +356,8 @@ export class Game {
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
+    this.laptop3d.update(!!this.state.laptop?.open, dt);
+    if (this.heldModel) this.heldModel.visible = !this.state.laptop?.open;
     this.laptop.update();
     this.craft.update();
     this.updatePrompt();
@@ -424,7 +430,8 @@ export class Game {
     this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight;
     this.hideView.update(p.mode === 'hidden' && p.hideId >= 0 ? this.world.hides[p.hideId] ?? null : null);
     if (!this.hands.ready || !this.hands.group.visible) return;
-    const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;
+    // (With the laptop out, both hands hold it: U-104.)
+    const out = !!this.state.laptop?.open, held = out ? null : heldStack(this.state), support = held ? supportPoint(held.id) : null;
     // (Whether a hold's in reach, for the hands raised ready: looked for every fourth frame, it costs a millisecond.)
     if (++this.grabAge >= 4) { this.grabAge = 0; this.readied = !held && findGrab(this.world, p) !== null; }
     const readied = !held && this.readied;
@@ -437,7 +444,7 @@ export class Game {
     const room = hit ? hit.t : 0.6;
     p.hands.forEach((h, i) => {
       const g = h.grip ? gripPose(cam, h.grip.x, h.grip.y, h.grip.z, h.grip.nx, h.grip.nz, i === 0 ? -1 : 1) : null;
-      const pose = poseFor(p, i, readied, held?.id ?? '', g, this.view.fp.bob, support, reload);
+      const pose = poseFor(p, i, readied, out ? 'laptop' : held?.id ?? '', g, this.view.fp.bob, support, reload);
       if (!g && -pose.pos.z > room - 0.12) pose.pos.z = -Math.max(0.12, room - 0.12);
       this.hands.setPose(i, pose, k);
     });

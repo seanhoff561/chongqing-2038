@@ -34,7 +34,7 @@ import { stepConverge } from './converge';
 import { stepHeli } from './heli';
 import { stepPa } from './announce';
 import { stepLoose } from './loose';
-import { stepLaptop } from './laptop';
+import { stepLaptop, laptopHands } from './laptop';
 import { stepScan } from './scan';
 import { stepMap } from './automap';
 import { stepBinos } from './binoculars';
@@ -109,7 +109,8 @@ export function createState(seed: number, world: World): SimState {
 export function step(state: SimState, world: World, raw: InputFrame): void {
   state.events.length = 0;
   // (Flying the drone, M5-11: his body takes none of his input.)
-  const input = stillWhileFlying(state, raw);
+  // (Flying the drone, or holding the laptop up: U-104.)
+  const input = laptopHands(state, stillWhileFlying(state, raw));
   applyCmds(state, world, input.cmds);
   stepRopes(state);
   stepRappel(state, input);

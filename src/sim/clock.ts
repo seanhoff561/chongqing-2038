@@ -36,6 +36,12 @@ export function nextHour(t: number, hour: number): number {
   return base > t ? base : base + 86400;
 }
 
+/** The calendar (U-104): day 1 is 1 November 2038, late autumn. A date and the time as a laptop shows them. */
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const dateText = (t: number) => {
+  const d = new Date(Date.UTC(2038, 10, dayOf(t))), h = Math.floor(hourOf(t)), m = Math.floor((t % 3600) / 60);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()} ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+};
 export const clockText = (t: number) => {
   const h = Math.floor(hourOf(t)), m = Math.floor((t % 3600) / 60);
   return `D${dayOf(t)} ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;

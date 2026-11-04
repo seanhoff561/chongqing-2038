@@ -1,4 +1,4 @@
-// M5-06 (U-096): Anna's Map page (two pages on from Status) shows the whole city from the start, the buildings he
+// M5-06 (U-096): Anna's Map page shows the whole city from the start, the buildings he
 // hasn't been near drawn but blank; walking, the 10 m cells he goes through are noted and the buildings round them
 // fill in by their type (logs/automap.png).
 const KNOWN = [[154, 128, 80], [90, 138, 168], [98, 168, 120], [176, 120, 56], [192, 74, 54], [88, 84, 74]], BLANK = [22, 21, 15];
@@ -7,9 +7,9 @@ export default async function ({ open, fail, screenshot }) {
   // (Midday, and nothing kills him on the way: the map's what's tested.)
   await page.evaluate('(() => { const g = window.__cq.game; g.state.flags.god = true; g.state.time = 12 * 3600; window.__cq.runFrames(3); })()');
   const look = async () => {
-    await page.keyboard.press('KeyL');
-    await page.evaluate('window.__cq.runFrames(3)'); // (open first: the sim takes the L)
-    await page.evaluate(`(() => { const L = window.__cq.game.laptop; L.page = 2; window.__cq.runFrames(8); })()`);
+    await page.keyboard.press('Tab');
+    await page.evaluate('window.__cq.runFrames(3)'); // (open first: the sim takes the Tab)
+    await page.evaluate(`(() => { const L = window.__cq.game.laptop; L.page = 0; window.__cq.runFrames(20); })()`);
     const r = await page.evaluate(`(() => { const el = document.querySelector('#laptop .lt-body'), c = el.querySelector('canvas'), K = ${JSON.stringify(KNOWN)}, B = ${JSON.stringify(BLANK)};
       const m = /(\\d+) of (\\d+) buildings/.exec(el.textContent) ?? [], n = Object.keys(window.__cq.game.state.explored ?? {}).length;
       if (!c) return { n, text: el.textContent };
@@ -17,7 +17,7 @@ export default async function ({ open, fail, screenshot }) {
       let known = 0, blank = 0;
       for (let i = 0; i < d.length; i += 4) { if (near(i, B)) blank++; else if (K.some(q => near(i, q))) known++; }
       return { n, text: el.textContent, known: +m[1], inView: +m[2], kpx: known, bpx: blank }; })()`);
-    await page.keyboard.press('KeyL');
+    await page.keyboard.press('Tab');
     await page.evaluate('window.__cq.runFrames(3)');
     return r;
   };
@@ -27,21 +27,21 @@ export default async function ({ open, fail, screenshot }) {
   await page.keyboard.down('KeyW'); await page.keyboard.down('ShiftLeft');
   for (let i = 0; i < 60; i++) await page.evaluate('window.__cq.runFrames(5)');
   await page.keyboard.up('ShiftLeft'); await page.keyboard.up('KeyW');
-  await page.keyboard.press('KeyL');
+  await page.keyboard.press('Tab');
   await page.evaluate('window.__cq.runFrames(3)');
-  await page.evaluate(`(() => { window.__cq.game.laptop.page = 2; window.__cq.runFrames(8); })()`);
+  await page.evaluate(`(() => { window.__cq.game.laptop.page = 0; window.__cq.runFrames(20); })()`);
   await screenshot(page, 'automap');
-  await page.keyboard.press('KeyL');
+  await page.keyboard.press('Tab');
   await page.evaluate('window.__cq.runFrames(3)');
   const b = await look();
   if (!(b.n > a.n)) fail('automap', `walking explored no cells: ${a.n} then ${b.n}`);
   if (!(b.known > 0) || !(b.kpx > 100)) fail('automap', `no buildings filled in round where he's been: ${JSON.stringify(b).slice(0, 300)}`);
   if (!b.text.includes(`${b.n} cells explored`)) fail('automap', `the page doesn't count the cells: ${b.text.slice(0, 200)}`);
-  // M5-09: a tapped camera's feed on the Cams page (page 4): the city as it sees it, not a blank (logs/camfeed.png).
-  await page.keyboard.press('KeyL');
+  // M5-09: a tapped camera's feed on the Cams page (page 5): the city as it sees it, not a blank (logs/camfeed.png).
+  await page.keyboard.press('Tab');
   await page.evaluate(`(() => { const g = window.__cq.game, p = g.state.player.pos, C = g.world.cameras;
     let best = -1, bd = 1e9; C.forEach((c, i) => { const d = Math.hypot(c.x - p.x, c.z - p.z); if (c.kind !== 'turret' && c.box && d < bd) { bd = d; best = i; } });
-    g.state.taps = [best]; window.__cq.runFrames(3); g.laptop.page = 4; window.__cq.runFrames(14); })()`);
+    g.state.taps = [best]; window.__cq.runFrames(3); g.laptop.page = 5; window.__cq.runFrames(20); })()`);
   const feed = await page.evaluate(`(() => { const c = document.querySelector('#laptop .lt-feed canvas'); if (!c) return null;
     const d = c.getContext('2d').getImageData(0, 20, c.width, c.height - 20).data; let lo = 255, hi = 0, sum = 0;
     for (let i = 0; i < d.length; i += 4) { lo = Math.min(lo, d[i + 1]); hi = Math.max(hi, d[i + 1]); sum += d[i + 1]; }

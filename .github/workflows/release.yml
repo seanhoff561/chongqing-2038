@@ -42,9 +42,9 @@ jobs:
           cd desktop
           npm version "${{ steps.v.outputs.version }}" --no-git-tag-version --allow-same-version
           npm install
-          # (A published release needs its tag first.)
-          git tag "v${{ steps.v.outputs.version }}" 2>/dev/null || true
-          git push origin "v${{ steps.v.outputs.version }}" 2>/dev/null || true
-          npx electron-builder --win --publish always
+          # (Built here, then published whole by gh: the installer, its blockmap and latest.yml, which installed games
+          # read to update themselves.)
+          npx electron-builder --win --publish never
+          gh release create "v${{ steps.v.outputs.version }}" dist/Chongqing-2038-Setup.exe dist/Chongqing-2038-Setup.exe.blockmap dist/latest.yml --target "$GITHUB_SHA" --title "${{ steps.v.outputs.version }}" --notes "Chongqing 2038 ${{ steps.v.outputs.version }}: run Chongqing-2038-Setup.exe; installed games update themselves."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

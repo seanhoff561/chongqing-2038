@@ -97,6 +97,8 @@ export interface SimState {
   worldSeed?: number;
   /** times he's died this run (U-104): never rolled back by waking at the last save */
   deaths?: number;
+  /** his own notes, written on the laptop sitting down (U-104) */
+  notes?: string;
   rng: Rng;
   tick: number;
   /** game seconds since day 1, 00:00 */

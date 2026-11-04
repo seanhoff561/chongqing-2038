@@ -215,6 +215,8 @@ export function poseFor(p: Player, i: number, readied: boolean, holding: string,
   if (p.mode === 'action') return { curl: 0.2, thumb: 0.2, pos: P(0.22, -0.2, -0.42), rot: R(-0.3, 0, 0) };
   // Riding a line (M3-52): both fists up round the hook or trolley over his head.
   if (p.mode === 'zip') return { curl: 0.9, thumb: 0.75, pos: P(0.07, 0.38, -0.22), rot: R(1.4, 0, 0) };
+  // His laptop out (U-104): both hands at the sides of its keyboard, thumbs over the top, holding it up before him.
+  if (holding === 'laptop') return { curl: 0.9, thumb: 0.5, pos: P(0.19, -0.21, -0.36), rot: R(1.4, 0, 1.2) };
   const hold = HOLDS[holding] ?? HOLD;
   // (Only the holds of their own bend the forearms toward the elbows; the rest are held as they always were, U-057.)
   const own = holding in HOLDS;

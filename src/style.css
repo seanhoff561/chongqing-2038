@@ -60,10 +60,6 @@ canvas { display: block; }
 .inv-hideouts b { display: block; color: #d8cfb4; letter-spacing: 2px; margin-bottom: 2px; }
 
 /* Anna's laptop (M5-01, DESIGN section 12): a dim, dense, bilingual terminal over the view. */
-#laptop { position: fixed; left: 50%; bottom: 6vh; transform: translateX(-50%); width: min(560px, 80vw); background: rgba(8, 9, 8, 0.93); border: 1px solid #4a4030; color: #a89a78; font: 12px/1.45 'Courier New', monospace; padding: 6px 10px; z-index: 12; pointer-events: none; }
-#laptop .lt-head { display: flex; justify-content: space-between; border-bottom: 1px solid #3a3326; padding-bottom: 3px; color: #c8a96a; letter-spacing: 0.04em; }
-#laptop .lt-tabs { display: flex; flex-wrap: wrap; gap: 0 10px; padding: 3px 0; border-bottom: 1px solid #3a3326; font-size: 11px; color: #7d7563; pointer-events: auto; }
-#laptop .lt-tabs span { cursor: default; }
 #craft { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(720px, 92vw); max-height: 86vh; overflow: auto; background: rgba(8, 9, 8, 0.95); border: 1px solid #4a4030; color: #a89a78; font: 12px/1.45 'Courier New', monospace; padding: 8px 12px; z-index: 13; }
 #craft .cr-title { color: #c8a96a; border-bottom: 1px solid #3a3326; padding-bottom: 4px; margin-bottom: 4px; display: flex; justify-content: space-between; }
 #craft span { color: #7d7563; }
@@ -75,19 +71,6 @@ canvas { display: block; }
 #craft .bar b { display: block; height: 100%; background: #c8a96a; }
 #dronehud { position: fixed; left: 50%; top: 3vh; transform: translateX(-50%); background: rgba(8, 9, 8, 0.8); border: 1px solid #4a4030; color: #c8a96a; font: 12px/1.4 'Courier New', monospace; padding: 3px 10px; z-index: 12; pointer-events: none; }
 #dronehud b { color: #e05a3a; font-weight: normal; }
-#laptop .lt-weak { border-collapse: collapse; margin: 3px 0; }
-#laptop .lt-weak td, #laptop .lt-weak th { border: 1px solid #3a3326; padding: 1px 6px; text-align: left; font-weight: normal; }
-#laptop .lt-map canvas, #laptop .lt-feed canvas { display: block; max-width: 100%; margin: 4px 0; }
-#laptop .lt-tabs .on { color: #e0b870; }
-#laptop .lt-tabs .locked { color: #4f4a3e; }
-#laptop .lt-body { padding: 8px 0 6px; min-height: 64px; }
-#laptop .lt-body span, #laptop .lt-locked { color: #7d7563; }
-#laptop .lt-h { color: #c8a96a; margin-bottom: 2px; }
-#laptop .lt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 18px; margin-top: 6px; }
-#laptop .lt-row { display: flex; justify-content: space-between; }
-#laptop .lt-row b { font-weight: normal; color: #c8b48a; }
-#laptop .lt-anna span { color: #7d7563; }
-#laptop .lt-foot { border-top: 1px solid #3a3326; padding-top: 3px; color: #6d6656; font-size: 11px; }
 
 
 /* Ice blue on near-black: every menu and his own things (U-104). */
@@ -117,3 +100,17 @@ canvas { display: block; }
 #boot .bt-panel table { border-collapse: collapse; margin: 6px 0; }
 #boot .bt-panel td { border: 1px solid var(--ice-line); padding: 2px 6px; vertical-align: top; }
 #boot .bt-claude { color: var(--ice-hi); margin-top: 16px; }
+
+#laptop { position: fixed; left: 0; top: 0; transform-origin: 0 0; box-sizing: border-box; padding: 6px 10px; overflow: hidden; background: #08131a; color: var(--ice); font-size: 12px; line-height: 1.45; pointer-events: none; z-index: 6; }
+#laptop .lt-bar { display: flex; justify-content: space-between; font-size: 11px; color: var(--ice-dim); border-bottom: 1px solid var(--ice-line); padding-bottom: 3px; }
+#laptop .lt-corner { color: var(--ice); }
+#laptop .lt-body { padding: 8px 0 6px; }
+#laptop .lt-body span, #laptop .lt-locked { color: var(--ice-dim); }
+#laptop .lt-h { color: var(--ice-hi); margin-bottom: 2px; }
+#laptop .lt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px 18px; margin-top: 6px; }
+#laptop .lt-row { display: flex; justify-content: space-between; }
+#laptop .lt-row b { font-weight: normal; color: var(--ice-hi); }
+#laptop .lt-weak { border-collapse: collapse; margin: 3px 0; }
+#laptop .lt-weak td, #laptop .lt-weak th { border: 1px solid var(--ice-line); padding: 1px 6px; text-align: left; font-weight: normal; }
+#laptop .lt-map canvas, #laptop .lt-feed canvas { display: block; max-width: 100%; margin: 4px 0; }
+#laptop .lt-notes { white-space: pre-wrap; min-height: 300px; }

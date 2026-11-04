@@ -1,7 +1,7 @@
 // Anna's laptop (M5-01, DESIGN section 12): his scuffed laptop, Anna running on it. L opens and shuts it without
 // stopping anything; open, its battery runs down (full lasts two game hours open) and at night its screen lights him
 // (0.5); shut at a hideout with a charged car battery and an inverter (M5-27), it charges, a little off the battery.
-import type { SimState } from './types';
+import { B, type InputFrame, type SimState } from './types';
 import { onCmd } from './commands';
 import { GAME_PER_TICK } from './clock';
 import { shelterAt } from './shelter';
@@ -15,8 +15,17 @@ onCmd((s, c) => {
   if (c.c !== 'act' || c.name !== 'laptop' || s.dead) return;
   const L = (s.laptop ??= { open: false, charge: 1 });
   if (!L.open && L.charge <= 0) { s.events.push({ t: 'msg', text: "the laptop's flat" }); return; }
+  // (Taken out only on his feet, with his hands free of holds: U-104.)
+  if (!L.open && (s.player.mode !== 'ground' || s.player.hands.some(h => h.grip))) return;
   L.open = !L.open;
 });
+
+/** Holding the laptop up in both hands (U-104): no running, no jumping, nothing grabbed or used. */
+export function laptopHands(s: SimState, input: InputFrame): InputFrame {
+  if (!s.laptop?.open) return input;
+  const off = B.SPRINT | B.JUMP | B.USE | B.AIM;
+  return { ...input, buttons: input.buttons & ~off, pressed: input.pressed & ~off };
+}
 
 export function stepLaptop(s: SimState) {
   const L = s.laptop;
