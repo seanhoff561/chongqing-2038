@@ -38,14 +38,14 @@ onUseId('nailgun', (s, w, st) => {
   // A shut door right in front of him: nailed shut.
   const d = lookTarget(s, w);
   if (d?.kind === 'door' && !s.wstate.open[d.id] && !s.wstate.pinned?.[d.id]) {
-    if ((st.charge ?? 0) < NAILGUN.pin) { s.events.push({ t: 'msg', text: 'not enough nails to pin it' }); return; }
+    if ((st.charge ?? 0) < NAILGUN.pin) { return; }
     st.charge! -= NAILGUN.pin;
     (s.wstate.pinned ??= {})[d.id] = true;
     p.swing = NAILGUN.every * NAILGUN.pin;
     s.events.push({ t: 'noise', x: d.x, y: d.y, z: d.z, r: NAILGUN.noise, kind: 'nailgun' }, { t: 'fire', id: 'nailgun', quiet: true }, { t: 'msg', text: 'door nailed shut' });
     return;
   }
-  if (!st.charge) { p.swing = 0.25; s.events.push({ t: 'msg', text: 'click: no nails' }); return; }
+  if (!st.charge) { p.swing = 0.25; s.events.push({ t: 'msg', text: 'click: empty' }); return; }
   st.charge--;
   p.swing = NAILGUN.every;
   round(s, w, NAILGUN.reach, NAILGUN.spread, NAILGUN.damage);

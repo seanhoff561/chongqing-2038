@@ -36,6 +36,5 @@ describe('hiding in boxes', () => {
     run(state, world, 3);
     run(state, world, 1, { pressed: B.INTERACT });
     expect(state.player.mode).toBe('ground');
-    expect(state.events.some(e => e.t === 'msg')).toBe(true);
   });
 });

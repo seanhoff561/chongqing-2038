@@ -77,7 +77,7 @@ onInteract('door', {
     if (it.data?.shutter) {
       s.wstate.open[it.id] = true;
       raiseShutter(s, w, it);
-      s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: SHUTTER.noise, kind: 'force' }, { t: 'msg', text: 'shutter prised up: crawl under' });
+      s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: SHUTTER.noise, kind: 'force' });
       return;
     }
     const lock = lockOf(s, it), way = lockWay(s, it, lock), quiet = typeof way !== 'string' && !way.loud && lock !== 'jammed' && lock !== 'pinned';

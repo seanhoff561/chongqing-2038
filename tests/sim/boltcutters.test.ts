@@ -23,7 +23,7 @@ describe('bolt cutters (M5-25)', () => {
     run(s, w, 3);
     const msgs: string[] = [];
     let loud = 0;
-    const hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'noise') loud = Math.max(loud, e.r); } };
+    const hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'blocked') msgs.push(e.why); if (e.t === 'noise') loud = Math.max(loud, e.r); } };
     const at = (x: number, y: number, z: number) => { s.player.pos.x = x; run(s, w, 2); aim(s, x === 0 ? 0 : 4, y, z); };
     const work = (n: number) => { loud = 0; run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }, hear); run(s, w, n, { buttons: B.INTERACT }, hear); };
     at(0, 1, -1.2); work(secs(3)); expect(s.wstate.open.d1).toBeFalsy(); expect(msgs.at(-1)).toBe('chained shut');

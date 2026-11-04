@@ -34,11 +34,11 @@ export function pulse(s: SimState, w: World, at: { x: number; y: number; z: numb
 
 onUseId('emp', (s, w, st) => {
   const left = st.charge ?? EMP.charges, p = s.player.pos;
-  if (left <= 0) { s.events.push({ t: 'msg', text: 'the EMP has no charge left' }); return; }
+  if (left <= 0) { s.events.push({ t: 'msg', text: 'no charge' }); return; }
   // In a hideout: rigged on the way in.
   const h = s.shelters.find(x => Math.hypot(p.x - x.x, p.y - x.y, p.z - x.z) <= SHELTER_R);
   if (h) {
-    if (h.trap) { s.events.push({ t: 'msg', text: 'a trap is rigged here already' }); return; }
+    if (h.trap) { return; }
     takeStack(s.inv.pack, st.uid);
     s.inv.held = 0;
     h.trap = true;
@@ -50,7 +50,7 @@ onUseId('emp', (s, w, st) => {
     takeStack(s.inv.pack, st.uid);
     st.charge = left;
     (s.traps ??= []).push({ stack: st, x: p.x, y: p.y, z: p.z });
-    s.events.push({ t: 'msg', text: 'EMP rigged: the first machine through sets it off' });
+    s.events.push({ t: 'msg', text: 'EMP rigged' });
     return;
   }
   st.charge = left - 1;

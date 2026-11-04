@@ -14,6 +14,6 @@ describe('tools/make-voice (M8-03)', () => {
     expect(voices.size).toBe(speakers.length);
     const out = execSync('npx vite-node tools/make-voice.ts -- --dry-run', { encoding: 'utf8', env: { ...process.env, VITEST: '' } });
     expect(out).toContain(`${p.length} lines`);
-    expect(out).toContain('anna-hurt\tanna\tzf_039');
+    expect(out).toContain('vm-01\tliguorong\tzm_029');
   });
 });

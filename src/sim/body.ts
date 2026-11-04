@@ -142,7 +142,7 @@ export function passTime(state: SimState, hours: number, asleep: boolean, rest =
     b.nextVomit = state.time + S.injury.vomitEveryHours * 3600;
     b.satiety = Math.max(0, b.satiety - S.injury.vomitLoss);
     b.hydration = Math.max(0, b.hydration - S.injury.vomitLoss);
-    state.events.push({ t: 'msg', text: 'vomit' });
+    state.events.push({ t: 'sfx', id: 'retch' });
   }
   const fed = b.satiety >= S.heal.minNeeds && b.hydration >= S.heal.minNeeds;
   const bleeding = b.lightBleed >= 0 || (b.heavyBleed && !b.tourniquet);

@@ -13,7 +13,7 @@ describe('headlamp (U-019)', () => {
     const { world, state } = setup([floor()]);
     run(state, world, 1, { pressed: B.HEADLAMP });
     expect(state.player.lamp).toBe(0);
-    expect(state.events.some(e => e.t === 'msg' && e.text === 'no headlamp')).toBe(true);
+    expect(state.player.lamp).toBe(0);
   });
   it('H cycles off, white, red, off', () => {
     const { world, state } = setup([floor()]);

@@ -83,8 +83,8 @@ describe('the river-police pier (M6-20)', () => {
     const b = f('pier:buoy')[0], s = at(b.x + 4, b.y - 0.5, b.z);
     s.flags.god = false;
     const said: string[] = [];
-    run(s, w, secs(RIVER.sonar + 2), {}, st => { for (const e of st.events) if (e.t === 'msg') said.push(e.text); });
+    run(s, w, secs(RIVER.sonar + 2), {}, st => { for (const e of st.events) if (e.t === 'sfx') said.push(e.id); });
     expect(s.player.mode).toBe('swim');
-    expect(said.some(t => t.includes('drone boats'))).toBe(true);
+    expect(said).toContain('boats');
   });
 });

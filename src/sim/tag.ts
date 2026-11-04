@@ -21,22 +21,22 @@ export function launcher(s: SimState, w: World, u: Unit, at: Pose, d: number) {
   s.events.push({ t: 'noise', x: at.x, y: at.y + 0.8, z: at.z, r: TAG.noise, kind: 'tag' });
   if (rand(s.rng) >= TAG.chance) return;
   s.player.tag = true;
-  s.events.push({ t: 'msg', text: 'something thumped into your jacket: a tracker? An SDR dongle finds it, or search your jacket (backpack)' });
+  s.events.push({ t: 'msg', text: 'something thumped into your jacket' });
 }
 
 // The SDR dongle (M4-22): its chirp finds a tag on him, and he picks it off.
 onUseId('sdr', s => {
   if (s.task) return;
-  if (!s.player.tag) { s.events.push({ t: 'msg', text: 'the dongle hears no tracker on you' }); return; }
+  if (!s.player.tag) { s.events.push({ t: 'msg', text: 'no tracker' }); return; }
   s.task = { id: 'untag', t: 0, dur: TAG.remove };
-  s.events.push({ t: 'msg', text: 'a tracker chirping on your jacket: picking it off' });
+  s.events.push({ t: 'msg', text: 'a tracker on your jacket' });
 });
 
 // By hand (U-099): the jacket off and gone over seam by seam, on his feet; it finds one if it's there.
 onCmd((s, cmd) => {
   if (cmd.c !== 'act' || cmd.name !== 'search' || s.task || s.player.mode !== 'ground') return;
   s.task = { id: 'untag', t: 0, dur: TAG.search };
-  s.events.push({ t: 'msg', text: 'jacket off: going over it by hand' });
+  s.events.push({ t: 'msg', text: 'jacket off' });
 });
 
 /** Every tick: picking a tag off, if he is (or searching for one by hand: on his feet). */

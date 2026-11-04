@@ -19,8 +19,9 @@ function use(t: ReturnType<typeof hurt>, id: string, secsHeld = TREAT[id] + 0.2)
   addItem(t.state, t.state.inv.pack, id, 2);
   t.state.inv.hotbar[0] = t.state.inv.pack.items.find(i => i.id === id)!.uid; t.state.inv.held = 1;
   const said: string[] = [];
-  run(t.state, t.world, 1, { pressed: LMB, buttons: LMB }, s => said.push(...s.events.flatMap(e => (e.t === 'msg' ? [e.text] : []))));
-  run(t.state, t.world, secs(secsHeld), {}, s => said.push(...s.events.flatMap(e => (e.t === 'msg' ? [e.text] : []))));
+  const heard = (s: typeof t.state) => said.push(...s.events.flatMap(e => (e.t === 'msg' ? [e.text] : e.t === 'blocked' ? [e.why] : [])));
+  run(t.state, t.world, 1, { pressed: LMB, buttons: LMB }, heard);
+  run(t.state, t.world, secs(secsHeld), {}, heard);
   return said;
 }
 

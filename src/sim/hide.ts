@@ -31,7 +31,6 @@ export const fits = (world: World, i: number) => {
 export function enterHide(state: SimState, world: World, i: number): boolean {
   const p = state.player;
   if (!fits(world, i)) {
-    state.events.push({ t: 'msg', text: 'too small' });
     return false;
   }
   const b = world.hides[i].inner;

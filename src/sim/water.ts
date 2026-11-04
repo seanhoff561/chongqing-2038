@@ -31,8 +31,8 @@ onUseId('bottle', (s, w, st) => {
 
 onUseId('tablets', (s, _w, st) => {
   const b = s.inv.pack.items.find(i => i.id === 'riverwater');
-  if (!b) { s.events.push({ t: 'msg', text: 'no river water to treat' }); return; }
+  if (!b) { return; }
   if (b.n > 1) { b.n--; addItem(s, s.inv.pack, 'water', 1); } else Object.assign(b, { id: 'water', made: s.time });
   if (--st.n <= 0) takeStack(s.inv.pack, st.uid);
-  s.events.push({ t: 'msg', text: 'a tablet in: safe to drink in half an hour' });
+  s.events.push({ t: 'msg', text: 'tablet in' });
 });

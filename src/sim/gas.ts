@@ -24,7 +24,7 @@ export function stepGas(s: SimState, w: World) {
       if (!u || (u.aware ?? 0) < 1 - SIGHT.min || !inside(s, h.box)) continue;
       s.gas[h.id] = s.time;
       const c = { x: (h.box.x0 + h.box.x1) / 2, y: h.box.y0 + 1, z: (h.box.z0 + h.box.z1) / 2 };
-      s.events.push({ t: 'sfx', id: 'hiss' }, { t: 'noise', ...c, r: 25, kind: 'alarm' }, { t: 'msg', text: 'gas! 8 seconds to get out' });
+      s.events.push({ t: 'sfx', id: 'hiss' }, { t: 'noise', ...c, r: 25, kind: 'alarm' });
       continue;
     }
     const t = (s.time - at) / SCALE;

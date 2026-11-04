@@ -62,7 +62,7 @@ function floorAhead(s: SimState, w: World): { x: number; y: number; z: number } 
 function place(s: SimState, w: World, uid: number, item: string) {
   if (s.player.mode !== 'ground') return;
   const at = floorAhead(s, w);
-  if (!at) { s.events.push({ t: 'msg', text: 'no room to put it down there' }); return; }
+  if (!at) { s.events.push({ t: 'msg', text: 'no room' }); return; }
   takeStack(s.inv.pack, uid);
   s.inv.held = 0;
   const id = `placed${s.nextUid++}`;
@@ -75,7 +75,7 @@ for (const id of ['bedroll', 'mattress', 'foldcrate']) onUseId(id, (s, w, st) =>
 
 onUseId('toolbox', (s, w, st) => {
   const t = lookTarget(s, w);
-  if (!t || t.kind !== 'table') { s.events.push({ t: 'msg', text: 'put it on a table' }); return; }
+  if (!t || t.kind !== 'table') { return; }
   if (s.wstate.benches?.[t.id]) return;
   takeStack(s.inv.pack, st.uid);
   s.inv.held = 0;
@@ -84,7 +84,7 @@ onUseId('toolbox', (s, w, st) => {
 });
 
 onInteract('table', {
-  now: (s, _w, it) => { s.events.push(isBench(s, it) ? { t: 'bench', id: it.id } : { t: 'msg', text: 'a table: put a toolbox on it to make a workbench' }); },
+  now: (s, _w, it) => { if (isBench(s, it)) s.events.push({ t: 'bench', id: it.id }); },
 });
 
 /** His hideouts for the journal: where each is (district) and what its bed is, nearest first. */

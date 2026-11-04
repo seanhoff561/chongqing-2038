@@ -2,7 +2,7 @@
 // the fog thick, while he and Anna have their last exchange in subtitles; then the run's summary (death.ts's screen).
 import * as THREE from 'three';
 import type { Game } from '../game';
-import { ENDING_LINES, SPEAKERS } from '../data/dialogue';
+import { ENDING_LINES } from '../data/dialogue';
 import { speak } from '../audio/voice';
 
 /** Seconds the last line holds before the summary, and the rise (m) and pull back (m) over the whole sequence. */
@@ -44,7 +44,7 @@ export class EndingSequence {
     const k = Math.min(1, this.t / total), e = k * k * (3 - 2 * k), yaw = g.input.yaw;
     cam.position.set(this.from.x + Math.sin(yaw) * SEQ.back * e, this.from.y + SEQ.rise * e, this.from.z + Math.cos(yaw) * SEQ.back * e);
     cam.rotation.set(-0.12 - 0.25 * e, yaw, 0, 'YXZ');
-    while (this.said < lines.length && this.t >= at(this.said)) { const l = lines[this.said++]; g.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); speak(g.audio, l.id); }
+    while (this.said < lines.length && this.t >= at(this.said)) { const l = lines[this.said++]; if (l.speaker === 'anna') g.hud.say(l.en); speak(g.audio, l.id); }
     if (this.t < total) return;
     this.active = false; this.done = true;
     this.bars.style.display = 'none';

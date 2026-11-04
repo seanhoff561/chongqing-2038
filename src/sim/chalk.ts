@@ -18,14 +18,14 @@ export function chalkHands(s: SimState): number {
   const b = bag(s);
   if (!b) return 1;
   b.charge = Math.max(0, (b.charge ?? 100) - (100 / M.grip.chalkSecs) * DT);
-  if (b.charge === 0) s.events.push({ t: 'msg', text: bag(s) ? 'a chalk bag empty: on to the next' : 'out of chalk' });
+  if (b.charge === 0) s.events.push({ t: 'msg', text: 'out of chalk' });
   return M.grip.chalk;
 }
 
 onUseId('chalkblock', s => {
   const st = heldStack(s)!, b = s.inv.pack.items.filter(i => i.id === 'chalk').sort((x, y) => (x.charge ?? 100) - (y.charge ?? 100))[0];
-  if (!b) { s.events.push({ t: 'msg', text: 'no chalk bag to put it in' }); return; }
-  if ((b.charge ?? 100) >= 100) { s.events.push({ t: 'msg', text: 'the chalk bag is full' }); return; }
+  if (!b) { return; }
+  if ((b.charge ?? 100) >= 100) { return; }
   b.charge = 100;
   if (--st.n <= 0) takeStack(s.inv.pack, st.uid);
   s.events.push({ t: 'msg', text: 'chalk bag filled' });

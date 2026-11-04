@@ -101,7 +101,7 @@ export function stepThrown(s: SimState, w: World) {
   if (s.smoke?.some(c => Math.hypot(p.x - c.x, p.y + 1.5 - c.y - 1, p.z - c.z) < THROW.smoke.r)) {
     const o2 = s.inv.pack.items.find(i => i.id === 'oxygen' && (i.charge ?? 100) > 0);
     if (o2) o2.charge = Math.max(0, (o2.charge ?? 100) - (100 * DT) / 90);
-    else if (s.time >= (s.coughAt ?? 0)) { s.coughAt = s.time + THROW.cough.every * SCALE; s.events.push({ t: 'noise', x: p.x, y: p.y + 1.5, z: p.z, r: THROW.cough.r, kind: 'cough' }, { t: 'msg', text: 'coughing on the powder' }); }
+    else if (s.time >= (s.coughAt ?? 0)) { s.coughAt = s.time + THROW.cough.every * SCALE; s.events.push({ t: 'noise', x: p.x, y: p.y + 1.5, z: p.z, r: THROW.cough.r, kind: 'cough' }); }
   }
   if (s.crackers?.length) s.crackers = s.crackers.filter(c => {
     if (s.time >= c.next) { c.next = s.time + THROW.crackers.every * SCALE; s.events.push({ t: 'noise', x: c.x, y: c.y, z: c.z, r: THROW.crackers.r, kind: 'firecrackers' }, { t: 'sfx', id: 'crack' }); }

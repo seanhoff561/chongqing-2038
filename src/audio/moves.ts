@@ -35,6 +35,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   brace: (a, t) => { a.noise(t, 0.12, 0.12, 'bandpass', 900, 0.8, 600); a.noise(t + 0.1, 0.08, 0.08, 'bandpass', 1400, 1, 900); },
   grab: (a, t) => { a.noise(t, 0.05, 0.35, 'bandpass', 2600, 1.2); a.tone(t, 0.04, 0.08, 400, 250); },
   grab2: (a, t) => { a.noise(t, 0.05, 0.35, 'bandpass', 2600, 1.2); a.noise(t + 0.06, 0.05, 0.3, 'bandpass', 2300, 1.2); },
+  // Sick: he retches, a low heave and a choke (U-104: heard, not read).
+  retch: (a, t) => { breath(a, t, 0.25, 0.35, 500); a.noise(t + 0.2, 0.5, 0.2, 'lowpass', 600); a.tone(t + 0.2, 0.4, 0.08, 140, 90, 'sawtooth'); },
   slip: (a, t) => { a.noise(t, 0.3, 0.25, 'bandpass', 3500, 1.5, 900); breath(a, t + 0.05, 0.14, 0.2, 1300); },
   release: (a, t) => a.noise(t, 0.12, 0.06, 'bandpass', 1200, 0.8, 600),
   pullover: (a, t) => { breath(a, t, 0.12, 0.3, 500); a.noise(t + 0.15, 0.3, 0.12, 'bandpass', 900, 0.6, 400); },

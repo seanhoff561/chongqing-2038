@@ -15,7 +15,7 @@ import { Input } from './input/input';
 import { View, GFX } from './render/view';
 import { Hud } from './ui/hud';
 import { UnitView } from './render/units';
-import { lineById, SPEAKERS } from './data/dialogue';
+import { lineById } from './data/dialogue';
 import { announce } from './audio/pa';
 import { startPursuit } from './sim/pursuit';
 import { endRun } from './sim/escape';
@@ -39,7 +39,7 @@ import { BodyFx } from './render/body-fx';
 import { InventoryUI } from './ui/inventory-ui';
 import { heldStack } from './sim/use';
 import { item } from './data/items';
-import { MAGS, UNITS } from './data/units';
+import { MAGS } from './data/units';
 import { Audio } from './audio/audio';
 import { startRun, furnish } from './sim/run';
 import { teleport } from './sim/player';
@@ -49,7 +49,7 @@ import { playMove } from './audio/moves';
 import { Hands3D, poseFor, gripPose, heldAt } from './render/hands3d';
 import { itemModel, supportPoint } from './render/items3d';
 import { GunFeel, zoomOf } from './render/gunfeel';
-import { BINOS, compass } from './sim/binoculars';
+import { BINOS } from './sim/binoculars';
 import { HeldMotion } from './render/viewmodel';
 import { windOf } from './sim/move';
 import { Marks } from './render/marks';
@@ -297,11 +297,12 @@ export class Game {
       else if (e.t === 'open') this.inv.toggle(true);
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
       else if (e.t === 'slept' && e.where !== 'collapse' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
-      else if (e.t === 'msg') this.hud.say(e.text, '');
+      else if (e.t === 'msg') this.hud.notice(e.text);
       else if (e.t === 'scan') this.laptop.showScan();
       else if (e.t === 'bench') this.craft.toggle(true);
-      else if (e.t === 'logged') { const U = UNITS[e.kind], [zh, en] = compass(e.head); this.hud.say(`安娜：已记录${U.zh}，往${zh}`, `Anna: ${U.en} logged, heading ${en}`); }
-      else if (e.t === 'say') { const l = lineById.get(e.id); if (l) { this.hud.say(l.zh, l.en, SPEAKERS[l.speaker]?.[0]); speak(this.audio, e.id); } }
+      else if (e.t === 'logged') this.hud.notice('logged');
+      // (Spoken; only Anna's story lines are read, in English: U-104.)
+      else if (e.t === 'say') { const l = lineById.get(e.id); if (l) { if (l.speaker === 'anna') this.hud.say(l.en); speak(this.audio, e.id); } }
       // (The street speakers: heard, not read: U-092.)
       else if (e.t === 'pa') {
         // (From the lampposts' speakers round him, the nearest three: U-094.)

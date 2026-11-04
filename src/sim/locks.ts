@@ -7,7 +7,7 @@ import type { SimState } from './types';
 import type { Inter } from '../world/world';
 import { has } from './inventory';
 import { heldStack, onUseId } from './use';
-import { lookTarget, allInters } from './interact';
+import { lookTarget } from './interact';
 import { hashString } from './rng';
 import { takeStack } from './inventory';
 
@@ -47,8 +47,8 @@ export function lockDone(s: SimState, it: Inter, how: string) {
 // The cloner on a humanoid that's down (shut down or wrecked): its badge.
 onUseId('cloner', (s, w) => {
   const t = lookTarget(s, w), u = t?.id.startsWith('wreck:') ? s.units.find(q => `wreck:${q.id}` === t.id) : undefined;
-  if (!u || u.kind !== 'humanoid') { s.events.push({ t: 'msg', text: allInters(s, w).length && t?.kind === 'door' ? 'hold it to the reader: use the door' : "nothing here with a card to copy" }); return; }
-  if (s.cloned?.includes(LOCKS.badge)) { s.events.push({ t: 'msg', text: 'already copied' }); return; }
+  if (!u || u.kind !== 'humanoid') { return; }
+  if (s.cloned?.includes(LOCKS.badge)) { return; }
   (s.cloned ??= []).push(LOCKS.badge);
-  s.events.push({ t: 'msg', text: "badge cloned: the police network's doors" });
+  s.events.push({ t: 'msg', text: 'badge cloned' });
 });

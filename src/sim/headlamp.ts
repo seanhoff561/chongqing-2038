@@ -14,9 +14,8 @@ const lamp = (s: SimState) => s.inv.pack.items.find(i => i.id === 'headlamp') ??
 export function stepLamp(s: SimState, input: InputFrame) {
   const p = s.player, st = lamp(s);
   if (input.pressed & B.HEADLAMP) {
-    if (!st) s.events.push({ t: 'msg', text: 'no headlamp' });
-    else if ((st.charge ?? 100) <= 0) s.events.push({ t: 'msg', text: 'the headlamp is dead' });
-    else { p.lamp = ((p.lamp + 1) % 3) as 0 | 1 | 2; sfx(s, 'click'); }
+    if (st && (st.charge ?? 100) <= 0) s.events.push({ t: 'msg', text: 'the headlamp is dead' });
+    else if (st) { p.lamp = ((p.lamp + 1) % 3) as 0 | 1 | 2; sfx(s, 'click'); }
   }
   if (!p.lamp) return;
   if (!st) { p.lamp = 0; return; }
@@ -26,7 +25,7 @@ export function stepLamp(s: SimState, input: InputFrame) {
 
 onUseId('battpack', s => {
   const st = lamp(s);
-  if (!st) { s.events.push({ t: 'msg', text: 'nothing to charge' }); return; }
+  if (!st) { return; }
   st.charge = 100;
   consume(s.inv.pack, 'battpack');
   s.inv.held = 0;

@@ -38,7 +38,7 @@ function apply(s: SimState, id: string) {
 for (const id of Object.keys(TREAT)) onUseId(id, s => {
   if (s.task) return;
   const no = why(s, id);
-  if (no) { s.events.push({ t: 'msg', text: no }); return; }
+  if (no) { s.events.push({ t: 'blocked', why: no }); return; }
   s.task = { id: `treat:${id}`, t: 0, dur: TREAT[id] };
   s.events.push({ t: 'sfx', id: 'treat' });
 });

@@ -1,4 +1,4 @@
-// M5-08: the SDR dongle. Carried, Anna hears a tag on him at once (M5-32), and with the laptop open after thirty seconds'
+// M5-08: the SDR dongle. Carried, with the laptop open after thirty seconds'
 // listening the district's drone beats and when each drone is home on its dock (not before, nor with the laptop
 // shut); used, the dongle picks the tag off.
 import { describe, it, expect } from 'vitest';
@@ -16,14 +16,13 @@ describe('the SDR dongle (M5-08)', () => {
     const { world: w, state: s } = setup([floor(0, 200)], { x: 0, y: 0, z: 0, yaw: 0 }, { patrols: [beat], docks: [{ x: 30, y: 0, z: 30 }] });
     s.time = 12 * 3600; s.flags.god = true; s.player.tag = true;
     addItem(s, s.inv.pack, 'sdr', 1);
-    const msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) if (e.t === 'msg') msgs.push(e.text); else if (e.t === 'say') msgs.push(e.id); };
+    const msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); else if (e.t === 'blocked') msgs.push(e.why); else if (e.t === 'say') msgs.push(e.id); } };
     // The laptop shut: nothing.
     run(s, w, secs(SDR.listen + 1), {}, hear);
     expect(s.sdr?.heard.yuzhong).toBeUndefined();
-    // Open: the tag at once; the drones not before thirty seconds, then.
+    // Open: the drones not before thirty seconds, then.
     run(s, w, 1, { cmds: [{ c: 'act', name: 'laptop' }] }, hear);
     run(s, w, secs(1), {}, hear);
-    expect(msgs).toContain('anna-tag');
     run(s, w, secs(SDR.listen - 2), {}, hear);
     expect(s.sdr?.heard.yuzhong).toBeUndefined();
     run(s, w, secs(1.5), {}, hear);

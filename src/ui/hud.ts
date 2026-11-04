@@ -1,7 +1,8 @@
-// The only on-screen interface during play: a centre dot, context prompts, the held item and subtitles; a ring round
-// the dot filling while he works at something (U-051).
-/** A subtitle: a line of dialogue (its speaker, Chinese and English) or a short message, and its seconds. */
-interface Sub { zh: string; en: string; speaker: string; secs: number }
+// The only on-screen interface during play: a centre dot, the name of what he looks at, the held item, a short notice
+// of what just happened, and subtitles for Anna's story lines alone (U-104: English, one size); a ring round the dot
+// filling while he works at something (U-051).
+/** A subtitle: one of Anna's lines, in English, and its seconds. */
+interface Sub { en: string; secs: number }
 
 export class Hud {
   readonly root: HTMLDivElement;
@@ -10,15 +11,18 @@ export class Hud {
   private ring: SVGCircleElement;
   private wrap: SVGSVGElement;
   readonly subs: HTMLDivElement;
+  private note: HTMLDivElement;
+  private noteLeft = 0;
 
   constructor() {
     this.root = document.createElement('div');
     this.root.id = 'hud';
-    this.root.innerHTML = `<div class="dot"></div><svg class="ring" viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="15"/><circle class="fill" cx="20" cy="20" r="15" pathLength="1"/></svg><div class="prompt"></div><div class="held"></div><div class="subs"></div>`;
+    this.root.innerHTML = `<div class="dot"></div><svg class="ring" viewBox="0 0 40 40"><circle class="track" cx="20" cy="20" r="15"/><circle class="fill" cx="20" cy="20" r="15" pathLength="1"/></svg><div class="prompt"></div><div class="held"></div><div class="notice"></div><div class="subs"></div>`;
     document.body.appendChild(this.root);
     this.prompt = this.root.querySelector('.prompt')!;
     this.held = this.root.querySelector('.held')!;
     this.subs = this.root.querySelector('.subs')!;
+    this.note = this.root.querySelector('.notice')!;
     this.wrap = this.root.querySelector('.ring')!;
     this.ring = this.root.querySelector('.ring .fill')!;
     this.scope = document.createElement('div');
@@ -50,26 +54,16 @@ export class Hud {
   private now?: Sub;
   private subShown = '';
   private left = 0;
-  /** Subtitles: a line of dialogue (its speaker, Chinese over English) or a short message, one after another, each
-   *  for as long as it takes to read. */
-  /** Which language the lines of dialogue show in, and how big (M8-04, settings.ts). */
-  subLang: 'both' | 'zh' | 'en' = 'both';
-  subSize = 1;
-  say(zh: string, en: string, speaker = '') {
-    // A short message takes the place of the one showing, at once, and goes soon (U-077); lines of dialogue queue.
-    if (!speaker && !en) { this.queue = [{ zh, en, speaker, secs: Math.min(2.5, 1 + [...zh].length * 0.03) }]; this.left = 0; return; }
-    this.queue.push({ zh, en, speaker, secs: 1.5 + [...zh].length * 0.18 });
-  }
-  /** Every frame: the next subtitle when this one's time is up, drawn in the language and size set just now. */
+  /** One of Anna's story lines, after any before it, each for as long as it takes to read. */
+  say(en: string) { this.queue.push({ en, secs: 1.5 + en.length * 0.06 }); }
+  /** A short notice of what just happened ('ladder up', 'no room'): at once, in place of the last, gone soon. */
+  notice(text: string) { this.note.textContent = text; this.noteLeft = Math.min(2.5, 1.2 + text.length * 0.04); }
+  /** Every frame: the next subtitle when this one's time is up; the notice fading. */
   tick(dt: number) {
     if ((this.left -= dt) <= 0) { this.now = this.queue.shift(); this.left = this.now?.secs ?? 0; }
-    const n = this.now, esc = (t: string) => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
-    // (A line of dialogue in the language chosen: Chinese, English or both; a short message as it is.)
-    const line = !n ? '' : !n.en || this.subLang === 'both' ? `${esc(n.zh)}${n.en ? `<br><span>${esc(n.en)}</span>` : ''}` : this.subLang === 'zh' ? esc(n.zh) : `<span>${esc(n.en)}</span>`;
-    const html = n?.speaker ? `<b>${esc(n.speaker)}</b> ${line}` : line;
+    const html = this.now ? this.now.en.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!) : '';
     if (this.subShown !== html) this.subs.innerHTML = this.subShown = html;
-    const size = `${this.subSize}`;
-    if (this.subs.style.getPropertyValue('--sub') !== size) this.subs.style.setProperty('--sub', size);
+    if (this.noteLeft > 0 && (this.noteLeft -= dt) <= 0) this.note.textContent = '';
   }
 
   setPrompt(text: string) { if (this.prompt.textContent !== text) this.prompt.textContent = text; }

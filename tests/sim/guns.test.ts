@@ -62,7 +62,7 @@ describe('the shotgun and the nail gun (M5-18)', () => {
     run(s, w, 1, { pressed: LMB, buttons: LMB });
     expect(s.wstate.pinned?.d1).toBe(true);
     expect(gun.charge).toBe(NAILGUN.strip - NAILGUN.pin);
-    const msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) if (e.t === 'msg') msgs.push(e.text); };
+    const msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'blocked') msgs.push(e.why); } };
     s.inv.held = 0;
     run(s, w, secs(1));
     run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }, hear);

@@ -31,7 +31,7 @@ onCmd((s, c, w) => {
   const r = recipe(c.arg);
   if (!r || !benchNear(s, w)) return;
   if (missing(s, r).length) { s.events.push({ t: 'msg', text: `missing parts for the ${item(r.id).en.toLowerCase()}` }); return; }
-  if (r.power && !powered(benchShelter(s, w), POWER.job)) { s.events.push({ t: 'msg', text: 'it needs soldering: power at the bench (a car battery and an inverter in this hideout)' }); return; }
+  if (r.power && !powered(benchShelter(s, w), POWER.job)) { return; }
   s.task = { id: `craft:${r.id}`, t: 0, dur: r.secs };
 });
 
@@ -48,7 +48,7 @@ function take(s: SimState, id: string, n: number) {
 export function stepCraft(s: SimState, w: World) {
   if (!s.task?.id.startsWith('craft:')) return;
   const r = recipe(s.task.id.slice(6))!;
-  if (!benchNear(s, w)) { s.task = null; s.events.push({ t: 'msg', text: 'you left the bench: nothing made' }); return; }
+  if (!benchNear(s, w)) { s.task = null; s.events.push({ t: 'msg', text: 'interrupted' }); return; }
   s.task.t += DT;
   if (s.task.t < s.task.dur) return;
   s.task = null;

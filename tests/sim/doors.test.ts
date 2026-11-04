@@ -32,7 +32,8 @@ describe('doors', () => {
     run(state, world, 3);
     run(state, world, 1, { pressed: B.INTERACT });
     expect(state.wstate.open.d1).toBeFalsy();
-    expect(state.events.some(e => e.t === 'msg' && e.text.startsWith('locked'))).toBe(true); // ('locked: a keycard reader', M5-24)
+    // (Why is never shown: U-104.)
+    expect(state.events.some(e => e.t === 'blocked' && e.why.startsWith('locked'))).toBe(true);
     addItem(state, state.inv.pack, 'policecard');
     run(state, world, 1, { pressed: B.INTERACT });
     expect(state.wstate.open.d1).toBe(true);

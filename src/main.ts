@@ -42,7 +42,7 @@ if (dev) new DevPanel(game);
 // The main menu on a boot into the game itself (M8-11); a test's ?scenario= load goes straight in.
 if (!q.get('scenario')) bootMenu(game, saved);
 // (A save that couldn't be read, set aside: said so, M9-05.)
-if (setAside) game.hud.say(`上次的存档无法读取，已另存`, `Your last save couldn't be read (${setAside}): it's been set aside`);
+if (setAside) game.hud.notice(`your last save couldn't be read (${setAside}): set aside`);
 game.start();
 // Ctrl+W (crouching forward) would close the tab: while he plays, the browser asks first (U-059: no forced fullscreen).
 addEventListener('beforeunload', e => { if (document.pointerLockElement && !game.state.dead) e.preventDefault(); });

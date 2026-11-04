@@ -24,11 +24,11 @@ export function anchorRope(s: SimState, w: World, st: Stack): boolean {
   for (let k = 0.1; k <= ROPE.look; k += 0.02) {
     const x = p.pos.x + fx * k, z = p.pos.z + fz * k, y0 = below(x, z);
     if (p.pos.y - y0 < ROPE.drop) continue;
-    if (p.pos.y - y0 > ROPE.length) { s.events.push({ t: 'msg', text: "too far down: the rope's 20 m" }); return true; }
+    if (p.pos.y - y0 > ROPE.length) { return true; }
     takeStack(s.inv.pack, st.uid);
     s.inv.held = 0;
     (s.ropes ??= []).push({ kind: 'rope', x: x + fx * 0.03, z: z + fz * 0.03, y0, y1: p.pos.y + ROPE.tied, nx: fx, nz: fz, item: st.id });
-    s.events.push({ t: 'msg', text: 'rope anchored: down it, or back up it, till you take it' }, { t: 'sfx', id: 'rig' });
+    s.events.push({ t: 'msg', text: 'rope anchored' }, { t: 'sfx', id: 'rig' });
     return true;
   }
   return false;

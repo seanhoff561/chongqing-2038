@@ -27,7 +27,6 @@ onUseId('ladder', (s, w, st) => {
   const p = s.player;
   if (p.swing > 0 || s.task) return;
   if (againstWall(s, w, st) || across(s, w, st)) { p.swing = 0.8; return; }
-  s.events.push({ t: 'msg', text: 'stand it against a wall, or lay it across a gap from its edge' });
 });
 
 /** Stood against the wall he faces, if one's in reach. */
@@ -50,11 +49,11 @@ function across(s: SimState, w: World, st: Stack) {
   if (edge < 0) return false;
   let far = -1;
   for (let k = edge + 0.3; k <= edge + LADDER.gap; k += 0.05) if (Math.abs(floorUnder(w, p.pos.x + fx * k, y + LADDER.level, p.pos.z + fz * k) - p.pos.y) < LADDER.level) { far = k; break; }
-  if (far < 0) { s.events.push({ t: 'msg', text: 'too far across: the ladder reaches 3.8 m' }); return true; }
+  if (far < 0) { return true; }
   takeStack(s.inv.pack, st.uid); s.inv.held = 0;
   const a = edge - 0.4, b = far + 0.4;
   (s.planks ??= []).push({ x: p.pos.x, z: p.pos.z, yaw: p.yaw, a, b, y: p.pos.y, item: st.id });
-  s.events.push({ t: 'msg', text: 'ladder across: crouch to cross it' }, { t: 'noise', x: p.pos.x + fx * far, y: p.pos.y, z: p.pos.z + fz * far, r: 8, kind: 'ladder' });
+  s.events.push({ t: 'msg', text: 'ladder across' }, { t: 'noise', x: p.pos.x + fx * far, y: p.pos.y, z: p.pos.z + fz * far, r: 8, kind: 'ladder' });
   return true;
 }
 

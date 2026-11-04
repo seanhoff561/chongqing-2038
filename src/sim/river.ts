@@ -31,10 +31,10 @@ export function stepRiver(s: SimState, w: World) {
   const buoyed = w.features.some(f => f.kind === 'pier:buoy' && Math.hypot(f.x - p.pos.x, f.z - p.pos.z) < RIVER.buoy);
   const out = p.mode === 'swim' && surface > -Infinity && (buoyed || farOut(w, p.pos.x, p.pos.z, surface));
   const hidden = !!s.jam || (daylight(s.time) < 0.3 && s.weather.fog >= RIVER.fog && Math.hypot(p.vel.x, p.vel.z) < RIVER.still);
-  if (!out) { if (s.river) s.events.push({ t: 'msg', text: 'near the bank again: the whine on the water fades' }); s.river = undefined; return; }
+  if (!out) { if (s.river) s.river = undefined; return; }
   const R = (s.river ??= { since: s.time });
   if (hidden) { R.since = s.time; R.boats = undefined; return; }
   const t = (s.time - R.since) / SCALE;
-  if (t >= RIVER.sonar && R.boats === undefined) { R.boats = s.time; s.events.push({ t: 'msg', text: 'a ping through the water, then engines: drone boats' }, { t: 'sfx', id: 'boats' }); }
+  if (t >= RIVER.sonar && R.boats === undefined) { R.boats = s.time; s.events.push({ t: 'sfx', id: 'boats' }); }
   if (R.boats !== undefined && (s.time - R.boats) / SCALE >= RIVER.boats) die(s, 'river');
 }

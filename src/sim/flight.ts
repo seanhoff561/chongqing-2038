@@ -24,7 +24,7 @@ onCmd((s, c) => {
   if (c.name === 'land' && s.flight) { land(s, "Anna: the drone's back"); return; }
   if (c.name !== 'launch' || s.flight) return;
   const d = drone(s);
-  if (!d || !s.inv.pack.items.some(i => i.id === 'dronectl')) { s.events.push({ t: 'msg', text: 'needs a salvaged drone and its controller' }); return; }
+  if (!d || !s.inv.pack.items.some(i => i.id === 'dronectl')) { return; }
   if ((d.charge ?? 100) <= 0) { s.events.push({ t: 'msg', text: "the drone's battery is flat" }); return; }
   const p = s.player.pos;
   s.flight = { x: p.x, y: p.y + 2, z: p.z, yaw: s.player.yaw, pitch: 0, seen: 0 };

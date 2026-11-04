@@ -21,15 +21,15 @@ export const KIT = { reach: 2.5, notice: 40 };
 onUseId('zipkit', (s, w, st) => {
   const p = s.player, e = eyeOf(p), c = Math.cos(p.pitch), d = { x: -Math.sin(p.yaw) * c, y: Math.sin(p.pitch), z: -Math.cos(p.yaw) * c };
   const hit = raycast(w.index, e.x, e.y, e.z, d.x, d.y, d.z, s.kitRig ? MAX_LEN + 5 : KIT.reach);
-  if (!hit) { s.events.push({ t: 'msg', text: s.kitRig ? 'nothing to clamp to there' : 'no anchor in reach' }); return; }
+  if (!hit) { return; }
   const at: Vec3 = { x: e.x + d.x * (hit.t - 0.05), y: e.y + d.y * (hit.t - 0.05), z: e.z + d.z * (hit.t - 0.05) };
-  if (!s.kitRig) { s.kitRig = at; s.events.push({ t: 'msg', text: 'first clamp on: now the other end, lower down' }); return; }
+  if (!s.kitRig) { s.kitRig = at; s.events.push({ t: 'msg', text: 'first clamp on' }); return; }
   const a = s.kitRig, run = Math.hypot(at.x - a.x, at.z - a.z), len = Math.hypot(run, at.y - a.y), L = len || 1;
-  if (len > MAX_LEN) { s.events.push({ t: 'msg', text: 'too far: the cable is 40 m' }); return; }
-  if (Math.abs(at.y - a.y) < MIN_FALL * run) { s.events.push({ t: 'msg', text: 'not steep enough to ride' }); return; }
+  if (len > MAX_LEN) { return; }
+  if (Math.abs(at.y - a.y) < MIN_FALL * run) { return; }
   // (Clear between, past the anchors themselves.)
   const ux = (at.x - a.x) / L, uy = (at.y - a.y) / L, uz = (at.z - a.z) / L;
-  if (len > 1 && raycast(w.index, a.x + ux * 0.4, a.y + uy * 0.4, a.z + uz * 0.4, ux, uy, uz, len - 0.8)) { s.events.push({ t: 'msg', text: "something's in the way" }); return; }
+  if (len > 1 && raycast(w.index, a.x + ux * 0.4, a.y + uy * 0.4, a.z + uz * 0.4, ux, uy, uz, len - 0.8)) { return; }
   takeStack(s.inv.pack, st.uid); s.inv.held = 0;
   (s.lines ??= []).push({ a, b: at, kit: true });
   s.kitRig = undefined;

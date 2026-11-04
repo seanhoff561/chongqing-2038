@@ -22,7 +22,7 @@ describe('lock grades (M5-24)', () => {
     run(s, w, 3);
     const msgs: string[] = [];
     let loud = 0;
-    const hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'noise') loud = Math.max(loud, e.r); } };
+    const hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'blocked') msgs.push(e.why); if (e.t === 'noise') loud = Math.max(loud, e.r); } };
     const at = (x: number, y = 1, z = -1.2) => { s.player.pos.x = x; run(s, w, 2); aim(s, x, y, z); };
     const work = (n: number) => { loud = 0; run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }, hear); run(s, w, n, { buttons: B.INTERACT }, hear); };
     addItem(s, s.inv.pack, 'lockpick', 1);

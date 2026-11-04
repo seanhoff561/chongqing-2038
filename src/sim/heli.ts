@@ -51,7 +51,6 @@ export function stepHeli(s: SimState, w: World) {
     heli.sent = s.time;
     s.hive.heli = { plot: b, t: s.time, phase: 'fly' };
     s.hive.heliAt = s.time;
-    s.events.push({ t: 'msg', text: 'rotors beating in low over the roofs' });
     return;
   }
   const route = w.plots[H.plot].route!, roof = route[route.length - 1], t = heli.trip;

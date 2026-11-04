@@ -1,5 +1,5 @@
 // M7-15: each of the four endings, through ?scenario=ending-*: the shot lifts away letterboxed while the last exchange
-// plays in subtitles, then the run's summary with the ending's name (logs/ending-<route>.png mid-sequence).
+// plays (Anna's lines read in English, U-104), then the run's summary with the ending's name (logs/ending-<route>.png mid-sequence).
 const NAMES = { bridge: 'Beneath the Bridge', cable: 'The Cable', boat: 'Into the Fog', tunnel: "Tunnel's End" };
 export default async function ({ open, fail, screenshot }) {
   for (const [route, name] of Object.entries(NAMES)) {
@@ -13,7 +13,8 @@ export default async function ({ open, fail, screenshot }) {
       if (r.death) { if (!r.death.includes(name) || !r.death.includes('survived')) fail('endings', `${route}: the summary doesn't name the ending: ${r.death}`); break; }
       if (i === 39) fail('endings', `${route}: no summary after the sequence`);
     }
-    if (subs.size < 3) fail('endings', `${route}: only ${subs.size} subtitles: ${[...subs].join(' | ')}`);
+    // (Only Anna's lines are read, in English: U-104.)
+    if (!subs.size || [...subs].some(t => /[\u4e00-\u9fff]/.test(t))) fail('endings', `${route}: subtitles not Anna's English: ${[...subs].join(' | ')}`);
     await page.close();
   }
 }

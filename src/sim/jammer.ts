@@ -25,7 +25,7 @@ onUseId('jammer', s => {
   if (s.jam) { off(s, 'jammer off'); return; }
   if ((st.charge ?? 100) <= 0) { s.events.push({ t: 'msg', text: "the jammer's battery is flat" }); return; }
   s.jam = { since: s.time };
-  s.events.push({ t: 'msg', text: 'jammer on: their link is cut round you' });
+  s.events.push({ t: 'msg', text: 'jammer on' });
 });
 
 export function stepJam(s: SimState, w: World) {

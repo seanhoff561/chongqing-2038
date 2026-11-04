@@ -11,7 +11,7 @@ onCmd((s, c) => {
     const a = pack.items.find(x => x.uid === c.uid), gun = pack.items.find(x => x.uid === c.onto);
     if (!a || !gun || gun.id !== 'pistol' || !MODS[a.id]) return;
     const old = (gun.mods ?? []).find(m => MODS[m].slot === MODS[a.id].slot);
-    if (old && addItem(s, pack, old) > 0) { s.events.push({ t: 'msg', text: `no room for the ${item(old).en.toLowerCase()} it would replace` }); return; }
+    if (old && addItem(s, pack, old) > 0) { s.events.push({ t: 'msg', text: 'no room' }); return; }
     gun.mods = [...(gun.mods ?? []).filter(m => m !== old), a.id];
     if (--a.n <= 0) takeStack(pack, a.uid);
     s.events.push({ t: 'msg', text: `${item(a.id).en.toLowerCase()} fitted` }, { t: 'sfx', id: 'click' });
@@ -19,6 +19,6 @@ onCmd((s, c) => {
     const gun = pack.items.find(x => x.uid === c.uid);
     if (!gun?.mods?.length) return;
     gun.mods = gun.mods.filter(m => addItem(s, pack, m) > 0);
-    s.events.push({ t: 'msg', text: gun.mods.length ? 'no room for all of them' : 'attachments off' }, { t: 'sfx', id: 'click' });
+    s.events.push({ t: 'msg', text: gun.mods.length ? 'no room' : 'attachments off' }, { t: 'sfx', id: 'click' });
   }
 });

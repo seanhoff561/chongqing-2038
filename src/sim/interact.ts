@@ -133,7 +133,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   const h = handlers.get(it.kind);
   if (!h) return;
   const why = h.can?.(s, it) ?? null;
-  if (why) { s.events.push({ t: 'msg', text: why }); return; }
+  // (What it needs is never said: U-104.)
+  if (why) { s.events.push({ t: 'blocked', why }); return; }
   const dur = h.dur?.(s, it) ?? 0, sound = START_SOUND[it.kind]?.(it);
   if (sound) s.events.push({ t: 'sfx', id: sound });
   if (dur > 0) s.task = { id: it.id, t: 0, dur };

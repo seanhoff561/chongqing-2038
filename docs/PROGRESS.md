@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-09 Subtitles only for Anna's story lines (U-104).
-Features done: 336 / 424 | Last done: M10-08
+**Status:** building M10. Next: M10-10 Main menu (U-104).
+Features done: 336 / 424 | Last done: M10-09
 <!-- /status -->
 
 ## What's built
@@ -34,3 +34,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-06: settings over a running world; the main menu stops everything
 - M10-07: prompts say just the thing
 - M10-08: menus close the way they opened; the sleep menu says hours and the wake time
+- M10-09: subtitles only for Anna's story lines; no hints

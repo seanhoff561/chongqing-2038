@@ -17,7 +17,7 @@ export const powered = (h: Shelter | null, need = 0) => !!h && !!h.inverter && h
 function fit(id: string, put: (h: Shelter, st: Stack) => string) {
   onUseId(id, (s, _w, st) => {
     const p = s.player.pos, h = shelterAt(s, p.x, p.y, p.z);
-    if (!h) { s.events.push({ t: 'msg', text: 'it goes in at one of your hideouts' }); return; }
+    if (!h) { return; }
     const text = put(h, st);
     takeStack(s.inv.pack, st.uid); s.inv.held = 0;
     s.events.push({ t: 'msg', text });

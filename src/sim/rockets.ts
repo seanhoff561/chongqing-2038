@@ -25,7 +25,7 @@ function fire(s: SimState, from: V3, to: V3, by: 'heavy' | 'him') {
 onUseId('rpg', s => {
   const p = s.player;
   if (p.swing > 0 || s.task) return;
-  if (!has(s.inv.pack, 'rocket')) { p.swing = 0.4; s.events.push({ t: 'msg', text: 'no rocket for it' }); return; }
+  if (!has(s.inv.pack, 'rocket')) { p.swing = 0.4; return; }
   consume(s.inv.pack, 'rocket');
   p.swing = 1.5; p.kick += 0.12;
   const e = eyeOf(p), c = Math.cos(p.pitch);

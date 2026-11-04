@@ -13,6 +13,6 @@ onInteract('fence', {
   done: (s, w, it) => {
     s.wstate.open[it.id] = true;
     if (doorSolid(it) >= 0) w.index.off[doorSolid(it)] = 1;
-    s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: FENCE.noise, kind: 'cut' }, { t: 'msg', text: 'a gap cut: crawl through' });
+    s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: FENCE.noise, kind: 'cut' });
   },
 });

@@ -13,7 +13,7 @@ describe('salvage (M5-16)', () => {
     const beat = (unit: 'drone' | 'humanoid', x: number): Patrol => ({ kind: 'street', unit, pts: [{ x, y: 0, z: -40 }, { x, y: 0, z: -39.99 }], dwell: [600, 600], hours: [0, 24] });
     const { world: w, state: s } = setup([floor(0, 100)], { x: 0, y: 0, z: 0, yaw: 0 }, { patrols: [beat('drone', 0), beat('humanoid', 3)] });
     s.time = 12 * 3600; s.flags.god = true;
-    const [drone, man] = s.units, msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) if (e.t === 'msg') msgs.push(e.text); };
+    const [drone, man] = s.units, msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'blocked') msgs.push(e.why); } };
     drone.dead = true; drone.stop = { x: 0, y: 0, z: -1.2, yaw: 0, t: s.time };
     run(s, w, 3); aim(s, 0, 0.3, -1.2);
     const press = (n: number) => { run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }, hear); run(s, w, n, { buttons: B.INTERACT }, hear); };

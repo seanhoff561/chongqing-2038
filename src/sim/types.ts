@@ -37,6 +37,8 @@ export type SimEvent =
   | { t: 'noise'; x: number; y: number; z: number; r: number; kind: string }
   | { t: 'land'; h: number; outcome: FallOutcome }
   | { t: 'hurt'; dmg: number; cause: string }
+  /** an action that didn't go: why, never shown (U-104: nothing says what a thing needs) */
+  | { t: 'blocked'; why: string }
   /** he fired a gun (M4-21) */
   | { t: 'fire'; id: string; quiet?: boolean }
   /** he swung the knife or crowbar (M4-60), and on what it landed */
@@ -177,7 +179,6 @@ export interface SimState {
   /** the zipline kit's first clamp, on (M5-33) */
   kitRig?: Vec3;
   /** what Anna last remarked on, and when, and how things stood (M5-32) */
-  remarks?: { last: Record<string, number>; hp: number; bleed: boolean; leg: string; tag: boolean; low: boolean };
   /** the hacked drone in the air (M5-11): where it is, its look, and how long an armed machine has had it in sight */
   flight?: { x: number; y: number; z: number; yaw: number; pitch: number; seen: number };
   /** the jammer running (M5-13): since when (game time), and whether it's become a beacon */

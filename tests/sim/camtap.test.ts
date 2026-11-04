@@ -18,7 +18,7 @@ describe('camera taps (M5-09)', () => {
     const inter: Inter[] = [{ id: 'jbox0', kind: 'jbox', x: box.x, y: box.y, z: box.z, r: 0.5, zh: '接线盒', en: 'Junction box', data: { cam: 0 } }];
     const { world: w, state: s } = setup([floor(0, 100)], { x: 0, y: 0, z: 0, yaw: 0 }, { cameras, inter });
     s.time = 12 * 3600; s.flags.god = true;
-    const cam = s.units.find(u => u.cam === 0)!, msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) if (e.t === 'msg') msgs.push(e.text); };
+    const cam = s.units.find(u => u.cam === 0)!, msgs: string[] = [], hear = (st: typeof s) => { for (const e of st.events) { if (e.t === 'msg') msgs.push(e.text); if (e.t === 'blocked') msgs.push(e.why); } };
     run(s, w, 3); aim(s, box.x, box.y, box.z);
     // No tap: it says what it needs.
     run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }, hear);

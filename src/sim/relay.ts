@@ -17,6 +17,6 @@ onInteract('relay', {
   dur: () => RELAY.cut,
   done: (s, _w, it) => {
     (s.relayDown ??= {})[districtOf(it.x, it.z)] = s.time + RELAY.down * 3600;
-    s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: RELAY.noise, kind: 'force' }, { t: 'msg', text: "Anna: the relay's down. They can't talk to each other here for a while" });
+    s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: RELAY.noise, kind: 'force' });
   },
 });

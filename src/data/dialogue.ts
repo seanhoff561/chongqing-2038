@@ -17,27 +17,7 @@ export const VOICEMAIL: Line[] = [
   { id: 'vm-05', speaker: 'none', zh: '（信号中断）', en: '(the line breaks up)' },
 ];
 
-/** Anna's remarks (M5-32): on what she's scanned, his injuries, her battery, drones the SDR hears near, a tag on him. */
-export const ANNA: Line[] = [
-  { id: 'anna-scan-unit', speaker: 'anna', zh: '认出来了。我把它记下了，看扫描页。', en: "Got it. I've noted it: see the Scan page." },
-  { id: 'anna-scan-item', speaker: 'anna', zh: '这个我认识。用途在扫描页上。', en: 'I know this one. What it does is on the Scan page.' },
-  { id: 'anna-hurt', speaker: 'anna', zh: '你受伤了。找个地方处理一下。', en: "You're hurt. Find somewhere to see to it." },
-  { id: 'anna-bleed', speaker: 'anna', zh: '你在流血。先止血，别的等会儿。', en: "You're bleeding. Stop it first, everything else can wait." },
-  { id: 'anna-break', speaker: 'anna', zh: '骨头断了。要夹板，不然走不远。', en: "That's broken. You need a splint or you won't get far." },
-  { id: 'anna-battery', speaker: 'anna', zh: '我快没电了。找个有电的地方。', en: "I'm nearly flat. Find somewhere with power." },
-  { id: 'anna-tag', speaker: 'anna', zh: '你身上有追踪器在叫。用接收器把它弄下来。', en: "There's a tracker chirping on you. Use the dongle to get it off." },
-  { id: 'anna-tag-off', speaker: 'anna', zh: '好了，追踪器没了。', en: "That's it, the tracker's gone." },
-  // His first night (M8-15).
-  { id: 'anna-night-1', speaker: 'anna', zh: '天黑了。第一个晚上最难熬。', en: "It's dark. The first night is the hardest." },
-  { id: 'anna-night-2', speaker: 'anna', zh: '它们晚上看得更清楚。找个地方睡，我守着。', en: "They see better at night. Find somewhere to sleep. I'll keep watch." },
-];
 
-/** Haozi's chalk mice in the tunnels (M8-15): what Li Wei says at each, the first time he sees it. */
-export const MARKS: Line[] = [
-  { id: 'mark-1', speaker: 'liwei', zh: '耗子的耗儿……他们从这儿过的。', en: "Haozi's mouse... they came through here." },
-  { id: 'mark-2', speaker: 'liwei', zh: '又一个。尾巴朝那边，跟到走嘛。', en: 'Another one. The tail points that way. Follow it.' },
-  { id: 'mark-3', speaker: 'liwei', zh: '耗子，你们在哪儿哦……', en: 'Haozi, where are you lot...' },
-];
 
 /** Each ending's last exchange between him and Anna (M7-15, DESIGN section 13); his in Chongqing speech. */
 export const ENDING_LINES: Record<string, Line[]> = {
@@ -101,4 +81,4 @@ export const INTRO: Line[] = [
   { id: 'intro-s06-07-1', speaker: 'anna', zh: '那我们就从这里开始。', en: 'Then we start from here.' },
 ];
 
-export const lineById = new Map([...VOICEMAIL, ...ANNA, ...MARKS, ...INTRO, ...Object.values(ENDING_LINES).flat(), ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));
+export const lineById = new Map([...VOICEMAIL, ...INTRO, ...Object.values(ENDING_LINES).flat(), ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

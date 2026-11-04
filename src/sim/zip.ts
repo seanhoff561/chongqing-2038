@@ -49,7 +49,7 @@ export function tryZip(s: SimState, w: World): boolean {
   const p = s.player, lines = allLines(s, w), { line: best, s: bs } = lineInReach(s, w);
   if (best < 0) return false;
   const rider = lines[best].kit ? RIDERS[0] : RIDERS.find(([id]) => has(s.inv.pack, id));
-  if (!rider) { s.events.push({ t: 'msg', text: 'needs a hook, a pulley or gloves' }); return false; }
+  if (!rider) { return false; }
   if (lines[best].live && !has(s.inv.pack, 'insgloves')) {
     // A live line: the shock throws him off.
     damage(s, 35, 'electrocuted');
@@ -96,14 +96,14 @@ onUseId('rope', (s, w, st) => {
   const dx = -Math.sin(p.yaw) * Math.cos(p.pitch), dy = Math.sin(p.pitch), dz = -Math.cos(p.yaw) * Math.cos(p.pitch);
   // Looking down over an edge he stands at: anchored there to rappel (M5-21).
   if (!s.rig && p.pitch < -0.5 && anchorRope(s, w, st)) return;
-  if (!has(s.inv.pack, 'hook', 2)) { s.events.push({ t: 'msg', text: 'needs two hooks' }); return; }
+  if (!has(s.inv.pack, 'hook', 2)) { return; }
   const hit = raycast(w.index, eye.x, eye.y, eye.z, dx, dy, dz, s.rig ? MAX_LEN + 5 : 2.5);
-  if (!hit) { s.events.push({ t: 'msg', text: s.rig ? 'nothing to hook there' : 'no anchor in reach' }); return; }
+  if (!hit) { return; }
   const at = { x: eye.x + dx * (hit.t - 0.05), y: eye.y + dy * (hit.t - 0.05), z: eye.z + dz * (hit.t - 0.05) };
   if (!s.rig) { s.rig = at; s.events.push({ t: 'msg', text: 'hook set' }); return; }
   const a = s.rig, run = Math.hypot(at.x - a.x, at.z - a.z), len = Math.hypot(run, at.y - a.y);
-  if (len > MAX_LEN) { s.events.push({ t: 'msg', text: 'too far' }); return; }
-  if (Math.abs(at.y - a.y) < MIN_FALL * run) { s.events.push({ t: 'msg', text: 'not steep enough' }); return; }
+  if (len > MAX_LEN) { return; }
+  if (Math.abs(at.y - a.y) < MIN_FALL * run) { return; }
   (s.lines ??= []).push({ a, b: at });
   s.rig = null;
   consume(s.inv.pack, 'rope', 1); consume(s.inv.pack, 'hook', 2);

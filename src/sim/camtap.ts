@@ -37,14 +37,13 @@ onInteract('jbox', {
       const u = camUnit(s, it);
       if (!s.inv.pack.items.some(i => i.id === 'insgloves')) { damage(s, TAP.shock, 'electrocuted'); s.events.push({ t: 'hurt', dmg: TAP.shock, cause: 'shock' }, { t: 'sfx', id: 'shock' }); }
       if (u) u.shut = true;
-      s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: 4, kind: 'cut' }, { t: 'msg', text: 'cable cut: the camera is dead' });
+      s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: 4, kind: 'cut' }, { t: 'msg', text: 'cable cut' });
       return;
     }
     const st = s.inv.pack.items.find(i => i.id === 'cameratap');
     if (!st || tapped(s, camOf(it))) return;
     if (--st.n <= 0) takeStack(s.inv.pack, st.uid);
     (s.taps ??= []).push(camOf(it));
-    s.events.push({ t: 'msg', text: "Anna: I've got the camera's feed" });
   },
 });
 
@@ -54,7 +53,6 @@ onCmd((s, c) => {
   const u = s.units.find(x => x.cam === c.arg);
   if (!u || u.dead) return;
   u.quiet = Math.max(u.quiet ?? 0, s.time + TAP.loop * SCALE);
-  s.events.push({ t: 'msg', text: 'Anna: feed looped. That camera sees nothing for a minute and a half' });
 });
 
 // An exchange's terminal (M5-10): logged in with the credentials, every camera in the districts it serves.
@@ -65,6 +63,5 @@ onInteract('exchange', {
     const serves = (it.data?.serves as string[] | undefined) ?? [], taps = (s.taps ??= []);
     let n = 0;
     w.cameras.forEach((c, i) => { if (FEEDS.has(c.kind) && serves.includes(districtOf(c.x, c.z)) && !taps.includes(i)) { taps.push(i); n++; } });
-    s.events.push({ t: 'msg', text: `Anna: I'm into the exchange. ${n} more camera feeds` });
   },
 });

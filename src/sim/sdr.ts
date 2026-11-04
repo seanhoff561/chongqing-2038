@@ -1,6 +1,6 @@
 // The SDR dongle on Anna (M5-08, DESIGN section 12): carried, with the laptop open she listens to the machines' radio.
 // Thirty seconds in a district and she's worked out its drones' routes and when each is home on its dock, for her
-// map. (A tag's chirp on him she tells him of as soon as he carries the dongle: remarks.ts.)
+// map.
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { DT } from './types';

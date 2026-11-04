@@ -33,7 +33,7 @@ describe('eating, drinking and spoilage', () => {
     const { world } = setup([floor()]);
     let vomits = 0;
     for (let i = 0; i < 12 * 90 * 60; i += 60) {
-      run(state, world, 60, {}, st => { vomits += st.events.filter(e => e.t === 'msg' && e.text === 'vomit').length; });
+      run(state, world, 60, {}, st => { vomits += st.events.filter(e => e.t === 'sfx' && e.id === 'retch').length; });
     }
     expect(vomits).toBeGreaterThanOrEqual(3);
     expect(state.time).toBeGreaterThan(state.body.sickUntil - 1);
