@@ -1,6 +1,6 @@
 // Everything he hears of the world round him, put together each frame: the empty city's ambience for where he is
 // (M4-51; no music of its own: U-104, his own songs play from the laptop), the machines where they are (M4-33), their dread (M4-52), gunfire as it carries (M4-54), his
-// heartbeat when badly hurt (M4-55), and a raid's siren (M4-63).
+// heartbeat when badly hurt (M4-55).
 import * as THREE from 'three';
 import type { Audio } from './audio';
 import { MachineVoices } from './machines';
@@ -9,7 +9,7 @@ import { heightAt } from '../world/heightfield';
 import { Dread } from './dread';
 import { Heart } from './heart';
 import { machineShot, echo } from './gunfire';
-import { gunshot, raidSiren } from './moves';
+import { gunshot } from './moves';
 import { raycast } from '../world/geom';
 import type { World } from '../world/world';
 import type { SimEvent, SimState } from '../sim/types';
@@ -26,9 +26,6 @@ export class Soundscape {
   private envIn = 0;
   private shotsAt = 0;
   private shots = 0;
-  private raidIn = 0;
-  /** raid sirens sounded (M4-63) */
-  raidSirens = 0;
   private fwd = new THREE.Vector3();
 
   constructor(private a: Audio) {
@@ -46,8 +43,6 @@ export class Soundscape {
     this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24, river: this.river });
     this.voices.update(dt, s, w, head, cam.getWorldDirection(this.fwd));
     this.dread.update(dt, s, w, head, this.voices.nearest(head));
-    // The raid breaking in on him: its siren, loud, through the 10 s (M4-63).
-    if (s.raid && (this.raidIn -= dt) <= 0) { this.raidIn = 0.8; raidSiren(this.a); this.raidSirens++; }
     // His heart when he's badly hurt (M4-55, U-077).
     this.heart.update(s.body.hp);
   }

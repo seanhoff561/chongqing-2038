@@ -1,5 +1,5 @@
 // ?dev=1 panel: noclip, god mode, teleports, scenario switch, fps, frame time and draw-call readout, a GPU bench;
-// for playtests, a few things to hand, a tag on him, and a raid on the nearest hideout in 5 s (M4-24).
+// for playtests, a few things to hand and a tag on him.
 import type { Game } from '../game';
 import { scenarios } from '../data/scenarios';
 import { clockText } from '../sim/clock';
@@ -8,7 +8,6 @@ import { addItem, newUid } from '../sim/inventory';
 import { createBody } from '../sim/body';
 import { items } from '../data/items';
 import { MAGS } from '../data/units';
-import { SCALE } from '../sim/clock';
 import { PerceptionOverlay } from './perception';
 
 /** The creative picker's kinds, in order (U-088). */
@@ -33,7 +32,7 @@ export class DevPanel {
       <div class="row">teleport <select class="tp"></select></div>
       <div class="row">scenario <select class="sc">${scenarios.map(s => `<option>${s.name}</option>`).join('')}</select></div>
       <div class="row">time <input type="range" class="time" min="0" max="24" step="0.25" style="width:110px"> <span class="clock"></span></div>
-      <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="raid">raid now</button> <button class="heal">heal</button></div>
+      <div class="row">give <button data-give="crowbar">crowbar</button> <button data-give="emp">EMP</button> <button data-give="pistol">pistol</button> <button class="tag">tag me</button> <button class="heal">heal</button></div>
       <div class="row">item <input class="itemsearch" placeholder="search" style="width:80px"> <select class="anyitem"></select> <button class="giveany">give</button> <button class="giveall">one of each</button></div>
       <div class="row extra"></div>`;
     document.body.appendChild(el);
@@ -73,10 +72,6 @@ export class DevPanel {
     };
     el.querySelector<HTMLButtonElement>('.giveany')!.onclick = e => { give(any.value); (e.target as HTMLButtonElement).blur(); };
     el.querySelector<HTMLButtonElement>('.giveall')!.onclick = e => { for (const i of items) give(i.id); (e.target as HTMLButtonElement).blur(); };
-    el.querySelector<HTMLButtonElement>('.raid')!.onclick = () => {
-      const p = game.state.player.pos, h = [...game.state.shelters].sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))[0];
-      if (h) Object.assign(h, { compromised: true, raid: game.state.time + 5 * SCALE, raided: false });
-    };
     const bench = el.querySelector<HTMLButtonElement>('.bench')!;
     bench.onclick = () => { bench.blur(); el.querySelector('.benchout')!.textContent = this.bench(); };
     this.fillTeleports();

@@ -134,14 +134,6 @@ export function radio(a: Audio, gain: number) {
   a.tone(t + 0.19, 0.12, gain, 660, 660, 'square');
 }
 
-/** The raid siren (M4-63): a loud whoop rising, its octave over it, every 0.8 s while they break in. */
-export function raidSiren(a: Audio) {
-  if (!a.ready) return;
-  const t = a.ctx!.currentTime + 0.005;
-  a.tone(t, 0.75, 0.3, 450, 1300, 'sawtooth');
-  a.tone(t, 0.75, 0.12, 900, 2600, 'square');
-}
-
 /** His pistol fired: a hard crack and its thump. */
 export function gunshot(a: Audio, gain: number, quiet = false) {
   if (!a.ready || gain < 0.005) return;

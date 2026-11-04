@@ -1,12 +1,16 @@
 // M4-23 (U-013): followed home. Coming into a hideout's area (within 25 m of its bed) within 10 s of a machine
 // having him in sight, or with a tracking tag on him, or seen while there, gives it away: the shelter is marked
-// compromised (M4-24 raids it). A clean way home leaves it safe.
+// compromised. A clean way home leaves it safe. M10-20 (U-104): no raids; tracked (tagged, or at a hideout given
+// away), his position goes to the network and the machines come hunting him where he is; asleep, he wakes to them.
 import { describe, it, expect } from 'vitest';
 import { setup, run, floor, secs } from './helpers';
 import { claimBed } from '../../src/sim/shelter';
 import { TRACK } from '../../src/data/units';
 import { B } from '../../src/sim/types';
 import type { Inter } from '../../src/world/world';
+import type { Patrol } from '../../src/world/world';
+import { SCALE } from '../../src/sim/clock';
+import { existsSync } from 'fs';
 
 const BED: Inter = { id: 'bed', kind: 'mattress', x: 35, y: 0.3, z: 0, r: 0.8, zh: '床', en: 'Bed' };
 
@@ -75,5 +79,54 @@ describe('tracking home (M4-23)', () => {
     seenThenBlind(s);
     run(s.state, s.world, 1);
     expect(s.h.compromised).toBe(true);
+  });
+});
+
+describe('tracked, hunted where he is (M10-20, U-104)', () => {
+  /** A quadruped walking a beat 120 m off; him at his hideout (given away or not), tagged or not. */
+  function hunted(tag: boolean, given: boolean) {
+    const beat: Patrol = { kind: 'street', unit: 'quadruped', pts: [{ x: 35, y: 0, z: 120 }, { x: 40, y: 0, z: 120 }], dwell: [600, 600], hours: [0, 24] };
+    const { world, state } = setup([floor(0, 300)], { x: 35, y: 0, z: 2, yaw: 0 }, { inter: [BED], patrols: [beat] });
+    state.time = 12 * 3600; state.flags.god = true;
+    claimBed(state, world.inter[0]);
+    state.player.tag = tag;
+    if (given) state.shelters[0].compromised = true;
+    run(state, world, 2);
+    const dog = state.units.find(u => u.kind === 'quadruped')!;
+    let nearest = Infinity;
+    // An hour of game time at the hideout.
+    for (let i = 0; i < secs(3600 / SCALE); i += 30) {
+      run(state, world, 30);
+      const q = dog.trip?.pos ?? { x: 37, z: 120 };
+      nearest = Math.min(nearest, Math.hypot(q.x - state.player.pos.x, q.z - state.player.pos.z));
+    }
+    return { state, nearest, dog };
+  }
+  it('tagged at his hideout, they come for him there within the hour', () => {
+    const { state, nearest } = hunted(true, false);
+    expect(state.hive.lkp).toBeTruthy();
+    expect(Math.hypot(state.hive.lkp!.x - 35, state.hive.lkp!.z - 2)).toBeLessThan(5);
+    expect(nearest).toBeLessThan(20);
+  });
+  it('at a hideout given away, they come too, tag or no tag', () => {
+    const { nearest } = hunted(false, true);
+    expect(nearest).toBeLessThan(20);
+  });
+  it('untracked, nobody comes', () => {
+    const { state, nearest } = hunted(false, false);
+    expect(state.hive.lkp).toBeFalsy();
+    expect(nearest).toBeGreaterThan(80);
+  });
+  it('asleep tracked, he wakes to them; and the raid is gone', () => {
+    const t = home(false);
+    t.state.player.tag = true;
+    t.state.player.pos = { x: 35, y: 0, z: 1 };
+    t.state.target = null;
+    run(t.state, t.world, 2);
+    const t0 = t.state.time;
+    run(t.state, t.world, 1, { cmds: [{ c: 'act', name: 'sleep', arg: 6 }] });
+    expect(t.state.dead).toBeFalsy();
+    expect(t.state.time - t0).toBeLessThanOrEqual(TRACK.ping + 60);
+    expect(existsSync('src/sim/raid.ts')).toBe(false);
   });
 });

@@ -98,3 +98,17 @@ onInteract('window', {
     s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: 18, kind: 'glass' });
   },
 });
+
+/** A rubble fall (the start hideout's passage stub east): how long a crowbar takes to clear it (s), how far it's heard. */
+export const RUBBLE = { clear: 6, noise: 20 };
+
+// Cleared with a crowbar, slowly and loudly, a way on past it.
+onInteract('rubble', {
+  can: (s, it) => (s.wstate.open[it.id] ? 'cleared already' : has(s.inv.pack, 'crowbar') ? null : 'it needs a crowbar'),
+  dur: () => RUBBLE.clear,
+  done: (s, w, it) => {
+    s.wstate.open[it.id] = true;
+    if (doorSolid(it) >= 0) w.index.off[doorSolid(it)] = 1;
+    s.events.push({ t: 'msg', text: 'the rubble cleared: the old passage runs on' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: RUBBLE.noise, kind: 'crowbar' });
+  },
+});

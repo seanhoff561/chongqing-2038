@@ -32,7 +32,7 @@ export function checkCollapse(state: SimState) {
 
 /** Hooks that run when he lies down (the lamp off), when he wakes (the save), and what may find him asleep: a fate
  *  is when, of what, and why (the start hideout given away, M3-72). */
-export interface Fate { at: number; cause: string; why: string; /** he wakes to it (a raid, M4-24), not dies */ wake?: boolean }
+export interface Fate { at: number; cause: string; why: string; /** he wakes to it (the machines coming for him, tracked: U-104), not dies */ wake?: boolean }
 export const sleepHooks: { beforeSleep: ((s: SimState, until: number) => number)[]; afterWake: ((s: SimState) => void)[]; fates: ((s: SimState, until: number, w: World) => Fate | null)[] } = { beforeSleep: [], afterWake: [], fates: [] };
 
 // A bed: E claims it as his shelter's (U-013) and opens the sleep menu.

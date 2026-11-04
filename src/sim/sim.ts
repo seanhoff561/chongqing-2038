@@ -68,7 +68,6 @@ import { stepStrike } from './strike';
 import { stepRockets } from './rockets';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
-import { stepRaid } from './raid';
 import { stepTreat } from './meds';
 
 /** Saves of another version are dropped: 9 since the hive remembers where it saw him (M4-04); 8 since the machines
@@ -150,8 +149,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepTag(state);
   stepCraft(state, world);
   stepTreat(state);
-  stepTrack(state);
-  stepRaid(state, world);
+  stepTrack(state, world);
   stepLamp(state, input);
   if (state.openContainer) stepContainers(state, { inter: allInters(state, world) });
   // (Last of the noisemakers, so the machines hear all this tick's noises: his, a turret's, a dropped tin's.)

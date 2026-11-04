@@ -85,6 +85,16 @@ function beatDistricts(w: World, u: Unit) {
   return d;
 }
 
+/** His position given away (U-104: tracked): the network told where he is now, as if a machine had him in sight, and
+ *  his district Searching there unless it's Engaged already. */
+export function giveAway(s: SimState, w: World, at: V3) {
+  const k = districtOf(at.x, at.z), D = (s.hive.districts[k] ??= { state: 'unaware', since: s.time, contact: -1, until: 0 });
+  remember(s, at);
+  D.contact = s.time;
+  if (D.state !== 'engaged') { D.state = 'searching'; D.since = s.time; }
+  tell(s, w, k, s.time, at);
+}
+
 function tell(s: SimState, w: World, k: string, t: number, at: V3) {
   const was = s.hive.lkp;
   if (was && t <= was.t) return;

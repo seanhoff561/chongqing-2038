@@ -1,12 +1,15 @@
 // Tracking tags (M4-22, DESIGN section 6). A quadruped that's after him and can see him out past its prod's reach
 // fires its tag launcher every 6 s: three times in five a tracking tag sticks to his clothes (he feels the thump,
-// no more), and it stays there, giving his way home away (M4-23), until he finds it with an SDR dongle and picks it
-// off, or takes his jacket off and goes over it by hand, slower (the backpack's button, U-099).
+// no more), and it stays there, giving him away wherever he goes (U-104), until he finds it with an SDR dongle and
+// picks it off, or takes his jacket off and goes over it by hand, slower (the backpack's button, U-099). Followed home
+// or seen at a hideout, that hideout's given away too; there, they know where to find him.
 import { DT, type SimState } from './types';
 import type { World } from '../world/world';
 import { TAG, SIGHT, TRACK } from '../data/units';
 import { SCALE } from './clock';
-import { raidTime } from './raid';
+import { giveAway } from './district';
+import { sendSquad } from './converge';
+import { sleepHooks } from './sleep';
 import { visibility } from './perception';
 import { onUseId } from './use';
 import { onCmd } from './commands';
@@ -53,17 +56,27 @@ export function stepTag(s: SimState) {
 /** Every tick (M4-23, U-013): followed home. Coming into a hideout's area (within 25 m of its bed) with a machine's
  *  eyes on him in the last 10 s, or a tag on him, or seen while he's there, and they know where it is. Nothing tells
  *  him so. */
-export function stepTrack(s: SimState) {
-  if (!s.shelters.length) return;
+export function stepTrack(s: SimState, w: World) {
   const p = s.player.pos;
   let saw = -Infinity;
   for (const u of s.units) if (u.saw !== undefined && u.saw > saw) saw = u.saw;
+  let home = false;
   for (const h of s.shelters) {
     const near = Math.hypot(p.x - h.x, p.y - h.y, p.z - h.z) <= TRACK.near;
-    if (near && !h.compromised && (saw === s.time || (!h.near && (s.player.tag || s.time - saw <= TRACK.after * SCALE)))) {
-      h.compromised = true;
-      h.raid = raidTime(s, h.id);
-    }
+    if (near && !h.compromised && (saw === s.time || (!h.near && (s.player.tag || s.time - saw <= TRACK.after * SCALE)))) h.compromised = true;
     h.near = near;
+    if (near && h.compromised) home = true;
   }
+  // Tracked (U-104): a tag on him, or at a hideout they know, his position goes to them every ten minutes, and they
+  // come hunting him where he is: the machines near, and the nearest garage's squad.
+  if (!s.player.tag && !home) { s.pinged = undefined; return; }
+  if (s.pinged !== undefined && s.time - s.pinged < TRACK.ping) return;
+  s.pinged = s.time;
+  const at = { x: p.x, y: p.y, z: p.z };
+  giveAway(s, w, at);
+  sendSquad(s, w, at);
 }
+
+/** Tracked, asleep: he wakes to them coming (U-104). */
+export const tracked = (s: SimState) => s.player.tag || s.shelters.some(h => h.compromised && h.near);
+sleepHooks.fates.push(s => (tracked(s) ? { at: s.time + TRACK.ping, cause: 'hunted', why: 'something outside wakes you', wake: true } : null));

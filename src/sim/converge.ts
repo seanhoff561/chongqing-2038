@@ -19,6 +19,14 @@ function after(s: SimState, w: World, u: Unit, to: V3) {
   Object.assign(t, { kind: 'hunt', path: way(w, u.kind, t.pos, to), i: 0, scan: 0, back: false, visits: undefined, cover: undefined, strafe: false });
 }
 
+/** The garage nearest a place: its squad of humanoids sent there (U-104: to where he was given away). */
+export function sendSquad(s: SimState, w: World, to: V3) {
+  if (!w.garages.length) return;
+  let g = 0;
+  w.garages.forEach((q, i) => { if (Math.hypot(q.x - to.x, q.z - to.z) < Math.hypot(w.garages[g].x - to.x, w.garages[g].z - to.z)) g = i; });
+  for (const u of s.units) if (u.reserve?.garage === g && !u.reserve.drop && !u.trip && !isOff(s, u)) after(s, w, u, to);
+}
+
 /** Ten times a second, just after the network has heard. */
 export function stepConverge(s: SimState, w: World) {
   const k = s.hive.lkp;

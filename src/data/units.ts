@@ -86,12 +86,9 @@ export const TAKEDOWN = { reach: 1.5, rear: 120, time: 1, noise: 6 };
  *  dongle, a tag takes `remove` s to pick off; going over his jacket by hand without one, `search` s (U-099). */
 export const TAG = { every: 6, reach: 20, near: 1.5, chance: 0.6, noise: 15, remove: 1.2, search: 8 };
 /** Followed home (M4-23, U-013): coming within 25 m of a hideout's bed under 10 s (real) after a machine last had
- *  him in sight, or with a tag on him, or seen while there, gives the hideout away. */
-export const TRACK = { near: 25, after: 10 };
-/** The raid on a hideout given away (M4-24, DESIGN section 9): between 01:00 and 04:00 that night (game hours), 10 s
- *  (real) from the breaching to their coming in, everywhere within 18 m of where they come in swept; an EMP trap downs
- *  them as they come for 30 s (real); a rubble fall takes 15 s to clear with a crowbar, heard 20 m off. */
-export const RAID = { from: 1, to: 4, warn: 10, sweep: 18, emp: 30, clear: 6, noise: 20 };
+ *  him in sight, or with a tag on him, or seen while there, gives the hideout away. Tracked (U-104: a tag on him, or
+ *  at a hideout given away), his position goes to the network every `ping` game seconds and they come hunting him. */
+export const TRACK = { near: 25, after: 10, ping: 600 };
 
 /** His pistol (DESIGN section 6, M4-21): damage a round, rounds a magazine, the least time between shots, how far it's
  *  heard and reaches, how long a reload takes; its spread in degrees (from the hip, aimed down the sights, more for each

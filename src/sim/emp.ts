@@ -1,7 +1,6 @@
 // The EMP device (M5-14, DESIGN section 6): three charges. Set off (used), a pulse 6 m round him: drones fall out of
 // the air; walking machines stop 30 s (for good within 2 m); cameras and sensors go out 60 s, turrets 45 s. Used in
-// one of his hideouts, it's rigged on the way in (M4-24: it downs a raid as it comes, raid.ts). Used crouched anywhere
-// else, it's rigged where he is: the first machine to come within 2 m sets it off, and the device lies there after
+// Used crouched, it's rigged where he is: the first machine to come within 2 m sets it off, and the device lies there after
 // with its charges left.
 import type { SimState } from './types';
 import type { World } from '../world/world';
@@ -11,7 +10,6 @@ import { unitPose, isOff } from './units';
 import { crash } from './damage';
 import { takeStack } from './inventory';
 import { SCALE } from './clock';
-import { SHELTER_R } from './shelter';
 
 /** Its pulse's reach, how near is for good, real seconds each kind stays out, charges, how far its crack is heard, and
  *  how near a machine sets off a trap (m). */
@@ -35,16 +33,6 @@ export function pulse(s: SimState, w: World, at: { x: number; y: number; z: numb
 onUseId('emp', (s, w, st) => {
   const left = st.charge ?? EMP.charges, p = s.player.pos;
   if (left <= 0) { s.events.push({ t: 'msg', text: 'no charge' }); return; }
-  // In a hideout: rigged on the way in.
-  const h = s.shelters.find(x => Math.hypot(p.x - x.x, p.y - x.y, p.z - x.z) <= SHELTER_R);
-  if (h) {
-    if (h.trap) { return; }
-    takeStack(s.inv.pack, st.uid);
-    s.inv.held = 0;
-    h.trap = true;
-    s.events.push({ t: 'msg', text: 'EMP trap rigged on the way in' });
-    return;
-  }
   // Crouched: rigged here.
   if (s.player.posture === 'crouch') {
     takeStack(s.inv.pack, st.uid);

@@ -87,10 +87,6 @@ export interface Shelter {
   solar?: boolean;
   /** he was within TRACK.near of its bed last tick (M4-23) */
   near?: boolean;
-  /** given away, when they come for it (M4-24), and whether they have; an EMP trap rigged in it */
-  raid?: number;
-  raided?: boolean;
-  trap?: boolean;
 }
 
 export interface SimState {
@@ -117,10 +113,6 @@ export interface SimState {
   /** his hideouts (U-013, U-018): every bed he has claimed, where it is, its car battery charge (%) and
    *  whether the machines know where it is */
   shelters: Shelter[];
-  /** a raid breaking in on him (M4-24): the hideout's bed, when they're in, where they come in */
-  raid?: { id: string; at: number; x: number; y: number; z: number };
-  /** hideouts the machines burnt out (M4-25): where each was, and whether he has come back and seen it */
-  lost?: { x: number; y: number; z: number; seen?: boolean }[];
   /** furniture he has put down: beds, crates */
   placed: Placed[];
   /** things he dropped, lying where they fell */
@@ -191,6 +183,8 @@ export interface SimState {
   flight?: { x: number; y: number; z: number; yaw: number; pitch: number; seen: number };
   /** the jammer running (M5-13): since when (game time), and whether it's become a beacon */
   jam?: { since: number; beacon?: boolean };
+  /** when his position last went to the network, tracked (U-104) */
+  pinged?: number;
   /** EMP devices rigged as traps (M5-14): the device and where */
   traps?: { stack: import('./inventory').Stack; x: number; y: number; z: number }[];
   /** things thrown, in the air (M5-19): what, when, where, how fast */

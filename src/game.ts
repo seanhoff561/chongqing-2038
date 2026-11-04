@@ -36,7 +36,6 @@ import { Soundscape } from './audio/soundscape';
 import { MenuMusic } from './audio/menu';
 import { Songs } from './audio/songs';
 import { playStep, underfoot } from './audio/steps';
-import { RaidLight } from './render/raidlight';
 import { Sky } from './render/sky';
 import { BodyFx } from './render/body-fx';
 import { InventoryUI } from './ui/inventory-ui';
@@ -106,8 +105,6 @@ export class Game {
   readonly songs = new Songs(this.audio);
   /** the machines heard where they are (M4-33) */
   readonly sound = new Soundscape(this.audio);
-  /** red light flashing round the chamber while a raid breaks in (M4-63) */
-  readonly raidLight = new RaidLight();
   readonly hands: Hands3D;
   /** The inside of where he's hidden (M3-47). */
   readonly hideView = new HideView();
@@ -149,7 +146,6 @@ export class Game {
     this.input = new Input(this.view.renderer.domElement);
     this.sky = new Sky(this.view);
     this.hands = new Hands3D(this.view.fp.cam);
-    this.view.scene.add(this.raidLight.light);
     this.view.scene.add(this.hideView.group);
     this.underwater = new Underwater(this.view);
     this.rigged.userData.n = 0;
@@ -404,7 +400,6 @@ export class Game {
     updateScreens(this.state, performance.now() / 1000);
     this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);
     this.view.setLamp(this.state.player.lamp);
-    this.raidLight.update(this.state.tick / 60, this.state.raid, cam);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
     // What he hears of the city and its machines (audio/soundscape.ts); the main menu's own music while it's up.
     this.menuMusic.update(this.menuUp());
