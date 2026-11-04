@@ -1,144 +1,31 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-03 Docs the director reads, rewritten (U-104).
-Features done: 330 / 424 | Last done: M10-02
+**Status:** building M10. Next: M10-04 150 fps on medium (U-104).
+Features done: 331 / 424 | Last done: M10-03
 <!-- /status -->
 
-## Log
-- Phase 0: scaffold, DESIGN.md, features.json (204), tools, docs.
-- M1 (folded, 50 features): the deterministic sim, box and ramp collision and carving, player movement (sprint, crouch, slides, vaults, Space hops and the hand mantle, wall-runs and kicks, dynos, hangs and traverses, pipes and ladders, bar swings and laches, wall cling), the force-limited hand grab and grip endurance, the first-person camera, arms and 3D hands with their poses, movement sounds, the movement gym and the dev panel.
-- M2 (folded, 24 features): the clock, sky and day phases; health, bleeding, limb injuries, hunger, thirst, fatigue, healing and body feedback without meters; the item database, grid inventory, backpack UI, hotbar, encumbrance and eating; the hideout and its vent view, hold-E interactions, containers and stash, seeded loot, doors, sleep, starting supplies, the ironman save and permadeath.
-- M3 (folded, 93 features): Yuzhong at 1:1 from the real map and ground (OSM streets, landmarks, terraces, stair streets, the rivers); the building generator with enterable warrens, furnished rooms, basements and sewers, stair cores and roof huts, monotone blocks and towers; Shibati's old quarter and stair, Jiaochangkou, the Line 2 beam and train, the Grand Tunnel, the metro and the underground city; climbables, hides, crossings and the ant-hill route network with grappling-hook caches; foliage, ruins, street props and dressing; Chinese signage with neon, banners, QR stickers and LED tickers; the sky, weather, night and the muted look; chunked meshes, far stand-ins and draw-call budgets; graphics presets; the sim light map; district teleports and scenarios; the Li family flat with the voicemail; the Yangtze riverfront and its wall; three layers of routes between the district's key points.
-- M8-25 Intro screenplay for AI video (U-018): intro screenplay and shot list for AI video, with trailer cut
-- CI: the site deploys every build that compiles, tests in their own job (the M3-57/58/66/67 deploys had failed on time limits); U-034 withdrawn by the director pending their testing.
-- U-034 logged (playtest of M3-67): M3-66 reopened, M3-36 and M3-37 amended, M5-33 player-set ziplines added, Q-008 asked.
-- M4-01 Unit framework and scheduled patrols: units as plain data on beats with pauses and hours, poses a pure function of the game time; beats under the ground and off the streets into alleys and buildings
-- M4-01b Convoys as units: squads out of the factory gates in staggered formation, bounding, a pair peeling off into an alley
-- M4-02 Navigation graph and pathing: Units on their beats, columns out of the factory as units, and the machines' nav graph with A*
-- M4-03 Vision perception: Vision perception: five body points in a unit's cone with clear sight, light with night-vision floors, posture, motion, falloff and weather
-- M4-04 Awareness and investigation: Awareness and investigation: Suspicious units walk to where they saw him, look about and go back; beats shift by day and after sightings
-- M4-05 Hearing: Hearing: noises heard within radius x hearing, x0.6 through walls; heard noises send units to look, hostile ones are remembered by the hive
-- M4-06 Thermal senses at night: Thermal sight at night: heat seen whatever the light within thermal range; the mylar blanket, wetness and deep water hide it
-- M4-07 Cameras: Cameras: fixed, sweeping and smart-lamppost cameras all over the city, sweepers that can be timed, beeping
-- M4-08 Patrol drones and docks: Patrol drones and docks: 6-minute flights from rooftop docks, 2 minutes charging, a learnable gap in their cover
-- M4-09 Quadrupeds: Quadrupeds: 3 m/s patrols and 8 m/s chases on the nav graph over stairs and metre jumps, no climbing, whining servos
-- M4-01c Memory: stream the city's near layers (found in the M3 verify): Memory: the city's near layers streamed by 256 m cell, the machines in one batch; heap 4.4 GB to 2.8 GB
-- M4-10 Humanoids: Humanoids: walk 2.5, run 4.5, stairs only, armoured and armed; they call each other, flank, take cover and search hiding places one by one
-- M4-11 Turrets, motion sensors, tripwires and acoustic sensors: tripwires, motion sensors, acoustic sensors and turrets that fire when Engaged; hearing hears every noise of a tick; humanoids scan 8 s again
-- M4-12 District alert state machine: each district's alert: Unaware, Suspicious, Engaged, Searching and Heightened
-- M4-13 Hivemind broadcast: Engaged machines tell the network after their kind's delay; the last known position follows him; the word spreads through the district and 300 m beyond
-- M4-14 Convergence and escalation: machines near him converge, docks launch hunter drones every 20 s, the garage's squad after 45 s
-- M4-15 Search: the search: a growing disc ahead of him, weighted points, 60% checks of hiding places
-- M4-16 Wind-down and Heightened district: the search ends at 150 s; Heightened until 06:00: extra walkers, idle cameras on, awareness x1.3
-- M4-17 Silent units: silent machines draw a look after 12 s; out, a machine stays put; a wreck found starts a small search
-- M4-18 Enemy fire and wounds: machines fire: rifle bursts, SMG, prod and stun, turret; each hit bleeds and may hurt a limb
-- M4-19 Unit damage and weak points: machines' HP and hit zones: blinded, immobilised, shut down, destroyed
-- M4-20 Knife, crowbar and takedowns: knife and crowbar blows on the place aimed at; takedowns from behind in 2 s
-- M4-21 Pistol: the pistol: hitscan with spread and sway, kick, magazines and reloads, a 150 m hostile noise
-- M4-21b Guns made real (U-032): guns made real: the QSZ-92, aiming down the sights with a zoom, recoil, slide and flash; leaning with Q and E
-- U-045 fix (a8754f5): the black screen at start (since M4-11 the machines' mesh batch threw at boot) fixed and pushed to main; every page boots clean.
-- M4-22 Tracking tags: quadrupeds' tag launchers stick tracking tags that stay until found with an SDR dongle
-- M4-22b The hideout in a real alley at the heart of the routes (U-047, U-048): the hideout under a real alley at the heart of the routes, sealed from the underground, a drainpipe up to the roofs
-- M4-22d Visual pass: roofs, QR codes, paving, road paint, grates (U-049): the visual pass: sparse composed roofs, rare QR codes, worn off-white paint, grime over the paving, grates you see through
-- M4-22c Faster loading and a new run without reloading (U-048): loading screen, a third faster city build, and new runs in place (U-048)
-- M4-23 Tracking home: followed home: a hideout given away by a sighting or a tag (U-013)
-- M4-24 Hideout raid: the raid: woken with 10 s, the old way out past the rubble, the EMP trap (U-013)
-- M4-25 Lost shelter (U-013): a lost shelter: burnt out after a raid he lives through, or one he wasn't there for (U-013)
-- M4-26 Machine models: the machines' models: white armoured rigs that walk, trot, aim and fly (U-031)
-- M4-26b Street heavies (U-038): street heavies: a 3 m walker with a cannon on each district's main street (U-038)
-- M4-27 The world shows the alert state: the alert in the world: machine lights by state, LED tickers and edict boards on alert, sirens; signs glow again
-- M4-40 Pitched roof eaves to grab (U-050): the pitched roofs' eaves are ledges to hang from and haul up over (U-050)
-- M4-41 The hideout lit (U-050): the hideout lit: daylight down the vent by day, the alley's neon by night (U-050)
-- M4-42 A roll key (U-050): a roll key: V held as you land (U-050)
-- M4-43 Brighter lights at night (U-050): brighter lights at night: lamp pools, windows, signs, machine lights (U-050)
-- M4-44 Every item use answers (U-050): every item use answers: an effect or why not (U-050)
-- M4-72 No roll: every fall lands as a roll did (U-054): the roll removed, every fall as safe as a roll was; the big-fall sound kept (U-054, U-055)
-- M4-73 Wall kick by where he looks (U-055): a wall kick looking straight at the wall stalls; look up to climb it (U-055)
-- M4-74 Chimneying low, from the ground (U-055): chimneying from the ground, braced as low as prone (U-055)
-- M4-75 Wall-runs that start when meant (U-055): wall-runs by the way he moves, not a wall jump (U-055)
-- M5-17 Healing items: healing items work: bandage, tourniquet, splint, painkillers, first-aid kit (U-050)
-- M4-56 Rain without the splash particles (U-051): rain without the splash particles (U-051)
-- M4-69 A chalk bag, not climbing gloves (U-053): a chalk bag in place of climbing gloves: chalked hands hang twice as long until the chalk runs out (U-053)
-- M4-49 Quick opening, a circle filling (U-051): quick opening: a ring fills round the dot at each thing's own speed (U-051)
-- M4-70 Item pictures in the backpack (U-054): item pictures in the backpack, each drawn to its own footprint (U-054)
-- M4-71 Take all and shift-click (U-054): take all, and shift-click moves an item straight across (U-054)
-- M4-68 Holding things like a person (U-052): holding things like a person: a shooter's pistol hold, draw, sway, bob, recoil and reload (U-052)
-- M4-60 Melee swings that land on anything (U-052): melee swings that land on anything: a machine, a wall or thing, or the air (U-052)
-- M4-76 Thumbs out of the pistol (U-056): the thumbs lie along the pistol instead of through it (U-056)
-- M4-57 Many more machines: deadly main streets (U-051): many more machines: district main streets thick with pairs, squads, drones and junction turrets; side streets busy (U-051)
-- M4-59 Machines that move like they're alive (U-051): machines move like they're alive: drones search building faces and weave, walkers drift, stop and look (U-051)
-- M4-79 No muzzle flash; eating and drinking sounds (U-058): no muzzle flash; eating and drinking sounds (U-058)
-- M4-80 No automatic fullscreen (U-059): no automatic fullscreen; the page asks before Ctrl+W closes it mid-run (U-059)
-- M4-81 Chimneying on its own key (U-060): chimneying on its own key, X (U-060)
-- M4-77 Crowbar held as before; no use message mid-swing; thumbs and sleeves fixed (U-057): the crowbar held as before, no use message mid-swing, the thumb along the pistol's side clear of it, the hand in its sleeve (U-057, U-061)
-- M4-85 Every ring much faster (U-064): every ring much faster: opening, healing, takedowns, reloading and the rest (U-064)
-- M4-83 Smooth frame rate: what made it choppy, found and fixed (U-061): smoother frames: props built once and reused, near cells streamed in pieces, machines drawn from small pools (U-061, U-064)
-- M4-82 No floor drawn over holes (U-060): no floor drawn over holes: finishes with nothing under them aren't drawn (U-060)
-- M4-78 Pistol attachments: suppressor, extended magazine, sights (U-058): pistol attachments: suppressor, extended magazine, reflex sight and 4x scope (U-058)
-- M4-58 Columns go somewhere; patrols change over (U-051): the columns march to the city's exits and leave by them; street walkers change over with them (U-051)
-- M4-53 Machines where he doesn't expect them (U-051): machines where he doesn't expect them: in rooms, at the foot of stairs, on roofs, in alleys (U-051)
-- M4-45 Combat AI (U-050): combat AI: drones circle and jink at a stand-off, humanoids bound between covers by turns and strafe in the open (U-050)
-- M4-61 The marks of damage (U-052): the marks of damage: bullet holes, pocks, scrapes, sparks and grit (U-052)
-- M4-62 Machines that break apart (U-052): machines that come apart: rifles shot out, heads off, drones downed and blowing up, hurt machines smoking (U-052)
-- M4-46 Relentless pursuit (U-050): relentless pursuit: they follow the way he went, over low walls, down into the underground (U-050)
-- M4-47 Strike drones (U-050): strike drones: kamikaze FPVs and bomb droppers sent when he's been seen too long (U-050)
-- M4-64 Knocked down (U-052): knocked down: blasts throw him off his feet, he lands, lies a moment and gets up (U-052)
-- M4-65 Rocket launchers (U-052): rocket launchers: the heavies fire rockets, and he can find and fire one (U-052)
-- M4-66 Falls that feel like falls (U-052): falls that feel like falls: wind rising with the speed, the view's pull, a stumble or down after a big one (U-052)
-- M4-48 Giant walkers (U-050): giant walkers: spider walkers and colossi on the streets, rigged and walking, and they see him (U-050)
-- M4-33 Audio engine and machine sounds: audio engine: the machines heard where they are, rotors with Doppler, footfalls, gunfire, more drones louder
-- M4-50 The sounds of things (U-051): the sounds of things: drawers slide, lockers clang, cabinets creak, crate lids scrape, bags rustle (U-051)
-- M4-51 The empty city's ambience (U-051): the empty city's ambience: hum, wind between towers, far machinery, a drone somewhere, real rain, by place and hour (U-051)
-- M4-52 Frightening machines (U-051): frightening machines: an eye on him heard before it notices, the notice and the lock, servos grinding close, the city mad at high alert and slow to calm (U-051)
-- M4-54 Gunfire quick, deadly and real (U-051): gunfire quick, deadly and real: lethal bursts, the crack of misses, the report late, dulled by distance and walls, echoing (U-051); the sound wiring for breath, the raid siren and the music rides along
-- M4-55 His breath and heartbeat (U-051): his breath and heartbeat: spent, hurt or terrified he breathes hard and his heart pounds (U-051)
-- M4-63 The raid wakes him to sirens (U-052): the raid wakes him to sirens and red light flashing round the chamber (U-052)
-- M4-86 Synth music by place (U-065): synth music by place: a calm windy track high up, a grounded one in the streets, a deep one underground, slow beats (U-065)
-- M4-89 Stairwells and trapdoors seen through (U-066): stairwells and trapdoors seen through: no floor drawn over them (U-066)
-- M4-90 Lootable things plain to see (U-066): lootable things plain to see: a floating mark over what's worth searching (U-066)
-- M4-91 Most street doors shut (U-066): most street doors shut: locked, chained, jammed or collapsed, each shown so (U-066)
-- M4-92 Helicopter troop drop (U-067): helicopter troop drop: seen and gone into a building, a squad dropped on its roof sweeps it floor by floor; dogs and crawlers into the sewers (U-067)
-- M4-97 Faint, rare music (U-070): faint, rare music: mostly silence, now and then a slow sparse piece fading in and away (U-070)
-- M4-88 Rain realism pass (U-065): rain realism: a real rain recording, dripping gutters under cover, finer fainter streaks, no wet filter (U-065, U-070)
-- M4-98 Recorded sounds (U-070): recorded sounds: footsteps, doors, glass, impacts and gunfire from freely licensed recordings (U-070)
-- M4-93 Eldritch walkers (U-069): eldritch walkers: tall, white, mostly giant legs, three variations (U-069)
-- M4-94 Blocked stairways and drowned sewers (U-069): blocked stairways and drowned sewers: stairwells blocked part-way, many more sewer runs flooded, some plugged (U-069)
-- M4-30 Dev perception overlay: dev perception overlay: sight fans, awareness bars, alert and unit list
-- M4-96 Refilling water at running sinks (U-069): running sinks refill empty water bottles
-- M4-95 Spider robots in the sewers (U-069): spider robots patrol the sewers, clinging to the roofs, and go for him
-- M4-87 Drones everywhere (U-065): drones everywhere, scanning roofs and gaps; shot down quietly, searched for scrap
-- M4-99 Realistic textures (U-073): realistic textures: sleeve cloth, worn metal and grips, cardboard and labels, machine plates
-- M4-28 Street speakers and announcements: street speakers and LED boards: the occupier's announcements by alert and hour
-- M4-29 Machines in the first district: the first district's machines walk real ground all day: rerouted beats, drones over towers, delivery robots
-- M4-101 Combat pass (U-089): combat: every machine killable and lootable, heavier head shots, slower machine fire and drones
-- M4-31 Core loop end to end: the core loop end to end in a browser test: shelter, engaged, death, new run; loot, home, sleep, save
-- M4-32 Pursuit escapes in the first district: pursuit scenarios and three escapes that break contact and outlast the search
-- M4-34 Delivery robots: delivery robots: wheeled rounds, never stairs, scared off route by loud noise
-- M4-100 Beyond the city's edge (U-077): beyond the city's edge: rivers, far towers lit at night, hills
-- M5-35 Building types (U-091): building types rolled for each run: homes, offices, clinics, workshops, military posts, each with its rooms, lining and loot
-- M5-01, M5-02, M5-03, M5-04, M5-05, M5-06, M5-07, M5-08, M5-09, M5-10, M5-11, M5-12, M5-13, M5-14, M5-15, M5-16, M5-18, M5-19, M5-20, M5-21, M5-22, M5-23, M5-24, M5-25, M5-26, M5-27, M5-28, M5-29, M5-30, M5-31, M5-32, M5-33, M5-25b, M5-36: Anna's laptop and the tech she runs, the tools and the kit
-- M5-23b Roller shutters (split from M5-23): roller shutters on a quarter of the locked shopfronts, prised up with the crowbar to crawl under
-- M6-22, M6-27: the city's machines checked through a day; the river border
-- M6-24 Shelter sites across the city (U-013): shelter sites across the city, each with what its rooms hold to claim
-- M9-05 Save robustness: a save that can't be read is set aside and said so, not lost
-- M7-01 Escape and ending framework: escapes and endings: route progress, ending zones, the run summary, the save cleared
-- M8-01 Dialogue data: the dialogue: the intro's lines, the endings' exchanges, every speaker
-- M8-03 tools/make-voice: tools/make-voice: every line to an mp3 with the director's TTS, a voice per speaker
-- M8-14 Voiced announcements: the voiced announcements resolve, each with its recording
-- M8-10 Music: the music: a pursuit pulse that follows the alert, darker pads by night
-- M8-15 Story beats in the world: the story in the world: the voicemail, Haozi's chalk mice, the first night
-- M5-34 Realistic item models (U-053): realistic models for every item
-- M8-02, M8-04, M8-07, M8-08, M8-09, M8-11, M8-12, M8-13, M7-15, M9-03, M5-37: voice, subtitles, mixer, sound pass, ambience, menus, endings, soak, winter snow (U-097, U-098)
-- M9-12: sim tick halved, GPU rain, shaders compiled up front, frame-cost test (U-097)
-- M6-01, M6-02: Jiefangbei: the Liberation Monument, malls, LED edicts
-- M6-05, M6-06: the lower town walked, the riverfronts walled all round, docks
-- M6-11, M6-12, M6-13: the hospital, police station and electronics market in the city's buildings
-- M6-25: teleports to every way into every site, scenarios for every district and site
-- M6-23, M6-26: the coverage tool; render budgets held at every preset, plain materials atlased
-- M6-24b: the Xiaoshizi metro service room and the Hongyadong cliff cellar as shelters
-- M6-14: the telecom exchange: gas in the server hall, the camera mesh, the district relay
-- M6-15: the Xinhua Road substation: live busbars, the spare HV fuse, his father's badge
-- M6-20: the river-police pier; director's notes U-099 to U-103
-- M10-01: death returns him to his last sleep, the death count kept
-- M10-02: a lean repository and a ten times faster check
+## What's built
+
+**Moving (M1).** A deterministic 60 Hz sim with box-and-ramp collision. Sprinting, crouching, slides, vaults and hops, wall clings, runs and kicks, chimneying, two-handed climbing (lips, sills, pipes, ladders, bars, laches, dynos, pull-overs), grip endurance, falls that hurt, swimming and diving, encumbrance; first-person 3D hands that grip and hold things; one fixed sound for every move. The movement envelope is measured and the city is built to it.
+
+**Surviving (M2).** The clock, sky, weather (fog, rain, winter snow) and seasons; health, bleeding, sprains and breaks, hunger, thirst and fatigue shown through the body, not meters; the item database, grid backpack, hotbar and eating; beds, sleep as a time skip, saving.
+
+**The city (M3, M6).** Yuzhong at 1:1 from OpenStreetMap and the real ground: streets, stairs, terraces, the rivers, every building at its real height, half of them enterable as mazes of rooms, stairs, locked and chained doors and collapses; climbable facades; alleys, sewers, the Grand Tunnel, the metro stations, the underground city; Shibati, Jiaochangkou, Jiefangbei (the monument, malls, LED edicts), the lower town, the riverfronts walled all round with docks; building types rolled each run (homes, offices, clinics, workshops, military posts, malls) with their rooms and loot. High-security sites inside real buildings: the hospital, police station, electronics market, telecom exchange (gas, camera mesh, the district relay), the Xinhua Road substation (live busbars, the spare HV fuse, his father's badge) and the river-police pier (gangway, ladder, crane, patrol boat, sonar buoys); every way in has a teleport, and each site has a 10 s unwatched approach.
+
+**The machines (M4).** Cameras, lampposts, patrol and hunter drones from rooftop docks, quadrupeds, humanoids, heavies, giant walkers, sewer crawlers, delivery robots, turrets, sensors, strike drones, helicopter drops and convoys, all on learnable beats; sight, hearing and thermal senses; district alerts, the hivemind's broadcast, convergence, search, silence and jamming; combat both ways with hit zones, weak points, wounds, damage marks and salvage; tracking tags; the machines heard where they are; the street speakers' announcements.
+
+**His kit (M5).** Anna's laptop (status, scan, map, logs, cams, drone, notes), binoculars, the SDR, camera taps and loops, a flyable salvaged drone, crafting at a bench (jammer, EMP, cloner, grappling hook and the rest), healing items, locks, lockpicks, crowbar, bolt cutters, ladders, ziplines, rappels, grapples, power and charging, guns with attachments, decoys.
+
+**Story, sound, menus, polish (M7-M9).** The escape framework and endings, dialogue and voice tooling, the soundscape and mixer, the main and pause menus, settings, saves that survive bad data, a frame-time pass.
+
+**The large update (M10, U-104), so far.** Dying wakes him at his last sleep with a death count; the repository trimmed (no ROADMAP, QUESTIONS or PLAYTEST: questions and playtest requests go to the director in chat; one CREDITS.md); the fast check shares one built city per worker; the director's docs rewritten.
+
+## What's left
+
+M10 in order (features.json): 150 fps on medium; settings word for word and the main menu; prompts without keys; Anna's remarks gone; the desktop download; the laptop held in both hands, focus, its tabs and Anna in the corner; ice blue; no raids; the Li family flat to visit; autumn; the start; loot and places finished (the construction site); the map editor, maps menu and training room; story, documents and his sister's trail; eldritch machines that keep their distance; the endings; the opening scene. Then M6's remaining places (Hongyadong, Chaotianmen, bridges, the cableway, the metro control room, the drone hub, the checkpoint, the city tunnels), the escape routes (M7) and the final passes (M9).
+
+## Log (newest last)
+- M10-01: death returns him to his last sleep, the death count kept.
+- M10-02: a lean repository and a ten times faster check (one built city per test worker: 631 tests in under 4 minutes).
+- M10-03: the director's docs rewritten: DESIGN, PROGRESS, DECISIONS

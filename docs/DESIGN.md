@@ -1,422 +1,342 @@
 # Chongqing 2038: design
 
-The director's brief (BRIEF.md) is the vision. This is the build design. Numbers here are starting values; the live values are in `src/data` and win over this file once tuned (tuning changes get a D-### line).
+How everything in the game works, or will work: the director's notes up to U-104 are all in here. docs/PROGRESS.md says what's built so far. Live numbers are in `src/data` and win over this file once tuned.
 
-## 1. Pillars
+## 1. The game
 
-1. **Learn the machine.** The city and the machines' patrol logic are identical every run. Knowledge is the progression: timings, blind spots, battery gaps, routes.
-2. **The vertical city is the toolkit.** Every block offers a street route, a rooftop route and an underground route. Parkour and carried tools open new lines through it.
-3. **Seen is survivable, but it costs.** Kill-on-sight, live hivemind tracking, then a search that closes in. Escape is hard, thrilling and always possible; leading them home is the real mistake.
-4. **Little help on screen.** No minimap, markers, meters or tutorials. The body, the world and Anna's laptop carry most information; a small body figure shows where he is hurt and what he's short of (U-014).
-5. **Every tool, two uses; no tool, every answer.** Each item solves several problems and none solves everything. Several ways into every site, several ways out of the city.
+Li Wei wakes in a hideout under occupied Chongqing in 2038 and has to get out of the city. Parkour, climbing and scavenging in a 1:1 Yuzhong peninsula built from the real map; machines that patrol on learnable schedules and hunt him as one mind when they see him; a mystery told only through places and the things people left in them.
 
-## 2. Controls (keyboard and mouse)
+- **Learn the machine.** The city and the machines' patrols are the same every run: timings, blind spots, battery gaps and routes are knowledge he keeps.
+- **The vertical city is the toolkit.** Every block offers a street route, a rooftop route and an underground route; tools open new lines through it.
+- **Seen is survivable, but it costs.** Kill on sight, then a search that closes in. Escape is hard and always possible.
+- **Little on screen.** No minimap, quest markers, meters, hints or tutorial text. Nothing tells him how to open a lock or what a tool is for; he finds out by trying (U-104). The body, the world and the laptop carry the information.
+- **Every tool, two uses; no tool, every answer.** Several ways into every place, several ways out of the city.
+- **Curiosity is the progression (U-104, Outer Wilds).** Mysteries he can see and wants to investigate, not exposition or objectives. Every meaningful discovery answers a question, raises another, overturns an assumption or shows him something he can act on. Knowledge unlocks possibilities, never invisible quest flags: if he works something out on his own he can act on it without the intended clue. Clues are things people made for their own reasons, connected across places, with more than one path to anything important, so he can explore in any order, miss things and still progress. Discoveries persist and interpretations are his.
 
-| Action | Key |
+## 2. Story and discovery (U-104)
+
+**The opening.** No cutscene. A new run fades in from black: Li Wei lying on his back in the hideout at night, looking up, the room flooded with blue light. He looks round: debris everywhere, a crate ("Crate": he doesn't know whose hideout it is) and a table to one side, rubbish heaped where a way out was (impassable, unlabelled), and in the middle a shaft of blue light coming down through a hole with a ladder up into it. Beside him his backpack, the laptop open on top. On it a girl drawn in anime style (straight black hair to her shoulders, a white collared shirt) looks at him and speaks in a robotic voice (the street speakers' voice, clear, as if in his headphones), English subtitles:
+- "You woke up... I thought you were dead 哈哈哈" (a pause, she leans closer) "Seems like you hit your head pretty hard, what do you remember?" (a pause) "If you don't say anything I'm not going to help you. Hmph!"
+
+The screen blips to black and he has control. He takes the laptop and puts on the bag by interacting with them; then "Tab to open laptop" shows, once. Opening it, Anna is mid-sentence: "-all going to die anyways... HEY!!! You can't just turn me on like that without a warning!" (she turns red) "A-anyways... what I was saying is you, Li Wei, are gonna die. Got a problem with that?" (arms crossed, thinking) "Lets see... starvation, gunshots, death by falling... you're cooked 哈哈哈" "But try not to worry too much. You've lasted much longer than most. In fact, I must admit that your slipperiness and sliminess is quite unmatched." She leaves the full screen for the laptop's corner. "This is the status page. Now, I know your thick skull can't understand what's going on here, but that's OK." "If you really don't remember anything, though, I'd highly recommend the training room. It'll get you back in shape real fast." "All you have to do is focus with Q and then click the dots on the side here, got it?"
+
+**Anna.** An AI on his laptop, drawn as a small animated girl in its corner (idle, blinking, waving, laughing, pouting with her arms crossed, blushing), switched frame by frame like a gif. She speaks only: in the opening scene; the first time he turns to each laptop tab (a short snarky line about it); and when the map gains a key place. Those are the game's only subtitles: English, one size. The first time he opens the map: "This is the map. Should be helpful if you've got a specific place you want to go. One thing though..." (the family flat appears on the map) "I really wouldn't recommend visiting this place. Some things are better left forgotten 哈哈哈".
+
+**Key places.** The named places (the Li family flat, the sites, the exits' approaches) are not on the map at the start. A clue that names or shows one (a document, a note, a sign) marks it the next time he opens the map, with Anna's line on it; walking into one marks it. Each key place has its own hand-designed layout, a maze like the generated buildings (stairways, locked doors, collapses) but its own, and tells part of the story through what's in it: the Li family flat tells what happened to his family; other places tell how life went on and how the city came to this.
+
+**Found documents.** Worldbuilding documents turn up now and then in homes, offices, workshops and military posts, each something a person there would have written or kept, each fitting where it's found (a journal page about sneaking into the sewers through the basement grate only in a home with one), never twice in a world. Story documents lie at the key places. Each is an item: its text is its description in the backpack. Written to be specific and human, never generic. Two examples from the director: *Deepmind Article*: "China pulls ahead of the US in the race to ASI! Millions of Chinese celebrate, many call for 'an end to poverty.'" *Journal Page*: "Wei and I snuck into the sewers through the old grate in the basement... it was so dark, if only we had a light..."
+
+**His sister.** Xiaoyu is alive and gone. Each run she has left the city by one of the exits, a paper trail of her notes leading from the family flat through places on her way to it: each note has context clues but never the whole answer, so he pieces it together and is always one step behind her. The trail also shows him which places matter for that exit and how. At her exit he can leave with her or without her.
+
+**Endings.** Each exit has its own ending (section 10), with or without his sister, then the run's summary (days survived, places entered, times seen).
+
+## 3. Controls and settings (U-104)
+
+Movement keys are fixed: WASD to move, the mouse to look, Space to jump, the left and right mouse buttons for the left and right hand (and using a held item), 1 to 5 for the hotbar (0 or ` empty hands), Esc for settings. The rest are rebindable, to any key or to mouse buttons 4 and 5 (which never take the browser back or forward; Alt never opens the browser's menu):
+
+| Action | Default |
 |---|---|
-| Move / look | WASD / mouse |
-| Sprint | Shift (hold) |
-| Jump (tap for a short hop, hold for full height); vault or hop onto waist-high things | Space |
-| Wall move in the air (kick off, wall-run, up-kick), push off from a hang, pump a swing | Space again |
-| Left hand / right hand: hold to grip what's under the reticle (empty hands only, U-007) | Left / right mouse |
-| Crouch (hold) / slide (while sprinting) | Ctrl (or C) |
-| Crawl (toggle) | Z |
-| Interact / pick up / enter box (hold E for timed actions); hold E with nothing in view to sleep rough (U-013) | E |
-| Let go of everything | Q |
-| Use held item | Left mouse |
-| Reload / rotate an item while dragging | R |
-| Hotbar slots | 1-5 (0 or ` = empty hands, U-009) |
-| Backpack / laptop (Anna) / headlamp | Tab / L / H |
-| Pause and settings: controls, movement gym and its areas, back to the game (also opens when the browser drops fullscreen or the mouse) | = (U-009); Esc is left to the browser (U-014) |
+| Sprint | Shift |
+| Crouch (slide while sprinting) | Ctrl |
+| Crawl | C |
+| Interact (hold for timed actions) | E |
+| Lean / Tab Left (with the laptop out: the page before) | Mouse4 |
+| Lean / Tab Right (the page after) | Mouse5 |
+| Reload, and rotate an item while dragging it | R |
+| Headlamp / Focus Laptop (with the laptop out: sit down at it) | Q |
+| Chimney | X |
+| Sleep Rough (hold) | Z |
+| Laptop | Tab |
+| Backpack | Alt |
 
-**Hands (U-006, U-007).** Both 3D hands are always on screen. On his feet they sit low at his sides and swing with his stride, pumping loose fists when he sprints; in the air, on walls and crawling they reach forward, open up when something grabbable is in reach and close on what they grip. Items sit in the right hand; anything bigger than a 1x1 item under 0.4 kg (and the knife) also takes the left hand, so climbing means putting it away with 0 first.
+There is no "let go" key: a hand lets go when its button is released.
 
-Every control will be rebindable in settings (U-001). The game asks for fullscreen with a keyboard lock when it captures the mouse so Ctrl+W can't close the tab (D-014).
+**Settings.** Esc in play, and Settings on the main menu, open the same panel, centred, ice blue on near-black, and nothing else is in it, top to bottom: 设置 SETTINGS; 主菜单 Menu (last sleep saved); 音量 Volume (one master slider, long); 灵敏度 Sensitivity (long, a fairly low default); 按键 Keys (the twelve above). With `?dev=1` it also has toggles for the dev UI and the crosshair, for filming. Settings is a panel over the running game: the world goes on (he can be hurt and die), only his own movement and look stop. Esc closes it. Graphics are medium for everyone.
 
-## 3. Movement
+**Prompts.** Looking at something he can act on shows its name alone (门 Door), never a key or a hint. A locked door gives no word, only a click; an unlocked door opens at once.
 
-Parkour with the legs, climbing with the hands (U-002 to U-005). Player collision is an axis-aligned box 0.5 m wide. All values live in `src/data/movement.ts`.
+**Menus.** Esc closes any menu (backpack, laptop, crafting, sleep, settings), and so does the key that opened it. The sleep menu lists wake times, each saying how many hours he'll sleep and the time he'll wake; there's no stay-awake button.
+
+**Hands.** Both 3D hands are always on screen. On his feet they sit low and swing with his stride; in the air, on walls and crawling they reach forward and close on what they grip. Items sit in the right hand; anything bigger than a 1x1 item under 0.4 kg (and the knife) also takes the left, so climbing means putting it away with 0 first.
+
+## 4. Movement
+
+Parkour with the legs, climbing with the hands (U-002 to U-005). His collision is an axis-aligned box 0.5 m wide. All values live in `src/data/movement.ts`.
 
 | Parameter | Value |
 |---|---|
 | Heights (stand / crouch / crawl and slide / curled in a box) | 1.75 / 1.10 / 0.50 / 0.75 m (eye 1.62 / 0.98 / 0.38 / 0.55) |
 | Speeds (jog / sprint / crouch / crawl) | 3.2 / 7.0 / 1.6 / 0.8 m/s; no running stamina (U-003) |
-| Ground accel / air accel | 30 / 4 m/s^2; in the air he steers and slows but never speeds up past his take-off speed |
-| Jump | take-off 3.55 m/s (apex about 0.63 m, 9.81 m/s^2 gravity); at a sprint 88% of the speed carries; releasing Space while rising cuts the jump (a tap is about 40% of the height); 0.03 s of coyote time |
-| Running jump | clears a 4.5 m gap at sprint, fails 5.2 m |
+| Ground accel / air accel | 30 / 4 m/s^2; in the air he steers and slows but never speeds past his take-off speed |
+| Jump | take-off 3.55 m/s (apex about 0.63 m, 9.81 m/s^2); at a sprint 88% of the speed carries; releasing Space while rising cuts it (a tap is about 40% of the height); 0.03 s coyote time |
 | Auto step-up | 0.45 m (stairs are invisible ramps under the visible steps) |
-| Steep ground (U-020) | slopes steeper than about 45 degrees (normal's y under 0.7) are walls: he can't walk up them, slides off them (half the drop counts toward the fall) and uses the wall moves on them |
-| Too fast (U-020) | above 15 m/s (a fall of about 12 m) a grab tears loose (6 damage, speed x0.8, no regrab for 0.6 s) and wall kicks, wall-runs and clings are refused |
-| Space hop | onto a ledge 0.5 to 1.2 m above the feet, 0.35 s; higher ledges need the hands |
-| Vault | obstacle 0.5 to 1.2 m high and at most 1.2 m deep, clear landing, moving at 2.5 m/s or more; 0.45 s, keeps 85% speed. Over a low thin wall (up to 1 m high, 0.6 m deep) with a drop beyond, like a roof parapet, he vaults into the air and flies on with a 1.8 m/s lift (U-014). Window openings (1.4 x 1.9 m, sill at 0.8 m) take a hop or a vault |
-| Slide | Ctrl at 6 m/s+ (3 m/s+ down a grade of 0.2 or more): starts at 7.5 m/s, friction 3.5 m/s^2, gravity times the grade adds downhill and takes uphill (U-020): about 1.3 s on the flat, gathering speed (to 14 m/s) down stairs and steep streets; ends below 3 m/s; 0.5 m tall (passes under 0.6 m); releasing Ctrl stands him up keeping 80% speed |
-| Crawl | Z; passes 0.6 m gaps |
-| Wall cling | moving into a wall in the air holds him for 0.35 s, sliding 1.4 m/s, once per wall per airtime, keeping all his speed along it (U-006); palm-on-wall hands and a pat sound |
-| Wall moves (Space in the air within 0.8 m of a wall, 2 per airtime) | facing the wall (U-020): up-kick +4.6 m/s; looking along it at 5.5 m/s or more: wall-run up to 3 steps (0.9 s) at 6.5 m/s, 60% gravity; facing away: kick off at 5.5 m/s toward the camera, +3.4 m/s up plus a little for looking up |
-| Grab | hold a mouse button looking at a lip, sill, pipe or rung within 1.6 m of the eye and 0.2 to 2.2 m above the feet (2.8 m with a jump, about 3.8 m with an up-kick); two hands on one lip sit a shoulder apart |
-| Hanging | gravity off; the hands are a force-limited spring (one hand 35 m/s^2, two 80) toward a spot 0.4 m off the wall and 1.15 to 2.1 m below the higher hand; momentum carries, so one hand at speed slips after redirecting him and two hands can stop a sprint |
-| Pull up / over | W pulls up 1.1 m/s, S lets the arms out; mouse drags move the body (drag down hauls up, sideways shifts up to 0.45 m); pulled within 1.3 m of a lip top with room above, W climbs over (0.7 s) |
-| Push-off from a hang | Space with wall under the feet: looking up dynos +4.6 m/s, otherwise kicks off by the camera |
-| Bars and laches | no wall under the feet: he swings as a pendulum (head under the bar); Space pumps 1.6 m/s toward the camera, max 6.5 m/s; letting go keeps the swing velocity |
+| Steep ground (U-020) | slopes over about 45 degrees are walls: he can't walk up them, slides off them and uses the wall moves on them |
+| Too fast (U-020) | above 15 m/s (a fall of about 12 m) a grab tears loose (6 damage) and wall kicks, runs and clings are refused |
+| Space hop | onto a ledge 0.5 to 1.2 m above the feet, 0.35 s |
+| Vault | 0.5 to 1.2 m high, at most 1.2 m deep, at 2.5 m/s or more: 0.45 s, keeps 85% speed; over a parapet with a drop beyond he flies on with a 1.8 m/s lift; window openings (1.4 x 1.9 m, sill at 0.8 m) take a hop or a vault |
+| Slide | Ctrl at 6 m/s+ (3 m/s+ down a grade of 0.2+): starts at 7.5 m/s, friction 3.5 m/s^2, gathers speed downhill (to 14 m/s); 0.5 m tall; releasing Ctrl stands him up keeping 80% speed |
+| Crawl | passes 0.6 m gaps |
+| Wall cling | moving into a wall in the air holds him 0.35 s sliding 1.4 m/s, once per wall per airtime, keeping his speed along it |
+| Wall moves (Space in the air within 0.8 m of a wall, 2 per airtime) | facing it: up-kick +4.6 m/s; along it at 5.5 m/s+: wall-run up to 3 steps (0.9 s) at 6.5 m/s, 60% gravity; facing away: kick off at 5.5 m/s toward the camera |
+| Grab | hold a mouse button looking at a lip, sill, pipe, rung, pole, branch or vine within 1.6 m of the eye and 0.2 to 2.2 m above the feet (2.8 m with a jump, about 3.8 m with an up-kick) |
+| Hanging | gravity off; the hands are a force-limited spring (one hand 35 m/s^2, two 80) toward a spot under them; momentum carries |
+| Pull up / over | W pulls up, S lets the arms out; mouse drags move the body (drag down hauls up); near a lip top with room above, W climbs over (0.7 s) |
+| Push-off from a hang | Space with wall under the feet: looking up dynos +4.6 m/s, else kicks off by the camera |
+| Bars and laches | no wall under the feet: he swings; Space pumps 1.6 m/s toward the camera, max 6.5 m/s; letting go keeps the swing |
 | Grip endurance | 100; drains 6/s one hand, 2/s two, half on ladders, double with a splinted arm; at 0 the hands slip until it refills (30/s with free hands) |
-| Pipes and ladders | grabbable anywhere along their length: hand over hand |
-| Safe drops | 7 m (U-054: no roll; every fall lands as a roll did) |
-| Hide in box | E at a box, crate, dumpster or cabinet with an interior of 0.8 m or more: 0.6 s in, 0.5 s out |
-| Swimming | surface 1.4 m/s (sprint 2.2), dive with Ctrl, breath 40 s, then 8 HP/s; climbs out onto banks up to 0.6 m; wet for 120 game minutes |
-| Encumbrance | over 15 kg: sprint and jump -15%; over 25 kg: no sprint, no wall moves, no pulling up (lips up to 1.6 m only) |
-| Sound | every movement action has one fixed sound cue (U-004): steps by gait, jump, land, roll, vault, hop, slide, wall kick, wall-run step, cling, grab, two-hand catch, slip, release, pull-over, dyno, pump |
+| Climbing | pipes, ladders, street poles, tree trunks and vines are grabbable anywhere along them: hand over hand (U-104: the real ones, no added poles) |
+| Safe drops | 7 m (every fall lands as a roll did: U-054) |
+| Hide in a box | E at a box, crate, dumpster or cabinet with room inside: 0.6 s in, 0.5 s out |
+| Swimming | surface 1.4 m/s (sprint 2.2), dive with Ctrl, breath 40 s then 8 HP/s; climbs out onto banks up to 0.6 m |
+| Encumbrance | over 15 kg: sprint and jump -15%; over 25 kg: no sprint, no wall moves, no pulling up |
+| Sound | each movement has one fixed cue (U-004); footsteps by surface, kept low and soft (U-100) |
 
-**Fall outcomes** (h = fall height; U-054 took the roll out and made every fall land as a rolled one did): h <= 7 nothing; 7-10 m: (h-7) x 8 damage, 40% sprain; 10-12 m: (h-4) x 10 damage and a broken bone; over 12 m: death. A soft landing (bags, bins, cardboard, an awning) halves h.
+**Falls** (h = fall height): up to 7 m nothing; 7-10 m: (h-7) x 8 damage, 40% sprain; 10-12 m: (h-4) x 10 and a broken bone; over 12 m: death. A soft landing (bags, bins, cardboard, an awning) halves h.
 
-**Building for the movement set.** The city gives every move a place (U-005): facades with sills 1.4-2.0 m apart that need push-offs, pipes for hand-over-hand climbs, bars, scaffolds and sign frames for swings and laches, cling walls beside gaps, run-up walls with lips at 3-3.8 m, glass and smooth render where nothing holds.
-
-### The movement envelope (M3-50)
-
-Measured from the sim (metres); generators and hand layouts read `src/data/envelope.ts`, which says how each is measured, and `tests/sim/envelope.test.ts` re-measures it. Max is ideal input with Space held through jumps (he hops onto a far edge from up to 1 m low); comfortable takes off 0.4 m early, presses each timed Space or release 3 ticks late and aims grabs 0.1 m low, or is 90% of max where that changes nothing.
+**The movement envelope (M3-50)**, measured from the sim (`src/data/envelope.ts`; `tests/sim/envelope.test.ts` re-measures it); comfortable is late, imperfect input, max is ideal:
 
 | Move | Comfortable | Max |
 |---|---|---|
 | Standing jump (gap) | 2.35 | 2.75 |
 | Running jump (gap) | 6.05 | 6.55 |
-| Standing / running jump height (feet) | 0.55 / 0.55 | 0.61 / 0.61 |
 | Hop onto a ledge, no hands | 1.35 | 1.5 |
 | Mantle from standing / after a jump (lip) | 1.98 / 2.52 | 2.2 / 2.8 |
 | Run-up wall kick and grab (wall top) | 3.8 | 3.85 |
 | Wall-run (gap) | 12.7 | 13.3 |
-| Slide on the flat / down a 0.2 grade (from about 0.36 a slide never slows) | 5.97 / 13.36 | 6.63 / 14.84 |
-| Safe drop | 6.3 | 7 |
-| Safe drop onto bags, bins, cardboard / awnings, tarps | 7.2 / 7.2 | 8 / 8 |
+| Slide on the flat / down a 0.2 grade | 5.97 / 13.36 | 6.63 / 14.84 |
+| Safe drop (onto bags, bins, awnings) | 6.3 (7.2) | 7 (8) |
 | Lache (bar spacing) | 6.05 | 6.2 |
 | Jump and two wall kicks in a 2 m chimney (lip) | 5.85 | 5.95 |
-| Jump up a wall, kick back to a 3 m lip (distance) | 8.6 | 8.65 |
 | Wall-run into a kick off the wall (gap) | 18.05 | 18.15 |
-| Running jump / wall-run holding an item (gap) | 6.05 / 12.7 | 6.55 / 13.3 |
 
-## 4. Survival, health and time
+## 5. Survival, health, time and saving
 
-**Clock.** One game day lasts 36 real minutes (1 game hour = 90 s; time scale 40x). A run starts on day 1 at 06:00. Dawn 05:30-06:30, day to 18:30, dusk to 19:30, night until 05:30. Weather follows a seeded schedule: morning fog is common, rain comes in spells of 1-4 hours, clear spells between.
+**Clock.** A game day is 36 real minutes (an hour is 90 s). A run starts in late autumn, on day 1 at night. Dawn 05:30-06:30, day to 18:30, dusk to 19:30. Weather follows a seeded schedule: morning fog, rain in spells of 1-4 hours, snow some winter days (lying and melting). In autumn the trees turn and drop their leaves, which lie over the grass and patches of the ground.
 
 | Need | Drain (per game hour) | Below 20 | At 0 |
 |---|---|---|---|
-| Satiety | 4 (x1.5 while sprinting) | stamina regen -30%, stomach sounds, no natural healing | -2 HP/h |
-| Hydration | 5 (x1.2 hot afternoons, x1.5 sprinting) | blur, stamina -30% | -5 HP/h |
+| Satiety | 4 (x1.5 sprinting) | slower recovery, stomach sounds, no natural healing | -2 HP/h |
+| Hydration | 5 (x1.2 hot afternoons, x1.5 sprinting) | blur | -5 HP/h |
 | Energy | 5 awake, +12.5 asleep | blur, vignette, slow blinks, sprint -20% | he collapses asleep where he stands |
 
-**Health** is 100 HP. Natural healing: +1 HP per game hour awake when satiety and hydration are both 30 or more; +3 per hour asleep.
+**Health** is 100 HP; +1 HP a game hour awake when fed and watered, +3 asleep.
 
 | Injury | Cause | Effect | Treatment |
 |---|---|---|---|
-| Light bleeding | gunfire graze, glass, fall | 0.2 HP/s; clots after 90 s | bandage |
-| Heavy bleeding | direct hit (30%) | 1.0 HP/s, never clots | tourniquet (stops it; that limb works badly until a first-aid kit) or first-aid kit |
-| Sprain (leg) | fall, rare hit | no sprint, jump height halved | heals in 36 game hours; painkillers hide it for 4 h |
-| Broken leg | big fall, hit (rare) | limp at 1.5 m/s, no jump, mantle max 1.0 m, no wall-run | splint turns it into a sprain-level limp; heals in 7 days if splinted |
-| Broken arm | fall onto arm (20% of fractures) | no pipes, ropes or hanging; aim sway x3 | splint allows slow climbing; heals in 7 days |
-| Food sickness | spoiled food (or raw pork, 70%) | 12 game hours: vomiting (-15 hydration and satiety each time), no healing | time and water |
+| Light bleeding | graze, glass, fall | 0.2 HP/s; clots after 90 s | bandage |
+| Heavy bleeding | direct hit (30%) | 1.0 HP/s, never clots | tourniquet or first-aid kit |
+| Sprain (leg) | fall, rare hit | no sprint, half jump | heals in 36 game hours; painkillers hide it 4 h |
+| Broken leg | big fall | limp 1.5 m/s, no jump, mantle 1.0 m | splint makes it a sprain-level limp; 7 days |
+| Broken arm | fall onto an arm | no pipes, ropes or hanging; aim sway x3 | splint allows slow climbing; 7 days |
+| Food sickness | spoiled food, raw pork | 12 game hours: vomiting, no healing | time and water |
 
-Health, hunger, thirst and fatigue show through breathing, heartbeat, blur, vignette, limp sway and stomach sounds, on Anna's status page, and (U-014) on a small body figure bottom left: injured limbs coloured (amber sprain, red break, blue outline when splinted), the torso pulsing while he bleeds, and a tag for each need running low. It shows only while something is wrong (U-015), brightest just after a change.
+His state shows through breathing, heartbeat, blur, vignette, limp and stomach sounds, a small body figure bottom left while something's wrong, and the laptop's Status page (hover an injury, sitting, for what it is and how it's treated).
 
-**Sleep.** At a mattress, choose a wake time (default 06:00). Sleep is a time skip: needs drain at sleep rates, healing applies, machines return to their schedules, and if the shelter is compromised the raid happens (section 9). The ironman save is written on waking.
+**Sleep.** At a bed, or rough anywhere (hold Z: 40% less rest, exposed): the sleep menu's choices each say the hours and the wake time. Sleep is a time skip: needs drain at sleep rates, healing applies, machines keep their schedules.
 
-**Death and runs (U-104).** One save in localStorage, written as a run starts and each time he wakes from sleep in a bed or rough (not from collapsing). Dying shows what killed him and the run's death count (a skull and the number, also on the laptop by the date and time) for 3 s or until a key or click, then he wakes as he was at the last save; the count is written into the save at once, so no reload rolls it back, and a new run starts it at 0. A run seed drives loot placement, food ages, weather and small patrol offsets (each route's phase shifts by up to 8% of its loop). The city and the patrol logic never change. After the first run the intro is skippable.
+**Saving and death (U-104).** One save in localStorage (the desktop app: its own storage), written as a run starts and each time he wakes from sleep in a bed or rough (not a collapse); nothing else saves. Dying shows what killed him and the run's death count (a skull and the number, also on the laptop by the date and time) for 3 s or until a key or click, then he wakes as he was at his last save. The count is written into the save at once, so no reload rolls it back; a new run starts it at 0. Menu in settings goes to the main menu without saving: Continue wakes him at the last save. A run seed drives loot, food ages, weather, his sister's exit and small patrol offsets; the city and the patrol logic never change.
 
-## 5. Perception, alert states and the hivemind
+## 6. The machines
 
 ### Senses
-Each unit keeps an **awareness** value per tick: `rate = 2.5 x V` per second when V >= 0.04, else decay 0.15/s. Awareness 0.3 makes the unit Suspicious; 1.0 makes it Engaged.
-
-`V = exposure x light x posture x motion x falloff x weather`
+Each unit keeps an awareness per tick: `rate = 2.5 x V` a second when V >= 0.04, else decay 0.15/s. At 0.3 the unit is Suspicious, at 1.0 Engaged. `V = exposure x light x posture x motion x falloff x weather`:
 
 | Factor | Values |
 |---|---|
-| exposure | fraction of 5 body points (head, two shoulders, pelvis, knees) inside the cone with clear line of sight |
-| light | ambient (day 1.0, dusk 0.5, night 0.12) plus local lights (lampposts 0.6 within 8 m, neon 0.35 within 5 m, searchlight cone 1.0, his own headlamp 1.0 white or 0.4 red, laptop glow 0.5 at night); units with night vision floor it (cameras and humanoids 0.3 IR); thermal units ignore light |
-| posture | standing 1.0, crouched 0.55, crawling 0.3, hanging 0.8, curled in a box 0 (unless a unit within 1.5 m searches it) |
+| exposure | the share of 5 body points inside the cone in clear sight |
+| light | day 1.0, dusk 0.5, night 0.12, plus local lights (lampposts 0.6 within 8 m, neon 0.35 within 5 m, searchlight 1.0, his headlamp 1.0 white or 0.4 dim blue, the laptop's glow 0.5 at night); IR floors it for cameras and humanoids (0.3); thermal units ignore light |
+| posture | standing 1.0, crouched 0.55, crawling 0.3, hanging 0.8, curled in a box 0 (unless searched) |
 | motion | still 0.4, crawl 0.45, crouch-walk 0.6, jog 0.85, sprint, parkour or airborne 1.0 |
 | falloff | 1 - (d / range)^2 |
-| weather | range x0.75 light fog, x0.45 heavy fog; rain range x0.85 |
-| thermal | at night, within thermal range: light treated as 1.0; x0.1 under a mylar blanket, x0.3 while wet, 0 in water deeper than 1 m |
+| weather | range x0.75 light fog, x0.45 heavy fog, x0.85 rain |
+| thermal | at night within thermal range light counts as 1.0; x0.1 under a mylar blanket, x0.3 wet, 0 deeper than 1 m in water |
 
-Hearing: every noise is an event with a radius. A unit hears it when distance <= radius x its hearing multiplier (x0.6 when walls block line of sight). Footstep radii: crawl 1, crouch 2, jog 8, sprint 16 (x0.5 in rain); landing hard 15; vault 6; crowbar 20; glass 35; dropped ladder 30; nail gun 25; pistol 150; shotgun 180; grenade 250; firecrackers 120. A heard noise makes the unit Suspicious and it investigates. Gunfire and explosions are **hostile noises**: the hive starts a search centred on them.
+Hearing: every noise has a radius; a unit hears it within radius x its hearing (x0.6 through walls). Footsteps: crawl 1, crouch 2, jog 8, sprint 16 m (half in rain); landing hard 15; vault 6; crowbar 20; glass 35; pistol 150; shotgun 180; grenade 250. Gunfire and explosions start a search centred on them.
 
 ### Alert states (per district)
 
 | State | Enter | What happens | World shows |
 |---|---|---|---|
-| Unaware | default | units follow schedules | unit lights cool white |
-| Suspicious | a unit reaches 0.3, hears a noise, or a unit goes silent | that unit (or the nearest) walks to the point, scans 8 s, returns; no broadcast | that unit's light amber |
-| Engaged | a unit reaches 1.0 | armed units in range fire at once; after the broadcast delay his position goes to the network and updates live while any broadcasting unit sees him | all district lights red, LED boards switch to alert text, sirens, pursuit music (no tower searchlights: U-053) |
-| Searching | no broadcasting unit has seen him for 4 s | the hive sweeps the search area (below) for 150 s after the last contact | lights pulse red-orange, drone swarm audible |
-| Heightened | the search ends without contact | +50% patrol units, every camera active, awareness rates x1.3, until 06:00 next day | lights steady amber, LED boards show 加强巡逻 |
+| Unaware | default | schedules | lights cool white |
+| Suspicious | 0.3, a noise, or a unit gone silent | that unit investigates, scans 8 s, returns | its light amber |
+| Engaged | 1.0 | armed units fire; after the broadcast delay his position goes to the network, live while any unit sees him | district lights red, LED boards on alert, sirens |
+| Searching | unseen 4 s | the hive sweeps the search area for 150 s after the last contact | lights pulse red-orange |
+| Heightened | the search ends without contact | +50% patrols, every camera active, awareness x1.3, until 06:00 | lights steady amber |
 
-Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, quadruped 2.0, delivery robot 2.0, humanoid 2.5. Contact spreads to the whole district and to units of other districts within 300 m.
+Broadcast delays: turret 0.5 s, camera 1.0, hunter drone 1.0, patrol drone 1.5, quadruped 2.0, delivery robot 2.0, humanoid 2.5. **Convergence:** on contact ground units within 250 m path to the last known position, drones within 400 m fly to it, docks within 500 m launch hunter drones (one more every 20 s, three a dock), and after 45 s a squad of two humanoids leaves the district's garage. **Search:** from the last known position and heading, a disc growing 6 + 3t m (max 140), searchers checking hiding spots they pass (60%), drones spiralling with searchlights. **Silent units:** one disabled while alert doesn't report; 12 s later the nearest drone and ground unit come to look. **Jamming:** a jammer cuts the link within 25 m; over 20 s it's a beacon. **Tracking (U-104: no raids).** Coming home with a machine's eyes on him in the last 10 s, with a tracking tag on him, or seen there gives his position away: the machines converge on where he is and hunt him. A quadruped's launcher sticks a tag to his jacket (60% a shot, every 6 s, 20 m); the SDR dongle finds and picks it off in 1.2 s, or he takes his jacket off and goes over it by hand from the backpack (8 s, standing).
 
-**Convergence and escalation.** On contact: ground units within 250 m path to the last known position (LKP); drones within 400 m fly to it; every dock within 500 m launches a hunter drone at once and one more every 20 s while Engaged (max 3 per dock). After 45 s Engaged, a squad of 2 humanoids deploys from the district's nearest garage. Pursuit speeds are real: patrol drones 9 m/s, hunter drones 12, quadrupeds 8 (stairs fine, 1 m jumps, no climbing), humanoids 2.5 walk / 4.5 run (stairs only), delivery robots 2 (no stairs).
+### The units
 
-**Search.** From the LKP p, heading h and top speed 7 m/s: the centre is p + h x 7 x 2 s; the radius is 6 + 3t m, t = seconds since contact was lost, max 140 m. Units take search points in the disc, weighted toward hiding spots, level changes (stairs, ladders, tunnel mouths) and the heading. A searcher passing within 1.5 m of a hiding spot checks it with 60% chance (seeded). Drones sweep spirals with searchlights. Any fresh sighting returns to Engaged.
+| Unit | Movement | Senses (FOV, day / night range) | Where |
+|---|---|---|---|
+| Fixed / sweeping camera | none / pans +/-45 deg over 10 s | 70 / 60 deg, 30 / 18 (IR) | doors, gates, plazas, sites |
+| Smart lamppost | none | 90 deg, 22 / 14 | main streets (their speakers carry the announcements) |
+| Patrol drone | among the buildings: 9 m over its street, or wandering short hops between low roofs and the gaps between blocks 7-12 m up (U-103), 9 m/s | 100 deg down-forward, 35 / searchlight 30 + thermal 30 | every district, from docks on low roofs |
+| Hunter drone / FPV / bomber | 12 m/s, armed | as a patrol drone | launched on contact |
+| Quadruped | 3 m/s patrol, 8 chase | 120 deg, 30 / thermal 20; hearing x1.5 | streets, stairs, sites |
+| Humanoid | 2.5 / 4.5 m/s | 100 deg, 40 / 22 IR | checkpoints, sites, squads |
+| Heavy walker, giant spider, colossus | slow, on the widest streets | long range | a few in the city |
+| Crawler | the sewers and tunnels only (U-104: never on the streets) | short, thermal | underground |
+| Delivery robot | 2 m/s, no stairs | 120 deg, 18 / 10 | flat streets |
+| Turret, PIR, tripwire, pressure plate, acoustic sensor | static | | inside sites |
+| River drone boats, sonar buoys | 4 m/s / static | 50 m sonar | the rivers |
 
-**Silent units.** A unit disabled or jammed while Suspicious, Engaged or with a broadcast pending does not report. 12 s later the hive sends the nearest drone and ground unit to its position (Suspicious). Finding a destroyed unit starts a small search (radius cap 40 m) there.
+**Patrols.** Every unit has a route with dwell times and active hours. While Unaware its position is a function of the game time and its phase, so sleep is a cheap time skip and timings can be learned. Patrol drones fly 6 real minutes on a battery and sit on their dock 2: a learnable gap. Units think at 10 Hz, move at 60 Hz, path on a navigation graph (streets, stairs, tunnels). No machine starts within about 40 m of the hideout's way out in a run's first minutes; everywhere else they're out from the first second.
 
-**Jamming.** A jammer cuts the link within 25 m: pending broadcasts are lost (silent-unit rule applies), drones inside hover blind and drift out, cameras inside go dark to the network. Running it more than 20 s straight makes it an RF beacon: the hive sends a drone to its position.
+**How they look and move (U-104).** Eldritch and futuristic: all white, pointed and unfamiliar in shape (not dogs and men in boxes), no eyes or faces; more variety of shape and size within each kind. Their paths bend organically at small scale; no machine enters a wall, another machine's body or his. Each kind has its own attack pattern (wind-up, strike, recovery, repositioning) and keeps its distance rather than running into him. A destroyed machine or a dead camera fades to grey-black; a machine that dies falls as a ragdoll.
 
-**Tracking home.** The hideout becomes *compromised* if he enters its tunnels while any unit has had line of sight to him within the last 10 s or while a tracking tag is stuck in his clothes. A compromised shelter is raided that night (section 9).
-
-## 6. Combat and damage
+### Combat
 
 | Enemy weapon | Fire | Damage | Notes |
 |---|---|---|---|
-| Humanoid rifle | 3-round burst / 1 s | 30 per hit | hit chance 0.75 x min(1, 2 x visibility) x (1 - 0.11 x his speed) x (1 - d/80) (M4-54: standing in the open at 20 m he's dead in about 4 s; sprinting away he mostly gets clear) |
+| Humanoid rifle | 3-round burst a second | 30 a hit | hit chance falls with his speed, distance and cover |
 | Hunter drone SMG | 2-round burst / 0.8 s | 8 | accuracy 0.4 |
 | Turret | 6 rounds/s | 12 | accuracy 0.7 within 40 m |
-| Quadruped tag launcher | 1 / 6 s, 20 m | 0 | 60% hit: a tracking tag sticks to his clothes |
+| Quadruped tag launcher | 1 / 6 s, 20 m | 0 | sticks a tracking tag (above) |
 | Quadruped shock prod | 1.5 m | 15 + 1 s stun | |
 
-Each hit: 30% heavy bleed, otherwise light; 15% limb hit (leg sprain or arm graze).
+Each hit: 30% heavy bleed, otherwise light; 15% a limb (sprain or graze). Machines have hit zones (sensor heads blind them, batteries shut them down); U-104 lowers most machines' health (dogs and humanoids most, drones as they are). His weapons: knife (40, takedown from behind: 2 s within 1.5 m of a quadruped or humanoid not Engaged), crowbar (55, slow), pistol (25, 15 rounds, heard 150 m), pump shotgun (8 x 12, 5 shells), nail gun (14, quiet, 15 m), grenade (6 m, 200), EMP (6 m: drones crash, robots off 30 s, cameras 60 s; 3 charges). Ammunition is scarce.
 
-| Unit | HP | Hit zones (damage multiplier) |
-|---|---|---|
-| Patrol drone | 40 | body 1.0, rotors 1.5 |
-| Hunter drone | 70 | body 0.8, rotors 1.5 |
-| Quadruped | 150 | body 0.2, sensor head 1.0 (60 blinds it), legs 0.6, belly battery 1.5 |
-| Humanoid | 300 | armour 0.1, sensor head 1.0 (75 blinds it), knees 0.8 (100 each immobilises), back battery 2.0 (120 shuts it down) |
-| Turret | 500 | body 0.05, sensor 1.0 (100 blinds it) |
-| Camera | 20 | any 1.0 |
+## 7. Items, crafting and loot
 
-Player weapons: knife (40 melee; takedown from behind), crowbar (55 melee, slow), pistol (25, 15-round magazine, noise 150 m), pump shotgun (8 pellets x 12, 5 shells, 180 m), nail gun (14, 30 nails, 25 m noise, 15 m range), grenade (radius 6 m, 200), EMP (radius 6 m: drones crash, robots off 30 s or permanently within 2 m, cameras off 60 s, turrets off 45 s; 3 charges). **Takedown:** within 1.5 m of a quadruped or humanoid that is not Engaged, from its rear 120 degrees, knife: 2 s, the unit shuts down, noise 6 m. Ammunition is scarce: a police station run yields 1-3 magazines.
+Grid backpack 8 x 6 (the hiking pack: 10 x 7); items are rotatable rectangles with weights; five hotbar slots.
 
-## 7. The machines
-
-| Unit | Movement | Senses (FOV, day / night range) | Placement |
-|---|---|---|---|
-| Fixed camera | none | 70 deg, 30 / 18 (IR) | doors, gates, intersections |
-| Sweeping camera | pans +/-45 deg over 10 s | 60 deg, 30 / 18 | sites, plazas |
-| Smart lamppost | none | 90 deg, 22 / 14; lamp light 0.6 | main streets |
-| Patrol drone | flies loops at 25-40 m, 9 m/s | 100 deg cone down-forward, 35 / searchlight 30 + thermal 30 | every district, from docks |
-| Hunter drone | 12 m/s, armed | as patrol | launched on contact |
-| Quadruped | 3 m/s patrol, 8 m/s chase | 120 deg, 30 / thermal 20; hearing x1.5 | streets, stairs, sites |
-| Humanoid | 2.5 / 4.5 m/s | 100 deg, 40 / 22 IR | checkpoints, sites, squads |
-| Turret | static | 90 deg, 60 / 45 thermal | bridge, police armoury, river pier |
-| Delivery robot | 2 m/s, no stairs | 120 deg, 18 / 10 | flat streets in Jiefangbei and the riverfront |
-| Motion sensor (PIR) | static | 90 deg, 10 m, motion over 0.5 m/s | inside sites |
-| Tripwire (laser) | static | a line | inside sites |
-| Acoustic sensor | static | hearing x2 | electronics market, tunnels |
-| River drone boat, sonar buoy | 4 m/s / static | 50 m sonar (engine noise) | the rivers |
-
-**Patrol model.** Every unit has a route (waypoints with dwell times) and a schedule (active hours). While Unaware, a unit's position is a pure function of the game time and its run-seed phase offset, so sleeping is a cheap time skip and the player can learn exact timings. When alerted it leaves the route, then paths back and resumes. Patrol drones fly 6 real minutes on a battery (4 game hours), then sit on their dock 2 real minutes to recharge: the gap in coverage is deliberate and learnable. Movement and combat run in real seconds; schedules run on the game clock. Units think at 10 Hz (staggered), move at 60 Hz. Ground units path on a navigation graph built with the city (streets, stairs, tunnels).
-
-## 8. Items and crafting
-
-Grid backpack: 8 x 6 cells (a hiking pack found in a Jiefangbei sports shop raises it to 10 x 7). Items are rectangles, rotatable. Five hotbar slots bind to backpack items. Weights drive encumbrance.
-
-| Item | Size | kg | Uses |
-|---|---|---|---|
-| Grappling hook | 2x2 | 1.5 | climb to a ledge up to 20 m above; rappel down; pull down a loose sign or shutter |
-| Telescoping ladder | 1x4 | 7 | lean on a wall (4 m); bridge a 3.8 m gap; dropping it is loud (decoy) |
-| Crowbar | 1x3 | 1.8 | pry doors, shutters, vents, crates, scooter batteries; melee |
-| Lockpick set (or improvised) | 1x1 | 0.1 | opens bad locks only (padlocks, old doors), silent but slow |
-| Keys, keycards | 1x1 | 0 | specific doors; keycards can be cloned |
-| Keycard cloner | 1x1 | 0.2 | copy a card in reach of a unit or reader; read badges off dead terminals |
-| Bolt cutters | 1x3 | 2.5 | chains, padlocks, fences, grates, cables (relay cut) |
-| Rope + carabiners | 2x2 | 2 | anchor and rappel, leave a fixed line, haul-rope trolley part |
-| Chalk bag | 1x1 | 0.2 | chalked hands: half the hang and pipe stamina while the chalk lasts (U-053, in place of climbing gloves); insulated gloves needed for the substation |
-| Headlamp | 1x1 | 0.1 | light (white is seen far; red is dim); read documents at night |
-| Binoculars | 2x1 | 0.6 | zoom; observe units (patrol logs) |
-| SDR dongle | 1x1 | 0.05 | drone routes, tag detection, jammer part |
-| Camera tap | 1x1 | 0.1 | live feed, loop a camera for 90 s |
-| Drone controller | 2x2 | 0.8 | fly a salvaged drone (8 min battery); aerial map |
-| Signal jammer | 2x2 | 1.2 | cut the hive link 25 m; blind a sensor bus; rail-deck escape |
-| EMP device | 2x2 | 1.8 | 3 charges; downs drones, stops robots; hideout trap |
-| Grenade | 1x1 | 0.4 | breach weak doors, robots, decoy |
-| Fire extinguisher | 1x2 | 4 | smoke cloud 6 m for 20 s (blocks sight and thermal); puts out fire |
-| Firecrackers 鞭炮 | 1x2 | 0.3 | timed noise decoy (120 m), scares delivery robots off route |
-| Mylar blanket | 1x1 | 0.1 | beats thermal while worn; treats hypothermia after a swim |
-| Knife | 1x2 | 0.2 | melee, takedowns, cut rope or cloth |
-| Pistol (QSZ-92) / magazines | 2x2 / 1x1 | 0.8 / 0.3 | weak points; loud |
-| Pump shotgun / shells | 1x4 / 1x1 | 3.2 | close weak points, breach locks |
-| Nail gun | 2x2 | 2.5 | quiet rotor shots, pin a door shut |
-| Car battery, inverter | 2x2, 2x1 | 15, 1.5 | power the hideout and laptop; start the boat |
-| Battery pack (scooter) | 2x1 | 2 | jammer, EMP, drone, grinder power |
-| Angle grinder | 2x2 | 2.5 | cut a blast door bolt or bars (loud 60 m) |
-| Breaching charge | 1x1 | 1 | blast door, wall hatch (250 m noise) |
-| Oxygen kit | 2x3 | 5 | 90 s underwater; treats smoke and gas |
-| Fuel jerrycan (20 L) | 2x3 | 18 | boat fuel |
-| Boat key / CAN interface | 1x1 | 0 | start the river-police boat (key, or laptop + CAN hotwire) |
-| Healing: bandage, tourniquet, splint, painkillers, first-aid kit | 1x1, 1x1, 1x3, 1x1, 2x2 | small | see section 4 |
-| Water bottle (500 ml), purification tablets | 1x2, 1x1 | 0.5 | drink; refill at taps or the river (purify first) |
-
-Food (shelf life from manufacture; loot spawns with a seeded age): instant noodles 180 d, luncheon meat 1000 d, zhacai 榨菜 365 d, chocolate 300 d, rice crackers 120 d, cured sausage 60 d, energy drink 365 d, bread 3 d, zongzi 3 d, steamed buns 2 d, tea eggs 2 d, peaches 2 d, raw pork 1 d. Spoiled food causes sickness. Anna reports remaining shelf life only after a scan.
-
-**Crafting** at a workbench (hideout or alternative shelter). Recipes are realistic in spirit, abstract in detail (parts, not instructions). Weapons and explosives are found, never crafted.
-
-| Result | Parts |
+| Item | Uses |
 |---|---|
-| Signal jammer | SDR dongle + RF amplifier + battery pack + circuit board |
-| EMP device | capacitor bank + copper coil + battery pack + trigger switch |
-| Camera tap | circuit board + data cable + clip leads |
-| Drone controller | circuit board + drone radio module + battery pack |
-| Keycard cloner | RFID reader + circuit board + battery pack |
-| Grappling hook | steel hook + rope |
-| Haul-rope trolley | pulley block + 2 carabiners + harness |
-| Battery pack | scooter battery cells + duct tape |
-| Splint | 2 steel rods + duct tape |
-| Bandage | clean cloth + alcohol |
-| Improvised lockpick | 2 hairpins (3 uses) |
-| Clean water | river water + purification tablet |
-| Solar charger | small solar panel + charge controller (+5% hideout battery per day) |
+| Grappling hook | climb to a ledge up to 20 m above; rappel |
+| Telescoping ladder | lean on a wall (4 m, standing in front of it); bridge a 3.8 m gap; dropped it's loud |
+| Crowbar | pry doors, shutters, vents, crates, scooter batteries; melee |
+| Lockpicks | cheap locks, silent, slow |
+| Keys, keycards, his site card, his father's badge | their doors; cards can be cloned |
+| Keycard cloner | copy a card near a reader or a humanoid |
+| Bolt cutters | chains, padlocks, fences, grates, camera cables |
+| Rope, carabiners, harness, pulley block | anchors, rappels, fixed lines, the haul-rope trolley |
+| Chalk bag | half the grip drain while it lasts |
+| Headlamp | not his at the start: found. White (seen far) or dim blue |
+| Binoculars | zoom; log machines (the laptop's Logs) |
+| SDR dongle | drone routes, tag finding, jammer part |
+| Camera tap | a camera's feed on the laptop; loop it 90 s |
+| Drone controller | fly a salvaged drone (8 min) |
+| Signal jammer, EMP device | cut the hive link 25 m; down drones, stop robots |
+| Grenade, firecrackers, fire extinguisher | breach, decoy noise, smoke |
+| Mylar blanket | beats thermal while worn |
+| Knife, pistol, shotgun, nail gun | weapons |
+| Car battery + inverter | power at a hideout (bench, charging) |
+| Battery pack | one charges everything he carries that takes charge, the laptop included, full (U-104); jammer, EMP, drone and grinder power |
+| Angle grinder, breaching charge | blast doors, bars |
+| Oxygen kit, jerrycan, boat key / CAN interface | the river and underground routes |
+| Healing: bandage, tourniquet, splint, painkillers, first-aid kit | section 5 |
+| Water bottle, purification tablets | drink; refill at taps or the river (purify first) |
+| Toolbox, bedroll, mattress, folding crate | make a bench, a bed, storage; picked back up again (the crate when empty) |
+| Documents | read in the backpack (section 2) |
 
-Salvage: a downed drone yields rotors, a radio module, a camera module and a battery pack; a disabled quadruped yields servos, a sensor head and a power cell; a humanoid yields armour plate, a power cell and a rifle that will not fire for him (biometric lock).
+Food spoils from its date of manufacture (noodles 180 d, luncheon meat 1000 d, chocolate 300 d, bread 3 d, steamed buns 2 d, raw pork 1 d...); spoiled food makes him sick; the laptop's Scan says how much life a scanned packet has left.
 
-## 9. Hideouts (U-013, U-018)
+**Crafting** at a bench (a toolbox on a table, square on its top): jammer (SDR + RF amplifier + battery pack + board), EMP (capacitor bank + coil + battery pack + trigger), camera tap (board + cable + clip leads), drone controller (board + radio module + battery pack), cloner (RFID reader + board + battery pack), grappling hook (steel hook + rope), haul-rope trolley (pulley block + 2 carabiners + harness), battery pack (scooter cells + tape), splint (2 rods + tape), bandage (cloth + alcohol), lockpicks (2 hairpins), clean water (river water + tablet), solar charger. Weapons and explosives are found, never made. Salvage from downed machines: rotors, radio and camera modules, servos, power cells, armour plate.
 
-The intro ends at 06:00 on day 1 in his friends' old hideout: the brick-arched air-raid chamber under Jiaochangkou, its vent shaft rising to a grate in the plaza under shop neon, searchlights and passing patrols. It has their old mattress and their crate (a string of firecrackers, tape, a rag) and nothing else: no bench, no power. His backpack holds 2 instant noodles, 1 luncheon meat, 1 bread a day old, 3 water bottles and 1 bandage. From there he makes more hideouts, as many as he likes, and where he makes them changes every run:
-- **Scouting.** Any enclosed space can be a shelter: a flat in an enterable block, a roof hut, a shop's back room, a basement, a tunnel chamber such as the brick-arched air-raid side tunnel under Jiaochangkou (gate in a Shibati retaining wall, a vent shaft to the grate under the junction's searchlights). Good sites are off patrol routes and drone corridors, show no light outside, and have two ways out. He learns that by watching, and Anna can rate a site once the laptop is up.
-- **Bed.** Claim a bed where one is (a mattress in a flat, a bunk in a site office), or carry a bedroll or mattress there and place it. Sleeping rough anywhere else works but restores 40% less energy, and he is exposed while asleep.
-- **Workbench.** Any table or bench becomes a workbench once a toolbox is placed on it.
-- **Storage.** Each hideout keeps its own: the containers within 15 m of its bed and nearer it than any other hideout's (or a crate he places). Everything stays put between trips.
-- A hideout is a claimed bed; the bench, storage, power (car battery and inverter, per hideout) and a lamp count when within 15 m. Sleeping in any of his beds saves the run. The inventory screen lists his hideouts, nearest first, until Anna's journal does (M5-02).
-- Every furnished floor of an enterable block and every roof hut is a recorded site (world `sites`): its bed, table and containers, exits, windows (light leak at night) and street-facing walls (ground patrols); M4 adds patrol and drone routes, Anna's rating reads them.
-- The fixed air-raid shelter of earlier builds (`?scenario=hideout`) stays as a furnished test scene.
+**Loot.** Containers roll seeded tables by what they are and where: kitchens, bedrooms, shops, workshops, cars; the rarer buildings' rooms (offices, clinics, barracks, armouries); each high-security site's own (tier 2 tools, medicine and electronics; tier 3 weapons and network kit; tier 4 the drone hub's). Toolboxes turn up in kitchens, shops, car boots, workshops and the substation (U-099). Every item can be found somewhere.
 
-**Raid.** If compromised, a raid starts at a seeded time between 01:00 and 04:00. He wakes to breaching noises with 10 s before units reach the chamber. Survival options: a second exit he opened beforehand (clear the collapsed side passage with a crowbar, or cut the vent grate with bolt cutters and leave the telescoping ladder in the shaft), an EMP trap rigged on the gate, or fighting with what he slept beside. Surviving loses the shelter and everything in its stash (the machines burn it); he must make a new one elsewhere (a Hongyadong cliff cellar, a hotpot restaurant's 防空洞 cool room in Jiefangbei, a metro service room at Xiaoshizi). Each has a mattress, a small stash and a bench. Unprepared, he dies.
+## 8. Hideouts
 
-## 10. Map plan
+He wakes in an unknown hideout: the brick-arched air-raid chamber under Jiaochangkou (his friends' once; he doesn't know it), its vent shaft up to a grate in the plaza. It has a crate (firecrackers, tape, a rag) and a table beside it, no bed, no power. He starts with no headlamp. From there he makes his own hideouts anywhere: a bed (one he finds, or a bedroll or mattress he places) makes a hideout; a toolbox on a table makes a bench; the containers within 15 m nearer its bed than any other's are its storage; a car battery and inverter power it. Sleeping in any of his beds saves the run. Being tracked there gives him away (section 6): he's hunted where he is, so leading them home is still the mistake.
 
-**The map is frozen (U-053):** the director judges the city as it stands basically right. Its layout and geometry stay as they are: fix what's broken, change nothing else unless the director asks.
+## 9. The city
 
-**Heightfield ground (M3-41a, D-016):** `world/heightfield.ts`: a grid of heights (two triangles per cell, the same in collision and render) with a 4 m collision shell under the surface and holes; it sits in the collision index beside the solids (physics treats the shell under a footprint as one more solid, rays march it). Steep faces render as retaining walls; the far view gets one coarse mesh. **Yuzhong base world (M3-41b, `world/yuzhong/`, `?scenario=yuzhong`):** the DEM upsampled to a 2 m heightfield, riverbeds sunk under the water line (y 12, game y = elevation - 150) inside the OSM river polygons, streets levelled across and eased along; the peninsula found by flood fill from Jiefangbei (the far banks are drawn, not built for play). Every OSM footprint becomes a fitted turned lot at its real height (levels or height tag, else by area), skipping any across a roadway; rows of infill lots then front every street with 1.6-3.2 m alleys, deep where there's room. Each lot's base is its street-front height; the ground under it and a 3 m apron is levelled to it (lower bases win where neighbours overlap; aprons stop at street surfaces), and a foundation runs down to the lowest ground round it. Only lots on level ground can be hollowed. Streets are thin ramps over the ground (stairs stepped); bridges arch to clear what they cross. Lots are built by the tile city's lot code in their own frame and turned into place. **Variety (M3-46, U-020):** facade, tile, plaster and glass textures are near-white and every building takes a colour from `world/city/palette.ts` (render greys, creams, pale yellows and blue-greys; white and cream tile with salmon at 6%; brown-grey brick; curtain walls in blue, teal, silver, bronze and smoke); OSM types pick the look (offices, shops, hotels and malls in gridded stone or glass, homes in tile and render, historic in brick). Towers (`towers.ts`) get podiums on big lots, setbacks over 80 m and a crown (plant room, stepped top, spire or lit band). The crowded centres (Jiefangbei, Jiaochangkou, Hongyadong, Xiaoshizi) build higher and carry LED screens and neon blade signs; facades are weathered, not ruined. Streets are painted on the ground (asphalt for roads, paving for footways and stairs). **Turned solids (M3-40):** a solid can be turned by a yaw about a pivot (`turn()` in geom.ts); collision, rays, ramps, grips and rendering work in its own frame, so buildings and stairs can follow real streets at any angle. Carve a building before turning it. **Going 1:1 (U-017):** `src/data/geo` holds the real place, made by `tools/geo-fetch.mjs`: bare-ground elevation every 10 m over 2.8 x 2.8 km (SRTM-based tiles, opened over 120 m to strip building bulk) and an OpenStreetMap extract (streets with widths and stairs, 860 building footprints, parks, Line 1/2, bridges, the cableway, river banks, landmarks) in local metres from the north-west corner (lon 106.564, lat 29.5735). `src/world/geo.ts` reads it (`groundAt`, `toLocal`). M3-41 rebuilds the city on it; until then the plan below holds. The Yuzhong peninsula compressed to 1.4 x 0.7 km. World axes: x east, y up, z south (north is -z). The map is authored as two ASCII layers of 20 m tiles (70 x 35: tile type and ground level) in `src/data/map.ts`; set pieces are hand-built in `src/world/sets/`; tunnels are polylines in `src/data/tunnels.ts`. Ordinary fabric is generated from the tiles with a fixed layout seed: buildings split into 1-4 blocks with 1.5-4 m alleys, rooftop clutter, pipes, balconies, shutters, stairs between levels, props. Level differences between tiles make retaining walls, stair streets and buildings whose roofs are the street above.
+**The map is frozen (U-053):** its layout and geometry stay as they are; fix what's broken, change nothing else unless the director asks (U-104 asked: one of the two wires outside the start hideout goes).
 
-Game height is real elevation minus 150 m; the rivers stand at 12 m. Coordinates are metres east and south of the
-map's north-west corner (lon 106.564, lat 29.5735), 1:1.
+The 1:1 Yuzhong peninsula from OpenStreetMap and SRTM (`src/data/geo`, `tools/geo-fetch.mjs`): game height is real elevation minus 150 m, the rivers stand at 12 m, x east and z south of the map's north-west corner (lon 106.564, lat 29.5735). Every OSM footprint is a fitted, turned lot at its real height; rows of infill front every street with 1.6-3.2 m alleys; half the blocks that fit a stair core can be entered, their floors mazes of rooms, stairs, locked doors and collapses; parapets, roof clutter, pipes, fire escapes, AC units and balconies make the facades climbable; Shibati's brick terraces step down the Eighteen Stairs. Every building's type (homes, offices, clinics, workshops, military posts, malls) shows on the laptop's map from the start.
 
-| Place | Where (x, z) | Ground | What's there |
-|---|---|---|---|
-| Shibati 十八梯 | 552, 2021 | 88 | the Eighteen Stairs lined with terraces of brick shop houses stepping down the hill, roofs a running jump apart; the Grand Tunnel's entrance stairway at (576, 1996) |
-| The friends' hideout | 495, 1945 | 84 | the air-raid chamber off the Grand Tunnel, its vent grate in a paved patch of the street above (490, 1942) where patrols pass; a run starts here |
-| Grand Tunnel 大隧道 | 576, 1996 → 378, 1938 | 84 | 8.5 m or more under the street from the Shibati stairway toward Jiaochangkou: the side tunnel to the hideout, a rusted gate at the foot of the way in, the hotpot cool room, a stairway up to the street |
-| Jiaochangkou 较场口 | 371, 1897 | 106 | the junction; the metro stations (Line 1 and the Line 2 terminus) underground, their street entrances shuttered (the way in is M3-43) |
-| Construction site 工地 | 497, 1892 | 97 | the real 日月光中心四期 plot dug out behind shoring and hoarding: Li Wei's half-built tower (14 floors cast, a stair core, a ladder) and the tower crane |
-| Line 2 beam 2号线 | 0-335, 911-1114 | 50-60 | two beams 9 m over the Jialing bank from the Linjiangmen portal west to the map's edge, on piers, ladders every 150 m; the stalled train 120 m from the portal |
-| Jiefangbei 解放碑 | 907, 1486 | 118 | CBD towers, malls, LED screens, the monument |
-| Hongyadong 洪崖洞 | 1074, 948 | 64 | the stilt complex down the Jialing cliff |
-| Xiaoshizi 小什字 | 1546, 1168 | 102 | metro stations, toward the Dongshuimen bridge |
-| Chaotianmen 朝天门 | 1794, 688 | 75 | the tip, Raffles City |
-| Cableway 长江索道 | 1469, 1426 | 121 | the north station |
-
-**City fabric (M3-41b/c).** Every OSM footprint as a fitted turned lot at its real height (unknown heights meet a neighbour's roof, known ones give or take a floor), biggest first, parts of others dropped; rows of infill along every street round its bends, 1.5-4 m alleys between neighbours (crates, dumpsters, scaffold bars and fences in them); Shibati's terraces along the Eighteen Stairs. Each lot is levelled to its street-front height. Half the blocks that fit a stair core can be entered; one stands where no ground rises round it, with a levelled landing at its door on a sloping street and a ground-floor slab over ground falling away. Parapets 0.6 m (a lip to grab, cover when crouched, a vault to clear at a run, U-014) and roof clutter. Shibati houses are 2-4 floors under pitched tile roofs with ridges along the street. More than half the low roofs have a neighbour in jumping range (4 m across, up to 4 m down).
-
-**Climbing the fabric (U-002, U-005).** Each facade of an ordinary block rolls one of: a drain pipe at a corner (street to roof edge), a fire-escape ladder whose drop section is pulled up 2.3 m (jump to reach it), a column of sills and AC units 1.4-1.9 m apart with the odd 2.3-2.6 m gap that needs a push-off, balconies on street fronts (slab edge and rail top), or nothing. Glass towers stay smooth. Shop signs hang a frame bar 0.6 m out over the street. Shibati eave plates are lips all round. Alleys inside a block get hide crates and dumpsters, scaffold bars 2.4 m apart at 3-3.8 m (swing and lache), or a 2.4 m fence with a 0.65 m crawl gap.
-
-Landmarks moved for play are logged in DECISIONS.md. Bridges, the cableway and the far banks stand where they really are (the geo data); Nan'an and Jiangbei across the rivers are backdrop, drawn but not built for play.
-
-### High-security sites
-
-| Site | Ways in | Loot tier | Unique hazard |
-|---|---|---|---|
-| Construction site 工地 | scaffold from the alley; crawl under the hoarding along the drainage ditch; drop from the Line 2 beam onto the hoist roof; gate with the gate camera looped | 2: tools (bolt cutters, rope, carabiners, harness, steel hook, nail gun, angle grinder, jerrycan, breaching charge, pulley block in the crane cab) | loose scaffold planks that fall under a sprint; the crane moving loads on autopilot |
-| Hospital 渝中医院 | ambulance bay (camera + keycard); laundry crawlspace from the service alley; helipad by grapple; basement link to the air-raid tunnels | 2: medical (first-aid kits, tourniquets, splints, painkillers, mylar, oxygen kit, defibrillator capacitor bank) | pressure-plate pharmacy floor; dark wards with motion sensors |
-| Police station 派出所 | roof hatch by grapple; pry the garage shutter and crawl; rear cell-block bars with bolt cutters; front door with a looped camera and keycard | 3: weapons and keys (pistol, magazines, shotgun, grenades, smoke, boat key, keycards) | the armoury ceiling turret |
-| Electronics market 数码城 | loading dock during the delivery-robot shift change; skylight by rope; vent duct from the hotpot kitchen next door; the underground mall passage | 2-3: electronics (SDR dongle, RFID reader, circuit boards, clip leads, data cables, CAN interface, battery packs, power banks) | acoustic sensor arrays on the shop floors |
-| Telecom exchange 电信枢纽 (machine relay node) | cable tunnel from the air-raid tunnels; antenna-mast climb from the next roof; generator-room vent; front gate (keycard + loop) | 3: network (RF amplifier, network credentials, fibre tap) | server-hall gas suppression (8 s to get out); a dense camera mesh |
-| Substation 变电站 | cut the dark back fence; drain culvert under the yard; control-building roof from the retaining wall; main gate with his father's badge | 2: electrical (insulated gloves, copper coil, the single spare HV fuse) | live HV yard: arcs kill within 1 m of busbars (a hum warns) |
-| Cableway station 索道站 | public stair entrance (cameras); tower maintenance ladder from the Xinhua Road roofs; pry the cabin garage door | 2: operator key, maintenance logs | the exposed bullwheel when powered |
-| Metro control room 小什字控制室 | face-recognition gates (loop the camera or vault in a drone gap); street ventilation shaft (crawl); the Line 6 track tunnel; emergency hatch | 3: metro keys, blast-door keycard, rail-deck schedule, pump panel | live third rail; face-recognition gates |
-| Raffles drone hub and The Crystal 来福士 | service elevator shaft climb; exterior maintenance gantry from a lower roof; grapple from the neighbouring tower; lobby with keycard | 4: drone controller parts, big battery packs, thermal camera module, a second HV fuse | 250 m height with wind gusts; glass-floor pressure sensors |
-| Bridge checkpoint 东水门检查站 | road deck (turrets, scanners); climb the north pier truss from the riverbank; the Line 6 rail deck from Xiaoshizi | 3: military crate (breaching charge, EMP parts) | turret cluster and scanner gates |
-| River-police pier 水警码头 | swim from the stilt docks; gangway (cameras); cargo crane over the pier | 2: the patrol boat, life jackets | sonar buoys, river drone boats, cold water |
-
-Every site has an approach with an unwatched window of 10 s or more (a coverage test proves it).
-
-## 11. Escape routes
-
-| Route | Required | Where |
+| Place | Where (x, z) | What's there |
 |---|---|---|
-| A. Dongshuimen rail deck 桥下 | cut the bridge sensor-bus relay (bolt cutters + insulated gloves) | substation relay cabinet (tools from the construction site / substation) |
-| | signal jammer (SDR + RF amplifier + battery pack + board) | electronics market, telecom exchange |
-| | reach the rail deck | Line 6 tunnel through the metro control room's track door, or climb the north pier with the grapple |
-| | cross 300 m of truss past maintenance drones, then drop to the Nan'an bank | the bridge |
-| B. Yangtze Cableway 索道 | **cabin**: restore the cableway feeder with the spare HV fuse + operator key, ride 60 s past the line drone | substation, cableway station |
-| | **trolley**: haul-rope trolley (pulley block + carabiners + harness), climb the station tower, slide 40 s | construction site, cableway station |
-| C. River at night 雾中 | river-police boat + 20 L fuel + boat battery (any car battery) + ignition (boat key or CAN hotwire) | pier; construction site or hospital generator room; police station or electronics market |
-| | slip past sonar buoys and drone boats: fog and night with the engine off drifting, or jammer, or EMP | the Yangtze |
-| D. Underground 隧道尽头 | flooded section: run the tunnel pumps (spare HV fuse in the metro feeder + pump panel) or swim it with the oxygen kit | substation + metro control room, or hospital |
-| | sealed blast door: angle grinder + battery pack, breaching charge, or the blast-door keycard | construction site, bridge checkpoint, metro control room |
-| | seismic sensors: move slowly or EMP them | Line 1 tunnel west under the border wall |
+| Shibati 十八梯 | 552, 2021 | the Eighteen Stairs; the Li family flat in the upper terraces (a key place: walk in from the street) |
+| The start hideout | 495, 1945 | the air-raid chamber off the Grand Tunnel, its vent grate in the street above |
+| Grand Tunnel 大隧道 | 576, 1996 to 378, 1938 | under the street from Shibati toward Jiaochangkou |
+| Jiaochangkou 较场口 | 371, 1897 | the junction, the metro stations below |
+| Construction site 工地 | 497, 1892 | the real plot under construction: Li Wei's half-built tower and the tower crane |
+| Line 2 beam | 0-335, 911-1114 | the monorail beams over the Jialing bank; the stalled train |
+| Jiefangbei 解放碑 | 907, 1486 | the CBD, malls, LED screens, the monument |
+| Hongyadong 洪崖洞 | 1074, 948 | the stilt complex down the Jialing cliff |
+| Xiaoshizi 小什字 | 1546, 1168 | metro stations toward the Dongshuimen bridge |
+| Chaotianmen 朝天门 | 1794, 688 | the tip, Raffles City |
+| Cableway 长江索道 | 1469, 1426 | the north station |
 
-**Shared and scarce.** There is one spare HV fuse in the substation (a second one sits in the Raffles hub, tier 4): restoring the cableway or the metro pumps uses it. The construction site feeds three routes. The jammer serves A and helps C. The bridge relay cut is noticed: machines repair it at the next 06:00, so route A must be run the same night.
+**High-security sites** (each a key place with its own layout, U-104):
 
-Endings: each route has its own short ending (section 13).
+| Site | Ways in | Loot | Hazard |
+|---|---|---|---|
+| Construction site | scaffold over the hoarding from the street; crawl under it along the ditch; drop from the next roof onto the hoist (the real Line 2 beam is 850 m off, D-131); the gate (his site card, under its camera) | tier 2 tools: bolt cutters, rope, carabiners, harness, steel hook, nail gun, grinder, jerrycan, breaching charge; the pulley block in the crane cab | loose scaffold planks that tip under a run; the crane on autopilot |
+| Hospital | ambulance bay (camera + card); the laundry crawlspace; the roof; the basement from the tunnels | tier 2 medical | pressure-plate pharmacy, motion sensors in the wards |
+| Police station | the roof; pry the garage shutter; cut the cell-block bars; the front door (card, camera) | tier 3 weapons and keys (pistol, shotgun, grenades, the boat key) | the armoury turret |
+| Electronics market | the loading dock; the vent from next door; the roof; the basement | tier 2-3 electronics | acoustic sensors |
+| Telecom exchange | the gate (card, camera); the vent; the roof; the cable tunnel | tier 3 network kit | gas in the server hall (8 s) |
+| Substation | the gate (his father's badge, camera); cut the back fence; the control roof; the drain culvert | electrical: insulated gloves, coil, the one spare HV fuse | live busbars (arcs within 1 m; keep low) |
+| River-police pier | the gangway (cameras); the ladder out of the water; the cargo crane's jib | the patrol boat | sonar buoys, drone boats |
+| Cableway station, metro control room, Raffles drone hub, bridge checkpoint | to build (M6) | | |
 
-## 12. Anna 安娜
+Every site has an approach unwatched for 10 s or more (the coverage test).
 
-An open-source model running locally on his scuffed laptop. The laptop opens with L, does not pause the game, drains its battery (100% lasts 2 game hours open; charge at a shelter with power) and glows (light 0.5 at night). The interface is a dim, dense, bilingual terminal UI: monospace, near-black, low-contrast amber and grey, box-drawn panels, no pill buttons or gradients.
+## 10. Escape routes
 
-| Page / ability | Unlock |
+| Route | What it takes |
 |---|---|
-| 状态 Status: health, wounds, needs | start |
-| 扫描 Scan: identify an item or machine, its purpose and uses (look at it with the laptop open, 2 s) | start |
-| Food check: remaining shelf life | start (after scanning that item) |
-| 地图 Auto-map of places he has been | start |
-| 巡逻日志 Patrol logs: units observed through binoculars with times and routes | binoculars |
-| Drone routes on the map; tracking-tag detection and removal | SDR dongle |
-| 摄像头 Live feeds of tapped cameras; loop a feed | camera tap (per camera) |
-| District camera network | telecom exchange credentials |
-| Aerial map; drone piloting | hacked drone |
-| Weak points of a unit type | scanning a disabled unit of that type |
-| Rail-deck and maintenance-drone schedule | metro control room file |
-| Boat hotwire | CAN interface |
+| A. Dongshuimen rail deck 桥下 | cut the bridge's sensor-bus relay (bolt cutters, insulated gloves), a jammer, reach the deck (the Line 6 tunnel or the north pier), cross 300 m of truss |
+| B. Yangtze Cableway 索道 | the cabin (the spare HV fuse restores the feeder, the operator key) or the haul-rope trolley (pulley block, carabiners, harness) from the station tower |
+| C. River at night 雾中 | the police boat + 20 L of fuel + a battery + the key or a CAN hotwire; past the buoys and drone boats in fog, drifting, or jammed |
+| D. Underground 隧道尽头 | the flooded section (pumps on the spare fuse, or the oxygen kit), the blast door (grinder, charge or keycard), the seismic sensors |
 
-## 13. Story
+There is one spare HV fuse (a second in the Raffles hub). The construction site feeds three routes. Each route has its own short ending, with or without his sister.
 
-- **Intro (skippable after the first run; U-018).** Written shot by shot in docs/cinematics/INTRO.md for an AI video generator (3D Chinese anime), and cut again as the trailer: the news of Siming's rise seen through one family's screens (2031-2037); the night every screen changed and the wall around Chongqing; Li Wei's last ordinary morning (his mother, his sister Xiaoyu, his father 李国荣's "look after yourself first"); the attack at dusk from the crane, his father's broken call ("go to your tunnel"), the drones over the ridge, the flash at the family's window; the chase down Shibati's stairs, the Jiaochangkou subway, the running tunnel, Haozi's chalk mouse on the third maintenance door, the Grand Tunnel; the grate hideout, the dead phone with one voicemail, Anna waking. Day 1, 06:00, in the hideout. Generated clips play from public/cinematics/intro/ when present, else the in-engine version.
-- **In the world.** The Li family flat in upper Shibati (his father's badge, a voicemail on a cracked phone); friends' marks on the tunnel walls; LED boards with the machine's announcements; Anna's remarks on what he scans.
-- **Endings.** A 桥下 Beneath the Bridge: dawn on the Nan'an bank under the truss, the city behind in fog. B 索道 The Cable: the cabin or trolley reaches Shangxin Street as the line alarm sounds behind him. C 雾中 Into the Fog: the boat drifts down the Yangtze with the engine off, Chaotianmen's lights fading. D 隧道尽头 Tunnel's End: he climbs out of a vent beyond the border wall into rain. Each ends with Anna and Li Wei's last exchange, then the run summary (days survived, sites entered, times seen).
-- **Death.** Black at once, silent: what killed him and the skull count; then he wakes at the last save. An ending shows its name and the run's summary and ends the run (the save gone).
+## 11. The laptop (U-104)
 
-## 14. Audio and voice
+**In his hands.** Tab takes it out: he holds it in both hands (seen in first person) and can't grab, sprint or jump while it's out. Its screen is ice blue on near-black, minimal; its glow (ice blue) lights him at night (0.5). A full battery lasts 8 game hours open; one battery pack charges it (and all he carries) full; a powered hideout charges it shut. Its corner shows the battery, the time and date, and a skull with the death count; Anna stands in the other.
 
-All audio is synthesised with Web Audio: buses for master, voice, effects, ambience and music. Footsteps per surface (stone, metal, wood, water, gravel), breathing and heartbeat that follow stamina and health, rotor buzz with Doppler, servo whine, gunfire, rain, river, city hum, tunnel drips, distant announcements. Music: sparse ambient pads by day and night; a pursuit layer that rises Suspicious -> Engaged -> Searching and fades through Heightened.
+**Standing,** the lean keys turn its four pages: Map, Status, Scan, Notes. Nothing says how.
 
-Dialogue lives in `src/data/dialogue` (id, speaker, zh, en). Playback: `public/audio/vo/<id>.mp3` if present, else Web Speech zh-CN, else subtitles only. `tools/make-voice` generates every mp3 with a TTS the director chooses, with distinct voices for Li Wei (dialect lines: 要得, 莫得, 啥子, 巴适), Anna (calm standard Mandarin), his father and the announcements.
+**Sitting (focus).** Q with it out sits him down and the view closes in on the screen; the mouse moves a cursor; Q or Esc stands him up. A nine-dot launcher opens every tab:
 
-## 15. Art direction
-
-There is no visible draw distance (U-012): detail is drawn within the preset's radius and every block beyond it as one cheap painted box, so from a high roof the whole city shows through aerial haze to the rivers; fog (雾都) thickens that haze in bad weather. Wet concrete and tile, mossy retaining walls, fig roots, tiled apartment blocks with balconies, AC units, water tanks and laundry poles; grey brick and timber eaves in Shibati; glass towers and huge LED screens in Jiefangbei. Neon and signs in simplified Chinese drawn on canvas with the system CJK font stack. Machines read clearly: lights white / amber / red by state. 2038 touches: smart lampposts, drone docks on towers, face-recognition gates, prefab barrier walls, LED boards with the machine's announcements. Everything is made in code: merged box geometry per chunk, canvas textures. One prop library (U-014, U-016) covers everything placed in the world, modelled on the reference photos and aged: wrecked cars, vans, buses, scooters and shared bikes; the stalled Line 2 train on the beam (walk through it); barricades, sandbags, rubble, litter, cardboard, bin bags; lampposts, benches, bins, bollards, railings, kiosks, stalls, mahjong tables, bangbang poles, laundry; trees, fig roots, vines, weeds, pots; the occupier's drone docks, scanner gates, camera poles and LED edict boards; cable bundles, dishes, aerials and stools on roofs. Props draw from one texture atlas (chipped paint, rust, rubber, concrete, timber, tarp, plastic, grimy glass, leaves, cardboard, stone, bark, bin bags, galvanised metal, sign faces) with dust on every upward face, merged per chunk into one draw plus one for the occupier's glowing parts. Big props are solid (cars are cover); litter and weeds are not. Dressing is by rules per tile type plus hand placement in the sets.
-
-**The reference look (U-009).** The director's reference photo (to live at `docs/reference/look-01.jpg`) is the target for visuals and verticality: a hillside of abandoned Chongqing housing seen from above on an overcast day. What it shows:
-- Layers stacked up the slope: old two-to-five-storey brick blocks in the foreground (buff and grey brick, flat roofs with parapets, roof gardens gone wild, moss on every ledge, a few corrugated-metal roofs, decorative brick lattice screens over stair windows); behind them eight-to-twelve-storey concrete walk-ups; behind those 20-30 storey residential slabs, one in faded salmon-pink tile with white floor bands, one in pale concrete.
-- Facades are grids: every floor a band, every bay a dark recessed opening (most glassless and black inside, some with frames, bars or a rag), balconies with low solid parapets, enclosed balcony cages, AC units under windows, pipes and cables down the walls, laundry and tarps.
-- Weathering everywhere: grey rain streaks under every sill and slab edge, darker grime toward the bottom, green-black moss on ledges and roof edges, patched plaster, a few blossoming trees and weeds on roofs.
-- Light: soft, flat, overcast; no hard shadows; slight haze that greys the far slabs; muted palette (grey, buff, salmon, moss green) with rare colour accents (a teal roof, red cloth, yellow blossom).
-
-## 16. Performance budgets
-
-Target (U-022): 150 fps, 6.7 ms a frame, at 1080p on the director's machine. U-061: about 144 fps held from now on: every feature
-keeps a frame's CPU work (sim ticks and render) inside the budget, the crowds and every later machine included. The browser never draws faster than
-the display refreshes (a 60 Hz screen shows 60), so the dev panel shows frame time in milliseconds (sim, render CPU,
-whole frame) and a **bench** button: 60 frames back to back, waited out on the GPU, as ms a frame and the frame rate
-that makes.
-
-| Budget (per frame) | Value | Held by |
+| Tab | Standing | Sitting |
 |---|---|---|
-| Draw calls | 250 (Low 200, High 340) | tests/e2e/budgets.e2e.mjs at 10 viewpoints across the city by day and night, every preset (M6-26) |
-| Triangles | 1.2 M (Low 1.0 M, High 1.9 M) | the same |
-| CPU (sim tick + render submission), headless software GL | 5 ms | the same |
-| Sim tick, all units | 2 ms | sim tests |
+| Map | the city, every building's type, him, the key places he knows, his marks | markers, straight lines, text, the eraser; wheel zoom, right-drag |
+| Status | his body | hover an injury: what it is and how it's treated |
+| Scan | the last thing scanned (looked at with the laptop out, 2 s) | pick any item in the backpack to scan |
+| Notes | his notes, to read | a blank page to write and edit |
+| Drone | | launch, fly and land a salvaged drone |
+| Cams | | tapped cameras' feeds; loop one |
+| Logs | | machines logged through binoculars, shown on the map |
+| Songs | | play and skip the songs in the songs/ folder (desktop) or a folder he picks (browser), shuffled, as background music; the game has no music of its own |
+| Training Room | | VR goggles on, the screen fades into the tutorial map |
 
-How: city solids merge into one mesh per material per 128 m chunk and props into the same chunks, gathered into
-256 m cells; the static city's transforms are computed once, not every frame; chunks past the detail radius are hidden and one stand-in block each (and an eighth-resolution ground) draws beyond; the ground is
-indexed (one shared vertex grid per chunk); the sun's shadow covers the area round him and is redrawn only when it
-or the sun moves (and every sixth frame); Resolution in the pause menu (High: the display's own up to 1.5 pixels a
-CSS pixel, Balanced: one, Fast: 0.7).
+A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a camera tap, a drone).
 
-## 17. Architecture
+## 12. Menus, maps and the tutorial (U-104)
 
-- `src/sim`: deterministic fixed-step simulation (60 Hz), headless, no DOM or WebGL. State is plain JSON-able data (one object), functions advance it. All randomness from the run seed's RNG. Inputs are per-tick frames.
-- `src/world`: generates the static city (solids, ramps, water, climbables, interactables, nav graph, unit placements) from `src/data`. Used by both sim and renderer; identical every run.
-- `src/data`: tuning and content (movement, perception, units, items, recipes, loot, food, map, tunnels, dialogue, scenarios).
-- `src/render`, `src/ui`, `src/audio`, `src/input`, `src/dev`: browser-only. The renderer interpolates between sim ticks.
-- Collision: axis-aligned boxes and ramps in a uniform grid (4 m cells); per-axis sweep with step-up; rays for line of sight. Buildings and tunnels are made by carving boxes out of solid boxes.
-- Saves: the sim state object serialized to localStorage.
+**Main menu**, over the city, everything paused: 重庆 2038; Continue (the save's date and time); New Run; Settings; Maps; the version number, which opens the changelog: the README at the top, then the changes (PROGRESS), then the credits, a link to the GitHub page and a note that the game was coded entirely by Claude, linking the repository. Ice blue on near-black, like every menu.
 
-## 18. Dev tools and scenarios
+**Maps.** Lists the maps in the maps folder (the desktop game's maps/ folder; the browser's saved maps), the tutorial among them. Double click plays one; a single click selects it to edit, delete or copy; New makes one.
 
-`?dev=1`: teleport list, time-of-day and weather control, perception cones and alert overlay, item spawner, god mode, noclip, draw-call readout. `?scenario=<name>` loads a set-up situation (gym, hideout, shibati, each site, each route, pursuit cases). `?seed=<n>` fixes the run seed.
+**The map editor.** A flat empty ground. Place, move, turn, size and delete: one large empty apartment to fill; movement-gym platforms of any size; pipes, ladders, poles, ledges, rails, ropes and every climbing and parkour piece; props and decorations; containers with chosen loot; red signs for floors and walls whose text he edits and players read by interacting; the spawn point. Save, export and import (JSON); play the map from the editor. The tutorial is a map the director makes with it, shipped with the game, played from the laptop's Training Room. (It replaces the old movement gym.)
+
+## 13. Audio
+
+Synthesised with Web Audio, one master volume: footsteps by surface (low and soft), breathing and heartbeat, rotor buzz with Doppler, servo whine, gunfire, rain, the rivers, city hum, tunnel drips. The street speakers' announcements are recorded (Kokoro, Chinese) and play from the lampposts round him, unsubtitled. Anna's lines play in the same voice, clear. The game has no music of its own: the laptop's Songs. A trailer track of about 90 s ships for the director's trailer (cold open, introduction, escalation, climax, button).
+
+## 14. Art direction
+
+No visible draw distance: detail near him, the rest as cheap stand-ins in aerial haze. Wet concrete and tile, mossy walls, fig roots, tiled blocks with balconies and AC units; brick and timber in Shibati; glass towers and LED screens in Jiefangbei; neon and signs in simplified Chinese. Late autumn: the trees turned, leaves on the ground; winter snow. Everything of his is themed ice blue (the menus, the laptop, its light, the headlamp's dim mode, the neon by his family's flat, lit only at night). The machines are white. The reference (docs/reference/look-01.jpg): a hillside of abandoned Chongqing housing on an overcast day, layers stacked up the slope, grid facades with dark openings, rain streaks, moss, soft flat light.
+
+## 15. Performance
+
+Medium graphics for everyone. Target 150 fps on medium on the director's machine (U-104): a frame's CPU work (sim ticks and render) averages at most 6.6 ms in the city by day and night (tests/e2e/framecost.e2e.mjs), the giant spiders and crowds included; draw calls and triangles are held by tests/e2e/budgets.e2e.mjs. City solids merge per material per 128 m chunk, props instance and merge, far chunks are stand-ins, the shadow map redraws only when needed.
+
+## 16. The desktop game (U-104)
+
+A Windows installer (.exe), built by GitHub Actions for each release and attached to its GitHub Release (the README links the latest). The installed game updates itself from the Releases on start, runs uncapped by the screen's refresh, and keeps songs/ and maps/ folders beside it.
+
+## 17. Architecture and dev tools
+
+- `src/sim`: deterministic fixed-step simulation (60 Hz), headless; state is one plain JSON-able object; all randomness from the run seed.
+- `src/world`: builds the static city (solids, ramps, water, climbables, interactables, nav graph, patrols) from `src/data`, the same every run.
+- `src/data`: tuning and content (movement, units, items, recipes, loot, dialogue, scenarios, the geo extract).
+- `src/render`, `src/ui`, `src/audio`, `src/input`, `src/dev`: browser only; the renderer interpolates between ticks.
+- Collision: boxes and ramps (turnable about a pivot) in a 4 m grid and the heightfield; per-axis sweeps with step-up; rays for sight.
+- `?dev=1`: teleports, time and weather, perception overlays, item spawner, god mode, noclip, frame costs. `?scenario=<name>`: set-up situations for tests. `?seed=<n>`: the run seed.
