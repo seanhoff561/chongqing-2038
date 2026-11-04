@@ -149,7 +149,8 @@ export interface SimState {
   events: SimEvent[];
   flags: { god: boolean; noclip: boolean; rain: number; fog?: number; clear?: boolean; snow?: number };
   /** Anna's laptop (M5-01): open or shut, its battery (0 to 1) */
-  laptop?: { open: boolean; charge: number };
+  /** Anna's laptop: out or put away, its charge, and whether he's sat down at it (focus, M10-13) */
+  laptop?: { open: boolean; charge: number; sit?: boolean };
   /** what Anna's scanned ('unit:<kind>', 'item:<id>'), what she's scanning now and how long he's looked, and the last (M5-04) */
   scans?: Record<string, true>;
   scan?: { target: string | null; t: number; done?: boolean };

@@ -7,7 +7,7 @@ export default async function ({ open, fail, screenshot }) {
   await page.keyboard.press('Tab');
   const t0 = await page.evaluate(`(() => { window.__cq.runFrames(30); return window.__cq.game.state.time; })()`);
   const side = b => page.evaluate(`(() => { for (const t of ['mousedown', 'mouseup']) window.dispatchEvent(new MouseEvent(t, { button: ${b}, bubbles: true, cancelable: true })); window.__cq.runFrames(3); })()`);
-  const look = () => page.evaluate(`(() => { const el = document.getElementById('laptop'), r = el.getBoundingClientRect();
+  const look = () => page.evaluate(`(() => { window.__cq.runFrames(3); const el = document.getElementById('laptop'), r = el.getBoundingClientRect();
     return { shown: el.style.display, bar: el.querySelector('.lt-bar')?.textContent ?? '', on: el.querySelector('.lt-body')?.dataset.on, t: window.__cq.game.state.time,
       tabs: el.querySelectorAll('[data-page], .lt-tabs, .lt-foot').length, inView: r.width > 200 && r.left >= 0 && r.right <= innerWidth && r.bottom <= innerHeight + 1 }; })()`);
   const a = await look();

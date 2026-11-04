@@ -1,6 +1,8 @@
 // The laptop's screen (U-104, DESIGN section 11): the page lies on the glass of the laptop he holds up in both hands
 // (render/laptop3d.ts), the game going on round it. Ice blue on near-black, minimal. The corner: the battery, the date
-// and time, a skull and his deaths. Standing, the lean keys turn Map, Status, Scan and Notes; nothing says how.
+// and time, a skull and his deaths. Standing, the lean keys turn Map, Status, Scan and Notes; nothing says how. Sat
+// down at it (Q, M10-13) the mouse is a cursor on the screen and the nine dots open a launcher of every tab; a tab he
+// can't use yet says what it needs.
 import * as THREE from 'three';
 import type { Game } from '../game';
 import { dateText } from '../sim/clock';
@@ -29,6 +31,9 @@ export class LaptopUI {
   /** The Cams page's feed, and which tapped camera it shows. */
   private feed = new Feed();
   cam = 0;
+  /** Sitting: the launcher's up; and whether he was sat down last frame. */
+  launcher = false;
+  private sat = false;
 
   constructor(private game: Game) {
     this.root = document.createElement('div');
@@ -40,6 +45,21 @@ export class LaptopUI {
     this.map.width = MAPV.w; this.map.height = MAPV.h;
     this.glow.position.set(0, -0.25, -0.45);
     game.view.fp.cam.add(this.glow);
+    // (Sitting, the cursor: the nine dots, and a tab in the launcher.)
+    this.root.addEventListener('click', e => {
+      const t = (e.target as Element).closest<HTMLElement>('.lt-dots, [data-tab]');
+      if (!t) return;
+      if (t.dataset.tab) { this.page = PAGES.findIndex(q => q.id === t.dataset.tab); this.launcher = false; }
+      else this.launcher = !this.launcher;
+    });
+  }
+
+  /** Sat down or up (M10-13): the mouse let go to be a cursor on the screen, or taken back to look round; standing,
+   *  only the four pages. */
+  private seat(sit: boolean) {
+    this.sat = sit; this.launcher = false;
+    if (sit) document.exitPointerLock?.();
+    else { this.game.input.capture(); if (!PAGES[this.page].standing) this.page = 0; }
   }
 
   /** Her Scan page, when a scan's done. */
@@ -76,25 +96,30 @@ export class LaptopUI {
   /** Every frame: on the glass while it's out, its corner and page kept up to date. */
   update() {
     this.flyHud();
-    const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight;
+    const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight, sit = open && !!L?.sit;
+    if (sit !== this.sat) this.seat(sit);
+    this.root.classList.toggle('sit', sit);
     this.glow.intensity = open ? 1.4 * night.k : 0;
     const r = open ? g.laptop3d.rect(g.view.fp.cam, innerWidth, innerHeight) : null;
     if (!r) { if (this.shown) { this.root.style.display = 'none'; this.shown = ''; } return; }
     // (The page scaled onto the glass, wherever his hands hold it.)
     this.root.style.transform = `translate(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px) scale(${(r.w / SCREEN.w).toFixed(4)}, ${(r.h / SCREEN.h).toFixed(4)})`;
-    const P = PAGES[this.page], pct = Math.round(L!.charge * 100);
-    const html = `<div class="lt-bar"><span>${P.zh} ${P.en}</span><span class="lt-corner">▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span></div>` +
-      `<div class="lt-body" data-on="${P.id}">${P.draw(g)}</div>`;
+    const P = PAGES[this.page], pct = Math.round(L!.charge * 100), locked = P.needs?.(g);
+    const dots = sit ? `<button class="lt-dots">${'<i></i>'.repeat(9)}</button>` : '';
+    const body = sit && this.launcher ? `<div class="lt-launch">${PAGES.map(q => `<button data-tab="${q.id}">${q.zh}<br><span>${q.en}</span></button>`).join('')}</div>`
+      : locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : P.draw(g);
+    const html = `<div class="lt-bar"><span>${dots}${P.zh} ${P.en}</span><span class="lt-corner">▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span></div>` +
+      `<div class="lt-body" data-on="${sit && this.launcher ? 'launcher' : P.id}">${body}</div>`;
     const fresh = html !== this.shown;
     if (fresh) { this.root.innerHTML = html; this.root.style.display = 'block'; this.shown = html; }
     // The map, drawn into its place on the page a few times a second.
-    if (P.id === 'map') {
+    if (P.id === 'map' && !this.launcher) {
       const slot = this.root.querySelector('.lt-map');
       if (slot && this.map.parentElement !== slot) slot.appendChild(this.map);
       if (fresh || ++this.frame % 6 === 0) drawMap(this.map, g);
     }
     // The feed, a few times a second.
-    if (P.id === 'cams' && g.state.taps?.length) {
+    if (P.id === 'cams' && g.state.taps?.length && !this.launcher && !locked) {
       const slot = this.root.querySelector('.lt-feed'), taps = camList(g);
       if (slot && this.feed.canvas.parentElement !== slot) slot.appendChild(this.feed.canvas);
       if (fresh || ++this.frame % 12 === 0) this.feed.draw(g, taps[Math.min(this.cam, taps.length - 1)]);

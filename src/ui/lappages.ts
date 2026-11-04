@@ -101,4 +101,6 @@ export const PAGES: (Page & { standing?: boolean })[] = [
   { id: 'drone', zh: '无人机', en: 'Drone', needs: g => (has(g, 'drone') ? null : ['需要一架缴获的无人机', 'needs a salvaged drone']), draw: g => dronePage(g) },
   { id: 'cams', zh: '摄像头', en: 'Cams', needs: g => (has(g, 'cameratap') || g.state.taps?.length ? null : ['需要摄像头分接器', 'needs a camera tap']), draw: g => camsPage(g) },
   { id: 'logs', zh: '日志', en: 'Logs', needs: g => (has(g, 'binoculars') ? null : ['需要望远镜', 'needs binoculars']), draw: g => logsPage(g) },
+  { id: 'songs', zh: '歌曲', en: 'Songs', needs: () => ['需要歌曲', 'needs some songs'], draw: () => '' },
+  { id: 'training', zh: '训练室', en: 'Training Room', needs: () => ['需要训练地图', 'needs a training map'], draw: () => '' },
 ];

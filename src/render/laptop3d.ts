@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 
 /** Where the screen's middle sits in camera space held and sitting; its size (m); how fast it comes up (1/s). */
-export const LAPTOP3D = { held: new THREE.Vector3(0, -0.04, -0.4), focus: new THREE.Vector3(0, 0, -0.27), w: 0.33, h: 0.21, rise: 9 };
+export const LAPTOP3D = { held: new THREE.Vector3(0, -0.04, -0.4), focus: new THREE.Vector3(0, 0, -0.205), w: 0.33, h: 0.21, rise: 9 };
 
 export class Laptop3D {
   readonly group = new THREE.Group();
@@ -36,13 +36,15 @@ export class Laptop3D {
   }
 
   /** Every frame: up or away, held or sat at. */
-  update(open: boolean, dt: number) {
-    this.up += ((open ? 1 : 0) - this.up) * (1 - Math.exp(-LAPTOP3D.rise * dt));
+  update(open: boolean, sit: boolean, dt: number) {
+    const k = 1 - Math.exp(-LAPTOP3D.rise * dt);
+    this.up += ((open ? 1 : 0) - this.up) * k;
+    this.focus += ((sit ? 1 : 0) - this.focus) * k;
     if (!open && this.up < 0.02) this.up = 0;
     this.group.visible = this.up > 0;
     const at = LAPTOP3D.held.clone().lerp(LAPTOP3D.focus, this.focus);
     this.group.position.set(at.x, at.y - (1 - this.up) * 0.4, at.z);
-    this.group.rotation.x = -0.12 + (1 - this.up) * 0.6;
+    this.group.rotation.x = -0.12 * (1 - this.focus) + (1 - this.up) * 0.6;
   }
 
   /** The screen's rectangle on the page (CSS pixels), or null while it's away. */

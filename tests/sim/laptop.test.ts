@@ -72,3 +72,29 @@ describe('the laptop in his hands (M10-12, U-104)', () => {
     expect(away.held).toBe(true);
   });
 });
+
+describe('sitting down at the laptop (M10-13, U-104)', () => {
+  it('sits him down low where he is until he gets up; put away, he is up again', () => {
+    const { world, state } = setup([floor()]);
+    const focus = { cmds: [{ c: 'act' as const, name: 'focus' }] };
+    run(state, world, 10);
+    run(state, world, 1, focus);
+    expect(state.laptop?.sit).toBeFalsy();
+    run(state, world, 1, toggle);
+    run(state, world, 1, focus);
+    expect(state.laptop!.sit).toBe(true);
+    const z = state.player.pos.z;
+    run(state, world, secs(1), { my: 1, buttons: B.SPRINT });
+    expect(state.player.pos.z).toBeCloseTo(z, 3);
+    expect(state.player.posture).toBe('crouch');
+    run(state, world, 1, focus);
+    expect(state.laptop!.sit).toBe(false);
+    expect(state.laptop!.open).toBe(true);
+    run(state, world, secs(1), { my: 1 });
+    expect(state.player.pos.z).toBeLessThan(z - 1);
+    run(state, world, 1, focus);
+    run(state, world, 1, toggle);
+    expect(state.laptop!.open).toBe(false);
+    expect(state.laptop!.sit).toBe(false);
+  });
+});

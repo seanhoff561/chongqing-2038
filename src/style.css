@@ -113,4 +113,11 @@ canvas { display: block; }
 #laptop .lt-weak { border-collapse: collapse; margin: 3px 0; }
 #laptop .lt-weak td, #laptop .lt-weak th { border: 1px solid var(--ice-line); padding: 1px 6px; text-align: left; font-weight: normal; }
 #laptop .lt-map canvas, #laptop .lt-feed canvas { display: block; max-width: 100%; margin: 4px 0; }
+#laptop.sit { pointer-events: auto; cursor: default; }
+#laptop .lt-dots { display: inline-grid; grid-template-columns: repeat(3, 3px); gap: 2px; vertical-align: middle; margin-right: 8px; padding: 2px; background: none; border: 0; cursor: pointer; }
+#laptop .lt-dots i { width: 3px; height: 3px; border-radius: 50%; background: var(--ice); }
+#laptop .lt-launch { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 16px 40px; }
+#laptop .lt-launch button { background: var(--ice-btn); color: var(--ice-hi); border: 1px solid var(--ice-line); padding: 18px 4px; font: inherit; cursor: pointer; }
+#laptop .lt-launch button:hover { border-color: var(--ice); }
+#laptop .lt-locked { padding-top: 120px; text-align: center; }
 #laptop .lt-notes { white-space: pre-wrap; min-height: 300px; }

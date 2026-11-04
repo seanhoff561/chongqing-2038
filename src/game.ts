@@ -238,6 +238,8 @@ export class Game {
       if (k === 'pack') this.inv.toggle();
       // Anna's laptop, opened and shut without stopping anything (M5-01).
       else if (k === 'laptop') this.input.cmds.push({ c: 'act', name: this.state.flight ? 'land' : 'laptop' });
+      // Sitting down at it, and up again (M10-13).
+      else if (k === 'focus') this.input.cmds.push({ c: 'act', name: 'focus' });
       // Its pages, one way or the other (M5-02).
       else if ((k === 'ArrowLeft' || k === 'ArrowRight') && this.state.laptop?.open) this.laptop.turn(k === 'ArrowLeft' ? -1 : 1);
       // The Cams page's cameras, and looping one (M5-09); the Drone page's launch (M5-11).
@@ -250,6 +252,7 @@ export class Game {
     if (this.inv.open) this.inv.toggle(false);
     else if (this.craft.open) this.craft.toggle(false);
     else if (this.sleep.open) this.sleep.toggle(false);
+    else if (this.state.laptop?.sit) this.input.cmds.push({ c: 'act', name: 'focus' });
     else if (this.state.laptop?.open && !this.state.flight) this.input.cmds.push({ c: 'act', name: 'laptop' });
     else return false;
     return true;
@@ -328,7 +331,7 @@ export class Game {
     // prompts, the hands and the mouse away for good.)
     // (Settings stop his own input, the world going on; the main menu stops everything: U-104.)
     this.input.frozen = this.settings.open || this.menuUp();
-    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot');
+    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot') || !!this.state.laptop?.sit;
     const pos = { x: this.prev.x + (p.pos.x - this.prev.x) * alpha, y: this.prev.y + (p.pos.y - this.prev.y) * alpha, z: this.prev.z + (p.pos.z - this.prev.z) * alpha };
     // Guns (M4-21b): aimed down the sights the view narrows; the gun's raised and kicked once the hands are posed.
     const gun = this.heldId === 'pistol' ? this.heldModel : null;
@@ -356,7 +359,7 @@ export class Game {
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
-    this.laptop3d.update(!!this.state.laptop?.open, dt);
+    this.laptop3d.update(!!this.state.laptop?.open, !!this.state.laptop?.sit, dt);
     if (this.heldModel) this.heldModel.visible = !this.state.laptop?.open;
     this.laptop.update();
     this.craft.update();

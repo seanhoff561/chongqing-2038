@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-11 Desktop download and updates (U-104).
-Features done: 338 / 424 | Last done: M10-12
+**Status:** building M10. Next: M10-14 Map tools (U-104).
+Features done: 340 / 424 | Last done: M10-13
 <!-- /status -->
 
 ## What's built
@@ -37,3 +37,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-09: subtitles only for Anna's story lines; no hints
 - M10-10: the main menu and its changelog
 - M10-12: no grab, sprint or jump; the lean keys turn Map, Status, Scan, Notes; battery, date and skull in its corner
+- M10-11, M10-13: the Windows installer updates itself (v0.2.1 with latest.yml); Q sits him down at the laptop, nine dots open every tab

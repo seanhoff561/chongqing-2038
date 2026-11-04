@@ -43,7 +43,7 @@ export class Input {
   pitch = 0;
   /** radians of turn per pixel of mouse movement (U-104: a fairly low default) */
   sensitivity = 0.0016;
-  /** the laptop's open: the lean keys turn its pages (U-098) */
+  /** the laptop's out: the lean keys turn its pages (U-098), the headlamp's key sits him down at it (M10-13) */
   tabKeys = false;
   /** UI (backpack, laptop, menus) takes the mouse; movement keys still work */
   uiOpen = false;
@@ -114,6 +114,8 @@ export class Input {
     if (down && ui) { this.uiKeys.push(ui); return; }
     // (The laptop out: its pages on the lean keys, not leaning: U-098.)
     if (down && this.tabKeys && (binds.leanL.includes(code) || binds.leanR.includes(code))) { this.uiKeys.push(binds.leanL.includes(code) ? 'ArrowLeft' : 'ArrowRight'); return; }
+    // (And Q, the headlamp's key, sits him down at it and stands him up: M10-13.)
+    if (this.tabKeys && binds.lamp.includes(code)) { if (down) this.uiKeys.push('focus'); return; }
     // (Enter for the laptop's Cams page, M5-09.)
     if (down && code === 'Enter') this.uiKeys.push(code);
     // ` always puts whatever he holds away (U-009).

@@ -12,17 +12,22 @@ import { powered } from './power';
 export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
 
 onCmd((s, c) => {
+  // Sitting down at it and getting up (focus, M10-13): only while it's out.
+  if (c.c === 'act' && c.name === 'focus' && s.laptop?.open && !s.flight && !s.dead) { s.laptop.sit = !s.laptop.sit; return; }
   if (c.c !== 'act' || c.name !== 'laptop' || s.dead) return;
   const L = (s.laptop ??= { open: false, charge: 1 });
   if (!L.open && L.charge <= 0) { s.events.push({ t: 'msg', text: "the laptop's flat" }); return; }
   // (Taken out only on his feet, with his hands free of holds: U-104.)
   if (!L.open && (s.player.mode !== 'ground' || s.player.hands.some(h => h.grip))) return;
   L.open = !L.open;
+  L.sit = false;
 });
 
-/** Holding the laptop up in both hands (U-104): no running, no jumping, nothing grabbed or used. */
+/** Holding the laptop up in both hands (U-104): no running, no jumping, nothing grabbed or used. Sat down at it
+ *  (M10-13) he's low on the ground and goes nowhere. */
 export function laptopHands(s: SimState, input: InputFrame): InputFrame {
   if (!s.laptop?.open) return input;
+  if (s.laptop.sit) return { ...input, mx: 0, my: 0, buttons: B.CROUCH, pressed: 0, slot: -1 };
   const off = B.SPRINT | B.JUMP | B.USE | B.AIM;
   return { ...input, buttons: input.buttons & ~off, pressed: input.pressed & ~off };
 }
@@ -32,7 +37,7 @@ export function stepLaptop(s: SimState) {
   if (!L) return;
   if (L.open) {
     L.charge = Math.max(0, L.charge - GAME_PER_TICK / LAPTOP.lasts);
-    if (L.charge <= 0) { L.open = false; s.events.push({ t: 'msg', text: "the laptop's flat" }); }
+    if (L.charge <= 0) { L.open = false; L.sit = false; s.events.push({ t: 'msg', text: "the laptop's flat" }); }
     return;
   }
   // Shut, at a hideout whose car battery has charge: charging.

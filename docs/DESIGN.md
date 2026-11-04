@@ -292,7 +292,7 @@ There is one spare HV fuse (a second in the Raffles hub). The construction site 
 
 **Standing,** the lean keys turn its four pages: Map, Status, Scan, Notes. Nothing says how.
 
-**Sitting (focus).** Q with it out sits him down and the view closes in on the screen; the mouse moves a cursor; Q or Esc stands him up. A nine-dot launcher opens every tab:
+**Sitting (focus).** Q with it out sits him down where he is (low, as crouched; he goes nowhere until he gets up) and the view closes in on the screen; the mouse moves a cursor; Q or Esc stands him up, back on the four standing pages. The nine dots in the screen's corner open a launcher of every tab; one he can't use yet says what it needs:
 
 | Tab | Standing | Sitting |
 |---|---|---|
