@@ -63,7 +63,7 @@ import { board } from './render/signs';
 import { districtOf } from './sim/district';
 import { Settings } from './ui/settings';
 import { findGrab } from './sim/grip';
-import { allInters, interLabel } from './sim/interact';
+import { allInters } from './sim/interact';
 import { raycast } from './world/geom';
 
 /** Metres to full haze when the whole city is drawn (U-012). */
@@ -72,8 +72,8 @@ const FAR_HAZE = 2800;
 export interface GameOpts { scenario: string; seed: number; dev: boolean }
 
 const HIDE_NAMES: Record<string, [string, string]> = {
-  crate: ['躲进箱子', 'Hide in the crate'], dumpster: ['躲进垃圾箱', 'Hide in the dumpster'], box: ['躲进箱子', 'Hide in the box'], wardrobe: ['躲进衣柜', 'Hide in the wardrobe'],
-  tank: ['躲进水箱', 'Hide in the water tank'], drum: ['躲进水桶', 'Hide in the drum'], kiosk: ['躲进报亭', 'Hide in the kiosk'], boot: ['躲进后备箱', 'Hide in the car boot'], van: ['躲进货车', 'Hide in the van'],
+  crate: ['箱子', 'Crate'], dumpster: ['垃圾箱', 'Dumpster'], box: ['箱子', 'Box'], wardrobe: ['衣柜', 'Wardrobe'],
+  tank: ['水箱', 'Water tank'], drum: ['水桶', 'Drum'], kiosk: ['报亭', 'Kiosk'], boot: ['后备箱', 'Car boot'], van: ['货车', 'Van'],
 };
 
 /** What he drinks rather than eats, for its sound (U-058). */
@@ -400,11 +400,12 @@ export class Game {
     const it = s.target ? allInters(s, this.world).find(i => i.id === s.target) : null;
     // Hiding spots get a prompt like everything else he can use (U-021).
     const hide = !it && s.player.mode === 'ground' ? hideNear(this.world, s.player) : -1;
-    const hk = hide >= 0 ? HIDE_NAMES[this.world.hides[hide].kind] ?? ['躲进去', 'Hide'] : null;
+    const hk = hide >= 0 ? HIDE_NAMES[this.world.hides[hide].kind] ?? ['箱子', 'Box'] : null;
     // A line to ride in reach of empty hands (M3-52).
     const line = !it && !hk && s.inv.held === 0 && (s.player.mode === 'ground' || s.player.mode === 'air') && lineInReach(s, this.world).line >= 0;
-    const [zh, en] = it ? interLabel(s, it) : ['', ''];
-    this.hud.setPrompt(this.input.uiOpen ? '' : it ? `F  ${zh}  ${en}` : hk ? `F  ${hk[0]}  ${hk[1]}` : line ? 'LMB  抓住缆绳  Take the line' : '');
+    // (Just the thing, never its key or what to do with it: U-104.)
+    const [zh, en] = it ? [it.zh, it.en] : hk ?? (line ? ['缆绳', 'Line'] : ['', '']);
+    this.hud.setPrompt(this.input.uiOpen ? '' : zh || en ? `${zh}  ${en}` : '');
   }
 
   private updateHands(dt: number) {

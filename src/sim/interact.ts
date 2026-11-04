@@ -10,7 +10,7 @@ export const REACH = 2.0;
 export const ROUGH = 'rough', ROUGH_HOLD = 0.5;
 
 type Handler = (s: SimState, w: World, it: Inter) => void;
-interface Kind { now?: Handler; done?: Handler; dur?: (s: SimState, it: Inter) => number; can?: (s: SimState, it: Inter) => string | null; label?: (s: SimState, it: Inter) => [string, string]; grip?: boolean }
+interface Kind { now?: Handler; done?: Handler; dur?: (s: SimState, it: Inter) => number; can?: (s: SimState, it: Inter) => string | null; grip?: boolean }
 const handlers = new Map<string, Kind>();
 
 /**
@@ -38,7 +38,6 @@ export const START_SOUND: Record<string, (it: Inter) => string> = {
 };
 
 /** What the prompt says for an interactable: its kind's label for the moment, else its own name. */
-export const interLabel = (s: SimState, it: Inter): [string, string] => handlers.get(it.kind)?.label?.(s, it) ?? [it.zh, it.en];
 
 /** Interactables that live in sim state rather than the static world (placed furniture). */
 export const extraInters: ((s: SimState) => Inter[])[] = [];

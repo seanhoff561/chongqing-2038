@@ -35,18 +35,6 @@ function act(s: SimState, it: Inter): Act {
   if (below(s, it)) return isOpen(s, it) ? 'shut' : bolted(s, it) ? 'unbolt' : 'lift';
   return isOpen(s, it) ? 'lower' : bagsOff(s, it) ? 'cover' : 'lift';
 }
-/** What it says, naming what it is (a grate, a trapdoor, a roof hatch: M3-83). */
-function label(s: SimState, it: Inter): [string, string] {
-  const zh = it.zh, en = it.en.toLowerCase(), loose = !!it.data?.loose;
-  switch (act(s, it)) {
-    case 'unbolt': return [`拔开插销 顶开${zh}`, `Draw the bolts, push the ${en} up`];
-    case 'lift': return [`掀开${zh}`, `Lift the ${en}`];
-    case 'shut': return loose ? [`拉上${zh}`, `Pull the ${en} shut`] : [`拉上${zh} 插上插销`, `Pull the ${en} shut and bolt it`];
-    case 'lower': return [`放下${zh}`, `Lower the ${en}`];
-    default: return ['把垃圾袋拖回去', 'Drag the bags back over it'];
-  }
-}
-
 /** Would the shut grate close on him (his body through the opening)? From below he ducks a little under it as it
  *  comes down, if there's room. */
 function inTheWay(s: SimState, w: World, it: Inter) {
@@ -66,7 +54,6 @@ function sound(s: SimState, it: Inter, r: number) {
 
 onInteract('grate', {
   grip: true,
-  label,
   can: (s, it) => {
     const a = act(s, it);
     // (Bolt cutters cut its bolt from above: M5-25.)

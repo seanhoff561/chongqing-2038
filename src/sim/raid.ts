@@ -102,7 +102,6 @@ sleepHooks.fates.push(s => {
 
 // A rubble fall (the start hideout's passage stub east): cleared with a crowbar, slowly and loudly, a way on past it.
 onInteract('rubble', {
-  label: (s, it) => (s.wstate.open[it.id] ? ['塌方已清开', 'Rubble, cleared'] : ['用撬棍清开塌方', 'Clear the rubble with the crowbar']),
   can: (s, it) => (s.wstate.open[it.id] ? 'cleared already' : has(s.inv.pack, 'crowbar') ? null : 'it needs a crowbar'),
   dur: () => RAID.clear,
   done: (s, w, it) => {

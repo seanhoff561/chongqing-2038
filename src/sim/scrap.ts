@@ -41,7 +41,6 @@ extraInters.push((s: SimState) => s.units.filter(u => (u.dead || u.shut) && u.st
 onInteract('wreck', {
   can: s => (toolOf(s) ? null : 'needs a tool to take it apart: a knife, a crowbar, a toolbox'),
   dur: (s, it) => { const u = wreckOf(s, it.id), size = !u ? 'walker' : GIANT.has(u.kind) ? 'giant' : SMALL.has(u.kind) ? 'small' : 'walker'; return SALVAGE.secs[size] / SALVAGE.tools[toolOf(s) ?? 'knife'][0]; },
-  label: (_s, it) => [`拆解${it.zh}`, `Take apart the ${it.en.toLowerCase()}`],
   done: (s, _w, it) => {
     const tool = toolOf(s);
     if (!tool) return;

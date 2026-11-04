@@ -32,7 +32,6 @@ onInteract('jbox', {
     return tapped(s, camOf(it)) ? 'already tapped: its feed is on the laptop' : s.inv.pack.items.some(i => i.id === 'cameratap') ? null : 'needs a camera tap';
   },
   dur: s => (cutting(s) ? TAP.cut : TAP.fit),
-  label: (s, it) => (cutting(s) ? ['剪断电缆', "Cut the camera's cable"] : tapped(s, camOf(it)) ? ['接线盒（已接入）', 'Junction box (tapped)'] : ['接上分接器', 'Fit a camera tap']),
   done: (s, _w, it) => {
     if (cutting(s)) {
       const u = camUnit(s, it);
@@ -62,7 +61,6 @@ onCmd((s, c) => {
 onInteract('exchange', {
   can: s => (s.inv.pack.items.some(i => i.id === 'netcreds') ? null : 'needs network credentials'),
   dur: () => TAP.admin,
-  label: () => ['交换机终端', 'Exchange terminal'],
   done: (s, w, it) => {
     const serves = (it.data?.serves as string[] | undefined) ?? [], taps = (s.taps ??= []);
     let n = 0;

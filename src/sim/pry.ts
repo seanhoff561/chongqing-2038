@@ -9,7 +9,6 @@ import { PRY } from './containers';
 export const SCOOTER = { secs: 4 };
 
 onInteract('scooter', {
-  label: (s, it) => (s.wstate.searched[it.id] ? ['电动车（电池已拆）', 'Scooter (battery gone)'] : ['撬出电池', 'Prise out its battery']),
   can: (s, it) => (s.wstate.searched[it.id] ? 'its battery is gone' : s.inv.pack.items.some(i => i.id === 'crowbar') ? null : 'its battery needs a crowbar to prise out'),
   dur: () => SCOOTER.secs,
   done: (s, _w, it) => {

@@ -8,7 +8,6 @@ import { doorSolid } from './doors';
 export const FENCE = { cut: 4, noise: 6 };
 
 onInteract('fence', {
-  label: (s, it) => (s.wstate.open[it.id] ? ['铁丝网（已剪开）', 'Chain-link fence (cut)'] : ['剪开铁丝网', 'Cut through the fence']),
   can: (s, it) => (s.wstate.open[it.id] ? 'cut already: crawl through' : has(s.inv.pack, 'boltcutters') ? null : 'chain-link: bolt cutters would cut it'),
   dur: () => FENCE.cut,
   done: (s, w, it) => {
