@@ -5,12 +5,14 @@ const KNOWN = [[154, 128, 80], [90, 138, 168], [98, 168, 120], [176, 120, 56], [
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=shibati&seed=1', 'automap');
   // (Midday, and nothing kills him on the way: the map's what's tested.)
-  await page.evaluate('(() => { const g = window.__cq.game; g.state.flags.god = true; g.state.time = 12 * 3600; window.__cq.runFrames(3); })()');
+  await page.evaluate('(() => { const g = window.__cq.game; g.state.flags.god = true; g.state.time = 12 * 3600; window.__cq.runFrames(60); })()');
   const look = async () => {
     await page.keyboard.press('Tab');
     await page.evaluate('window.__cq.runFrames(3)'); // (open first: the sim takes the Tab)
     await page.evaluate(`(() => { const L = window.__cq.game.laptop; L.page = 0; window.__cq.runFrames(20); })()`);
-    const r = await page.evaluate(`(() => { const el = document.querySelector('#laptop .lt-body'), c = el.querySelector('canvas'), K = ${JSON.stringify(KNOWN)}, B = ${JSON.stringify(BLANK)};
+    const r = await page.evaluate(`(() => { const el = document.querySelector('#laptop .lt-body'), g = window.__cq.game;
+      if (!el) return { n: 0, text: 'not out: ' + JSON.stringify({ open: g.state.laptop?.open, mode: g.state.player.mode, grip: g.state.player.hands.map(h => !!h.grip) }) };
+      const c = el.querySelector('canvas'), K = ${JSON.stringify(KNOWN)}, B = ${JSON.stringify(BLANK)};
       const m = /(\\d+) of (\\d+) buildings/.exec(el.textContent) ?? [], n = Object.keys(window.__cq.game.state.explored ?? {}).length;
       if (!c) return { n, text: el.textContent };
       const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data, near = (i, q) => Math.abs(d[i] - q[0]) + Math.abs(d[i + 1] - q[1]) + Math.abs(d[i + 2] - q[2]) < 6;
