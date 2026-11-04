@@ -17,13 +17,15 @@ const SONG = /\.(mp3|ogg|wav|m4a|flac|opus)$/i, MAP = /^[\w .-]+\.json$/;
 
 app.whenReady().then(() => {
   for (const d of Object.values(dirs)) fs.mkdirSync(d, { recursive: true });
-  // app://game/... is the game; app://songs/<file> a song from the songs folder.
+  // app://game/... is the game; app://game/songs/<file> a song from the songs folder (the game's own origin, so its
+  // sound can go through the game's volume).
   protocol.handle('app', req => {
-    const u = new URL(req.url), base = u.host === 'songs' ? dirs.songs : web;
-    const p = path.normalize(path.join(base, decodeURIComponent(u.pathname)));
+    const u = new URL(req.url), song = u.pathname.startsWith('/songs/'), base = song ? dirs.songs : web;
+    const p = path.normalize(path.join(base, decodeURIComponent(song ? u.pathname.slice(6) : u.pathname)));
     if (!p.startsWith(base)) return new Response('', { status: 403 });
-    const f = fs.existsSync(p) && fs.statSync(p).isFile() ? p : path.join(web, 'index.html');
-    return net.fetch(pathToFileURL(f).toString());
+    const there = fs.existsSync(p) && fs.statSync(p).isFile();
+    if (song && !there) return new Response('', { status: 404 });
+    return net.fetch(pathToFileURL(there ? p : path.join(web, 'index.html')).toString());
   });
   ipcMain.handle('songs', () => fs.readdirSync(dirs.songs).filter(f => SONG.test(f)));
   ipcMain.handle('folder', (_e, which) => { if (dirs[which]) shell.openPath(dirs[which]); });

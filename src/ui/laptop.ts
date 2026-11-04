@@ -58,6 +58,8 @@ export class LaptopUI {
     // (Sitting, the cursor: the taskbar, a window's buttons, the map's tools.)
     this.root.addEventListener('click', e => {
       const t = e.target as Element;
+      // (The Songs app opened: the desktop game's songs folder read again.)
+      if (t.closest('[data-app="songs"]')) game.songs.load();
       if (this.desk.click(t)) return;
       const b = t.closest<HTMLElement>('[data-tool], [data-scan], [data-act], [data-cam], [data-sight]'), d = b?.dataset;
       if (!d) return;
@@ -65,10 +67,17 @@ export class LaptopUI {
       else if (d.scan) game.input.cmds.push({ c: 'act', name: 'scanpack', arg: Number(d.scan) });
       // (M10-16: the drone launched; a camera picked and looped; a sighting shown on the map.)
       else if (d.act === 'launch') game.input.cmds.push({ c: 'act', name: 'launch' });
+      // (M10-17: his songs.)
+      else if (d.act === 'play') game.songs.play();
+      else if (d.act === 'pause') game.songs.pause();
+      else if (d.act === 'skip') game.songs.skip();
+      else if (d.act === 'songfolder') window.desktop?.folder('songs');
       else if (d.act === 'loop') { const taps = camList(game); if (taps.length) game.input.cmds.push({ c: 'act', name: 'loop', arg: taps[Math.min(this.cam, taps.length - 1)] }); }
       else if (d.cam) this.cam = Number(d.cam);
       else if (d.sight) { const x = game.state.sightings?.[Number(d.sight)]; if (x) { this.desk.open('map'); this.map.show(x.x, x.z); } }
     });
+    // (A folder of songs picked in the browser: M10-17.)
+    this.root.addEventListener('change', e => { const t = e.target as HTMLInputElement; if (t.matches('[data-songs]') && t.files) game.songs.pick(t.files); });
     this.notes.className = 'lt-notesbox'; this.notes.maxLength = 4000; this.notes.spellcheck = false;
     this.notes.addEventListener('input', () => game.input.cmds.push({ c: 'act', name: 'notes', arg: this.notes.value }));
   }

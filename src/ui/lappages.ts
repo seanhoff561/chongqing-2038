@@ -132,6 +132,18 @@ function dronePage(g: Game): string {
     `<div>飞的时候：WASD，空格上升，${k('crouch')} 下降，${k('sprint')} 加速，${k('laptop')} 返回 <span>flying: WASD, Space up, ${k('crouch')} down, ${k('sprint')} faster, ${k('laptop')} to bring it back</span></div><div><span>它飞过的地方会画在地图上。被看到会被盯上，被打下来。 Where it flies fills in on the map. Machines can see it, and shoot it down.</span></div>`;
 }
 
+/** The Songs app (M10-17): his own music, the song playing, play or pause and skip; where the songs come from (the
+ *  desktop game's folder, or a folder picked in the browser). */
+function songsPage(g: Game): string {
+  const S = g.songs, cur = S.current(), desk = !!window.desktop, n = S.list.length;
+  const from = desk ? `<button data-act="songfolder">打开歌曲文件夹 <span>Open the songs folder</span></button>`
+    : `<label class="lt-file">${n ? '换一个文件夹' : '选一个文件夹'} <span>${n ? 'Pick another folder' : 'Pick a folder of songs'}</span><input type="file" data-songs webkitdirectory multiple></label>`;
+  if (!n) return `<div>${desk ? '还没有歌。把音乐文件放进歌曲文件夹。' : '还没有歌。'}<br><span>${desk ? 'No songs yet. Put music files in your songs folder.' : 'No songs yet.'}</span></div><div class="lt-pick">${from}</div>`;
+  return `<div class="lt-song" data-k="song">♪ ${cur ? esc(cur.name) : `<span>${n} 首歌 · ${n} songs</span>`}</div>` +
+    `<div class="lt-pick">${S.playing ? `<button data-act="pause">暂停 <span>Pause</span></button>` : `<button data-act="play">播放 <span>Play</span></button>`}<button data-act="skip">下一首 <span>Skip</span></button>${from}</div>` +
+    `<div><span>${n} 首歌，随机播放 · ${n} songs, shuffled</span></div>`;
+}
+
 /** Every tab (DESIGN section 11): standing he turns through the first four; sitting at it, the launcher opens any. */
 export const PAGES: (Page & { standing?: boolean })[] = [
   { id: 'map', zh: '地图', en: 'Map', standing: true, draw: g => `<div class="lt-map"></div>` + mapKey(g) },
@@ -142,6 +154,6 @@ export const PAGES: (Page & { standing?: boolean })[] = [
   { id: 'drone', zh: '无人机', en: 'Drone', needs: g => (has(g, 'drone') ? null : ['需要一架缴获的无人机', 'needs a salvaged drone']), draw: g => dronePage(g) },
   { id: 'cams', zh: '摄像头', en: 'Cams', needs: g => (has(g, 'cameratap') || g.state.taps?.length ? null : ['需要摄像头分接器', 'needs a camera tap']), draw: g => camsPage(g) },
   { id: 'logs', zh: '日志', en: 'Logs', needs: g => (has(g, 'binoculars') ? null : ['需要望远镜', 'needs binoculars']), draw: g => logsPage(g) },
-  { id: 'songs', zh: '歌曲', en: 'Songs', needs: () => ['需要歌曲', 'needs some songs'], draw: () => '' },
+  { id: 'songs', zh: '歌曲', en: 'Songs', draw: g => songsPage(g) },
   { id: 'training', zh: '训练室', en: 'Training Room', needs: () => ['需要训练地图', 'needs a training map'], draw: () => '' },
 ];

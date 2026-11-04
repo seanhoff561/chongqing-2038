@@ -34,6 +34,7 @@ import { paKind, boardOf } from './data/announce';
 import { radio } from './audio/moves';
 import { Soundscape } from './audio/soundscape';
 import { MenuMusic } from './audio/menu';
+import { Songs } from './audio/songs';
 import { playStep, underfoot } from './audio/steps';
 import { RaidLight } from './render/raidlight';
 import { Sky } from './render/sky';
@@ -101,6 +102,8 @@ export class Game {
   readonly audio = new Audio();
   /** the main menu's music (M10-60) */
   readonly menuMusic = new MenuMusic(this.audio);
+  /** his own songs, from the laptop (M10-17) */
+  readonly songs = new Songs(this.audio);
   /** the machines heard where they are (M4-33) */
   readonly sound = new Soundscape(this.audio);
   /** red light flashing round the chamber while a raid breaks in (M4-63) */

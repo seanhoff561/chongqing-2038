@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-17 Songs (U-104).
-Features done: 347 / 429 | Last done: M10-16
+**Status:** building M10. Next: M10-18 Anna in the corner (U-104).
+Features done: 348 / 429 | Last done: M10-17
 <!-- /status -->
 
 ## What's built
@@ -45,3 +45,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-60: the main menu's own music, a quiet A-minor loop that fades out as play starts
 - M10-15: sitting, Status's wounds say how they're treated, Scan picks from the backpack, Notes is written and kept
 - M10-16: sitting, the drone launched and flown from its app, cameras picked and looped, sightings shown on the map
+- M10-17: his own songs from the laptop (a folder in the browser, the songs folder on desktop); the game's own music removed

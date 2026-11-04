@@ -28,13 +28,11 @@ export default async function ({ open, fail }) {
     const heart = g.sound.heart.level;
     // In rain (no rain sound since U-079), nothing breaks.
     g.state.weather.rain = 1; for (let i = 0; i < 10; i++) g.runFrames(1); g.state.weather.rain = 0;
-    return { state: a.ctx?.state, one, three, n: fly.length, far: g.sound.ambience.level.far, alert: d0.alert, heart, track: g.sound.music.track };
+    return { state: a.ctx?.state, one, three, n: fly.length, far: g.sound.ambience.level.far, alert: d0.alert, heart };
   })()`);
   if (r.state !== 'running') fail('audio', `the audio is ${r.state} after a click`);
   // The city's ambience playing under it all (M4-51).
   if (!(r.far > 0)) fail('audio', 'no ambience');
-  // The music for the street playing (M4-86).
-  if (r.track !== 'ground') fail('audio', `the music on the plaza is ${r.track}`);
   if (!(r.alert > 0.9)) fail('audio', `the alert fell at once (${r.alert})`);
   if (!(r.heart > 0.8)) fail('audio', `hurt and hunted, his heart only ${r.heart}`);
   if (r.n < 3) fail('audio', `only ${r.n} flyers in the lineup`);
