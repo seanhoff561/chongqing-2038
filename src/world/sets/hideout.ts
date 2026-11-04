@@ -74,7 +74,7 @@ export function hideoutParts(ox: number, oy: number, oz: number, o: { shaftTop?:
       { id: id('bench'), kind: 'bench', x: ox + 9.2, y: oy + 0.95, z: oz + 1.62, r: 0.7, zh: '工作台', en: 'Workbench' },
     ] : [
       { id: id('stash'), kind: 'container', x: ox + 13.15, y: oy + 0.6, z: oz + 1.55, r: 0.6, zh: '他们的箱子', en: "Friends' crate", data: { type: 'crate' } },
-      { id: id('table'), kind: 'table', x: ox + 11.4, y: oy + 0.78, z: oz + 1.55, r: 0.8, zh: '桌子', en: 'Table' },
+      { id: id('table'), kind: 'table', x: ox + 11.4, y: oy + 0.78, z: oz + 1.05, r: 0.8, zh: '桌子', en: 'Table' }, // (at its front, where he reaches it)
     ]),
     zones: [{ kind: 'under', box: { x0: ox - 1, y0: oy - 1, z0: oz - 8, x1: ox + H.length + 8, y1: oy + H.shaftTop - 0.5, z1: oz + 3 } }],
     at: {

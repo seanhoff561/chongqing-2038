@@ -280,6 +280,8 @@ This log has two parts. First, the director's notes (U-###), newest first, each 
 
 ### Story and UI
 - **D-133** (M10-09): Messages: a short neutral notice (hud.notice, small, above the prompt, gone in a couple of seconds) says only what just happened that he couldn't otherwise tell ('ladder up', 'card cloned', 'no room', 'tablet in'); every hint, how-to and reason is gone, and a thing that won't go gives no word (the reason survives only as an unseen 'blocked' event, for the tests and the locked door's click). Subtitles are only Anna's story lines, in English; the voicemail is heard, its words in the phone's description; vomiting is a retch sound.
+- **D-134** (M10-25): Picking a placed bedroll, mattress, folding crate or toolbox back up is crouch + Interact (plain Interact already opens the sleep menu or the crate): back in the backpack if it fits; a crate only empty; a bed's hideout (and the power wired in there, returned too) goes with it.
+- **D-135** (M10-30): The second of two cables a route would lay side by side outside the start hideout is drawn from the dice into nothing, so the frozen city is otherwise unchanged (U-053).
 
 ## Removed or replaced
 
