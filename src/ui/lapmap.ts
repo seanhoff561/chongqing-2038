@@ -21,7 +21,7 @@ import { SECURE } from '../world/yuzhong/secure';
 /** The canvas (px), metres to a pixel standing, and the nearest and farthest it zooms sitting (M10-14). */
 export const MAPV = { w: 520, h: 276, m: 1.25, near: 0.25, far: 8 };
 /** What the map's looking at: its middle (world metres) and metres to a pixel. */
-export type MapView = { cx: number; cz: number; m: number };
+export type MapView = { cx: number; cz: number; m: number; hi?: { x: number; z: number } };
 /** His marks' colour (ice blue, U-104). */
 export const MARK = '#bfe6f5';
 /** Each type's colour, and a building that can't be entered. */
@@ -125,8 +125,9 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
   for (const x of s.sightings ?? []) by.set(x.u, [...(by.get(x.u) ?? []), x]);
   ctx.fillStyle = ctx.strokeStyle = '#b0503c';
   for (const xs of by.values()) { if (xs.length > 1) line(xs); for (const x of xs) ctx.fillRect(X(x.x) - 1.5, Z(x.z) - 1.5, 3, 3); }
-  // His own marks (M10-14).
+  // His own marks (M10-14); a place picked out from the Logs, ringed (M10-16).
   drawMarks(ctx, s.marks ?? [], X, Z);
+  if (v.hi) { ctx.strokeStyle = MARK; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(X(v.hi.x), Z(v.hi.z), 9, 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1; }
   // Him, and which way he faces; the layer he's on; a scale.
   const f = forward(s.player.yaw), hx = X(p.x), hz = Z(p.z);
   ctx.fillStyle = ctx.strokeStyle = '#ffd890'; ctx.fillRect(hx - 2, hz - 2, 4, 4);

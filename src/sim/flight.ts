@@ -28,7 +28,8 @@ onCmd((s, c) => {
   if ((d.charge ?? 100) <= 0) { s.events.push({ t: 'msg', text: "the drone's battery is flat" }); return; }
   const p = s.player.pos;
   s.flight = { x: p.x, y: p.y + 2, z: p.z, yaw: s.player.yaw, pitch: 0, seen: 0 };
-  if (s.laptop) s.laptop.open = false;
+  // (Launched sitting at the laptop, he stays sat at it, flying it from there: M10-16.)
+  if (s.laptop && !s.laptop.sit) s.laptop.open = false;
 });
 
 function land(s: SimState, text: string) {

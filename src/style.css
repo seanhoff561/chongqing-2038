@@ -156,6 +156,9 @@ canvas { display: block; }
 #laptop .lt-pick { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; max-height: 96px; overflow: auto; }
 #laptop .lt-pick button { background: var(--ice-btn); color: var(--ice-hi); border: 1px solid var(--ice-line); border-radius: 3px; font: inherit; font-size: 10.5px; padding: 1px 7px; cursor: pointer; }
 #laptop .lt-pick button.on, #laptop .lt-pick button:hover { border-color: var(--ice); }
+#laptop .lt-sight { cursor: pointer; border-radius: 3px; padding: 0 3px; }
+#laptop .lt-sight:hover { background: rgba(191, 230, 245, 0.08); }
+#laptop .lt-pick button:disabled { opacity: 0.4; cursor: default; }
 #laptop .lt-write { position: absolute; inset: 5px 10px; }
 #laptop .lt-notesbox { box-sizing: border-box; width: 100%; height: 100%; resize: none; outline: none; background: rgba(4, 10, 14, 0.6); color: var(--ice-hi); border: 1px solid var(--ice-line); border-radius: 3px; padding: 6px 8px; font: inherit; font-size: 12px; line-height: 1.45; }
 #laptop .lt-notes { white-space: pre-wrap; min-height: 300px; }

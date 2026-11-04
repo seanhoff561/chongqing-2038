@@ -302,9 +302,9 @@ There is one spare HV fuse (a second in the Raffles hub). The construction site 
 | Status | his body | hover an injury: what it is and how it's treated |
 | Scan | the last thing scanned (looked at with the laptop out, 2 s) | pick any item in the backpack to scan |
 | Notes | his notes, to read | a blank page to write and edit |
-| Drone | | launch, fly and land a salvaged drone |
-| Cams | | tapped cameras' feeds; loop one |
-| Logs | | machines logged through binoculars, shown on the map |
+| Drone | | its battery; Launch flies it (he stays sat, the view the drone's, flown with his movement keys), the laptop's key brings it back to him at the Drone window |
+| Cams | | a button per tapped camera to pick its feed; Loop blinds the one shown for 90 s |
+| Logs | | machines logged through binoculars; one picked opens the Map on it, ringed |
 | Songs | | play and skip the songs in the songs/ folder (desktop) or a folder he picks (browser), shuffled, as background music; the game has no music of its own |
 | Training Room | | VR goggles on, the screen fades into the tutorial map |
 

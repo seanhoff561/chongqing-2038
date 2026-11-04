@@ -38,6 +38,9 @@ export function resetKeys() { for (const a of ACTIONS) binds[a.id] = [...a.keys]
 /** A mouse button's own name: 4 and 5 (the browser's 3 and 4, back and forward). */
 export const mouseCode = (button: number) => (button === 3 ? 'Mouse4' : button === 4 ? 'Mouse5' : null);
 
+/** A key's name as on the keyboard (one for both of a pair: Shift, Ctrl, Alt). */
+export const keyName = (code: string) => code.replace(/^Key|^Digit/, '').replace(/^(Shift|Alt|Meta)(Left|Right)$/, '$1').replace(/^Control(Left|Right)$/, 'Ctrl').replace('Left', ' L').replace('Right', ' R');
+
 export class Input {
   yaw = 0;
   pitch = 0;

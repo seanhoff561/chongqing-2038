@@ -2,7 +2,7 @@
 // is in it: Menu (last sleep saved), Volume, Sensitivity and the twelve keys (with ?dev=1, the dev UI and crosshair
 // toggles too, for filming). Volume, sensitivity and keys are kept in this browser and put back each time.
 import type { Game } from '../game';
-import { ACTIONS, binds, bindKey, mouseCode } from '../input/input';
+import { ACTIONS, binds, bindKey, mouseCode, keyName } from '../input/input';
 import { readSave } from '../sim/save';
 import { bootMenu } from './boot-menu';
 
@@ -24,9 +24,7 @@ export function applySettings(g: Game) {
   for (const [id, keys] of Object.entries(s.keys ?? {})) if (binds[id] && keys[0]) bindKey(id, keys[0]);
 }
 
-/** A key's name as on the keyboard (one for both of a pair: Shift, Ctrl, Alt). */
-const name = (code: string) => code.replace(/^Key|^Digit/, '').replace(/^(Shift|Alt|Meta)(Left|Right)$/, '$1').replace(/^Control(Left|Right)$/, 'Ctrl').replace('Left', ' L').replace('Right', ' R');
-const names = (codes: string[]) => [...new Set(codes.map(name))].join(' / ');
+const names = (codes: string[]) => [...new Set(codes.map(keyName))].join(' / ');
 
 /** The panel, over the game or the main menu. */
 export class Settings {

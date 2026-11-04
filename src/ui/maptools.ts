@@ -106,8 +106,12 @@ export class MapTools {
     if (this.canvas.parentElement !== slot) { slot.appendChild(this.canvas); slot.appendChild(this.input); if (this.typing) this.input.focus(); }
   }
 
-  /** Sat down (looking where it looked standing) or up (on him again, words dropped). */
-  seat(sit: boolean) { this.view = sit ? this.here() : null; this.drag = null; this.untype(); }
+  /** Sat down (looking where it looked standing) or up (on him again, words dropped, nothing picked out). */
+  seat(sit: boolean) { this.view = sit ? this.here() : null; this.drag = null; this.hi = null; this.untype(); }
 
-  draw() { drawMap(this.canvas, this.game, this.view ?? this.here()); }
+  /** A place picked out (a sighting from the Logs, M10-16): the map on it, ringed. */
+  hi: { x: number; z: number } | null = null;
+  show(x: number, z: number) { if (this.view) { this.view.cx = x; this.view.cz = z; } this.hi = { x, z }; this.draw(); }
+
+  draw() { drawMap(this.canvas, this.game, { ...(this.view ?? this.here()), hi: this.hi ?? undefined }); }
 }

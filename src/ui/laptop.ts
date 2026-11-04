@@ -59,9 +59,15 @@ export class LaptopUI {
     this.root.addEventListener('click', e => {
       const t = e.target as Element;
       if (this.desk.click(t)) return;
-      const tool = t.closest<HTMLElement>('[data-tool]'), scan = t.closest<HTMLElement>('[data-scan]');
-      if (tool) this.map.tool = tool.dataset.tool!;
-      if (scan) game.input.cmds.push({ c: 'act', name: 'scanpack', arg: Number(scan.dataset.scan) });
+      const b = t.closest<HTMLElement>('[data-tool], [data-scan], [data-act], [data-cam], [data-sight]'), d = b?.dataset;
+      if (!d) return;
+      if (d.tool) this.map.tool = d.tool;
+      else if (d.scan) game.input.cmds.push({ c: 'act', name: 'scanpack', arg: Number(d.scan) });
+      // (M10-16: the drone launched; a camera picked and looped; a sighting shown on the map.)
+      else if (d.act === 'launch') game.input.cmds.push({ c: 'act', name: 'launch' });
+      else if (d.act === 'loop') { const taps = camList(game); if (taps.length) game.input.cmds.push({ c: 'act', name: 'loop', arg: taps[Math.min(this.cam, taps.length - 1)] }); }
+      else if (d.cam) this.cam = Number(d.cam);
+      else if (d.sight) { const x = game.state.sightings?.[Number(d.sight)]; if (x) { this.desk.open('map'); this.map.show(x.x, x.z); } }
     });
     this.notes.className = 'lt-notesbox'; this.notes.maxLength = 4000; this.notes.spellcheck = false;
     this.notes.addEventListener('input', () => game.input.cmds.push({ c: 'act', name: 'notes', arg: this.notes.value }));

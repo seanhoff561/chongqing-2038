@@ -11,6 +11,7 @@ import { compass } from '../sim/binoculars';
 import { mapKey } from './lapmap';
 import { loopedTill } from '../sim/camtap';
 import { FLIGHT } from '../sim/flight';
+import { binds, keyName } from '../input/input';
 import { districtAt, DISTRICT_NAMES } from '../world/yuzhong/lots';
 
 export type Page = { id: string; zh: string; en: string; needs?: (g: Game) => [string, string] | null; draw: (g: Game) => string };
@@ -93,14 +94,16 @@ function scanPage(g: Game): string {
   return pack + now + (s.lastScan ? scanned(g, s.lastScan) : `<div>看着一样东西或一台机器两秒，我来认。<br><span>Look at a thing or a machine for two seconds and I'll tell you what it is.</span></div>`);
 }
 
-/** The Logs page (M5-07): the latest sightings first, each its time, the machine, where and which way it went. */
+/** The Logs page (M5-07): the latest sightings first, each its time, the machine, where and which way it went; sitting,
+ *  one picked shows on the map (M10-16). */
 function logsPage(g: Game): string {
   const L = g.state.sightings ?? [];
   if (!L.length) return `<div>用望远镜盯住一台机器三秒，我就记下来。<br><span>Hold the binoculars on a machine for three seconds and I'll log it.</span></div>`;
   const n = new Set(L.map(x => x.u)).size;
-  return `<div class="lt-h" data-k="sightings">${L.length} 条记录，${n} 台机器 <span>${L.length} sightings of ${n} machines</span></div>` + L.slice(-12).reverse().map(x => {
+  const sit = !!g.state.laptop?.sit;
+  return `<div class="lt-h" data-k="sightings">${L.length} 条记录，${n} 台机器 <span>${L.length} sightings of ${n} machines</span></div>` + L.map((x, i) => [x, i] as const).slice(-12).reverse().map(([x, i]) => {
     const U = UNITS[x.kind], [pz, pe] = DISTRICT_NAMES[districtAt(x.x, x.z).district] ?? ['渝中', 'Yuzhong'], [hz, he] = compass(x.head);
-    return `<div>${clockText(x.t)} · ${U.zh} <span>${U.en}</span> · ${pz} <span>${pe}</span> · 往${hz} <span>heading ${he}</span></div>`;
+    return `<div${sit ? ` class="lt-sight" data-sight="${i}"` : ''}>${clockText(x.t)} · ${U.zh} <span>${U.en}</span> · ${pz} <span>${pe}</span> · 往${hz} <span>heading ${he}</span></div>`;
   }).join('');
 }
 
@@ -111,16 +114,22 @@ function camsPage(g: Game): string {
   const taps = camList(g);
   if (!taps.length) return `<div>把分接器接到摄像头的接线盒上，就能看它的画面。<br><span>Clip a tap into a camera's junction box and you'll see its feed.</span></div>`;
   const i = Math.min(g.laptop.cam, taps.length - 1), cam = taps[i], till = loopedTill(g.state, cam), C = g.world.cameras[cam], U = UNITS[C.kind], p = g.state.player.pos;
-  return `<div class="lt-feed"></div><div data-k="feed">${i + 1}/${taps.length} · ${U.zh} <span>${U.en}</span> #${cam} · ${Math.round(Math.hypot(C.x - p.x, C.z - p.z))} m · ` +
-    (till ? `循环中，到 ${clockText(till)} <span>looped till ${clockText(till)}</span>` : `直播 <span>live</span> · Enter 循环 <span>loop it</span>`) + ` · ↑ ↓ <span>cameras</span></div>`;
+  // (Sitting, M10-16: each tapped camera a button to pick it, and a button to loop the one shown.)
+  const sit = !!g.state.laptop?.sit;
+  const pick = sit ? `<div class="lt-pick">${taps.map((c, k) => `<button data-cam="${k}"${k === i ? ' class="on"' : ''}>#${c} <span>${Math.round(Math.hypot(g.world.cameras[c].x - p.x, g.world.cameras[c].z - p.z))} m</span></button>`).join('')}${till ? '' : `<button data-act="loop">循环 <span>Loop it</span></button>`}</div>` : '';
+  return pick + `<div class="lt-feed"></div><div data-k="feed">${i + 1}/${taps.length} · ${U.zh} <span>${U.en}</span> #${cam} · ${Math.round(Math.hypot(C.x - p.x, C.z - p.z))} m · ` +
+    (till ? `循环中，到 ${clockText(till)} <span>looped till ${clockText(till)}</span>` : `直播 <span>live</span>${sit ? '' : ' · Enter 循环 <span>loop it</span>'}`) + (sit ? '' : ` · ↑ ↓ <span>cameras</span>`) + `</div>`;
 }
 
-/** The Drone page (M5-11): its battery, and Enter to fly it (with the controller). */
+/** The Drone page (M5-11): its battery, and launching it (with the controller): sitting, a Launch button (M10-16),
+ *  standing Enter; flying, its keys, and the laptop's key brings it back to him at the laptop. */
 function dronePage(g: Game): string {
   const d = g.state.inv.pack.items.find(i => i.id === 'drone'), pct = Math.round(d?.charge ?? 100);
   if (!has(g, 'dronectl')) return `<div>还需要遥控器。<br><span>We need its controller too.</span></div>`;
+  const k = (id: string) => keyName(binds[id]?.[0] ?? '');
   return `<div data-k="drone">电量 ${bar(pct / 100)} ${pct}% <span>battery · ${Math.round((pct / 100) * FLIGHT.battery / 60)} min</span></div>` +
-    `<div>Enter 起飞 <span>launch</span> · 飞的时候：WASD，空格上升，C 下降，L 返回 <span>flying: WASD, Space up, C down, L to bring it back</span></div><div><span>它飞过的地方会画在地图上。被看到会被盯上，被打下来。 Where it flies fills in on the map. Machines can see it, and shoot it down.</span></div>`;
+    (g.state.laptop?.sit ? `<div class="lt-pick"><button data-act="launch"${pct <= 0 ? ' disabled' : ''}>起飞 <span>Launch</span></button></div>` : `<div>Enter 起飞 <span>launch</span></div>`) +
+    `<div>飞的时候：WASD，空格上升，${k('crouch')} 下降，${k('sprint')} 加速，${k('laptop')} 返回 <span>flying: WASD, Space up, ${k('crouch')} down, ${k('sprint')} faster, ${k('laptop')} to bring it back</span></div><div><span>它飞过的地方会画在地图上。被看到会被盯上，被打下来。 Where it flies fills in on the map. Machines can see it, and shoot it down.</span></div>`;
 }
 
 /** Every tab (DESIGN section 11): standing he turns through the first four; sitting at it, the launcher opens any. */

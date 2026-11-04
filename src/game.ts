@@ -257,7 +257,7 @@ export class Game {
     if (this.inv.open) this.inv.toggle(false);
     else if (this.craft.open) this.craft.toggle(false);
     else if (this.sleep.open) this.sleep.toggle(false);
-    else if (this.state.laptop?.sit) this.input.cmds.push({ c: 'act', name: 'focus' });
+    else if (this.state.laptop?.sit && !this.state.flight) this.input.cmds.push({ c: 'act', name: 'focus' });
     else if (this.state.laptop?.open && !this.state.flight) this.input.cmds.push({ c: 'act', name: 'laptop' });
     else return false;
     return true;
@@ -336,7 +336,7 @@ export class Game {
     // prompts, the hands and the mouse away for good.)
     // (Settings stop his own input, the world going on; the main menu stops everything: U-104.)
     this.input.frozen = this.settings.open || this.menuUp();
-    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot') || !!this.state.laptop?.sit;
+    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot') || (!!this.state.laptop?.sit && !this.state.flight);
     // (A menu closed, the mouse taken back for looking round: U-105.)
     if (this.wasUi && !this.input.uiOpen) this.input.capture();
     this.wasUi = this.input.uiOpen;
@@ -367,7 +367,7 @@ export class Game {
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
-    this.laptop3d.update(!!this.state.laptop?.open, !!this.state.laptop?.sit, dt, this.view.fp.cam);
+    this.laptop3d.update(!!this.state.laptop?.open && !this.state.flight, !!this.state.laptop?.sit, dt, this.view.fp.cam);
     if (this.heldModel) this.heldModel.visible = !this.state.laptop?.open;
     this.laptop.update(dt);
     this.craft.update();
