@@ -9,7 +9,7 @@ export default async function ({ open, fail, screenshot }) {
     await page.keyboard.press('Tab');
     await page.evaluate('window.__cq.runFrames(3)'); // (open first: the sim takes the Tab)
     await page.evaluate(`(() => { const L = window.__cq.game.laptop; L.page = 0; window.__cq.runFrames(20); })()`);
-    const r = await page.evaluate(`(() => { const el = document.querySelector('#laptop .lt-body'), g = window.__cq.game;
+    const r = await page.evaluate(`(() => { const el = document.querySelector('#laptop .lt-win.front .lt-content'), g = window.__cq.game;
       if (!el) return { n: 0, text: 'not out: ' + JSON.stringify({ open: g.state.laptop?.open, mode: g.state.player.mode, grip: g.state.player.hands.map(h => !!h.grip) }) };
       const c = el.querySelector('canvas'), K = ${JSON.stringify(KNOWN)};
       const n = Object.keys(window.__cq.game.state.explored ?? {}).length;
@@ -44,7 +44,7 @@ export default async function ({ open, fail, screenshot }) {
   const feed = await page.evaluate(`(() => { const c = document.querySelector('#laptop .lt-feed canvas'); if (!c) return null;
     const d = c.getContext('2d').getImageData(0, 20, c.width, c.height - 20).data; let lo = 255, hi = 0, sum = 0;
     for (let i = 0; i < d.length; i += 4) { lo = Math.min(lo, d[i + 1]); hi = Math.max(hi, d[i + 1]); sum += d[i + 1]; }
-    return { lo, hi, mean: sum / (d.length / 4), text: document.querySelector('#laptop .lt-body').textContent }; })()`);
+    return { lo, hi, mean: sum / (d.length / 4), text: document.querySelector('#laptop .lt-win.front .lt-content').textContent }; })()`);
   if (!feed || feed.hi - feed.lo < 60 || feed.mean < 15) fail('automap', `the camera feed is blank: ${JSON.stringify(feed)}`);
   await screenshot(page, 'camfeed');
   await page.close();

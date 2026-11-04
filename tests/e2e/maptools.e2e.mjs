@@ -7,7 +7,7 @@ export default async function ({ open, fail, screenshot }) {
   await page.evaluate('window.__cq.runFrames(30)');
   await page.keyboard.press('KeyQ');
   await page.evaluate('window.__cq.runFrames(40)');
-  const st = () => page.evaluate(`(() => { window.__cq.runFrames(3); const g = window.__cq.game, v = g.laptop.map.view; return { marks: g.state.marks ?? [], view: v && { ...v }, on: document.querySelector('#laptop .lt-body').dataset.on }; })()`);
+  const st = () => page.evaluate(`(() => { window.__cq.runFrames(3); const g = window.__cq.game, v = g.laptop.map.view; return { marks: g.state.marks ?? [], view: v && { ...v }, on: document.querySelector('#laptop .lt-win.front')?.dataset.win }; })()`);
   const at = (fx, fy) => page.evaluate(`(() => { const r = document.querySelector('#laptop .lt-map canvas').getBoundingClientRect(); return { x: r.x + r.width * ${fx}, y: r.y + r.height * ${fy} }; })()`);
   const tool = async id => { const r = await page.evaluate(`(() => { const b = document.querySelector('#laptop [data-tool="${id}"]').getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; })()`); await page.mouse.click(r.x, r.y); await page.evaluate('window.__cq.runFrames(2)'); };
   if ((await st()).on !== 'map') fail('maptools', 'not on the map sitting');
@@ -49,7 +49,7 @@ export default async function ({ open, fail, screenshot }) {
   await page.evaluate('window.__cq.runFrames(30)');
   const up = await page.evaluate(`(() => { const g = window.__cq.game, c = document.querySelector('#laptop .lt-map canvas'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
     let n = 0; for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - 191) + Math.abs(d[i + 1] - 230) + Math.abs(d[i + 2] - 245) < 30) n++;
-    return { view: g.laptop.map.view, marks: (g.state.marks ?? []).length, ice: n, tools: !!document.querySelector('#laptop .lt-tools') }; })()`);
+    return { view: g.laptop.map.view, marks: (g.state.marks ?? []).length, ice: n, tools: [...document.querySelectorAll('#laptop .lt-tools')].some(t => t.offsetParent) }; })()`);
   if (up.view || up.tools || up.marks !== 2) fail('maptools', `standing: ${JSON.stringify(up)}`);
   if (!(up.ice > 20)) fail('maptools', `standing, his marks aren't drawn: ${up.ice} px`);
   await page.keyboard.press('Tab');
