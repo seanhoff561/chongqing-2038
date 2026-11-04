@@ -7,7 +7,7 @@ import * as THREE from 'three';
 import type { Game } from '../game';
 import { dateText } from '../sim/clock';
 import { night } from '../render/materials';
-import { drawMap, MAPV } from './lapmap';
+import { MapTools } from './maptools';
 import { Feed } from './feeds';
 import { FLIGHT } from '../sim/flight';
 import { heightAt } from '../world/heightfield';
@@ -20,13 +20,17 @@ const STANDING = PAGES.filter(p => p.standing);
 
 export class LaptopUI {
   readonly root: HTMLDivElement;
+  /** its top bar (the page's name; the corner) and the page, each redrawn only when it changes */
+  private bar = document.createElement('div');
+  private body = document.createElement('div');
   private shown = '';
+  private barShown = '';
   /** which page: an index into PAGES */
   page = 0;
   /** The screen's glow on what's round him, after dark: ice blue (U-104). */
   private glow = new THREE.PointLight(0xbfe6f5, 0, 3, 2);
-  /** The Map page's canvas, kept across redraws of the page. */
-  private map = document.createElement('canvas');
+  /** The Map page's canvas and its tools (M10-14), kept across redraws of the page. */
+  readonly map: MapTools;
   private frame = 0;
   /** The Cams page's feed, and which tapped camera it shows. */
   private feed = new Feed();
@@ -40,16 +44,19 @@ export class LaptopUI {
     this.root.id = 'laptop';
     this.root.style.display = 'none';
     this.root.style.width = `${SCREEN.w}px`; this.root.style.height = `${SCREEN.h}px`;
+    this.bar.className = 'lt-bar'; this.body.className = 'lt-body';
+    this.root.append(this.bar, this.body);
     document.body.appendChild(this.root);
+    this.map = new MapTools(game);
     this.flying.id = 'dronehud'; this.flying.style.display = 'none'; document.body.appendChild(this.flying);
-    this.map.width = MAPV.w; this.map.height = MAPV.h;
     this.glow.position.set(0, -0.25, -0.45);
     game.view.fp.cam.add(this.glow);
     // (Sitting, the cursor: the nine dots, and a tab in the launcher.)
     this.root.addEventListener('click', e => {
-      const t = (e.target as Element).closest<HTMLElement>('.lt-dots, [data-tab]');
+      const t = (e.target as Element).closest<HTMLElement>('.lt-dots, [data-tab], [data-tool]');
       if (!t) return;
-      if (t.dataset.tab) { this.page = PAGES.findIndex(q => q.id === t.dataset.tab); this.launcher = false; }
+      if (t.dataset.tool) this.map.tool = t.dataset.tool;
+      else if (t.dataset.tab) { this.page = PAGES.findIndex(q => q.id === t.dataset.tab); this.launcher = false; }
       else this.launcher = !this.launcher;
     });
   }
@@ -57,7 +64,7 @@ export class LaptopUI {
   /** Sat down or up (M10-13): the mouse let go to be a cursor on the screen, or taken back to look round; standing,
    *  only the four pages. */
   private seat(sit: boolean) {
-    this.sat = sit; this.launcher = false;
+    this.sat = sit; this.launcher = false; this.map.seat(sit);
     if (sit) document.exitPointerLock?.();
     else { this.game.input.capture(); if (!PAGES[this.page].standing) this.page = 0; }
   }
@@ -101,26 +108,28 @@ export class LaptopUI {
     this.root.classList.toggle('sit', sit);
     this.glow.intensity = open ? 1.4 * night.k : 0;
     const r = open ? g.laptop3d.rect(g.view.fp.cam, innerWidth, innerHeight) : null;
-    if (!r) { if (this.shown) { this.root.style.display = 'none'; this.shown = ''; } return; }
+    if (!r) { if (this.root.style.display !== 'none') { this.root.style.display = 'none'; this.shown = this.barShown = ''; } return; }
+    this.root.style.display = 'block';
     // (The page scaled onto the glass, wherever his hands hold it.)
     this.root.style.transform = `translate(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px) scale(${(r.w / SCREEN.w).toFixed(4)}, ${(r.h / SCREEN.h).toFixed(4)})`;
     const P = PAGES[this.page], pct = Math.round(L!.charge * 100), locked = P.needs?.(g);
     const dots = sit ? `<button class="lt-dots">${'<i></i>'.repeat(9)}</button>` : '';
-    const body = sit && this.launcher ? `<div class="lt-launch">${PAGES.map(q => `<button data-tab="${q.id}">${q.zh}<br><span>${q.en}</span></button>`).join('')}</div>`
-      : locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : P.draw(g);
-    const html = `<div class="lt-bar"><span>${dots}${P.zh} ${P.en}</span><span class="lt-corner">▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span></div>` +
-      `<div class="lt-body" data-on="${sit && this.launcher ? 'launcher' : P.id}">${body}</div>`;
+    const on = sit && this.launcher ? 'launcher' : P.id;
+    const html = on === 'launcher' ? `<div class="lt-launch">${PAGES.map(q => `<button data-tab="${q.id}">${q.zh}<br><span>${q.en}</span></button>`).join('')}</div>`
+      : locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : (on === 'map' && sit ? this.map.tools() : '') + P.draw(g);
+    const bar = `<span>${dots}${P.zh} ${P.en}</span><span class="lt-corner">▮ ${pct}% · ${dateText(g.state.time)} · ☠ ${g.state.deaths ?? 0}</span>`;
+    if (bar !== this.barShown) { this.bar.innerHTML = bar; this.barShown = bar; }
     const fresh = html !== this.shown;
-    if (fresh) { this.root.innerHTML = html; this.root.style.display = 'block'; this.shown = html; }
+    if (fresh) { this.body.innerHTML = html; this.body.dataset.on = on; this.shown = html; }
     // The map, drawn into its place on the page a few times a second.
-    if (P.id === 'map' && !this.launcher) {
-      const slot = this.root.querySelector('.lt-map');
-      if (slot && this.map.parentElement !== slot) slot.appendChild(this.map);
-      if (fresh || ++this.frame % 6 === 0) drawMap(this.map, g);
+    if (on === 'map') {
+      const slot = this.body.querySelector('.lt-map');
+      if (slot) this.map.place(slot);
+      if (fresh || ++this.frame % 6 === 0) this.map.draw();
     }
     // The feed, a few times a second.
-    if (P.id === 'cams' && g.state.taps?.length && !this.launcher && !locked) {
-      const slot = this.root.querySelector('.lt-feed'), taps = camList(g);
+    if (on === 'cams' && g.state.taps?.length && !locked) {
+      const slot = this.body.querySelector('.lt-feed'), taps = camList(g);
       if (slot && this.feed.canvas.parentElement !== slot) slot.appendChild(this.feed.canvas);
       if (fresh || ++this.frame % 12 === 0) this.feed.draw(g, taps[Math.min(this.cam, taps.length - 1)]);
     }

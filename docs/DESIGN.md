@@ -296,7 +296,7 @@ There is one spare HV fuse (a second in the Raffles hub). The construction site 
 
 | Tab | Standing | Sitting |
 |---|---|---|
-| Map | the city, every building's type, him, the key places he knows, his marks | markers, straight lines, text, the eraser; wheel zoom, right-drag |
+| Map | the city, every building's type, him, the key places he knows, his marks (not his hideouts: he remembers those) | markers, straight lines, text, the eraser; wheel zoom, right-drag |
 | Status | his body | hover an injury: what it is and how it's treated |
 | Scan | the last thing scanned (looked at with the laptop out, 2 s) | pick any item in the backpack to scan |
 | Notes | his notes, to read | a blank page to write and edit |

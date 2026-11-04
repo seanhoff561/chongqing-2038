@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-14 Map tools (U-104).
-Features done: 340 / 424 | Last done: M10-13
+**Status:** building M10. Next: M10-56 Playtest fixes: updating, the mouse, Resume, the menu, the laptop held low (U-105).
+Features done: 341 / 429 | Last done: M10-14
 <!-- /status -->
 
 ## What's built
@@ -38,3 +38,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-10: the main menu and its changelog
 - M10-12: no grab, sprint or jump; the lean keys turn Map, Status, Scan, Notes; battery, date and skull in its corner
 - M10-11, M10-13: the Windows installer updates itself (v0.2.1 with latest.yml); Q sits him down at the laptop, nine dots open every tab
+- M10-14: map tools sitting (marker, line, text, eraser, zoom, drag), every building by type from the start, hideouts unmarked; U-105 logged

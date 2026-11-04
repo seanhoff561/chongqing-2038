@@ -31,6 +31,9 @@ export interface InputFrame {
   cmds?: import('./commands').Cmd[];
 }
 
+/** A mark on the map (M10-14): a pin at x,z; a line on to x2,z2; or words. */
+export type Mark = { x: number; z: number; x2?: number; z2?: number; text?: string };
+
 export const emptyInput = (): InputFrame => ({ mx: 0, my: 0, yaw: 0, pitch: 0, buttons: 0, pressed: 0, slot: -1 });
 
 export type SimEvent =
@@ -99,6 +102,8 @@ export interface SimState {
   deaths?: number;
   /** his own notes, written on the laptop sitting down (U-104) */
   notes?: string;
+  /** his own marks on the laptop's map (M10-14): pins, straight lines and words, in world metres */
+  marks?: Mark[];
   rng: Rng;
   tick: number;
   /** game seconds since day 1, 00:00 */

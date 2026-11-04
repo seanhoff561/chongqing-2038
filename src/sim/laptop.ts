@@ -11,6 +11,14 @@ import { powered } from './power';
  *  hideout, and what it takes from the car battery (percent). */
 export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
 
+// His marks on the map (M10-14), made and rubbed out sitting at it.
+onCmd((s, c) => {
+  if (c.c !== 'mark') return;
+  const m = (s.marks ??= []);
+  if (c.add && [c.add.x, c.add.z, c.add.x2 ?? 0, c.add.z2 ?? 0].every(Number.isFinite)) m.push({ ...c.add, text: c.add.text?.slice(0, 80) });
+  if (c.del !== undefined && c.del >= 0 && c.del < m.length) m.splice(c.del, 1);
+});
+
 onCmd((s, c) => {
   // Sitting down at it and getting up (focus, M10-13): only while it's out.
   if (c.c === 'act' && c.name === 'focus' && s.laptop?.open && !s.flight && !s.dead) { s.laptop.sit = !s.laptop.sit; return; }

@@ -100,10 +100,11 @@ export class Input {
 
   private key(e: KeyboardEvent, down: boolean) {
     if (e.ctrlKey && document.pointerLockElement) e.preventDefault();
-    // (Alt is the backpack, never the browser's menu; Tab the laptop, never the next field.)
-    if (['Tab', 'Space', 'AltLeft', 'AltRight'].includes(e.code)) e.preventDefault();
-    if (e.repeat) return;
-    if ((e.target as HTMLElement | null)?.closest?.('input, textarea')) return;
+    // (Alt is the backpack, never the browser's menu; Tab the laptop, never the next field; a space typed on the
+    // laptop is a space.)
+    const typing = !!(e.target as HTMLElement | null)?.closest?.('input, textarea');
+    if (['Tab', 'AltLeft', 'AltRight'].includes(e.code) || (e.code === 'Space' && !typing)) e.preventDefault();
+    if (e.repeat || typing) return;
     this.press(e.code, down);
   }
 

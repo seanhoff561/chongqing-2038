@@ -13,7 +13,8 @@ export type Cmd =
   | { c: 'fit'; uid: number; onto: number }
   | { c: 'strip'; uid: number }
   | { c: 'takeall' }
-  | { c: 'act'; name: string; arg?: string | number };
+  | { c: 'act'; name: string; arg?: string | number }
+  | { c: 'mark'; add?: import('./types').Mark; del?: number };
 
 /** 'pack' or a container id. */
 export function gridRef(s: SimState, ref: string): Grid | null {
