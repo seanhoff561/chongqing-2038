@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-15 Status, Scan and Notes when sitting (U-104).
-Features done: 345 / 429 | Last done: M10-60
+**Status:** building M10. Next: M10-16 Drone, Cams and Logs when sitting (U-104).
+Features done: 346 / 429 | Last done: M10-15
 <!-- /status -->
 
 ## What's built
@@ -43,3 +43,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-57: a real laptop (aluminium lid and deck, bezel and webcam, hinge, keys, trackpad, scuffs) and a real screen (bloom, glare, grain, dark edges)
 - M10-58: Anna's OS: a taskbar of app icons with the tray, windows with title bars, minimise, maximise and X
 - M10-60: the main menu's own music, a quiet A-minor loop that fades out as play starts
+- M10-15: sitting, Status's wounds say how they're treated, Scan picks from the backpack, Notes is written and kept

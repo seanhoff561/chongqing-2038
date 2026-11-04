@@ -2,6 +2,7 @@
 // machine in his sight (within 40 m), a thing lying in front of him, or, with nothing else before him, what he holds.
 // What's been scanned is kept; the last one is what her Scan page shows. Food scanned has its date read (M5-05);
 // a machine scanned disabled, its kind's weak points (M5-12).
+import { onCmd } from './commands';
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { DT } from './types';
@@ -44,3 +45,15 @@ export function stepScan(s: SimState, w: World) {
   if (on?.down) (s.weak ??= {})[on.down] = true;
   s.events.push({ t: 'scan', id: target });
 }
+
+// Sitting at the laptop (M10-15): a thing in the backpack picked to scan, at once.
+onCmd((s, c) => {
+  if (c.c !== 'act' || c.name !== 'scanpack' || !s.laptop?.sit) return;
+  const st = s.inv.pack.items.find(i => i.uid === c.arg);
+  if (!st) return;
+  const key = `item:${st.id}`;
+  (s.scans ??= {})[key] = true;
+  s.lastScan = key;
+  if (item(st.id).food) { st.checked = true; s.lastFood = st.uid; }
+  s.events.push({ t: 'scan', id: key });
+});

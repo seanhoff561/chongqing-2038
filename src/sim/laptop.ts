@@ -11,6 +11,11 @@ import { powered } from './power';
  *  hideout, and what it takes from the car battery (percent). */
 export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
 
+// His notes (M10-15), written sitting at it.
+onCmd((s, c) => {
+  if (c.c === 'act' && c.name === 'notes' && s.laptop?.sit && typeof c.arg === 'string') s.notes = c.arg.slice(0, 4000);
+});
+
 // His marks on the map (M10-14), made and rubbed out sitting at it.
 onCmd((s, c) => {
   if (c.c !== 'mark') return;

@@ -19,10 +19,40 @@ export const esc = (t: string) => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<':
 
 /** A level as a bar of ten. */
 export const bar = (v: number) => '▮'.repeat(Math.round(Math.max(0, Math.min(1, v)) * 10)).padEnd(10, '▯');
-/** His body (M5-03): health and wounds, and his needs, in both languages; each value on its row for the smoke test. */
+/** How long till a time (game seconds), in days or hours. */
+const till = (t: number, now: number) => { const h = Math.max(0, (t - now) / 3600); return h >= 36 ? [`${Math.round(h / 24)} 天`, `${Math.round(h / 24)} days`] : [`${Math.ceil(h)} 小时`, `${Math.ceil(h)} h`]; };
+
+/** What a wound is and how it's treated (M10-15), for hovering it sitting: Chinese, then English. */
+function tip(g: Game, k: string): string {
+  const b = g.state.body, now = g.state.time;
+  const t = (zh: string, en: string) => `${zh}&#10;${en}`;
+  if (k === 'bleed') {
+    if (b.heavyBleed && b.tourniquet) return t('止血带勒住了出血。急救包能真正处理好。', 'The tourniquet is holding the bleeding. A first-aid kit treats it properly.');
+    if (b.heavyBleed) return t('大出血：不到两分钟就会死。用止血带止住（之后用急救包）。', 'Bleeding heavily: it kills in under two minutes. A tourniquet stops it (a first-aid kit after).');
+    return t('伤口在流血，一分半钟左右会自己止住。绷带或急救包能马上止住。', 'A cut, bleeding a little: it clots in about a minute and a half. A bandage or a first-aid kit stops it now.');
+  }
+  if (k === 'leg') {
+    const [hz, he] = till(b.legHealAt, now);
+    if (b.leg === 'sprain') return t(`扭伤：跛行，不能冲刺，跳不远。${hz}后好。止痛药能压住四小时。`, `A sprain: he limps, can't sprint and jumps short. Healed in ${he}. Painkillers hide it for four hours.`);
+    if (b.legSplint) return t(`骨折，已固定：像扭伤一样跛行，不能跳。${hz}后好。`, `Broken and splinted: he limps as with a sprain and can't jump. Healed in ${he}.`);
+    return t('腿骨折：几乎走不动，不能跳，爬不高。用夹板固定，七天后好。', "A broken leg: he can hardly walk, can't jump or climb high. A splint sets it; then it heals in seven days.");
+  }
+  if (k === 'arm') {
+    const [hz, he] = till(b.armHealAt, now);
+    if (b.armSplint) return t(`手臂骨折，已固定：爬得慢。${hz}后好。`, `A broken arm, splinted: he climbs slowly. Healed in ${he}.`);
+    return t('手臂骨折：抓不住，爬不了。用夹板固定，七天后好。', "A broken arm: he can't hang or climb. A splint sets it; then it heals in seven days.");
+  }
+  if (k === 'sick') { const [hz, he] = till(b.sickUntil, now); return t(`吃坏了或喝了脏水：会吐，掉水分。${hz}后自己好，多喝水。`, `Sick from bad food or water: he throws up and loses water. It passes in ${he}; drink.`); }
+  const [hz, he] = till(b.painkillerUntil, now);
+  return t(`止痛药起效：疼痛压住了，伤还没好。还有${hz}。`, `Painkillers working: the pain is hidden, not healed. ${he} left.`);
+}
+
+/** His body (M5-03): health and wounds, and his needs, in both languages; each value on its row for the smoke test.
+ *  A wound, hovered sitting, says what it is and how it's treated (M10-15). */
 function status(g: Game): string {
   const b = g.state.body, now = g.state.time;
-  const row = (k: string, zh: string, en: string, v: string) => `<div class="lt-row" data-k="${k}"><span class="lt-k">${zh} ${en}</span><b>${v}</b></div>`;
+  const hurt = (k: string) => (k === 'bleed' ? b.lightBleed >= 0 || b.heavyBleed : k === 'leg' ? b.leg !== 'ok' : k === 'arm' ? b.arm !== 'ok' : k === 'sick' ? now < b.sickUntil : k === 'pain');
+  const row = (k: string, zh: string, en: string, v: string) => `<div class="lt-row${hurt(k) ? ' hurt' : ''}" data-k="${k}"${hurt(k) && g.state.laptop?.sit ? ` data-tip="${tip(g, k)}"` : ''}><span class="lt-k">${zh} ${en}</span><b>${v}</b></div>`;
   const bleed = b.heavyBleed ? (b.tourniquet ? '止血带 tourniquet on' : '大出血 bleeding heavily') : b.lightBleed >= 0 ? '流血 bleeding' : '无 none';
   const leg = b.leg === 'ok' ? '好 fine' : b.leg === 'sprain' ? '扭伤 sprained' : b.legSplint ? '骨折，已固定 broken, splinted' : '骨折 broken';
   const arm = b.arm === 'ok' ? '好 fine' : b.armSplint ? '骨折，已固定 broken, splinted' : '骨折 broken';
@@ -58,7 +88,9 @@ function weakPoints(k: UnitKind): string {
 /** The Scan page: how far along a scan is, and the last one. */
 function scanPage(g: Game): string {
   const s = g.state, now = s.scan?.target && !s.scan.done ? `<div>扫描中 Scanning ${bar(s.scan.t / SCAN.secs)}</div>` : '';
-  return now + (s.lastScan ? scanned(g, s.lastScan) : `<div>看着一样东西或一台机器两秒，我来认。<br><span>Look at a thing or a machine for two seconds and I'll tell you what it is.</span></div>`);
+  // Sitting (M10-15): anything in the backpack, picked to scan.
+  const pack = s.laptop?.sit ? `<div class="lt-pick">${[...new Map(s.inv.pack.items.map(i => [i.id, i])).values()].map(i => { const d = item(i.id); return `<button data-scan="${i.uid}"${s.lastScan === `item:${i.id}` ? ' class="on"' : ''}>${d.zh} <span>${d.en}</span></button>`; }).join('')}</div>` : '';
+  return pack + now + (s.lastScan ? scanned(g, s.lastScan) : `<div>看着一样东西或一台机器两秒，我来认。<br><span>Look at a thing or a machine for two seconds and I'll tell you what it is.</span></div>`);
 }
 
 /** The Logs page (M5-07): the latest sightings first, each its time, the machine, where and which way it went. */
@@ -96,8 +128,8 @@ export const PAGES: (Page & { standing?: boolean })[] = [
   { id: 'map', zh: '地图', en: 'Map', standing: true, draw: g => `<div class="lt-map"></div>` + mapKey(g) },
   { id: 'status', zh: '状态', en: 'Status', standing: true, draw: g => status(g) },
   { id: 'scan', zh: '扫描', en: 'Scan', standing: true, draw: g => scanPage(g) },
-  // (His own notes, read standing: U-104.)
-  { id: 'notes', zh: '笔记', en: 'Notes', standing: true, draw: g => `<div class="lt-notes">${esc(g.state.notes ?? '')}</div>` },
+  // (His own notes: written sitting, in the page's writing box; read standing: U-104.)
+  { id: 'notes', zh: '笔记', en: 'Notes', standing: true, draw: g => (g.state.laptop?.sit ? '<div class="lt-write"></div>' : `<div class="lt-notes">${esc(g.state.notes ?? '')}</div>`) },
   { id: 'drone', zh: '无人机', en: 'Drone', needs: g => (has(g, 'drone') ? null : ['需要一架缴获的无人机', 'needs a salvaged drone']), draw: g => dronePage(g) },
   { id: 'cams', zh: '摄像头', en: 'Cams', needs: g => (has(g, 'cameratap') || g.state.taps?.length ? null : ['需要摄像头分接器', 'needs a camera tap']), draw: g => camsPage(g) },
   { id: 'logs', zh: '日志', en: 'Logs', needs: g => (has(g, 'binoculars') ? null : ['需要望远镜', 'needs binoculars']), draw: g => logsPage(g) },

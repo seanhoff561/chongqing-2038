@@ -35,6 +35,8 @@ export class LaptopUI {
   /** The Cams page's feed, and which tapped camera it shows. */
   private feed = new Feed();
   cam = 0;
+  /** Notes' writing box (M10-15), kept across redraws so typing isn't lost */
+  private notes = document.createElement('textarea');
   /** whether he was sat down last frame */
   private sat = false;
 
@@ -57,16 +59,19 @@ export class LaptopUI {
     this.root.addEventListener('click', e => {
       const t = e.target as Element;
       if (this.desk.click(t)) return;
-      const tool = t.closest<HTMLElement>('[data-tool]');
+      const tool = t.closest<HTMLElement>('[data-tool]'), scan = t.closest<HTMLElement>('[data-scan]');
       if (tool) this.map.tool = tool.dataset.tool!;
+      if (scan) game.input.cmds.push({ c: 'act', name: 'scanpack', arg: Number(scan.dataset.scan) });
     });
+    this.notes.className = 'lt-notesbox'; this.notes.maxLength = 4000; this.notes.spellcheck = false;
+    this.notes.addEventListener('input', () => game.input.cmds.push({ c: 'act', name: 'notes', arg: this.notes.value }));
   }
 
   /** Sat down or up (M10-13): the mouse let go to be a cursor on the screen (the app he was on open, the first time),
    *  or taken back to look round, on the app in front if it's one of the four. */
   private seat(sit: boolean) {
     this.sat = sit; this.map.seat(sit);
-    if (sit) { document.exitPointerLock?.(); if (!this.desk.wins.length) this.desk.open(PAGES[this.page].id, true); return; }
+    if (sit) { document.exitPointerLock?.(); this.notes.value = this.game.state.notes ?? ''; if (!this.desk.wins.length) this.desk.open(PAGES[this.page].id, true); return; }
     const f = this.desk.front(), i = f ? PAGES.findIndex(q => q.id === f.app) : -1;
     if (i >= 0 && PAGES[i].standing) this.page = i;
     else if (!PAGES[this.page].standing) this.page = 0;
@@ -137,6 +142,8 @@ export class LaptopUI {
     // The map, drawn into its place a few times a second; the feed likewise.
     const mw = this.desk.win('map', sit), slot = mw && shown.includes(mw) ? mw.content.querySelector('.lt-map') : null;
     if (slot) { const fresh = this.map.canvas.parentElement !== slot; this.map.place(slot); if (fresh || this.frame % 6 === 0) this.map.draw(); }
+    const nw = sit ? this.desk.win('notes', sit) : null, write = nw && shown.includes(nw) ? nw.content.querySelector('.lt-write') : null;
+    if (write && this.notes.parentElement !== write) { const f = document.activeElement === this.notes; write.appendChild(this.notes); if (f) this.notes.focus(); }
     const cw = this.desk.win('cams', sit), feed = cw && shown.includes(cw) && g.state.taps?.length ? cw.content.querySelector('.lt-feed') : null;
     if (feed) {
       const taps = camList(g), fresh = this.feed.canvas.parentElement !== feed;
