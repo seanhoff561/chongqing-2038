@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-18 Anna in the corner (U-104).
-Features done: 348 / 429 | Last done: M10-17
+**Status:** building M10. Next: M10-59 The app's icon is Anna (U-105).
+Features done: 349 / 429 | Last done: M10-18
 <!-- /status -->
 
 ## What's built
@@ -46,3 +46,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-15: sitting, Status's wounds say how they're treated, Scan picks from the backpack, Notes is written and kept
 - M10-16: sitting, the drone launched and flown from its app, cameras picked and looped, sightings shown on the map
 - M10-17: his own songs from the laptop (a folder in the browser, the songs folder on desktop); the game's own music removed
+- M10-18: Anna in the laptop's corner, drawn and animated: idle, blinking, waving, laughing, pouting, blushing

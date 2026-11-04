@@ -13,6 +13,7 @@ import { FLIGHT } from '../sim/flight';
 import { heightAt } from '../world/heightfield';
 import { PAGES, camList } from './lappages';
 import { Desk } from './lapos';
+import { Anna } from './anna';
 
 /** The page's own size (CSS pixels), scaled onto the screen's glass. */
 export const SCREEN = { w: 640, h: 408 };
@@ -37,6 +38,9 @@ export class LaptopUI {
   cam = 0;
   /** Notes' writing box (M10-15), kept across redraws so typing isn't lost */
   private notes = document.createElement('textarea');
+  /** Anna in the screen's corner (M10-18) */
+  readonly anna = new Anna();
+  private wasOpen = false;
   /** whether he was sat down last frame */
   private sat = false;
 
@@ -49,7 +53,7 @@ export class LaptopUI {
     this.desk = new Desk(game);
     // (Over it all, the glass: M10-57.)
     this.glass.className = 'lt-glass';
-    this.root.append(this.desk.el, this.desk.bar, this.glass);
+    this.root.append(this.desk.el, this.anna.el, this.desk.bar, this.glass);
     document.body.appendChild(this.root);
     this.flying.id = 'dronehud'; this.flying.style.display = 'none'; document.body.appendChild(this.flying);
     // (The light off the glass, on his face and round him, the keys only glancing.)
@@ -131,6 +135,10 @@ export class LaptopUI {
     this.flyHud();
     const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight, sit = open && !!L?.sit;
     if (sit !== this.sat) this.seat(sit);
+    // (Taken out, Anna waves.)
+    if (open && !this.wasOpen) this.anna.set('wave', 1.6);
+    this.wasOpen = open;
+    if (open) this.anna.update(dt);
     // (Sat down, he looks straight ahead at it: U-105.)
     if (sit) g.input.pitch *= Math.exp(-8 * dt);
     this.root.classList.toggle('sit', sit);

@@ -131,6 +131,8 @@ canvas { display: block; }
 #laptop .lt-wbtn button:hover { background: rgba(191, 230, 245, 0.1); color: var(--ice-hi); }
 #laptop .lt-wbtn button[data-w="close"]:hover { background: #b8433c; color: #fff; }
 #laptop .lt-content { position: relative; flex: 1; overflow: hidden; padding: 5px 10px; font-size: 11.5px; line-height: 1.38; }
+#laptop .lt-anna { position: absolute; z-index: 1; right: 6px; bottom: 29px; width: 66px; height: 86px; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
+#laptop .lt-anna svg { width: 100%; height: 100%; display: block; }
 #laptop .lt-task { position: absolute; z-index: 1; left: 0; bottom: 0; width: 640px; height: 28px; display: flex; align-items: center; background: rgba(9, 19, 26, 0.96); border-top: 1px solid var(--ice-line); }
 #laptop .lt-apps { display: flex; gap: 2px; margin: 0 auto; }
 #laptop .lt-apps button { position: relative; width: 30px; height: 24px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 4px; color: var(--ice); }
