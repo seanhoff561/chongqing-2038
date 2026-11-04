@@ -30,6 +30,8 @@ export class LaptopUI {
   private dots = document.createElement('button');
   private title = document.createElement('span');
   private corner = document.createElement('span');
+  /** the glass over the page: glare, pixel grain, darker edges (M10-57) */
+  private glass = document.createElement('div');
   /** which page: an index into PAGES */
   page = 0;
   /** The screen's glow on what's round him, after dark: ice blue (U-104). */
@@ -54,12 +56,15 @@ export class LaptopUI {
     const left = document.createElement('span');
     left.append(this.dots, this.title);
     this.bar.append(left, this.corner);
-    this.root.append(this.bar, this.body);
+    // (Over it all, the glass: M10-57.)
+    this.glass.className = 'lt-glass';
+    this.root.append(this.bar, this.body, this.glass);
     document.body.appendChild(this.root);
     this.map = new MapTools(game);
     this.flying.id = 'dronehud'; this.flying.style.display = 'none'; document.body.appendChild(this.flying);
-    this.glow.position.set(0, -0.25, -0.45);
-    game.view.fp.cam.add(this.glow);
+    // (The light off the glass, on his face and round him, the keys only glancing.)
+    this.glow.position.set(0, 0.06, 0.4);
+    game.laptop3d.group.add(this.glow);
     // (Sitting, the cursor: the nine dots, and a tab in the launcher.)
     this.root.addEventListener('click', e => {
       const t = (e.target as Element).closest<HTMLElement>('.lt-dots, [data-tab], [data-tool]');
@@ -123,6 +128,14 @@ export class LaptopUI {
     this.root.style.display = 'block';
     // (The page laid onto the glass in perspective, wherever it's held.)
     this.root.style.transform = quadMatrix(SCREEN.w, SCREEN.h, r);
+    // The glass (M10-57): the room's light glancing off it, sliding as his eyes move over it (less in the dark); the
+    // pixels' grain, seen close; the backlight's bloom, stronger at night.
+    const cx = (r[0][0] + r[1][0] + r[2][0] + r[3][0]) / 4 / innerWidth, cy = (r[0][1] + r[1][1] + r[2][1] + r[3][1]) / 4 / innerHeight, st = this.root.style;
+    st.setProperty('--gx', `${(50 + (0.5 - cx) * 120).toFixed(1)}%`); st.setProperty('--gy', `${(15 + (0.5 - cy) * 140).toFixed(1)}%`);
+    st.setProperty('--sx', `${(44 + (cy - 0.5) * 60).toFixed(1)}%`);
+    st.setProperty('--glare', (0.02 + 0.07 * (1 - night.k)).toFixed(3));
+    st.setProperty('--grain', (0.012 + 0.05 * g.laptop3d.focus).toFixed(3));
+    st.setProperty('--bloom', (0.08 + 0.22 * night.k).toFixed(3));
     const P = PAGES[this.page], pct = Math.round(L!.charge * 100), locked = P.needs?.(g);
     const on = sit && this.launcher ? 'launcher' : P.id;
     const html = on === 'launcher' ? `<div class="lt-launch">${PAGES.map(q => `<button data-tab="${q.id}">${q.zh}<br><span>${q.en}</span></button>`).join('')}</div>`

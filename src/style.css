@@ -102,6 +102,13 @@ canvas { display: block; }
 #boot .bt-claude { color: var(--ice-hi); margin-top: 16px; }
 
 #laptop { position: fixed; left: 0; top: 0; transform-origin: 0 0; box-sizing: border-box; padding: 6px 10px; overflow: hidden; background: #08131a; color: var(--ice); font-size: 12px; line-height: 1.45; pointer-events: none; z-index: 6; }
+#laptop { box-shadow: 0 0 22px 3px rgba(140, 205, 230, var(--bloom, 0.1)); text-shadow: 0 0 1.4px rgba(191, 230, 245, 0.35); }
+#laptop .lt-glass { position: absolute; inset: 0; pointer-events: none; z-index: 5;
+  background: radial-gradient(ellipse 55% 38% at var(--gx, 50%) var(--gy, 12%), rgba(255, 255, 255, var(--glare, 0.05)), transparent 72%),
+    linear-gradient(112deg, transparent calc(var(--sx, 44%) - 9%), rgba(255, 255, 255, calc(var(--glare, 0.05) * 0.45)) var(--sx, 44%), transparent calc(var(--sx, 44%) + 9%)),
+    radial-gradient(ellipse 75% 70% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.32) 100%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, calc(var(--grain, 0.02) * 2.5)) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255, 60, 60, var(--grain, 0.02)) 0 1px, rgba(60, 255, 90, var(--grain, 0.02)) 1px 2px, rgba(70, 110, 255, var(--grain, 0.02)) 2px 3px); }
 #laptop .lt-bar { display: flex; justify-content: space-between; font-size: 11px; color: var(--ice-dim); border-bottom: 1px solid var(--ice-line); padding-bottom: 3px; }
 #laptop .lt-corner { color: var(--ice); }
 #laptop .lt-body { padding: 6px 0 4px; }

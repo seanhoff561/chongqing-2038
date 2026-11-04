@@ -1,8 +1,9 @@
-// His laptop while it's out (U-104, U-105): a scuffed dark deck and lid held out in front of him, low, its screen
+// His laptop while it's out (U-104, U-105): the machine (render/laptopmodel.ts) held out in front of him, low, its screen
 // tipped back to his eyes. It goes with his body (where he is and the way he faces), not with his look: he looks down at
 // it, and looking up he looks over it. Its screen's corners are projected each frame so the page (ui/laptop.ts) lies on
 // the glass. Sitting down at it (focus) it comes up close in front of his eyes.
 import * as THREE from 'three';
+import { buildLaptop } from './laptopmodel';
 
 /** Where the screen's middle sits from his eyes, turned his way but not tipped with his look: held (low and out in
  *  front) and sitting; its size (m); how fast it comes up (1/s). */
@@ -13,28 +14,17 @@ const TILT = -Math.atan2(-LAPTOP3D.held.y, -LAPTOP3D.held.z);
 export class Laptop3D {
   readonly group = new THREE.Group();
   private screen: THREE.Mesh;
+  /** the keyboard half, kept level whatever the lid's tipped to */
+  private deck: THREE.Group;
   /** 0 put away, 1 held up */
   private up = 0;
   /** 0 held, 1 sitting at it */
   focus = 0;
 
   constructor(scene: THREE.Object3D) {
-    const body = new THREE.MeshStandardMaterial({ color: 0x24282c, roughness: 0.6, metalness: 0.4 });
-    const keys = new THREE.MeshStandardMaterial({ color: 0x15181b, roughness: 0.9 });
-    const { w, h } = LAPTOP3D;
-    // The lid round the screen, the screen itself (the page lies over it), and the deck folded out toward him.
-    const lid = new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, h + 0.025, 0.01), body);
-    lid.position.set(0, 0, -0.006);
-    this.screen = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: 0x0a161c }));
-    const deck = new THREE.Group();
-    deck.add(new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, 0.016, 0.22), body));
-    const board = new THREE.Mesh(new THREE.BoxGeometry(w - 0.02, 0.004, 0.11), keys);
-    board.position.set(0, 0.009, -0.03);
-    deck.add(board);
-    deck.children.forEach(c => { c.position.z += 0.105; });
-    deck.position.set(0, -h / 2 - 0.012, 0);
-    deck.rotation.x = 0.25;
-    this.group.add(lid, this.screen, deck);
+    const { lid, deck, screen } = buildLaptop(LAPTOP3D.w, LAPTOP3D.h);
+    this.screen = screen; this.deck = deck;
+    this.group.add(lid, deck);
     this.group.visible = false;
     this.group.rotation.order = 'YXZ';
     scene.add(this.group);
@@ -51,6 +41,7 @@ export class Laptop3D {
     at.y -= (1 - this.up) * 0.4;
     this.group.position.copy(cam.position).add(at.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw));
     this.group.rotation.set(TILT * (1 - this.focus) + (1 - this.up) * 0.6, yaw, 0);
+    this.deck.rotation.x = -this.group.rotation.x;
   }
 
   /** The screen's corners on the page (CSS pixels: top left, top right, bottom right, bottom left), or null while

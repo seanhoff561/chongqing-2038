@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-57 A real laptop and a real screen (U-105).
-Features done: 342 / 429 | Last done: M10-56
+**Status:** building M10. Next: M10-58 Anna's OS: taskbar and windows (U-105).
+Features done: 343 / 429 | Last done: M10-57
 <!-- /status -->
 
 ## What's built
@@ -40,3 +40,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-11, M10-13: the Windows installer updates itself (v0.2.1 with latest.yml); Q sits him down at the laptop, nine dots open every tab
 - M10-14: map tools sitting (marker, line, text, eraser, zoom, drag), every building by type from the start, hideouts unmarked; U-105 logged
 - M10-56: the laptop held out in front of him, low, no arms; Resume; the mouse taken back after menus; the menu on black; README says how it updates
+- M10-57: a real laptop (aluminium lid and deck, bezel and webcam, hinge, keys, trackpad, scuffs) and a real screen (bloom, glare, grain, dark edges)
