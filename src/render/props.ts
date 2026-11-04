@@ -7,7 +7,7 @@ import { textTexture } from './textures';
 import { mergeGeometries } from './view';
 import { HANDLE } from '../world/city/access';
 import { ChunkMerger } from './world-mesh';
-import { libProp, libKinds } from './props-lib';
+import { libProp } from './props-lib';
 import { tickSigns } from './signs';
 
 const lam = (color: number, emissive = 0) => new THREE.MeshLambertMaterial({ color, emissive });
@@ -417,4 +417,3 @@ function locks(ps: Prop[]): THREE.Mesh {
   return mesh;
 }
 
-export const propKinds = () => Object.keys(builders).concat(libKinds(), ['door', 'pane', 'chain', 'padlock']);

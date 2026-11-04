@@ -284,8 +284,3 @@ export function puzzle(fr: Frame, from: number, r: Rng, out: Fabric) {
   return { sites, rooms: rooms.map(m => ({ rect: roomRect(m), k: m.k })) };
 }
 
-/** A solid's lining over the inner faces of the core (its shaft and lobby), so they don't show the facade. */
-export const lineBox = (q: Rect, y0: number, y1: number, B: Frame['B']) => {
-  const t = 0.02;
-  return [B(q[0], y0, q[1], q[2], y1, q[1] + t, MAT.plaster), B(q[0], y0, q[3] - t, q[2], y1, q[3], MAT.plaster), B(q[0], y0, q[1], q[0] + t, y1, q[3], MAT.plaster), B(q[2] - t, y0, q[1], q[2], y1, q[3], MAT.plaster)];
-};

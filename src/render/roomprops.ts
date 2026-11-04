@@ -222,7 +222,6 @@ const MODELS: Record<string, Model> = {
     }
   },
 };
-export const furnitureKinds = () => Object.keys(MODELS);
 
 /** One piece, in place: built on its kit, knocked over onto its back if fallen, then moved and turned. */
 function piece(p: Prop): THREE.BufferGeometry | null {

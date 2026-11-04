@@ -9,6 +9,9 @@ export interface Heightfield {
   w: number; h: number;
   /** heights, row-major (z rows of w samples) */
   y: Float32Array;
+  /** the city's streets per sample (yuzhong/ground.ts level()): 0 none, 1 a carriageway, 2 a stair street, 3 a kerb
+   *  or pavement, 4 a path or lane */
+  street?: Uint8Array;
   /** per cell ((w - 1) x (h - 1)): 1 where there is no ground */
   hole: Uint8Array;
   thick: number;

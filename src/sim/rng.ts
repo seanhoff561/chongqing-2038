@@ -12,7 +12,6 @@ export function rand(r: Rng): number {
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 }
 
-export const randRange = (r: Rng, a: number, b: number) => a + (b - a) * rand(r);
 export const randInt = (r: Rng, n: number) => Math.floor(rand(r) * n);
 export const chance = (r: Rng, p: number) => rand(r) < p;
 

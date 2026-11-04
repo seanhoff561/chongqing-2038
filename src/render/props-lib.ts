@@ -488,5 +488,4 @@ const LIB: Record<string, (p: Prop) => THREE.Object3D> = {
   },
 };
 
-export const libKinds = () => Object.keys(LIB);
 export const libProp = (p: Prop): THREE.Object3D | null => LIB[p.kind]?.(p) ?? null;

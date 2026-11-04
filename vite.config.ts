@@ -6,6 +6,8 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts', 'scratch/**/*.test.ts'],
     environment: 'node',
+    // (One built city per worker, shared by its test files: the city takes a minute to build and most files walk it.)
+    isolate: false,
     passWithNoTests: true,
     // The sim tests walk and climb the whole city: minutes on the slower CI machines (CI is set there). One limit
     // here, none per test.

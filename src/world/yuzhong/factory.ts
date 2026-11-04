@@ -11,7 +11,7 @@ import { makeRng, hashString, rand, randInt } from '../../sim/rng';
 import { heightAt, type Heightfield } from '../heightfield';
 import type { Prop, Feature } from '../world';
 import { GEO } from '../geo';
-import { PODIUM, ROAD, onGround, streetCells, type Street } from './ground';
+import { PODIUM, ROAD, onGround, type Street } from './ground';
 import { minRect, points, rasterPoly, type Obb, type P2 } from './shapes';
 
 /** Hall cells (m), the longest and deepest hall in cells, the gap kept from the streets (m). */
@@ -45,7 +45,7 @@ export function podiumMask(g: Heightfield, block: Uint8Array): Uint8Array {
       let near = !!block[j * g.w + i] || ts.some(t => inObb(t, i * g.cell, j * g.cell));
       for (let dj = -n; dj <= n && !near; dj++) for (let di = -n; di <= n && !near; di++) {
         const a = i + di, b = j + dj;
-        near = a >= 0 && b >= 0 && a < g.w && b < g.h && di * di + dj * dj <= n * n && streetCells[b * g.w + a] !== 0;
+        near = a >= 0 && b >= 0 && a < g.w && b < g.h && di * di + dj * dj <= n * n && g.street![b * g.w + a] !== 0;
       }
       if (!near) m[j * g.w + i] = 1;
     }
@@ -107,7 +107,7 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
       const ks = sample(...onFace(h, k, u, d));
       const [px, pz] = onFace(h, k, u, d);
       if (halls.some(q => px > q.x0 && px < q.x1 && pz > q.z0 && pz < q.z1)) break;
-      if (ks >= 0 && streetCells[ks] === 1) { cands.push({ h, k, u, y: g.y[ks], out: d, len: b - a }); break; }
+      if (ks >= 0 && g.street![ks] === 1) { cands.push({ h, k, u, y: g.y[ks], out: d, len: b - a }); break; }
     }
   }
   const gates: typeof cands = [];
@@ -161,7 +161,7 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
     const { k, u, y, out } = gate, n = wn(k), face = (uu: number, d: number, yy: number) => world(onFace(h, k, uu, d), yy);
     for (let uu = u - 12; uu <= u + 12; uu += 1) for (let d = 0.5; d < out; d += 1) {
       const ks = sample(...onFace(h, k, uu, d));
-      if (ks >= 0 && streetCells[ks] === 0) g.y[ks] = y;
+      if (ks >= 0 && g.street![ks] === 0) g.y[ks] = y;
     }
     const yaw = Math.atan2(n.nx, n.nz), mouth = face(u, 0, y);
     for (const side of [-1, 1]) {

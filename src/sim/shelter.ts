@@ -32,14 +32,12 @@ export function claimBed(s: SimState, it: Inter, battery = 0) {
   s.events.push({ t: 'msg', text: s.shelters.length > 1 ? 'another hideout' : 'your bed now' });
 }
 
-export const hasShelter = (s: SimState) => s.shelters.length > 0;
 /** The hideout whose bed is nearest (x, y, z) within SHELTER_R, or null. */
 export function shelterAt(s: SimState, x: number, y: number, z: number): Shelter | null {
   let best: Shelter | null = null, bd = SHELTER_R;
   for (const h of s.shelters) { const d = Math.hypot(x - h.x, y - h.y, z - h.z); if (d <= bd) { best = h; bd = d; } }
   return best;
 }
-export const inShelter = (s: SimState, x: number, y: number, z: number) => shelterAt(s, x, y, z) !== null;
 
 /** A hideout's own storage: the containers nearer its bed than any other hideout's, within reach, and those of
  *  the room its bed is in. */

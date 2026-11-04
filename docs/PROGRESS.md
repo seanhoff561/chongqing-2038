@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-02 A lean repository (U-104).
-Features done: 329 / 424 | Last done: M10-01
+**Status:** building M10. Next: M10-03 Docs the director reads, rewritten (U-104).
+Features done: 330 / 424 | Last done: M10-02
 <!-- /status -->
 
 ## Log
@@ -141,3 +141,4 @@ Features done: 329 / 424 | Last done: M10-01
 - M6-15: the Xinhua Road substation: live busbars, the spare HV fuse, his father's badge
 - M6-20: the river-police pier; director's notes U-099 to U-103
 - M10-01: death returns him to his last sleep, the death count kept
+- M10-02: a lean repository and a ten times faster check

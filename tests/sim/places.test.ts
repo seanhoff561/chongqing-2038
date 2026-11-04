@@ -3,12 +3,12 @@ import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 
 const places = fs.readFileSync('docs/reference/PLACES.md', 'utf8');
-const credits = fs.readFileSync('CREDITS.md', 'utf8');
 const photos = fs.readdirSync('docs/reference/places').filter(f => f.endsWith('.jpg'));
 
 describe('place references', () => {
+  // (Each photo credited in PLACES.md, its row's author and licence: CREDITS.md points there, U-104.)
   it('credits every photo with its licence', () => {
-    for (const f of photos) expect(credits, f).toMatch(new RegExp('`' + f.replace('.', '\\.') + '`: .* (CC|Public domain|public domain)'));
+    for (const f of photos) expect(places, f).toMatch(new RegExp('`places/' + f.replace('.', '\\.') + '` \\| .*\\| (CC|Public domain|public domain)'));
   });
   it('gives every place photos or a link', () => {
     const sections = places.split(/\n## /).slice(1).map(s => ({ slug: s.split(' ')[0], body: s }));

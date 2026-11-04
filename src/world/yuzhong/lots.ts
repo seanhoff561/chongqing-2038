@@ -8,7 +8,7 @@ import { makeRng, hashString, rand, randInt, type Rng } from '../../sim/rng';
 import { ENVELOPE as E } from '../../data/envelope';
 import { MAT } from '../mats';
 import type { LotKind } from '../city/buildings';
-import { onGround, WATER_Y, streetCells, type Street } from './ground';
+import { onGround, WATER_Y, type Street } from './ground';
 import { minRect, obbOverlap, segNearObb, segDist, points, polyArea, corners, rasterPoly, type Obb, type P2 } from './shapes';
 
 export interface Plan {
@@ -297,7 +297,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
   for (const [off, sizes] of [[0, [[12, 9], [9, 7], [7, 5.5], [5.5, 4]]], [4, [[7, 5.5], [5.5, 4], [4.5, 3.5, 1.5]]]] as const)
   for (let z = LEVEL + 8 + off; z < H - LEVEL - 8; z += 8) for (let x = LEVEL + 8 + off; x < W - LEVEL - 8; x += 8) {
     const k = cellAt(x, z);
-    if (land[k] !== 1 || open[k] || block[k] || streetCells[k]) continue;
+    if (land[k] !== 1 || open[k] || block[k] || g.street![k]) continue;
     const nb = nearest(x, z);
     if (!nb) continue;
     let ok: Obb | null = null;
@@ -330,7 +330,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
   // three floors, now and then four to six.
   for (const [ox, oz] of [[2, 2], [6, 6], [2, 6], [6, 2]]) for (let z = LEVEL + 8 + oz; z < H - LEVEL - 8; z += 8) for (let x = LEVEL + 8 + ox; x < W - LEVEL - 8; x += 8) {
     const k = cellAt(x, z);
-    if (land[k] !== 1 || open[k] || block[k] || streetCells[k]) continue;
+    if (land[k] !== 1 || open[k] || block[k] || g.street![k]) continue;
     const nb = nearest(x, z);
     if (!nb) continue;
     let ok: Obb | null = null;
@@ -377,7 +377,7 @@ export function markEnterable(g: Heightfield, plans: Plan[]) {
   for (const p of plans) {
     if (p.noEnter || p.far) continue;
     let hi = -Infinity, lo = Infinity, stairs = false;
-    rasterPoly(corners({ ...p.obb, hw: p.obb.hw + LEVEL, hd: p.obb.hd + LEVEL }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) { hi = Math.max(hi, g.y[k]); stairs ||= streetCells[k] === 2; } });
+    rasterPoly(corners({ ...p.obb, hw: p.obb.hw + LEVEL, hd: p.obb.hd + LEVEL }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) { hi = Math.max(hi, g.y[k]); stairs ||= g.street![k] === 2; } });
     rasterPoly(corners({ ...p.obb, hw: p.obb.hw + g.cell * 1.5, hd: p.obb.hd + g.cell * 1.5 }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) lo = Math.min(lo, g.y[k]); });
     // The ground round an enterable one is settled: later landings leave it alone.
     const settle = () => rasterPoly(corners({ ...p.obb, hw: p.obb.hw + g.cell * 1.5, hd: p.obb.hd + g.cell * 1.5 }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => foot.fill(1, j * g.w + i0, j * g.w + i1 + 1));
@@ -388,14 +388,14 @@ export function markEnterable(g: Heightfield, plans: Plan[]) {
       // sill if it's within a landing's height, off the streets: a step out, not a drop. Otherwise it stays solid.
       const c = Math.cos(p.obb.yaw), s = Math.sin(p.obb.yaw), z = p.obb.hd >= p.obb.hw, o = p.obb;
       const [bu, bv, bw, bd] = z ? [1.3, o.hd + 1.25, 1.8, 1.25] : [o.hw + 1.25, 1.3, 1.25, 1.8];
-      rasterPoly(corners({ cx: o.cx + c * bu - s * bv, cz: o.cz + s * bu + c * bv, hw: bw, hd: bd, yaw: o.yaw }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (!foot[k] && !streetCells[k] && g.y[k] < p.base && g.y[k] >= p.base - LANDING) g.y[k] = p.base; });
+      rasterPoly(corners({ cx: o.cx + c * bu - s * bv, cz: o.cz + s * bu + c * bv, hw: bw, hd: bd, yaw: o.yaw }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (!foot[k] && !g.street![k] && g.y[k] < p.base && g.y[k] >= p.base - LANDING) g.y[k] = p.base; });
       const [du, dv] = z ? [1.3, o.hd + 0.75] : [o.hw + 0.75, 1.3];
       if ((heightAt(g, o.cx + c * du - s * dv, o.cz + s * du + c * dv) ?? -99) < p.base - 0.4) { p.noEnter = true; continue; }
       settle();
       continue;
     }
     if (stairs || hi > p.base + LANDING || lo < p.base - LANDING) { p.noEnter = true; continue; }
-    rasterPoly(corners({ ...p.obb, hw: p.obb.hw + LEVEL, hd: p.obb.hd + LEVEL }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (!foot[k] && streetCells[k] !== 1) g.y[k] = p.base; });
+    rasterPoly(corners({ ...p.obb, hw: p.obb.hw + LEVEL, hd: p.obb.hd + LEVEL }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (!foot[k] && g.street![k] !== 1) g.y[k] = p.base; });
     // A neighbour's footprint or a road's carriageway inside the ring keeps its own ground (a landing may cross
     // a pavement or a lane): if that leaves a step at our walls, stay solid.
     let off = false;
@@ -418,6 +418,6 @@ export function levelLots(g: Heightfield, plans: Plan[]) {
   for (const pad of [LEVEL, 0.3]) for (const p of order) {
     const o = { ...p.obb, hw: p.obb.hw + pad, hd: p.obb.hd + pad };
     // Aprons stop at the carriageway (a pavement steps up or down to a door); footprints take everything under them.
-    rasterPoly(corners(o), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (pad < LEVEL || streetCells[k] === 0 || streetCells[k] === 3) g.y[k] = p.base; });
+    rasterPoly(corners(o), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (pad < LEVEL || g.street![k] === 0 || g.street![k] === 3) g.y[k] = p.base; });
   }
 }

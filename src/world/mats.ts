@@ -28,4 +28,3 @@ export const MAT = {
   /** collision only: a prop draws it */
   hidden: 99,
 } as const;
-export type MatId = (typeof MAT)[keyof typeof MAT];

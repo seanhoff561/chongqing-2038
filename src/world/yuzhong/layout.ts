@@ -10,7 +10,6 @@ import { GEO } from '../geo';
 import type { Feature, Plot, Prop, StreetLine } from '../world';
 import { propBoxes } from './dressing';
 import { MARK, type Marks } from './marks';
-import { streetCells } from './ground';
 import { minRect, points, inside, polyArea, type P2 } from './shapes';
 
 export interface Layout { lawns: P2[][]; paths: StreetLine[]; solids: Solid[]; decor: Solid[]; props: Prop[]; features: Feature[] }
@@ -26,7 +25,7 @@ export function layout(index: SolidIndex, g: Heightfield, mk: Marks, land: Uint8
   const out: Layout = { lawns: [], paths: [], solids: [], decor: [], props: [], features: [] };
   const yAt = (x: number, z: number) => heightAt(g, x, z) ?? 0;
   /** Whether a street (its carriageway, pavement or path) runs at (x, z): parks keep off them. */
-  const street = (x: number, z: number) => streetCells[Math.round(z / g.cell) * g.w + Math.round(x / g.cell)] !== 0;
+  const street = (x: number, z: number) => g.street![Math.round(z / g.cell) * g.w + Math.round(x / g.cell)] !== 0;
   const put = (kind: string, x: number, z: number, yaw: number, extra: Partial<Prop> = {}) => {
     const y = heightAt(g, x, z);
     if (y === null || street(x, z)) return false;
@@ -146,7 +145,7 @@ export function doorPaths(g: Heightfield, plots: Plot[], streets: StreetLine[]):
     const n = Math.ceil(l / (g.cell / 2));
     for (let k = 0; k <= n; k++) {
       const x = dx + ((ex - dx) * k) / n, z = dz + ((ez - dz) * k) / n, c = Math.round(z / g.cell) * g.w + Math.round(x / g.cell);
-      if (c >= 0 && c < streetCells.length && !streetCells[c]) streetCells[c] = 4;
+      if (c >= 0 && c < g.street!.length && !g.street![c]) g.street![c] = 4;
     }
   }
   return out;

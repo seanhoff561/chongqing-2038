@@ -1,4 +1,4 @@
-// The one recorded sound kept (U-079): his hands taking hold of a ledge or a bar (Kenney's RPG Audio, CC0; docs/CREDITS.md).
+// The one recorded sound kept (U-079): his hands taking hold of a ledge or a bar (Kenney's RPG Audio, CC0; CREDITS.md).
 // Every other sound is synthesised (U-074). Till it's loaded, or if it can't be had, the synthesised grab plays.
 import type { Audio } from './audio';
 

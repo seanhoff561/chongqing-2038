@@ -5,10 +5,10 @@ import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { overlaps } from '../../src/world/geom';
 import { heightAt } from '../../src/world/heightfield';
-import { ROAD, streetCells } from '../../src/world/yuzhong/ground';
+import { ROAD } from '../../src/world/yuzhong/ground';
 import { MARK } from '../../src/world/yuzhong/marks';
 
-const w = getWorld('yuzhong'), g = w.ground!;
+const w = getWorld('yuzhong'), g = w.ground!, streetCells = g.street!;
 
 describe('the parks and the open ground (M3-60)', () => {
   it('lays out the few real parks inside their outlines, a kerb all round', () => {

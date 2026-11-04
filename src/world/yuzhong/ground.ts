@@ -26,10 +26,6 @@ export const KERB_W = 0.25, PAVE = 2;
 /** How far either side of its line a street's surface reaches: carriageway, kerb and pavement. */
 export const reach = (s: { kind: string; w: number }) => s.w / 2 + (ROAD.has(s.kind) ? KERB_W + PAVE : 0);
 
-/** Cells under a street's surface (set by buildGround): 1 a road's carriageway, 2 a stair street, 3 a kerb or
- *  pavement, 4 a path or lane. Lot aprons leave all but pavements alone; a door's landing may cross a path. */
-export let streetCells = new Uint8Array(0);
-
 export function buildGround(): Heightfield {
   const [W, H] = GEO.size, w = Math.floor(W / CELL) + 1, h = Math.floor(H / CELL) + 1;
   const g = heightfield(0, 0, CELL, w, h, 4);
@@ -47,7 +43,9 @@ export function buildGround(): Heightfield {
  *  already laid takes its height there, so junctions meet flush. */
 function level(g: Heightfield) {
   const set = new Float32Array(g.y.length).fill(NaN), wt = new Float32Array(g.y.length), near = new Float32Array(g.y.length).fill(Infinity);
-  streetCells = new Uint8Array(g.y.length);
+  // (Which samples are under a street, kept with the ground: Heightfield.street. Lot aprons leave all but pavements
+  // alone; a door's landing may cross a path.)
+  const streetCells = (g.street = new Uint8Array(g.y.length));
   const at = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
   for (const s of streets().filter(s => onGround(s) && s.pts.length > 1).sort((a, b) => reach(b) - reach(a))) {
     // A carriageway already laid under this one's line, or beside it within its reach (the other half of a

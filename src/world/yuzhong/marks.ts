@@ -8,7 +8,6 @@ import { GEO } from '../geo';
 import type { Heightfield } from '../heightfield';
 import type { Plot } from '../world';
 import { points, rasterPoly } from './shapes';
-import { streetCells } from './ground';
 
 export const MARK_CELL = 4;
 /** laid: a real park's ground, laid out (layout.ts). */
@@ -42,7 +41,7 @@ export function findMarks(g: Heightfield, land: Uint8Array, plots: Plot[], block
   for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (rows[j * w + i]) for (let b = Math.max(0, j - n); b <= Math.min(h - 1, j + n); b++) near[b * w + i] = 1;
   for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) {
     const k0 = j * f * g.w + i * f;
-    if (land[k0] !== 1 || cellOf(k => foot[k] || block[k], i, j) || cellOf(k => streetCells[k], i, j, 1)) continue;
+    if (land[k0] !== 1 || cellOf(k => foot[k] || block[k], i, j) || cellOf(k => g.street![k], i, j, 1)) continue;
     // Steepest step between neighbouring samples, and how far the middle stands off its ring.
     let steep = 0, ring = 0;
     for (let b = 0; b <= f; b++) for (let a = 0; a <= f; a++) {

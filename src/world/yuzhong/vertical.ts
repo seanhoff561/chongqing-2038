@@ -11,7 +11,7 @@ import { makeRng, hashString, rand, randInt } from '../../sim/rng';
 import { ENVELOPE as E } from '../../data/envelope';
 import type { Heightfield } from '../heightfield';
 import type { Climbable, Feature } from '../world';
-import { ROAD, streetCells, type Street } from './ground';
+import { ROAD, type Street } from './ground';
 import { BARE } from '../city/climb';
 import type { Plan } from './lots';
 import { member, onWall, type Link } from './crossings';
@@ -104,7 +104,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
     let H = 0, d = 0;
     for (let k = 1; k <= 6 && !d; k++) {
       const [x, z] = world(p, 0, -p.obb.hd - k), c = Math.round(z / g.cell) * g.w + Math.round(x / g.cell);
-      if (streetCells[c] && streetCells[c] !== 2 && g.y[c] >= p.base + 2 * FLOOR) { H = g.y[c]; d = k; }
+      if (g.street![c] && g.street![c] !== 2 && g.y[c] >= p.base + 2 * FLOOR) { H = g.y[c]; d = k; }
     }
     if (!d || !refloor(p, H - PARAPET, 1.5)) continue;
     const top = p.wall + PARAPET, z0 = -p.obb.hd - d - 0.5, z1 = -p.obb.hd + 0.3;

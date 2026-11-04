@@ -1,7 +1,7 @@
 // M3-53 (U-022), M4-83b (U-061): the frame budget for 150 fps (6.7 ms a frame), by day and at night. At four Yuzhong viewpoints (a street, a rooftop,
 // the tunnel, the overview) the draw calls and triangles stay in budget, and so does the CPU of a frame: a sim tick
 // plus building and submitting the render. GPU time can't be measured headlessly (software WebGL); the director
-// reports the real frame rate (docs/PLAYTEST.md).
+// reports the real frame rate (asked of the director).
 // CPU in software-rendered Chrome, whose GL calls cost several times a real driver's (U-027).
 const BUDGET = { calls: 250, tris: 1.2e6, cpu: 5 };
 

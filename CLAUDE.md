@@ -13,20 +13,21 @@ Read sections of BRIEF.md and docs/DESIGN.md when a feature needs them, not whol
 ## The loop
 1. Take the first feature from `npm run next`.
 2. Build it completely: no stubs, placeholders, or TODO comments left behind.
-3. Prove each acceptance criterion with the cheapest real check (BRIEF.md, testing section). Anything only a person can judge goes into docs/PLAYTEST.md and doesn't block "done".
-4. Set its status to "done" and fill in its evidence. Run `npm run check`, commit as `feat(<id>): <what>`, then push to your session branch and to main (`git push origin HEAD` and `git push origin HEAD:main`; if main has moved, merge origin/main first). Main is the director's playable build and where new sessions start.
+3. Prove each acceptance criterion with the cheapest real check (BRIEF.md, testing section). Anything only a person can judge, ask the director to try in chat (what to do, what to look for); it doesn't block "done".
+4. Set its status to "done" and fill in its evidence. Keep docs/DESIGN.md saying how what you changed works. Run `npm run check`, commit as `feat(<id>): <what>`, then push to your session branch and to main (`git push origin HEAD` and `git push origin HEAD:main`; if main has moved, merge origin/main first). Main is the director's playable build and where new sessions start.
 5. Update the status block at the top of docs/PROGRESS.md and add one log line. Keep the file under about 150 lines by folding old lines into a summary.
 6. Start the next feature.
 
-At the end of each milestone, also run `npm run verify`, add that milestone's playtest request to docs/PLAYTEST.md, and push.
+At the end of each milestone, also run `npm run verify`, ask the director in chat to playtest it, and push.
 
 ## Working unattended
-The director is often away, and a goal check sends you back to work while features remain. A reply without a tool call ends your turn, so put any status line in the same message as your next tool call, and skip closing summaries, offers to continue, and milestone reports. If everything left truly needs the director, write it in docs/QUESTIONS.md and say so in one line.
+The director is often away, and a goal check sends you back to work while features remain. A reply without a tool call ends your turn, so put any status line in the same message as your next tool call, and skip closing summaries, offers to continue, and milestone reports. If everything left truly needs the director, ask in chat and say so in one line.
 
 ## Rules
 - features.json: never delete a feature or weaken its acceptance criteria to make it pass. Splitting features and adding new ones is fine. Only a director's note can drop one (status "dropped", citing its U-number).
 - Design authority: where BRIEF.md is silent, decide, log a D-### line in docs/DECISIONS.md (what and why), and move on. When torn, choose what is more realistic, more tense, and gives the player more ways to solve the problem. Gameplay beats graphics.
-- Questions for the director go in docs/QUESTIONS.md with the default you chose; carry on with that default.
+- Questions for the director go in chat with the default you chose; carry on with that default.
+- Lean (U-104): remove what's dead as you go, fully (a removal is noted once, in DECISIONS). The director reads README.md, BRIEF.md, CREDITS.md, docs/DECISIONS.md, docs/DESIGN.md and docs/PROGRESS.md: keep them short, clear and current. Every other file is for the game and for you.
 - Never special-case game code to pass a test. If a test is wrong, fix the test and say why in the commit.
 - Git: no force-push, history rewrites, branch deletion, or --no-verify.
 - Ambitious game, simple code: no abstractions, options, or files the game doesn't need yet.
@@ -45,7 +46,7 @@ Every token is the director's; spend them on the game.
 - In chat, one short line per feature. Status lives in files, so no recaps.
 - Work directly. Use a subagent only for a big, independent job that would flood your context, one at a time, with a report of 150 words or fewer, and never to re-check your own work.
 - Scratch files go in scratch/ (gitignored) and get deleted when you're done with them.
-- When something is costly to prove automatically but quick for a person (feel, fun, real-GPU frame rate, audio), put it in docs/PLAYTEST.md instead.
+- When something is costly to prove automatically but quick for a person (feel, fun, real-GPU frame rate, audio), ask the director in chat instead.
 
 ## Commands (Phase 0 creates these)
 - `npm run status`: feature counts per milestone

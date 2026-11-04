@@ -15,7 +15,7 @@ import { ruins } from './ruins';
 import { fill } from './fill';
 import { GEO } from '../geo';
 import { heightAt, rayGround, type Heightfield } from '../heightfield';
-import { buildGround, streets, onGround, WATER_Y, streetCells, type Street } from './ground';
+import { buildGround, streets, onGround, WATER_Y, type Street } from './ground';
 import { planLots, levelLots, markEnterable, oldQuarter, type Plan } from './lots';
 import { corners, rasterPoly, obbOverlap, minRect, points, type Obb } from './shapes';
 import { alleys } from '../city/climb';
@@ -250,7 +250,7 @@ export function buildYuzhong(): World {
     if (p.y < (heightAt(g, p.x, p.z) ?? -Infinity) - 4) return !raycast(world.index, p.x + dx * 1.2, y, p.z + dz * 1.2, dx, 0, dz, 4);
     for (let d = 1.5; d <= 14; d += 1) {
       const x = p.x + dx * d, z = p.z + dz * d, k = Math.round(z / g.cell) * g.w + Math.round(x / g.cell);
-      if (streetCells[k]) return !raycast(world.index, p.x + dx * 1.2, y, p.z + dz * 1.2, dx, 0, dz, d - 1.2);
+      if (g.street![k]) return !raycast(world.index, p.x + dx * 1.2, y, p.z + dz * 1.2, dx, 0, dz, d - 1.2);
     }
     return false;
   });

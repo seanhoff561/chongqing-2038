@@ -27,7 +27,6 @@ function looked(s: SimState, w: World): { key: string; stack?: Stack; down?: Uni
   const held = heldStack(s);
   return held ? { key: `item:${held.id}`, stack: held } : null;
 }
-export const scanTarget = (s: SimState, w: World) => looked(s, w)?.key ?? null;
 
 export function stepScan(s: SimState, w: World) {
   if (!s.laptop?.open) { s.scan = undefined; return; }

@@ -25,4 +25,3 @@ export function getWorld(name: string, seed = 0): World {
   return w;
 }
 
-export const worldNames = () => Object.keys(builders);

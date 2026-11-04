@@ -14,7 +14,6 @@ import type { Climbable, Feature, Inter, Prop, Zone, Site } from '../world';
 import { cover } from '../city/access';
 import type { UnderLot } from './undercity';
 import { stair } from '../steps';
-import { streetCells } from './ground';
 import { districtAt } from './lots';
 import type { Obb, P2 } from './shapes';
 import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } from './underkit';
@@ -50,7 +49,7 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], at: {} };
   const lining: Solid[] = [], bores: Box[] = [], kept: Solid[] = [], r = makeRng(hashString('under')), lr = makeRng(hashString('under-grates'));
   const k = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
-  const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => streetCells[k(x, z)] !== 0;
+  const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => g.street![k(x, z)] !== 0;
   const way = (kind: string, x: number, y: number, z: number, nx = 0, nz = 0) => u.features.push({ kind: `way:${kind}`, x, y, z, group: u.features.length, nx, nz });
   for (const q of gt.ways) way('tunnel', q.x, q.y, q.z);
 

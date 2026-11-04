@@ -1,7 +1,7 @@
 // M9-12: the frame's cost at the High preset at 10 viewpoints across Yuzhong, by day and by night: the sim tick's
 // and the render's JS time, the draw calls and the triangles, written to logs/framecost.json (and compared with the
 // last run's there, so a change shows before and after). The render's time here is software rendering's
-// (SwiftShader), not a GPU's; the real frame rate goes to PLAYTEST. The sim tick must stay well under a 144 fps frame.
+// (SwiftShader), not a GPU's; the real frame rate is the director's to tell. The sim tick must stay well under a 144 fps frame.
 import fs from 'fs';
 export default async function ({ open, fail }) {
   const page = await open('?scenario=yuzhong&seed=1', 'framecost');
