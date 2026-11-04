@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-59 The app's icon is Anna (U-105).
-Features done: 349 / 429 | Last done: M10-18
+**Status:** building M10. Next: M10-19 Ice blue (U-104).
+Features done: 350 / 429 | Last done: M10-59
 <!-- /status -->
 
 ## What's built
@@ -47,3 +47,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-16: sitting, the drone launched and flown from its app, cameras picked and looped, sightings shown on the map
 - M10-17: his own songs from the laptop (a folder in the browser, the songs folder on desktop); the game's own music removed
 - M10-18: Anna in the laptop's corner, drawn and animated: idle, blinking, waving, laughing, pouting, blushing
+- M10-59: the game's icon is Anna's face (installer, window, browser tab); version 0.3.0 for the next release

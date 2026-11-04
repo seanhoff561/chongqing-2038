@@ -36,7 +36,7 @@ app.whenReady().then(() => {
 
   // (No menu: Ctrl+W is crouching forward here, never closing the window. F11 for fullscreen.)
   Menu.setApplicationMenu(null);
-  const win = new BrowserWindow({ width: 1600, height: 900, backgroundColor: '#07080a', title: 'Chongqing 2038', webPreferences: { preload: path.join(__dirname, 'preload.cjs') } });
+  const win = new BrowserWindow({ width: 1600, height: 900, backgroundColor: '#07080a', title: 'Chongqing 2038', icon: path.join(web, 'icon.png'), webPreferences: { preload: path.join(__dirname, 'preload.cjs') } });
   win.maximize();
   win.webContents.on('before-input-event', (e, i) => { if (i.type === 'keyDown' && i.key === 'F11') { win.setFullScreen(!win.isFullScreen()); e.preventDefault(); } });
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: 'deny' }; });
