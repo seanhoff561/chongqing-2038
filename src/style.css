@@ -12,7 +12,7 @@ canvas { display: block; }
 #hud .prompt { position: absolute; left: 50%; top: 56%; transform: translateX(-50%); font-size: 13px; color: rgba(230,225,210,0.85); text-shadow: 0 0 3px #000; }
 #hud .held { position: absolute; right: 18px; bottom: 14px; font-size: 12px; color: rgba(200,195,180,0.6); }
 #hud .subs { position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%); max-width: 70%; text-align: center; font-size: 18px; color: #eef7fb; text-shadow: 0 0 4px #000, 0 0 2px #000; }
-#hud .notice { position: absolute; left: 50%; top: 60%; transform: translateX(-50%); font-size: 12px; color: rgba(191, 230, 245, 0.75); text-shadow: 0 0 3px #000; }
+#hud .notice { position: absolute; left: 50%; top: 60%; transform: translateX(-50%); font-size: 12px; white-space: pre-line; text-align: center; color: rgba(191, 230, 245, 0.75); text-shadow: 0 0 3px #000; }
 #dev { position: fixed; top: 8px; left: 8px; width: 230px; max-height: 92vh; overflow: auto; background: rgba(8,10,12,0.86); border: 1px solid #333; font-size: 11px; color: #9c9; padding: 6px; z-index: 10; }
 #dev button, #dev select, #dev input { font: inherit; background: #111; color: #9c9; border: 1px solid #364; margin: 1px; }
 #dev .row { margin: 3px 0; }
@@ -169,3 +169,29 @@ canvas { display: block; }
 #laptop .lt-write { position: absolute; inset: 5px 10px; }
 #laptop .lt-notesbox { box-sizing: border-box; width: 100%; height: 100%; resize: none; outline: none; background: rgba(4, 10, 14, 0.6); color: var(--ice-hi); border: 1px solid var(--ice-line); border-radius: 3px; padding: 6px 8px; font: inherit; font-size: 12px; line-height: 1.45; }
 #laptop .lt-notes { white-space: pre-wrap; min-height: 300px; }
+/* The map editor (M10-32): its bar along the top, the palette left, the selected piece's panel right, over the view. */
+body.editing #hud { display: none; }
+#editor { position: fixed; inset: 0; display: grid; grid-template: auto minmax(0, 1fr) auto / 150px 1fr 210px; pointer-events: none; z-index: 15; font-size: 12px; color: var(--ice); }
+#editor > * { pointer-events: auto; background: var(--ice-bg); }
+#editor button, #editor input, #editor select, #editor textarea { font: inherit; font-size: 12px; background: var(--ice-btn); color: var(--ice); border: 1px solid var(--ice-line); padding: 3px 7px; }
+#editor button { cursor: pointer; }
+#editor button:hover, #editor button.on { border-color: var(--ice-dim); color: var(--ice-hi); }
+#editor button.on { background: #17303c; }
+#editor .ed-bar { grid-column: 1 / 4; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 5px 6px; border-bottom: 1px solid var(--ice-line); }
+#editor .ed-name { width: 140px; }
+#editor .ed-play { color: var(--ice-hi); border-color: var(--ice-dim); }
+#editor .ed-msg { color: var(--ice-dim); margin-left: 6px; }
+#editor .ed-pal { grid-row: 2; overflow-y: auto; padding: 4px 6px; border-right: 1px solid var(--ice-line); }
+#editor .ed-pal button { display: block; width: 100%; text-align: left; margin: 1px 0; padding: 2px 6px; }
+#editor .ed-h { color: var(--ice-hi); margin: 8px 0 3px; }
+#editor .ed-insp { grid-row: 2; grid-column: 3; align-self: start; max-height: 100%; overflow-y: auto; padding: 4px 8px 8px; border-left: 1px solid var(--ice-line); border-bottom: 1px solid var(--ice-line); }
+#editor .ed-insp label { display: flex; justify-content: space-between; align-items: center; gap: 6px; margin: 3px 0; }
+#editor .ed-insp input[type=number] { width: 70px; }
+#editor .ed-insp .ed-text { flex-direction: column; align-items: stretch; }
+#editor .ed-items div { display: flex; justify-content: space-between; margin: 2px 0; }
+#editor .ed-items button { padding: 0 5px; }
+#editor .ed-add { display: flex; gap: 3px; margin: 4px 0; }
+#editor .ed-add select { flex: 1; min-width: 0; }
+#editor .ed-add input { width: 38px; }
+#editor .ed-del { margin-top: 8px; width: 100%; }
+#editor .ed-help { grid-column: 1 / 4; grid-row: 3; padding: 3px 8px; font-size: 11px; color: var(--ice-dim); border-top: 1px solid var(--ice-line); }

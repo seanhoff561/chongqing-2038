@@ -56,6 +56,8 @@ export const scenarios: Scenario[] = [
   { name: 'ending-boat', world: 'yuzhong', desc: 'Into the Fog: the ending of the river route', at: 'chaotianmen', hour: 3, overcast: 0.9, ending: 'boat', flags: { god: true } },
   { name: 'ending-tunnel', world: 'yuzhong', desc: "Tunnel's End: the ending of the underground route", at: 'Tunnel junction (north passage)', hour: 5, overcast: 0.9, ending: 'tunnel', flags: { god: true } },
   { name: 'units', world: 'lineup', desc: "the machines' lineup: every kind on a plaza at noon, walking their beats at him", hour: 12, flags: { god: true, clear: true }, overcast: 0.4 },
+  // A map from the editor (M10-32), at noon in clear weather; with none made yet, an empty one.
+  { name: 'map', world: 'map', desc: 'a map made in the editor', hour: 12, flags: { clear: true } },
   { name: 'reference', world: 'reference', desc: 'the reference hillside (docs/reference/look-01.jpg) from the vantage roof', draw: 700, overcast: 1 },
 ];
 

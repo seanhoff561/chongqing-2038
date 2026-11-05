@@ -57,7 +57,7 @@ export class Hud {
   /** One of Anna's story lines, after any before it, each for as long as it takes to read. */
   say(en: string) { this.queue.push({ en, secs: 1.5 + en.length * 0.06 }); }
   /** A short notice of what just happened ('ladder up', 'no room'): at once, in place of the last, gone soon. */
-  notice(text: string) { this.note.textContent = text; this.noteLeft = Math.min(2.5, 1.2 + text.length * 0.04); }
+  notice(text: string, secs = Math.min(2.5, 1.2 + text.length * 0.04)) { this.note.textContent = text; this.noteLeft = secs; }
   /** Every frame: the next subtitle when this one's time is up; the notice fading. */
   tick(dt: number) {
     if ((this.left -= dt) <= 0) { this.now = this.queue.shift(); this.left = this.now?.secs ?? 0; }

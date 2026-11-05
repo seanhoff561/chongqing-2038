@@ -268,8 +268,11 @@ export class Game {
   /** A line of the story said: heard, and Anna's read in English (U-104). */
   sayLine(id: string) { const l = lineById.get(id); if (!l) return; if (l.speaker === 'anna') this.hud.say(l.en); speak(this.audio, id); }
 
-  /** The main menu's up: nothing runs under it (U-104). */
-  menuUp() { return !!document.getElementById('boot'); }
+  /** The map editor, while it's open (M10-32): it flies the camera. */
+  editor: { camera(cam: THREE.PerspectiveCamera, dt: number): void } | null = null;
+
+  /** The main menu's up, or the map editor: nothing runs under it (U-104, M10-32). */
+  menuUp() { return !!document.getElementById('boot') || !!this.editor; }
 
   /** A new run (U-104): day one in the city already built (D-123), saved as it starts. */
   newRun() {
@@ -317,6 +320,8 @@ export class Game {
       else if (e.t === 'sleep-menu') this.sleep.toggle(true, e.id === 'rough');
       else if (e.t === 'slept' && e.where !== 'collapse' && this.scenario.run && !this.state.dead) writeSave(localStorage, this.scenario.name, this.state);
       else if (e.t === 'msg') this.hud.notice(e.text);
+      // (A map's sign, up as long as it takes to read: M10-32.)
+      else if (e.t === 'read') this.hud.notice(e.text, 2 + e.text.length * 0.06);
       else if (e.t === 'scan') this.laptop.showScan();
       else if (e.t === 'bench') this.craft.toggle(true);
       else if (e.t === 'logged') this.hud.notice('logged');
@@ -343,7 +348,7 @@ export class Game {
     // prompts, the hands and the mouse away for good.)
     // (Settings stop his own input, the world going on; the main menu stops everything: U-104.)
     this.input.frozen = this.settings.open || this.menuUp();
-    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || !!document.getElementById('boot') || (!!this.state.laptop?.sit && !this.state.flight);
+    this.input.uiOpen = this.inv.open || this.sleep.open || this.settings.open || this.craft.open || this.death.shown || this.ending.active || this.ending.done || this.menuUp() || (!!this.state.laptop?.sit && !this.state.flight);
     // (A menu closed, the mouse taken back for looking round: U-105.)
     if (this.wasUi && !this.input.uiOpen) this.input.capture();
     this.wasUi = this.input.uiOpen;
@@ -360,6 +365,7 @@ export class Game {
     this.flew = !!fl;
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
     if (fl) { this.view.fp.cam.position.set(fl.x, fl.y, fl.z); this.view.fp.cam.rotation.set(this.input.pitch, this.input.yaw, 0); }
+    this.editor?.camera(this.view.fp.cam, dt);
     this.ending.update(dt);
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);

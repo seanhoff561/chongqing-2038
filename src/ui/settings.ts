@@ -5,6 +5,7 @@ import type { Game } from '../game';
 import { ACTIONS, binds, bindKey, mouseCode, keyName } from '../input/input';
 import { readSave } from '../sim/save';
 import { bootMenu } from './boot-menu';
+import { openEditor } from './editor';
 
 const KEY = 'cq2038.settings';
 /** The mouse's sensitivity, its least and most (radians a pixel). */
@@ -96,6 +97,7 @@ export class Settings {
     this.el.innerHTML = `<div class="st-panel"><div class="st-title">设置 SETTINGS</div>` +
       (document.getElementById('boot') ? '' : `<button class="st-menu" data-a="resume">继续 Resume</button>`) +
       `<button class="st-menu" data-a="menu">主菜单 Menu (last sleep saved)</button>` +
+      (g.scenario.name === 'map' && !document.getElementById('boot') ? `<button class="st-menu" data-a="edit">返回编辑器 Back to the editor</button>` : '') +
       slider('vol', '音量 Volume', g.audio.volumes.master, 0, 1, 0.01) +
       slider('sens', '灵敏度 Sensitivity', g.input.sensitivity, SENS.min, SENS.max, 0.00005) +
       `<div class="st-h">按键 Keys</div>` +
@@ -106,6 +108,9 @@ export class Settings {
     const resume = this.el.querySelector<HTMLButtonElement>('[data-a="resume"]');
     if (resume) resume.onclick = () => this.hide();
     this.el.querySelector<HTMLButtonElement>('[data-a="menu"]')!.onclick = () => { const inMenu = !!document.getElementById('boot'); this.hide(); if (!inMenu) bootMenu(g, readSave(localStorage)); };
+    // (Playing a map from the editor: back to it, M10-32.)
+    const edit = this.el.querySelector<HTMLButtonElement>('[data-a="edit"]');
+    if (edit) edit.onclick = () => { this.hide(); openEditor(g); };
     this.el.querySelectorAll<HTMLInputElement>('input[data-set]').forEach(i => {
       i.oninput = () => {
         const v = Number(i.value);

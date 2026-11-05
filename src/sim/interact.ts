@@ -35,6 +35,8 @@ export const START_SOUND: Record<string, (it: Inter) => string> = {
   pickup: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
   // (M5: a wreck's metal, a junction box's catch, a terminal's keys, the bench, a rope's coil, a ladder's knock, a
   // scooter's deck, a cable clamp.)
+  // (A map's sign wiped with a hand to read it: M10-32.)
+  sign: () => 'rustle',
   wreck: () => 'open-crate', jbox: () => 'latch', exchange: () => 'knock', bench: () => 'knock', rope: () => 'rustle', plank: () => 'knock', scooter: () => 'open-car', zipkit: () => 'latch', fence: () => 'rustle',
 };
 
