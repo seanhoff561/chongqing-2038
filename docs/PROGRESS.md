@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M10. Next: M10-33 Maps menu (U-104).
-Features done: 383 / 438 | Last done: M10-32
+Features done: 384 / 438 | Last done: M10-46
 <!-- /status -->
 
 ## What's built
@@ -59,3 +59,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M6-10, M10-26, M10-38, M10-61, M10-62, M10-63, M10-65, M10-66, M10-44, M10-31, M10-45: the construction site, loot everywhere, the Li flat, no gym, eldritch machines that keep apart, the ground solid, leaves under the trees, the alley's neon ice blue, real explosions, the city's music back
 - M10-64: the laptop opens without a hitch (no light added on opening, its page and map ready from load)
 - M10-32: the map editor (build on flat ground with every climbing piece, props, containers and signs; save, export, import, play)
+- M10-46: every enemy attacks like it means it (each kind's wind-up, strike, recovery and repositioning, keeping its distance)
