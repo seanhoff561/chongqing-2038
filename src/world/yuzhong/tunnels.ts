@@ -13,6 +13,7 @@ import type { Inter, Prop, Zone, Site, Climbable, Feature } from '../world';
 import { stair } from '../steps';
 import type { Obb } from './shapes';
 import { door, heap, put, scrawl, mark, type Hand } from './handunder';
+import { sin, cos, tan, atan2 } from '../trig';
 
 export interface Tunnels { solids: Solid[]; decor: Solid[]; props: Prop[]; inter: Inter[]; climbables: Climbable[]; zones: Zone[]; sites: Site[]; features: Feature[]; frame: { px: number; pz: number; yaw: number; floor: number }; at: Record<string, { x: number; y: number; z: number }>; keep: Obb[] }
 
@@ -20,7 +21,7 @@ const hAt = (g: Heightfield, x: number, z: number) => g.y[Math.max(0, Math.min(g
 
 /** Stairways climb at 35 degrees; a stair is 3 m wide between walls reaching 4.4 m out from its middle, wider than
  *  the ground cells the holes over it take (a cell's diagonal past its edge). */
-const T35 = Math.tan(0.61), HALF = 1.5, WALL = 4.4, HEAD = 3.2;
+const T35 = tan(0.61), HALF = 1.5, WALL = 4.4, HEAD = 3.2;
 /** (The friends' chamber was off the Grand Tunnel's mouth until U-047 sealed it away under a real alley: home.ts.) */
 /** The way out: a stairway south off the Grand Tunnel near its end, up to the street below Jiaochangkou. */
 const EXIT_U = 202;
@@ -41,7 +42,7 @@ const wbox = (w: Way, a0: number, a1: number, b0: number, b1: number, y0: number
 /** The tunnel frame: from the real entrance toward Jiaochangkou; W maps (u, v) onto the map. */
 export function tunnelFrame() {
   const L = GEO.landmarks, px = L.grandTunnel.x, pz = L.grandTunnel.z;
-  const yaw = Math.atan2(L.jiaochangkou.z - pz, L.jiaochangkou.x - px), c = Math.cos(yaw), s = Math.sin(yaw);
+  const yaw = atan2(L.jiaochangkou.z - pz, L.jiaochangkou.x - px), c = cos(yaw), s = sin(yaw);
   return { px, pz, yaw, W: (u: number, v: number): [number, number] => [px + c * u - s * v, pz + s * u + c * v] };
 }
 

@@ -15,6 +15,7 @@ import { BARE } from '../city/climb';
 import { local, world, refloor, parallel, type Vertical } from './vertical';
 import { obbOverlap } from './shapes';
 import type { Plan } from './lots';
+import { atan2 } from '../trig';
 
 const PARAPET = 0.6;
 type V3 = [number, number, number];
@@ -22,7 +23,7 @@ type V3 = [number, number, number];
 /** A straight member from a to b (plank, beam, bar): w wide, t thick, its top on the line a-b (sloped if they
  *  differ); in its own frame along +x, turned into place. */
 export function member(a: V3, b: V3, w: number, t: number, mat: number): Solid {
-  const dx = b[0] - a[0], dz = b[2] - a[2], len = Math.hypot(dx, dz), yaw = Math.atan2(dz, dx), lo = Math.min(a[1], b[1]), hi = Math.max(a[1], b[1]);
+  const dx = b[0] - a[0], dz = b[2] - a[2], len = Math.hypot(dx, dz), yaw = atan2(dz, dx), lo = Math.min(a[1], b[1]), hi = Math.max(a[1], b[1]);
   const s = Math.abs(hi - lo) < 0.02 ? solid(a[0], lo - t, a[2] - w / 2, a[0] + len, lo, a[2] + w / 2, mat)
     : rampSolid(a[0], lo - t, a[2] - w / 2, a[0] + len, a[2] + w / 2, lo, hi, b[1] > a[1] ? 1 : 2, mat);
   return turn([s], yaw, a[0], a[2])[0];

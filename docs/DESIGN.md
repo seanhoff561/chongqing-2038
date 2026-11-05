@@ -365,7 +365,7 @@ A Windows installer (.exe) from desktop/ (Electron): whenever main's package.jso
 ## 17. Architecture and dev tools
 
 - `src/sim`: deterministic fixed-step simulation (60 Hz), headless; state is one plain JSON-able object; all randomness from the run seed.
-- `src/world`: builds the static city (solids, ramps, water, climbables, interactables, nav graph, patrols) from `src/data`, the same every run.
+- `src/world`: builds the static city (solids, ramps, water, climbables, interactables, nav graph, patrols) from `src/data`, the same every run, and the same in every browser as in the Node tests: it takes sin, cos, tan and atan2 from `src/world/trig.ts` (fdlibm's, as Node has them), never Math's, whose last bits differ between engines. tests/sim/samecity.slow.test.ts keeps seed 1's city hash in tests/worldhash.json and tests/e2e/samecity.e2e.mjs checks Chrome builds the same.
 - `src/data`: tuning and content (movement, units, items, recipes, loot, dialogue, scenarios, the geo extract).
 - `src/render`, `src/ui`, `src/audio`, `src/input`, `src/dev`: browser only; the renderer interpolates between ticks.
 - Collision: boxes and ramps (turnable about a pivot) in a 4 m grid and the heightfield; per-axis sweeps with step-up; rays for sight.

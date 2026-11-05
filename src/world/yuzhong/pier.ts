@@ -11,6 +11,7 @@ import { DOCK } from './riverfront';
 import type { Camera, Climbable, Feature, Inter } from '../world';
 import type { Obb } from './shapes';
 import { pierHouse } from './pierhouse';
+import { sin, cos, atan2 } from '../trig';
 
 /** The gangway's width; the crane's jib height over the deck (a safe drop) and length past the deck's middle; the
  *  buoys' distance out; the boat's hull. */
@@ -20,12 +21,12 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
   const solids: Solid[] = [], decor: Solid[] = [], climbables: Climbable[] = [], inter: Inter[] = [], cameras: Camera[] = [], features: Feature[] = [];
   const top = WATER_Y + DOCK.up, h = (x: number, z: number) => heightAt(g, x, z) ?? -Infinity;
   // The pontoon nearest the place, afloat (as docks() builds them).
-  const wet = (o: Obb) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw); return [[0, 0], [o.hw * 0.7, 0], [-o.hw * 0.7, 0], [0, o.hd * 0.7], [0, -o.hd * 0.7]].filter(([u, v]) => h(o.cx + c * u - s * v, o.cz + s * u + c * v) < WATER_Y).length >= 3; };
+  const wet = (o: Obb) => { const c = cos(o.yaw), s = sin(o.yaw); return [[0, 0], [o.hw * 0.7, 0], [-o.hw * 0.7, 0], [0, o.hd * 0.7], [0, -o.hd * 0.7]].filter(([u, v]) => h(o.cx + c * u - s * v, o.cz + s * u + c * v) < WATER_Y).length >= 3; };
   // (Which side's the bank: the long side the ground's nearer above the water; one within 25 m.)
-  const bankOf = (o: Obb, side: number) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw); for (let d = 0; d < 40; d += 1) { const v = side * (o.hd + d); if (h(o.cx - s * v, o.cz + c * v) > WATER_Y + 0.5) return d; } return Infinity; };
+  const bankOf = (o: Obb, side: number) => { const c = cos(o.yaw), s = sin(o.yaw); for (let d = 0; d < 40; d += 1) { const v = side * (o.hd + d); if (h(o.cx - s * v, o.cz + c * v) > WATER_Y + 0.5) return d; } return Infinity; };
   const o = piers.filter(q => wet(q) && q.hw >= 3 && q.hd >= 1.5 && Math.min(bankOf(q, 1), bankOf(q, -1)) < 25).sort((a, b) => Math.hypot(a.cx - near.x, a.cz - near.z) - Math.hypot(b.cx - near.x, b.cz - near.z))[0];
   if (!o) return null;
-  const c = Math.cos(o.yaw), sn = Math.sin(o.yaw), W = (u: number, v: number): [number, number] => [o.cx + c * u - sn * v, o.cz + sn * u + c * v];
+  const c = cos(o.yaw), sn = sin(o.yaw), W = (u: number, v: number): [number, number] => [o.cx + c * u - sn * v, o.cz + sn * u + c * v];
   const side = bankOf(o, 1) <= bankOf(o, -1) ? 1 : -1, gap = bankOf(o, side);
   /** A box in the pier's own frame (u along it, v across, toward the bank +), turned into place. */
   const box = (u0: number, u1: number, v0: number, v1: number, y0: number, y1: number, mat: number): Solid => turn([solid(o.cx + Math.min(u0, u1), y0, o.cz + Math.min(v0, v1) * side, o.cx + Math.max(u0, u1), y1, o.cz + Math.max(v0, v1) * side, mat)], o.yaw, o.cx, o.cz)[0];
@@ -37,9 +38,9 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
     solids.push(turn([r], o.yaw, o.cx, o.cz)[0]);
     for (const du of [-PIER.gang / 2, PIER.gang / 2]) decor.push(box(du - 0.03, du + 0.03, v0, v1, Math.max(top, land) + 0.9, Math.max(top, land) + 0.95, MAT.metal));
     const [gx, gz] = W(PIER.gang, side * (o.hd + gap + 1.5)), [dx, dz] = W(0, side * (o.hd - 1));
-    cameras.push({ kind: 'camera', x: gx, y: land + 4, z: gz, yaw: Math.atan2(dx - gx, dz - gz) });
+    cameras.push({ kind: 'camera', x: gx, y: land + 4, z: gz, yaw: atan2(dx - gx, dz - gz) });
     const [kx, kz] = W(-o.hw + 1, side * (o.hd - 0.5));
-    cameras.push({ kind: 'camera', x: kx, y: top + 3.5, z: kz, yaw: Math.atan2(W(0, side * (o.hd + gap))[0] - kx, W(0, side * (o.hd + gap))[1] - kz) });
+    cameras.push({ kind: 'camera', x: kx, y: top + 3.5, z: kz, yaw: atan2(W(0, side * (o.hd + gap))[0] - kx, W(0, side * (o.hd + gap))[1] - kz) });
     features.push({ kind: 'pier:gangway', x: ex, y: land, z: ez, group: features.length });
   }
   // The ladder up its river side from the water.
@@ -67,7 +68,7 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
   inter.push({ id: 'patrolboat', kind: 'boat', x: bx, y: WATER_Y + 1.8, z: bz, r: 1.5, zh: '水警巡逻艇', en: 'River-police patrol boat' });
   // The sonar buoys round it.
   for (let k = 0; k < 4; k++) {
-    const a = o.yaw + (k * Math.PI) / 2 + Math.PI / 4, x = o.cx + Math.cos(a) * PIER.buoys, z = o.cz + Math.sin(a) * PIER.buoys;
+    const a = o.yaw + (k * Math.PI) / 2 + Math.PI / 4, x = o.cx + cos(a) * PIER.buoys, z = o.cz + sin(a) * PIER.buoys;
     if (h(x, z) > WATER_Y - 0.5) continue;
     decor.push(solid(x - 0.35, WATER_Y - 0.4, z - 0.35, x + 0.35, WATER_Y + 0.6, z + 0.35, MAT.metal), solid(x - 0.08, WATER_Y + 0.6, z - 0.08, x + 0.08, WATER_Y + 1.6, z + 0.08, MAT.lamp));
     features.push({ kind: 'pier:buoy', x, y: WATER_Y, z, group: features.length });

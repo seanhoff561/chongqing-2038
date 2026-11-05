@@ -6,6 +6,7 @@ import { solid, turn, type Solid } from '../geom';
 import { MAT } from '../mats';
 import type { Fabric } from '../city/buildings';
 import type { Obb } from './shapes';
+import { tan } from '../trig';
 
 /** Its parts: half-widths across the flats (m) and heights over the plaza (m). */
 export const MONUMENT = { height: 27.5, steps: [[7.5, 0.35], [6.2, 0.7], [5, 1.05]], shaft: [2.1, 1.05, 21.5], clock: [2.5, 21.5, 24.2], cornice: [2.8, 24.2, 24.6], lantern: [1.6, 24.6, 26.3], spire: [0.35, 26.3, 27.5], kerb: [10.5, 0.45] };
@@ -34,7 +35,7 @@ export function monument(o: Obb, base: number, out: Pick<Fabric, 'solids' | 'dec
     out.decor.push(...turn([b], o.yaw, cx, cz));
   }
   // The kerb round the flower beds: eight low lengths, a gap on the four main sides to walk in by.
-  const [kr, kh] = M.kerb, side = kr * Math.tan(Math.PI / 8);
+  const [kr, kh] = M.kerb, side = kr * tan(Math.PI / 8);
   for (let k = 0; k < 8; k++) {
     const a = o.yaw + (k * Math.PI) / 4, spans = k % 2 ? [[-side, side]] : [[-side, -side * 0.4], [side * 0.4, side]];
     for (const [z0, z1] of spans) out.solids.push(...turn([solid(cx + kr - 0.25, base, cz + z0, cx + kr + 0.25, base + kh, cz + z1, MAT.concrete)], a, cx, cz));

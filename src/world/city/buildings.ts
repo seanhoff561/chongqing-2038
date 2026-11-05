@@ -13,6 +13,7 @@ import { tower } from './towers';
 import { tintFor, PAINTED } from './palette';
 import { ENVELOPE as E } from '../../data/envelope';
 import type { Frame } from './puzzle';
+import { atan2 } from '../trig';
 
 export type LotKind = 'res' | 'tower';
 export interface Lot {
@@ -104,7 +105,7 @@ function nooks(l: Lot, m0: number, r: Rng, out: Fabric) {
     // 1.0 wide, 0.95 deep into the wall, 1.9 high.
     const nook = nz ? solid(c - 0.5, y, nz < 0 ? f : f - 0.95, c + 0.5, y + 1.9, nz < 0 ? f + 0.95 : f, 0) : solid(nx < 0 ? f : f - 0.95, y, c - 0.5, nx < 0 ? f + 0.95 : f, y + 1.9, c + 0.5, 0);
     out.solids.splice(m0, out.solids.length - m0, ...carve(out.solids.slice(m0), nook));
-    out.hides.push({ id: out.hides.length, kind: 'nook', inner: { x0: nook.x0 + 0.05, y0: y, z0: nook.z0 + 0.05, x1: nook.x1 - 0.05, y1: y + 1.85, z1: nook.z1 - 0.05 }, yaw: Math.atan2(-nx, -nz) });
+    out.hides.push({ id: out.hides.length, kind: 'nook', inner: { x0: nook.x0 + 0.05, y0: y, z0: nook.z0 + 0.05, x1: nook.x1 - 0.05, y1: y + 1.85, z1: nook.z1 - 0.05 }, yaw: atan2(-nx, -nz) });
     out.features.push({ kind: 'nook', x: (nook.x0 + nook.x1) / 2, y, z: (nook.z0 + nook.z1) / 2, group: out.features.length, nx, nz });
   }
 }

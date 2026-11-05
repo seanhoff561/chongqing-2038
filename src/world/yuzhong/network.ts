@@ -25,6 +25,7 @@ import { BARE } from '../city/climb';
 import { member, cord, fitEnd } from './crossings';
 import type { Vertical } from './vertical';
 import type { Plan } from './lots';
+import { sin, cos } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 const PARAPET = 0.6;
@@ -104,7 +105,7 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
   const owner = (x: number, z: number, pad = 1.5): number => {
     let best = -1, bd = Infinity;
     for (const i of around(x, z)) {
-      const o = obb[i], c = Math.cos(o.yaw), s = Math.sin(o.yaw), dx = x - o.cx, dz = z - o.cz, u = Math.abs(dx * c + dz * s), v = Math.abs(-dx * s + dz * c);
+      const o = obb[i], c = cos(o.yaw), s = sin(o.yaw), dx = x - o.cx, dz = z - o.cz, u = Math.abs(dx * c + dz * s), v = Math.abs(-dx * s + dz * c);
       if (u > o.hw + pad || v > o.hd + pad) continue;
       const d = Math.hypot(dx, dz);
       if (d < bd) { bd = d; best = i; }
@@ -378,7 +379,7 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
 }
 
 /** How far from a footprint's centre the line along (ux, uz) leaves it. */
-const exit = (a: Obb, ux: number, uz: number) => { const c = Math.cos(a.yaw), s = Math.sin(a.yaw), pu = Math.abs(ux * c + uz * s), pv = Math.abs(-ux * s + uz * c); return Math.min(pu > 1e-6 ? a.hw / pu : Infinity, pv > 1e-6 ? a.hd / pv : Infinity); };
+const exit = (a: Obb, ux: number, uz: number) => { const c = cos(a.yaw), s = sin(a.yaw), pu = Math.abs(ux * c + uz * s), pv = Math.abs(-ux * s + uz * c); return Math.min(pu > 1e-6 ? a.hw / pu : Infinity, pv > 1e-6 ? a.hd / pv : Infinity); };
 /** Where a footprint's edge meets the line to another's centre (a step in from it). */
 function edgeTo(a: Obb, b: Obb) {
   const dx = b.cx - a.cx, dz = b.cz - a.cz, l = Math.hypot(dx, dz), ux = dx / l, uz = dz / l, t = exit(a, ux, uz);

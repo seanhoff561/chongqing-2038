@@ -2,6 +2,7 @@
 // peninsula in local metres, x east and z south from the north-west corner of the box in osm.json.
 import { GROUND } from '../data/geo/ground';
 import OSM from '../data/geo/osm.json';
+import { cos } from './trig';
 
 export type Pts = number[];
 export interface GeoData {
@@ -23,8 +24,8 @@ export interface GeoData {
 export const GEO = OSM as unknown as GeoData;
 
 const RAD = Math.PI / 180, LAT = ((GEO.bbox.lat0 + GEO.bbox.lat1) / 2) * RAD;
-const M_LAT = 111132.954 - 559.822 * Math.cos(2 * LAT) + 1.175 * Math.cos(4 * LAT);
-const M_LON = 111412.84 * Math.cos(LAT) - 93.5 * Math.cos(3 * LAT);
+const M_LAT = 111132.954 - 559.822 * cos(2 * LAT) + 1.175 * cos(4 * LAT);
+const M_LON = 111412.84 * cos(LAT) - 93.5 * cos(3 * LAT);
 /** Longitude and latitude to local metres. */
 export const toLocal = (lon: number, lat: number): [number, number] => [(lon - GEO.bbox.lon0) * M_LON, (GEO.bbox.lat0 - lat) * M_LAT];
 

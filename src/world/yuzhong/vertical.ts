@@ -15,6 +15,7 @@ import { ROAD, type Street } from './ground';
 import { BARE } from '../city/climb';
 import type { Plan } from './lots';
 import { member, onWall, type Link } from './crossings';
+import { sin, cos } from '../trig';
 
 const FLOOR = 3, PARAPET = 0.6;
 type V3 = [number, number, number];
@@ -24,7 +25,7 @@ export interface Vertical { solids: Solid[]; decor: Solid[]; far: Solid[]; climb
   /** connections to build once the buildings stand (crossings.ts) */ links?: Link[] }
 
 /** A row lot's frame: u along its street, n out of its front (its own +z). */
-export const frame = (p: Plan) => { const c = Math.cos(p.obb.yaw), s = Math.sin(p.obb.yaw); return { ux: c, uz: s, nx: -s, nz: c }; };
+export const frame = (p: Plan) => { const c = cos(p.obb.yaw), s = sin(p.obb.yaw); return { ux: c, uz: s, nx: -s, nz: c }; };
 /** A world point in p's frame: [along, out]. */
 export const local = (p: Plan, x: number, z: number): [number, number] => { const f = frame(p), dx = x - p.obb.cx, dz = z - p.obb.cz; return [dx * f.ux + dz * f.uz, dx * f.nx + dz * f.nz]; };
 /** p's frame to the map. */
@@ -40,7 +41,7 @@ export const refloor = (p: Plan, y: number, tol: number) => {
   p.wall = w;
   return true;
 };
-export const parallel = (a: Plan, b: Plan, k: number) => Math.abs(Math.cos(a.obb.yaw - b.obb.yaw)) > k;
+export const parallel = (a: Plan, b: Plan, k: number) => Math.abs(cos(a.obb.yaw - b.obb.yaw)) > k;
 
 export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vertical {
   const out: Vertical = { solids: [], decor: [], far: [], climbables: [], features: [], links: [] }, r = makeRng(hashString('vertical')), used = new Set<Plan>();

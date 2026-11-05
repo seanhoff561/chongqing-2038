@@ -19,6 +19,7 @@ import type { Obb, P2 } from './shapes';
 import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } from './underkit';
 import { airRaid, clipped, SHELTER } from './airraid';
 import { metroRoom } from './metroroom';
+import { tan } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 export interface Under {
@@ -37,7 +38,7 @@ export interface Under {
   at: Record<string, V3>;
 }
 
-const T35 = Math.tan(0.61), HEAD = 3.2, LINE = 0.8;
+const T35 = tan(0.61), HEAD = 3.2, LINE = 0.8;
 /** The network's level (the city's lower concourse) and the city's upper deck. */
 const LB = 89, LA = 96;
 /** The cavern round Jiefangbei: half its size along x and z, its ceiling. */

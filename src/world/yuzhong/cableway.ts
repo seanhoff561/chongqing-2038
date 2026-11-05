@@ -19,6 +19,7 @@ import { corners, inside } from './shapes';
 import type { Lot, Fabric } from '../city/buildings';
 import type { Plan } from './lots';
 import type { World, Line, Feature, Plot } from '../world';
+import { sin, cos } from '../trig';
 
 /** The ropes' line across the hall (v); their height over the platform's floor, the track ropes either side of the
  *  haul rope (m), their sag mid-span; how far either side of them and how far under them the city's own buildings
@@ -92,7 +93,7 @@ export const cableway: Lot['inside'] = (fr, from, out, look, rolled) => {
   const wy = H + 1.1, wu = 3.2;
   late.push(box(wu - 0.3, wu + 0.3, r - 0.3, r + 0.3, H, wy + 0.5, MAT.metal), box(wu - 2, wu + 2, r - 2, r + 2, wy - 0.15, wy + 0.15, MAT.hidden));
   for (let i = 0; i < 16; i++) {
-    const a = (i * Math.PI) / 8, u = wu + Math.cos(a) * 1.9, v = r + Math.sin(a) * 1.9;
+    const a = (i * Math.PI) / 8, u = wu + cos(a) * 1.9, v = r + sin(a) * 1.9;
     out.decor.push(box(u - 0.25, u + 0.25, v - 0.25, v + 0.25, wy - 0.12, wy + 0.12, MAT.metal));
     if (i % 4 === 0) out.decor.push(box(Math.min(wu, u), Math.max(wu, u), Math.min(r, v), Math.max(r, v), wy - 0.05, wy + 0.05, MAT.metal));
   }
@@ -145,7 +146,7 @@ export function cableLine(plans: Plan[], north: Plan): CableLine | null {
   const south = plans.find(p => inside(corners(p.obb), ex, ez));
   if (!south) return null;
   const o = north.obb, alongZ = o.hd >= o.hw, U = (alongZ ? o.hd : o.hw) * 2 - 2 * WALL, u = U + 0.3, v = CABLE.v;
-  const lx = o.cx - o.hw + WALL + (alongZ ? v : u), lz = o.cz - o.hd + WALL + (alongZ ? u : v), c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+  const lx = o.cx - o.hw + WALL + (alongZ ? v : u), lz = o.cz - o.hd + WALL + (alongZ ? u : v), c = cos(o.yaw), s = sin(o.yaw);
   const a = { x: o.cx + c * (lx - o.cx) - s * (lz - o.cz), y: north.base + (Math.round((north.wall - north.base) / FLOOR) - 2) * FLOOR + CABLE.rope, z: o.cz + s * (lx - o.cx) + c * (lz - o.cz) };
   const d = Math.hypot(ex - a.x, ez - a.z), dx = (ex - a.x) / d, dz = (ez - a.z) / d, sc = corners(south.obb);
   let t = 0;
@@ -196,7 +197,7 @@ export const inCableWay = (l: CableLine, cuts: Map<Plan, number>) => (a: [number
   return false;
 };
 const inObb = (p: Plan, x: number, z: number, m: number) => {
-  const o = p.obb, c = Math.cos(o.yaw), s = Math.sin(o.yaw), dx = x - o.cx, dz = z - o.cz;
+  const o = p.obb, c = cos(o.yaw), s = sin(o.yaw), dx = x - o.cx, dz = z - o.cz;
   return Math.abs(c * dx + s * dz) <= o.hw + m && Math.abs(-s * dx + c * dz) <= o.hd + m;
 };
 

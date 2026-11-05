@@ -5,6 +5,7 @@
 // those places.)
 import { raycast } from '../geom';
 import type { World, Camera } from '../world';
+import { sin, cos, atan2 } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 
@@ -19,7 +20,7 @@ export function onWall(w: World, kind: Camera['kind'], f: V3): Camera | null {
   const y = (down ? f.y + 1.5 - down.t : f.y) + 2.2;
   let best: Camera | null = null, bd = 0;
   for (let k = 0; k < 8; k++) {
-    const a = (k * Math.PI) / 4, dx = Math.sin(a), dz = Math.cos(a), h = raycast(w.index, f.x, y, f.z, dx, 0, dz, 15);
+    const a = (k * Math.PI) / 4, dx = sin(a), dz = cos(a), h = raycast(w.index, f.x, y, f.z, dx, 0, dz, 15);
     if (h && h.t > bd) { bd = h.t; best = { kind, x: f.x + dx * (h.t - 0.08), y, z: f.z + dz * (h.t - 0.08), yaw: a + Math.PI }; }
   }
   return best;
@@ -28,7 +29,7 @@ export function onWall(w: World, kind: Camera['kind'], f: V3): Camera | null {
 export function placeSensors(w: World, tunnel: (u: number, v: number) => V3): Camera[] {
   const out: Camera[] = [];
   for (const g of w.features.filter(f => f.kind === 'gate'))
-    out.push({ kind: 'turret', x: g.x + g.nx! * GATE_OUT, y: g.y + GATE_UP, z: g.z + g.nz! * GATE_OUT, yaw: Math.atan2(g.nx!, g.nz!) });
+    out.push({ kind: 'turret', x: g.x + g.nx! * GATE_OUT, y: g.y + GATE_UP, z: g.z + g.nz! * GATE_OUT, yaw: atan2(g.nx!, g.nz!) });
   // The Grand Tunnel: across it, wall to wall.
   const across = (u: number) => {
     const o = tunnel(u, 0), b = tunnel(u, 1), d = Math.hypot(b.x - o.x, b.z - o.z), down = raycast(w.index, o.x, o.y + 2, o.z, 0, -1, 0, 4);
@@ -38,11 +39,11 @@ export function placeSensors(w: World, tunnel: (u: number, v: number) => V3): Ca
     const { a, dx, dz } = across(u), y = a.y + BEAM, l = raycast(w.index, a.x, y, a.z, -dx, 0, -dz, 12), r = raycast(w.index, a.x, y, a.z, dx, 0, dz, 12);
     if (!l || !r) continue;
     const from = { x: a.x - dx * (l.t - 0.05), y, z: a.z - dz * (l.t - 0.05) }, to = { x: a.x + dx * (r.t - 0.05), y, z: a.z + dz * (r.t - 0.05) };
-    out.push({ kind: 'tripwire', ...from, yaw: Math.atan2(to.x - from.x, to.z - from.z), to });
+    out.push({ kind: 'tripwire', ...from, yaw: atan2(to.x - from.x, to.z - from.z), to });
   }
   for (const u of EAR_U) {
     const { a, dx, dz } = across(u), y = a.y + 2.5, h = raycast(w.index, a.x, y, a.z, dx, 0, dz, 12);
-    if (h) out.push({ kind: 'acoustic', x: a.x + dx * (h.t - 0.06), y, z: a.z + dz * (h.t - 0.06), yaw: Math.atan2(-dx, -dz) });
+    if (h) out.push({ kind: 'acoustic', x: a.x + dx * (h.t - 0.06), y, z: a.z + dz * (h.t - 0.06), yaw: atan2(-dx, -dz) });
   }
   for (const f of w.features) {
     const c = f.kind === 'room:market' ? onWall(w, 'acoustic', f) : f.kind === 'room:store' || f.kind === 'room:pump' || f.kind === 'concourse' ? onWall(w, 'pir', f) : null;

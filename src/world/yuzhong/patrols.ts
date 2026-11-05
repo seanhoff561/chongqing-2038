@@ -11,6 +11,7 @@ import { districtAt } from './lots';
 import { heightAt } from '../heightfield';
 import { GEO } from '../geo';
 import { navPath } from '../../sim/nav';
+import { sin, cos, atan2 } from '../trig';
 
 /** The districts given beats of their own, the streets those run, and the side streets beats break off along. */
 const DISTRICTS = ['jiefangbei', 'jiaochangkou', 'shibati', 'xiaoshizi', 'hongyadong', 'chaotianmen'];
@@ -71,7 +72,7 @@ function faceNear(w: World, q: V3): { at: V3; yaw: number } | null {
       if (nx * (mx - c.x) + nz * (mz - c.z) < 0) { nx = -nx; nz = -nz; }
       const gy = heightAt(w.ground!, mx + nx * ALIVE.face, mz + nz * ALIVE.face) ?? q.y - 20;
       if (p.top - gy < 8) continue;
-      bd = d; best = { at: { x: mx + nx * ALIVE.face, y: Math.min(p.top - 2, Math.max(gy + 6, (gy + p.top) / 2)), z: mz + nz * ALIVE.face }, yaw: Math.atan2(-nx, -nz) };
+      bd = d; best = { at: { x: mx + nx * ALIVE.face, y: Math.min(p.top - 2, Math.max(gy + 6, (gy + p.top) / 2)), z: mz + nz * ALIVE.face }, yaw: atan2(-nx, -nz) };
     }
   }
   return best;
@@ -296,8 +297,8 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       if (looked >= ALIVE.every && !rest[i] && i < line.length - 1) {
         const t = sights.find(f => { const d = Math.hypot(f.x - q.x, f.z - q.z); return d < ALIVE.near && d > 1 && clear(w, q, f, 1); });
         // (With nothing to look at for a while, it stops and looks out to one side all the same.)
-        const out = !t && looked >= 2 * ALIVE.every ? Math.atan2(line[i + 1].x - q.x, line[i + 1].z - q.z) + ((spurs + i) % 2 ? Math.PI / 2 : -Math.PI / 2) : null;
-        if (t || out !== null) { dwell[dwell.length - 1] = ALIVE.look; look[pts.length - 1] = t ? Math.atan2(t.x - q.x, t.z - q.z) : out!; looked = 0; }
+        const out = !t && looked >= 2 * ALIVE.every ? atan2(line[i + 1].x - q.x, line[i + 1].z - q.z) + ((spurs + i) % 2 ? Math.PI / 2 : -Math.PI / 2) : null;
+        if (t || out !== null) { dwell[dwell.length - 1] = ALIVE.look; look[pts.length - 1] = t ? atan2(t.x - q.x, t.z - q.z) : out!; looked = 0; }
       }
       if (since < 80 || spurs >= 5 || i === line.length - 1) return;
       // Off along a side street (up to 60 m of it), into an alley beside the bins or in at a door to the floor
@@ -361,7 +362,7 @@ function skyDrones(w: World): Patrol[] {
         const p = near[(d * 7919 + tries * 104729) % near.length], c = centre(p);
         // Over a low roof, or down in the gap beside a block (out past its side, at half its height or lower); a
         // tower's only ever looked at from the gap beside it, not from over its top (U-103).
-        const gap = j % 2 === 1 || p.top - p.base > SKY.roof, a = ((d * 5 + tries * 3) % 8) * (Math.PI / 4), ca = Math.cos(a), sa = Math.sin(a);
+        const gap = j % 2 === 1 || p.top - p.base > SKY.roof, a = ((d * 5 + tries * 3) % 8) * (Math.PI / 4), ca = cos(a), sa = sin(a);
         const off = gap ? Math.max(...p.corners.map(([x, z]) => (x - c.x) * ca + (z - c.z) * sa)) + 5 : 0;
         const x = c.x + ca * off, z = c.z + sa * off, ground = heightAt(g, x, z) ?? p.base;
         const q: V3 = { x, y: gap ? Math.max(ground + SKY.gap[0], Math.min(p.top - 4, ground + SKY.gap[1])) : p.top + 5, z };
@@ -430,18 +431,18 @@ function lurkers(w: World, hides: V3[]): Patrol[] {
     const rooms = w.features.filter(f => f.kind.startsWith('inside:') && near(f.x, f.z, k));
     rooms.filter((_, i) => i % Math.max(1, Math.floor(rooms.length / 3)) === 0).slice(0, 3).forEach((f, n) => {
       const l = Math.hypot(f.nx ?? 0, f.nz ?? 0) || 1, nx = (f.nx ?? 0) / l, nz = (f.nz ?? 1) / l;
-      wait(n % 2 ? 'quadruped' : 'humanoid', { x: f.x + nx * 1.5, y: f.y, z: f.z + nz * 1.5 }, Math.atan2(-nx, -nz), n);
+      wait(n % 2 ? 'quadruped' : 'humanoid', { x: f.x + nx * 1.5, y: f.y, z: f.z + nz * 1.5 }, atan2(-nx, -nz), n);
     });
     const lots = w.plots.filter(p => !p.far && p.route && p.route.length > 2 && near(p.route[0].x, p.route[0].z, k));
     lots.filter((_, i) => i % Math.max(1, Math.floor(lots.length / 3)) === 0).slice(0, 3).forEach((p, n) => {
       const [door, foot] = p.route!, top = p.route![p.route!.length - 1];
-      wait('humanoid', foot, Math.atan2(door.x - foot.x, door.z - foot.z), n + 3);
+      wait('humanoid', foot, atan2(door.x - foot.x, door.z - foot.z), n + 3);
       wait(n % 2 ? 'drone' : 'quadruped', n % 2 ? { ...top, y: top.y + 1.6 } : top, (n * 2.1) % 6.28, n + 6);
     });
     hides.filter(h => near(h.x, h.z, k)).filter((_, i) => i % 7 === 3).slice(0, 3).forEach((h, n) => {
       // Beside the bins, on whichever side there's room, looking out from them.
       const by = [[1.2, 0], [-1.2, 0], [0, 1.2], [0, -1.2]].map(([dx, dz]) => ({ x: h.x + dx, y: h.y, z: h.z + dz })).find(q => !overlaps(w.index, { x0: q.x - 0.15, y0: q.y + 0.3, z0: q.z - 0.15, x1: q.x + 0.15, y1: q.y + 1.5, z1: q.z + 0.15 }));
-      if (by) wait('quadruped', by, Math.atan2(by.x - h.x, by.z - h.z), n + 9);
+      if (by) wait('quadruped', by, atan2(by.x - h.x, by.z - h.z), n + 9);
     });
   }
   return out;
@@ -473,9 +474,9 @@ export function placeCameras(w: World): Camera[] {
   const out: Camera[] = [];
   for (const p of w.props) {
     // (Each with its junction box low on the pole, on the side it looks: M5-09.)
-    const box = { x: p.x + Math.sin(p.yaw) * 0.16, y: p.y + 1.25, z: p.z + Math.cos(p.yaw) * 0.16, yaw: p.yaw };
-    if (p.kind === 'lamppost') out.push({ kind: 'lamppost', x: p.x + Math.sin(p.yaw) * 0.25, y: p.y + 6.2, z: p.z + Math.cos(p.yaw) * 0.25, yaw: p.yaw, box });
-    else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + Math.sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + Math.cos(p.yaw) * 0.2, yaw: p.yaw, box });
+    const box = { x: p.x + sin(p.yaw) * 0.16, y: p.y + 1.25, z: p.z + cos(p.yaw) * 0.16, yaw: p.yaw };
+    if (p.kind === 'lamppost') out.push({ kind: 'lamppost', x: p.x + sin(p.yaw) * 0.25, y: p.y + 6.2, z: p.z + cos(p.yaw) * 0.25, yaw: p.yaw, box });
+    else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + cos(p.yaw) * 0.2, yaw: p.yaw, box });
   }
   const near = (x: number, z: number) => DISTRICTS.some(k => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 400);
   w.plots.filter(p => !p.far && p.route && p.route.length > 1 && (near(p.route[0].x, p.route[0].z) || p.type === 'military')).forEach((p, i) => {
@@ -489,8 +490,8 @@ export function placeCameras(w: World): Camera[] {
     let k = 0.15;
     while (k < 1.5 && overlaps(w.index, { x0: door.x + (dx / d) * k - 0.08, y0: door.y + 2.6, z0: door.z + (dz / d) * k - 0.08, x1: door.x + (dx / d) * k + 0.08, y1: door.y + 2.9, z1: door.z + (dz / d) * k + 0.08 })) k += 0.1;
     // (Its junction box on the wall beside the door, at his chest: M5-09.)
-    const box = { x: door.x + (dx / d) * 0.1 + (dz / d) * 1.15, y: door.y + 1.4, z: door.z + (dz / d) * 0.1 - (dx / d) * 1.15, yaw: Math.atan2(dx, dz) };
-    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: Math.atan2(dx, dz), box, ...(i % 12 === 6 && !post ? { dark: true } : {}) });
+    const box = { x: door.x + (dx / d) * 0.1 + (dz / d) * 1.15, y: door.y + 1.4, z: door.z + (dz / d) * 0.1 - (dx / d) * 1.15, yaw: atan2(dx, dz) };
+    out.push({ kind: 'camera', x: door.x + (dx / d) * k, y: door.y + 2.75, z: door.z + (dz / d) * k, yaw: atan2(dx, dz), box, ...(i % 12 === 6 && !post ? { dark: true } : {}) });
   });
   // A turret at each main junction in the districts (M4-57), on the lamppost nearest it within 20 m, over its lamp,
   // looking along its street; none within 60 m of another.

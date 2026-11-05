@@ -8,6 +8,7 @@ import { MAT } from '../mats';
 import { WALL } from '../city/rooms';
 import { member } from './crossings';
 import type { Feature } from '../world';
+import { sin, cos, atan2 } from '../trig';
 
 /** How wide and high a breach is; the widest gap it spans; how far off square two ends may be; how far up or down. */
 const W = 0.9, H = 1.9, GAP = 1.6, SIDE = 1.0, RISE = 1.0;
@@ -31,7 +32,7 @@ export function breaches(out: { solids: Solid[]; features: Feature[] }) {
     // The hole: from a's room through both walls into b's, centred between the two ends, at the higher floor.
     const ex = best.x - a.x, ez = best.z - a.z, along = ex * nx + ez * nz, side = -ex * nz + ez * nx;
     const cx = a.x - nz * side / 2, cz = a.z + nx * side / 2, y0 = Math.max(a.y, best.y);
-    const s0 = -WALL - 0.05, s1 = along + WALL + 0.05, yaw = Math.atan2(nz, nx);
+    const s0 = -WALL - 0.05, s1 = along + WALL + 0.05, yaw = atan2(nz, nx);
     // In its own frame (x along a's outward normal from a's outer face, z across), turned into place.
     const hole = { x0: cx + s0, y0, z0: cz - W / 2, x1: cx + s1, y1: y0 + H, z1: cz + W / 2 };
     const r = Math.hypot(s1 - s0, W) + 1;
@@ -54,10 +55,10 @@ export function breaches(out: { solids: Solid[]; features: Feature[] }) {
  *  it (a building's pieces are turned with their lot): its pieces, turned back as it was; null if it isn't touched
  *  or can't be cut square. */
 function cutTurned(s: Solid, hole: { x0: number; y0: number; z0: number; x1: number; y1: number; z1: number }, yaw: number, px: number, pz: number): Solid[] | null {
-  const r = s.rot, sy = r ? Math.atan2(r.s, r.c) : 0, d = Math.round(((yaw - sy) / (Math.PI / 2)) * 1e3) / 1e3;
+  const r = s.rot, sy = r ? atan2(r.s, r.c) : 0, d = Math.round(((yaw - sy) / (Math.PI / 2)) * 1e3) / 1e3;
   if (Math.abs(d - Math.round(d)) > 0.02) return null;
   // The hole's corners in the solid's own frame: square there too, a box.
-  const c = Math.cos(yaw), sn = Math.sin(yaw), ox = r ? r.px : 0, oz = r ? r.pz : 0, rc = r ? r.c : 1, rs = r ? r.s : 0;
+  const c = cos(yaw), sn = sin(yaw), ox = r ? r.px : 0, oz = r ? r.pz : 0, rc = r ? r.c : 1, rs = r ? r.s : 0;
   const xs: number[] = [], zs: number[] = [];
   for (const [hx, hz] of [[hole.x0, hole.z0], [hole.x1, hole.z0], [hole.x0, hole.z1], [hole.x1, hole.z1]]) {
     const wx = px + c * (hx - px) - sn * (hz - pz), wz = pz + sn * (hx - px) + c * (hz - pz);
@@ -67,6 +68,6 @@ function cutTurned(s: Solid, hole: { x0: number; y0: number; z0: number; x1: num
   const own = r ? { ...s, x0: r.x0, z0: r.z0, x1: r.x1, z1: r.z1, rot: undefined } : s;
   if (box.x1 <= own.x0 || box.x0 >= own.x1 || box.z1 <= own.z0 || box.z0 >= own.z1) return null;
   const pieces = carve([own], box);
-  return r ? turn(pieces, Math.atan2(r.s, r.c), r.px, r.pz) : pieces;
+  return r ? turn(pieces, atan2(r.s, r.c), r.px, r.pz) : pieces;
 }
 

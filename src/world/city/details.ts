@@ -8,6 +8,7 @@ import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
 import { sides, footOf, BARE } from './climb';
 import { ENVELOPE as E } from '../../data/envelope';
 import type { Lot, Fabric } from './buildings';
+import { sin, atan2 } from '../trig';
 
 const FLOOR = 3;
 
@@ -51,7 +52,7 @@ export function details(l: Lot, r: Rng, out: Fabric, roof: number) {
     const c = s.a + 1 + rand(r) * (s.b - s.a - 2), y = l.base + 5 + rand(r) * 4, span = s.across, sag = 0.8 + rand(r) * 0.8;
     for (let i = 0; i < 4; i++) {
       const d0 = (i / 4) * span, d1 = ((i + 1) / 4) * span;
-      const h = (d: number) => y - sag * Math.sin((d / span) * Math.PI);
+      const h = (d: number) => y - sag * sin((d / span) * Math.PI);
       const lo = Math.min(h(d0), h(d1));
       out.decor.push(onFace(s, c - 0.015, c + 0.015, d0, d1, lo - 0.015, lo + 0.015, MAT.metal));
     }
@@ -62,7 +63,7 @@ export function details(l: Lot, r: Rng, out: Fabric, roof: number) {
  *  the walls; aerials, dishes and pots near the roof edge. */
 function dress(l: Lot, all: Side[], roof: number, out: Fabric) {
   const r = makeRng(hashString(`dress:${l.x0}:${l.z0}`));
-  const onWall = (s: Side, c: number) => ({ x: s.nz !== 0 ? c : s.f, z: s.nz !== 0 ? s.f : c, yaw: Math.atan2(s.nx, s.nz) });
+  const onWall = (s: Side, c: number) => ({ x: s.nz !== 0 ? c : s.f, z: s.nz !== 0 ? s.f : c, yaw: atan2(s.nx, s.nz) });
   for (const s of all) {
     if (s.b - s.a < 4) continue;
     if (rand(r) < 0.3) out.props.push({ kind: 'cablebundle', ...onWall(s, s.a + 1 + rand(r) * (s.b - s.a - 2)), y: l.base, h: Math.min(roof - l.base, 6 + rand(r) * 9) });

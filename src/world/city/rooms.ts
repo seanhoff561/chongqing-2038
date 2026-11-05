@@ -10,6 +10,7 @@ import { rand, randInt, makeRng, hashString, type Rng } from '../../sim/rng';
 const SINKS = { running: 0.25 };
 import type { Lot, Fabric } from './buildings';
 import type { Site } from '../world';
+import { atan2 } from '../trig';
 
 export const FLOOR = 3, WALL = 0.25, SLAB = 0.2;
 /** Core space: u runs along the flights, v across. Near landing, two half flights side by side, far landing. */
@@ -182,7 +183,7 @@ export function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: s
     const [cx, cz] = at((b[0] + b[2]) / 2, (b[1] + b[3]) / 2), hw = (P.w - 0.1) / 2, hd = (P.d - 0.1) / 2;
     const [nx, nz] = f.alongZ ? [face[1], face[0]] : face;
     // Its space, turned so its doors (the shell's +z) face the room.
-    out.hides.push({ id: out.hides.length, kind: 'wardrobe', yaw: Math.atan2(nx, nz), inner: { x0: cx - hw, y0: y + 0.05, z0: cz - hd, x1: cx + hw, y1: y + 1.9, z1: cz + hd } });
+    out.hides.push({ id: out.hides.length, kind: 'wardrobe', yaw: atan2(nx, nz), inner: { x0: cx - hw, y0: y + 0.05, z0: cz - hd, x1: cx + hw, y1: y + 1.9, z1: cz + hd } });
   }
   // A sink: a few still run (M4-96, U-069), by dice of their own so the rooms stay as they are (U-053).
   if (p === 'sink') {
@@ -205,7 +206,7 @@ export function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: s
  *  frame): w across, h high, d deep; `fallen` on its back. */
 function model(f: Floor, kind: string, u: number, v: number, face: [number, number], w: number, h: number, d: number, out: Fabric, fallen = false, y = f.y) {
   const [x, z] = f.at(u, v), [fx, fz] = f.at(u + face[0], v + face[1]);
-  out.props.push({ kind: `f:${kind}`, x, y, z, yaw: Math.atan2(fx - x, fz - z), w, h, d, ...(fallen ? { text: 'fallen' } : {}) });
+  out.props.push({ kind: `f:${kind}`, x, y, z, yaw: atan2(fx - x, fz - z), w, h, d, ...(fallen ? { text: 'fallen' } : {}) });
 }
 
 /** A table out in the room with stools round it. */

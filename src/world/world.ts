@@ -3,6 +3,7 @@ import type { Marks } from './yuzhong/marks';
 import type { Heightfield } from './heightfield';
 import { buildIndex, solid, turn, type Box, type Solid, type SolidIndex } from './geom';
 import { MAT } from './mats';
+import { atan2 } from './trig';
 
 /** Vertical climbable. (nx, nz) points from the wall out toward where the climber hangs. */
 /** tree, post, vine (U-104): a tree's trunk, a lamppost's or camera pole's post, a vine on a wall, climbed hand over
@@ -172,7 +173,7 @@ export interface WorldParts {
 /** A ladder's own frame (U-032): a plate behind its rungs, standing 3 cm off whatever's there, so his feet find
  *  something to push on (with nothing behind it he'd only swing). */
 function ladderBack(c: Climbable): Solid {
-  return turn([solid(c.x - 0.3, c.y0, c.z, c.x + 0.3, c.y1, c.z + 0.03, MAT.metal)], Math.atan2(-c.nx, c.nz), c.x, c.z)[0];
+  return turn([solid(c.x - 0.3, c.y0, c.z, c.x + 0.3, c.y1, c.z + 0.03, MAT.metal)], atan2(-c.nx, c.nz), c.x, c.z)[0];
 }
 
 export function makeWorld(p: WorldParts): World {

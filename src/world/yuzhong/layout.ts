@@ -11,6 +11,7 @@ import type { Feature, Plot, Prop, StreetLine } from '../world';
 import { propBoxes } from './dressing';
 import { MARK, type Marks } from './marks';
 import { minRect, points, inside, polyArea, type P2 } from './shapes';
+import { sin, cos, atan2 } from '../trig';
 
 export interface Layout { lawns: P2[][]; paths: StreetLine[]; solids: Solid[]; decor: Solid[]; props: Prop[]; features: Feature[] }
 
@@ -36,7 +37,7 @@ export function layout(index: SolidIndex, g: Heightfield, mk: Marks, land: Uint8
   };
   /** A kerb along the outline from a to b, in pieces no longer than a ground cell, each's top following it. */
   const kerb = ([ax, az]: P2, [bx, bz]: P2) => {
-    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(len / g.cell)), yaw = Math.atan2(bz - az, bx - ax);
+    const len = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(len / g.cell)), yaw = atan2(bz - az, bx - ax);
     for (let i = 0; i < n; i++) {
       const x0 = ax + ((bx - ax) * i) / n, z0 = az + ((bz - az) * i) / n, x1 = ax + ((bx - ax) * (i + 1)) / n, z1 = az + ((bz - az) * (i + 1)) / n;
       const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, l = len / n / 2 + 0.05, y0 = yAt(x0, z0), y1 = yAt(x1, z1), lo = Math.min(y0, y1), hi = Math.max(y0, y1);
@@ -69,11 +70,11 @@ export function layout(index: SolidIndex, g: Heightfield, mk: Marks, land: Uint8
       // A hedge along the edge between them, 1.2 m in, gapped where it's died back.
       for (let t = 2; t < len - 1; t += 4) for (const s of [1, -1]) {
         const x = a[0] + ((b[0] - a[0]) * t) / len + nx * s * 1.2, z = a[1] + ((b[1] - a[1]) * t) / len + nz * s * 1.2;
-        if (at(x, z)) { if (rand(r) < 0.6) put('hedge', x, z, Math.atan2(nx, nz), { w: 3.2 }); break; }
+        if (at(x, z)) { if (rand(r) < 0.6) put('hedge', x, z, atan2(nx, nz), { w: 3.2 }); break; }
       }
     }
     // Paths along its two axes through the middle, from edge to edge: the longest stretch inside it.
-    const c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+    const c = cos(o.yaw), s = sin(o.yaw);
     for (const [ux, uz, half] of [[c, s, o.hw], [-s, c, o.hd]] as const) {
       if (half < 12) continue;
       let best: [number, number] = [0, 0], start = NaN;
@@ -89,7 +90,7 @@ export function layout(index: SolidIndex, g: Heightfield, mk: Marks, land: Uint8
       for (let t = best[0] + 5, n = 0; t < best[1] - 3; t += 10, n++) {
         const x = o.cx + ux * t, z = o.cz + uz * t, side = n % 2 ? 1 : -1, px = -uz * side, pz = ux * side;
         put(avenue, x + px * 3, z + pz * 3, rand(r) * 6.28);
-        if (n % 2 === 0 && rand(r) < 0.6) put('bench', x - px * (PATH / 2 + 0.6), z - pz * (PATH / 2 + 0.6), Math.atan2(px, pz));
+        if (n % 2 === 0 && rand(r) < 0.6) put('bench', x - px * (PATH / 2 + 0.6), z - pz * (PATH / 2 + 0.6), atan2(px, pz));
         if (n % 2 === 1) put('lamppost', x - px * (PATH / 2 + 0.4), z - pz * (PATH / 2 + 0.4), 0);
       }
     }

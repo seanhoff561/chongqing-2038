@@ -10,6 +10,7 @@ import { heightAt } from '../heightfield';
 import { districtAt } from './lots';
 import { makeRng, rand, randInt } from '../../sim/rng';
 import { FLOOR } from '../city/rooms';
+import { sin, cos, atan2 } from '../trig';
 
 /** Free floor in the room round a flat's point, at its floor's height: points 0.5 m apart within 4.5 m that are
  *  floor (headroom over them, nothing within 0.3 m) and seen from the point. */
@@ -35,7 +36,7 @@ function flatNeon(w: World, s: { x: number; y: number; z: number }) {
   const y = s.y + 1.2;
   let best: { x: number; z: number; yaw: number; d: number } | null = null;
   for (let i = 0; i < 24; i++) {
-    const a = (i / 24) * Math.PI * 2, dx = Math.sin(a), dz = Math.cos(a);
+    const a = (i / 24) * Math.PI * 2, dx = sin(a), dz = cos(a);
     let t = 0;
     for (let k = 0; k < 8 && t < 15; k++) {
       const hit = raycast(w.index, s.x + dx * t, y, s.z + dz * t, dx, 0, dz, 15 - t);
@@ -125,7 +126,7 @@ function forced(w: World, p: Plot, y: number) {
 interface Put { kind: string; x: number; z: number; yaw: number; w: number; d: number }
 
 /** A point under something put down (or within m of it). */
-const under = (q: Put, x: number, z: number, m = 0) => { const dx = x - q.x, dz = z - q.z, u = dx * Math.cos(q.yaw) - dz * Math.sin(q.yaw), v = dx * Math.sin(q.yaw) + dz * Math.cos(q.yaw); return Math.abs(u) <= q.w / 2 + m && Math.abs(v) <= q.d / 2 + m; };
+const under = (q: Put, x: number, z: number, m = 0) => { const dx = x - q.x, dz = z - q.z, u = dx * cos(q.yaw) - dz * sin(q.yaw), v = dx * sin(q.yaw) + dz * cos(q.yaw); return Math.abs(u) <= q.w / 2 + m && Math.abs(v) <= q.d / 2 + m; };
 
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -171,8 +172,8 @@ function floorRooms(w: World, p: Plot, y: number) {
  *  Gives back what's laid on the floor, for the ransack to leave be, and the middles of the flat's rooms. */
 function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid: Put[]; rooms: { x: number; z: number }[] } {
   const y = s.y, land = p.route![2], rooms = floorRooms(w, p, y), taken: Put[] = [];
-  const [a, b] = p.corners, frame = Math.atan2(b[0] - a[0], b[1] - a[1]), yaws = [0, 1, 2, 3].map(k => frame + (k * Math.PI) / 2);
-  const local = (q: { x: number; z: number; yaw: number }, u: number, v: number) => ({ x: q.x + u * Math.cos(q.yaw) + v * Math.sin(q.yaw), z: q.z - u * Math.sin(q.yaw) + v * Math.cos(q.yaw) });
+  const [a, b] = p.corners, frame = atan2(b[0] - a[0], b[1] - a[1]), yaws = [0, 1, 2, 3].map(k => frame + (k * Math.PI) / 2);
+  const local = (q: { x: number; z: number; yaw: number }, u: number, v: number) => ({ x: q.x + u * cos(q.yaw) + v * sin(q.yaw), z: q.z - u * sin(q.yaw) + v * cos(q.yaw) });
   // (Floor all under it, nothing standing over it up to h, nothing else put there.)
   const fits = (q: Put, h: number) => {
     const nu = Math.ceil(q.w / 0.15), nv = Math.ceil(q.d / 0.15);
@@ -193,7 +194,7 @@ function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid
     for (const cells of where) {
       for (const c of [...cells].sort((m, n) => Math.hypot(m.x - to.x, m.z - to.z) - Math.hypot(n.x - to.x, n.z - to.z))) {
         if (o.away && Math.hypot(c.x - to.x, c.z - to.z) < o.away) continue;
-        const turns = o.face ? [...yaws].sort((m, n) => Math.cos(n - Math.atan2(o.face!.x - c.x, o.face!.z - c.z)) - Math.cos(m - Math.atan2(o.face!.x - c.x, o.face!.z - c.z))) : yaws;
+        const turns = o.face ? [...yaws].sort((m, n) => cos(n - atan2(o.face!.x - c.x, o.face!.z - c.z)) - cos(m - atan2(o.face!.x - c.x, o.face!.z - c.z))) : yaws;
         for (const yaw of turns) {
           const q = { kind, x: c.x, z: c.z, yaw, w: wd, d };
           if (!fits(q, h)) continue;
@@ -243,7 +244,7 @@ function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid
   const wall = (n: number) => {
     const c = middle(n), fit: { x: number; z: number; yaw: number; t: number }[] = [];
     for (const yaw of yaws) {
-      const dx = Math.sin(yaw), dz = Math.cos(yaw), hi = raycast(w.index, c.x, y + 1.95, c.z, dx, 0, dz, 6), lo = raycast(w.index, c.x, y + 1.4, c.z, dx, 0, dz, 6);
+      const dx = sin(yaw), dz = cos(yaw), hi = raycast(w.index, c.x, y + 1.95, c.z, dx, 0, dz, 6), lo = raycast(w.index, c.x, y + 1.4, c.z, dx, 0, dz, 6);
       if (!hi || !lo || Math.abs(hi.t - lo.t) > 0.05) continue;
       const x = c.x + dx * (hi.t - 0.01), z = c.z + dz * (hi.t - 0.01);
       if (w.inter.some(it => (it.kind === 'door' || it.kind === 'window') && Math.hypot(it.x - x, it.z - z) < 1.1 && Math.abs(it.y - y - 1.2) < 1.5)) continue;
@@ -262,7 +263,7 @@ function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid
     if (id !== undefined) w.index.off[id] = 1;
     let mark: { x: number; z: number; yaw: number } | null = null;
     for (const yaw of yaws) {
-      const dx = Math.sin(yaw), dz = Math.cos(yaw), h = raycast(w.index, door.x, y + 1.2, door.z, dx, 0, dz, 0.8), back = raycast(w.index, door.x, y + 1.2, door.z, -dx, 0, -dz, 0.8);
+      const dx = sin(yaw), dz = cos(yaw), h = raycast(w.index, door.x, y + 1.2, door.z, dx, 0, dz, 0.8), back = raycast(w.index, door.x, y + 1.2, door.z, -dx, 0, -dz, 0.8);
       if (h && back && h.t > 0.3 && back.t > 0.3) { mark = { x: door.x + dx * (h.t - 0.003), z: door.z + dz * (h.t - 0.003), yaw: yaw + Math.PI }; break; }
     }
     if (id !== undefined) w.index.off[id] = 0;
@@ -313,7 +314,7 @@ export function liFlat(w: World) {
     const [cx, cz] = take() ?? [px + 0.3, pz];
     w.features.push({ kind: 'li:sitecard', x: cx, y: s.y + 0.03, z: cz, group: w.features.length });
     for (let i = 0; i < 6; i++) { const at = take(); if (!at) break; const a = 0.05 + rand(r) * 0.12; w.decor.push({ ...solid(at[0] - a, s.y + 0.03, at[1] - a * 0.6, at[0] + a, s.y + 0.04, at[1] + a * 0.6, MAT.glass), inner: true }); }
-    w.teleports.push({ name: 'Li family flat', x: s.x, y: s.y + 1.5, z: s.z, yaw: Math.atan2(s.x - bx, s.z - bz) });
+    w.teleports.push({ name: 'Li family flat', x: s.x, y: s.y + 1.5, z: s.z, yaw: atan2(s.x - bx, s.z - bz) });
     flatNeon(w, s);
     forced(w, plot, s.y);
     return s;
