@@ -31,6 +31,8 @@ export interface Span {
   name: string; ox: number; oz: number; ux: number; uz: number; len: number; y0: number; y1: number;
   ta: number; tb: number; river: [number, number]; pylons: number[]; lifted?: [number, number]; fallen?: [number, number];
   holes?: [number, number, boolean][]; car?: number; pier?: number;
+  /** its checkpoint's north wall, and the hatch in its road plate (M6-19, checkpoint.ts) */
+  checkpoint?: number; hatch?: number;
 }
 
 export const road = (b: Span, t: number) => b.y0 + ((b.y1 - b.y0) * t) / b.len;
@@ -68,8 +70,11 @@ function spanOf(name: string, g: Heightfield, two: boolean): Span | null {
     // The Dongshuimen's rail deck as the war left it (M6-08): over the river a stretch whose plates are gone but for
     // the stringers under the tracks, mid-river a gap the deck's width a run and a jump cross, a derailed maintenance
     // car across it to climb over; the road's plates lifted out a panel past the bridgehead.
-    const mid = (r0 + r1) / 2;
-    b.lifted = [b.ta + 4 * P, b.ta + 5 * P];
+    // The checkpoint where its main span leaves the curving approach, the lifted plates two panels past it (M6-19).
+    const mid = (r0 + r1) / 2, main = Math.min(tOf(mains[0].pts[0]), tOf(mains[0].pts[mains[0].pts.length - 1])) - t0;
+    b.checkpoint = panel(main + 2, true);
+    b.hatch = b.checkpoint + 5;
+    b.lifted = [b.checkpoint + 3 * P, b.checkpoint + 4 * P];
     b.holes = [[r0 + 60, r0 + 69, true], [mid, mid + 2.4, false]];
     b.car = r1 - 120;
   }
@@ -184,7 +189,10 @@ export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
       u = Math.max(u, h1);
     }
     if (u < t1) ramp(u, t1, -H, H, T.floor, R, MAT.concrete);
-    if (!(b.lifted && t1 > b.lifted[0] && t0 < b.lifted[1])) ramp(t0, t1, -H, H, T.plate, t => Y(t) - 0.02, MAT.concrete);
+    // (The road plate: none where it's lifted; round the checkpoint's hatch in the median.)
+    const plate = (r0: number, r1: number, s0: number, s1: number) => ramp(r0, r1, s0, s1, T.plate, t => Y(t) - 0.02, MAT.concrete), h = b.hatch;
+    if (h !== undefined && h > t0 && h + 1.2 < t1) { plate(t0, h, -H, H); plate(h + 1.2, t1, -H, H); plate(h, h + 1.2, -H, -0.6); plate(h, h + 1.2, 0.6, H); }
+    else if (!(b.lifted && t1 > b.lifted[0] && t0 < b.lifted[1])) plate(t0, t1, -H, H);
     for (const sd of [-1, 1]) {
       const [s0, s1] = sd < 0 ? [-H, -H + T.chord] : [H - T.chord, H], my = (Y(t0) + Y(t1)) / 2, mr = (R(t0) + R(t1)) / 2;
       box(t0, t1, s0, s1, mr - 1.6, mr, MAT.metal, RED);

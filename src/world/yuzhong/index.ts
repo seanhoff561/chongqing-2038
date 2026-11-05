@@ -43,6 +43,7 @@ import { riverPolice } from './pier';
 import { cableLine, cableCeil, cableRopes } from './cableway';
 import { cutsUnder, inWayUnder, cutDown, type Ceil } from './cutdown';
 import { bridgeSpans, bridgeCeil, spanFor, deck, buildBridge } from './bridges';
+import { checkpoint } from './checkpoint';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -161,7 +162,11 @@ export function buildYuzhong(): World {
   // big bridges their trusses, pylons and piers (M6-07).
   for (const s of sts) if (onGround(s) && s.steps) surface(s, g, decor); else if (s.bridge && s.layer > 0) deck(s, g, out.solids, MAIN_ROADS.has(s.kind), spanFor(spans, s));
   const trusses = spans.map(b => buildBridge(b, g, plots));
-  for (const q of trusses) { out.solids.push(...q.solids); decor.push(...q.decor); out.far.push(...q.far); out.climbables.push(...q.climbables); }
+  // The Dongshuimen's checkpoint on its road deck (M6-19); its sensors join the city's last.
+  const check = checkpoint(spans[0]);
+  for (const q of [...trusses, check]) { out.solids.push(...q.solids); decor.push(...q.decor); out.climbables.push(...q.climbables); }
+  for (const q of trusses) out.far.push(...q.far);
+  out.inter.push(...check.inter); out.features.push(...check.features);
   const [W, H] = GEO.size;
   const L = GEO.landmarks, at = (k: string, yaw = 0): Teleport => ({ name: k, x: L[k].x, y: hAt(g, L[k].x, L[k].z) + 1.5, z: L[k].z, yaw });
   const hide = { name: "Friends' hideout (vent grate)", x: home.at.spawn.x, y: home.at.spawn.y + 0.05, z: home.at.spawn.z, yaw: -Math.PI / 2 - home.yaw };
@@ -216,7 +221,7 @@ export function buildYuzhong(): World {
   }
   // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
   const ways = site ? siteWays(site, plots, g) : null;
-  teleports.push(...(ways?.teleports ?? []), ...trusses.flatMap(q => q.teleports));
+  teleports.push(...(ways?.teleports ?? []), ...trusses.flatMap(q => q.teleports), ...check.teleports);
   const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, linked.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
@@ -326,6 +331,7 @@ export function buildYuzhong(): World {
   world.rail = under.rails;
   const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
   if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
+  world.cameras.push(...check.cameras);
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
