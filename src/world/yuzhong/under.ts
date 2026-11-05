@@ -80,8 +80,9 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
     const [mx, mz] = P(-1.6, 13.2), [tx, tz] = P(1.85, 13.4), [l1x, l1z] = P(-2.0, 10.8), [l2x, l2z] = P(-2.0, 12.4);
     u.inter.push({ id: 'svc-cot', kind: 'mattress', x: mx, y: y + 0.45, z: mz, r: 1, zh: '行军床', en: 'Cot' },
       { id: 'svc-table', kind: 'table', x: tx, y: y + 0.78, z: tz, r: 0.8, zh: '桌子', en: 'Table' },
-      { id: 'svc-locker1', kind: 'container', x: l1x, y: y + 1, z: l1z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'bedroom' } },
-      { id: 'svc-locker2', kind: 'container', x: l2x, y: y + 1, z: l2z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'kitchen' } });
+      // (The staff's keys left in their lockers: the maintenance key to the track doors, the Line 1 blast door's card. M10-26.)
+      { id: 'svc-locker1', kind: 'container', x: l1x, y: y + 1, z: l1z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'bedroom', items: [['metrokey', 1]] } },
+      { id: 'svc-locker2', kind: 'container', x: l2x, y: y + 1, z: l2z, r: 0.7, zh: '储物柜', en: 'Locker', data: { type: 'locker', loot: 'kitchen', items: [['blastcard', 1]] } });
     const [cx, cz] = P(0, 12);
     u.sites.push({ id: 'xiaoshizi-service', kind: 'cellar', name: ['小什字地铁值班室', 'Xiaoshizi metro service room'], x: cx, y, z: cz, bed: 'svc-cot', table: 'svc-table', containers: ['svc-locker1', 'svc-locker2'], exits: 1, windows: 0, streetSides: 0 });
   };

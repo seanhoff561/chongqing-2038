@@ -23,6 +23,7 @@ import { buildTunnels, tunnelFrame, JUNCTION, METRO } from './tunnels';
 import { buildUnder } from './under';
 import { buildSite } from './site';
 import { siteWays } from './siteways';
+import { placeFinds } from './finds';
 import { podiumMask, buildFactory } from './factory';
 import { verticalCity } from './vertical';
 import { crossings, layLinks, windowBridges } from './crossings';
@@ -319,6 +320,7 @@ export function buildYuzhong(): World {
     const pre = hatch.id.slice(0, hatch.id.lastIndexOf('.')), store = world.inter.filter(i => i.kind === 'container' && i.id.startsWith(pre) && i.y < hatch.y - 1 && i.y > hatch.y - 5);
     if (store.length) world.sites.push({ id: 'hongyadong-cellar', kind: 'cellar', name: ['洪崖洞崖下地窖', 'Hongyadong cliff cellar'], x: store[0].x, y: hatch.y - 3.2, z: store[0].z, bed: null, table: null, containers: store.slice(0, 6).map(i => i.id), exits: 1, windows: 0, streetSides: 0 });
   }
+  placeFinds(world);
   // Each shelter site's bed, table and containers (M6-24): what's in its rooms to claim, by where they stand.
   const claim = new Map<string, Inter[]>(), cellOf = (x: number, z: number) => `${Math.floor(x / 8)},${Math.floor(z / 8)}`;
   for (const it of world.inter) if (it.kind === 'mattress' || it.kind === 'table' || it.kind === 'container') { const k = cellOf(it.x, it.z); (claim.get(k) ?? claim.set(k, []).get(k)!).push(it); }
