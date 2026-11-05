@@ -53,10 +53,11 @@ describe('convergence and escalation (M4-14)', () => {
     expect(when(2, 2)).toBeLessThan(CONVERGE.squadAfter + 0.3);
     expect(hunters(1)).toBe(0);
     expect(squad(1)).toBe(0);
-    // The quadruped got to him and the hunters are round him (at the fight's stand-off, not over him: U-050, M4-45).
-    const dog = nearDog.trip!.pos;
-    expect(Math.hypot(dog.x, dog.z - 12)).toBeLessThan(15);
-    expect(state.units.some(u => u.reserve?.dock === 0 && u.trip && Math.abs(Math.hypot(u.trip.pos.x, u.trip.pos.z - 12) - FIGHT.orbit) < 6)).toBe(true);
+    // The quadruped got to him and the hunters are round him (at the fight's stand-off, not over him: U-050, M4-45),
+    // wherever the kamikazes' blasts have thrown him.
+    const dog = nearDog.trip!.pos, P = state.player.pos;
+    expect(Math.hypot(dog.x - P.x, dog.z - P.z)).toBeLessThan(15);
+    expect(state.units.some(u => u.reserve?.dock === 0 && u.trip && Math.abs(Math.hypot(u.trip.pos.x - P.x, u.trip.pos.z - P.z) - FIGHT.orbit) < 6)).toBe(true);
   });
   it('keeps three hunters on each of the city\'s docks and a squad in each district\'s garage, none by the hideout', () => {
     const w = getWorld('yuzhong'), s = createState(1, w), home = w.teleports.find(t => t.name.startsWith("Friends' hideout"))!;

@@ -128,7 +128,8 @@ export class UnitView {
       // rifle up while it has him in its sights, crouched at the cover it holds.
       const d = Math.hypot(p.x - L.x, p.z - L.z), k = Math.min(1, Math.max(0, dt) * 6);
       if (dt > 0 && dt < 1 && d < 25 * dt + 0.2) { L.speed += (d / dt - L.speed) * k; L.phase += (d / (STRIDE[u.kind] ?? 1)) * Math.PI; }
-      const cover = u.trip?.cover, crouch = cover && Math.hypot(cover.x - p.x, cover.z - p.z) < 0.8 ? 1 : 0;
+      // (Set low too as it winds up an attack: M10-46.)
+      const cover = u.trip?.cover, crouch = (cover && Math.hypot(cover.x - p.x, cover.z - p.z) < 0.8) || u.atk?.ph === 'windup' ? 1 : 0;
       L.aim += ((u.aim ? 1 : 0) - L.aim) * k; L.crouch += (crouch - L.crouch) * k;
       L.x = p.x; L.z = p.z; L.t = t;
       const lit = u.dead || u.shut || !p.active ? 'out' : u.state, paint = u.dead ? Math.max(0, 1 - (t - this.gone[i]) / FADE) : 1;

@@ -1,7 +1,8 @@
 // Strike drones (M4-47, U-050). Once a district's had him Engaged 25 s, the nearest dock within 600 m sends a kamikaze
-// FPV every 15 s, and after 40 s its bomb dropper. A kamikaze flies at him fast, locks on 8 m out and dives where he
-// was, blowing up there: a step aside at the last moment and it misses. A bomb dropper hangs 12 m over him and drops a
-// grenade every 4 s that bursts where it lands. A blast hurts by how near; shot, either falls dead and harmless.
+// FPV every 15 s, and after 40 s its bomb dropper. A kamikaze flies at him fast, brakes 8 m out and hangs 0.4 s,
+// locks on and dives where he was, blowing up there: a step aside at the last moment and it misses. A bomb dropper
+// comes over him 12 m up, steadies 0.6 s, drops a grenade that bursts where it lands, slides 7 m off aside and comes
+// back, a drop every 4 s at most (M10-46). A blast hurts by how near; shot, either falls dead and harmless.
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { isOff, type Unit } from './units';
@@ -13,6 +14,7 @@ import { raycast } from '../world/geom';
 import { rayGround } from '../world/heightfield';
 import { STRIKE } from '../data/units';
 import { SCALE } from './clock';
+import { ATTACK, begin } from './combat';
 
 type V3 = { x: number; y: number; z: number };
 
@@ -62,18 +64,28 @@ export function stepStrike(s: SimState, w: World) {
   for (const u of s.units) {
     if ((u.kind !== 'fpv' && u.kind !== 'bomber') || u.sent === undefined || !u.trip || u.trip.back || isOff(s, u)) continue;
     const t = u.trip;
+    const A = ATTACK[u.kind]!, el = u.atk ? (s.time - u.atk.at) / SCALE : 0, over = { x: me.x, y: me.y + STRIKE.bombH, z: me.z };
     if (u.kind === 'fpv') {
-      // At him, then committed: the dive to where he was.
+      // At him; at its commit distance it brakes and hangs a moment, locks on, and dives where he was then (M10-46).
       const d = Math.hypot(eye.x - t.pos.x, eye.y - t.pos.y, eye.z - t.pos.z);
-      if (!u.lock && d < STRIKE.commit) u.lock = { ...eye };
+      if (!u.atk && d < STRIKE.commit) begin(s, u, 'windup', t.pos, eye);
+      if (u.atk?.ph === 'windup' && el >= A.windup) { u.lock = { ...eye }; begin(s, u, 'strike', t.pos, eye); }
       const to = u.lock ?? eye;
       t.path = [to]; t.i = 0;
-      if (u.lock && Math.hypot(to.x - t.pos.x, to.y - t.pos.y, to.z - t.pos.z) < 0.8) { u.dead = true; u.stop = { ...t.pos, yaw: t.yaw, t: s.time }; u.trip = undefined; blast(s, w, to, STRIKE.fpvBlast); }
+      if (u.lock && Math.hypot(to.x - t.pos.x, to.y - t.pos.y, to.z - t.pos.z) < 0.8) { u.dead = true; u.atk = undefined; u.stop = { ...t.pos, yaw: t.yaw, t: s.time }; u.trip = undefined; blast(s, w, to, STRIKE.fpvBlast); }
     } else {
-      // Over him, dropping.
-      t.path = [{ x: me.x, y: me.y + STRIKE.bombH, z: me.z }]; t.i = 0;
-      const over = Math.hypot(t.pos.x - me.x, t.pos.z - me.z) < 4;
-      if (over && (u.fire ?? 0) <= s.time) { u.fire = s.time + STRIKE.bombEvery * SCALE; (s.bombs ??= []).push({ ...t.pos, gy: groundUnder(w, t.pos.x, t.pos.y - 0.3, t.pos.z), t: s.time }); s.events.push({ t: 'sfx', id: 'drop' }); }
+      // Over him; steadied there it drops, then slides off aside and comes back over him (M10-46).
+      if (!u.atk) begin(s, u, 'move', t.pos, me);
+      const a = u.atk!, ready = Math.hypot(t.pos.x - me.x, t.pos.z - me.z) < 3 && (u.fire ?? 0) <= s.time;
+      if (a.ph === 'move' && el >= A.move && ready) begin(s, u, 'windup', t.pos, me);
+      else if (a.ph === 'windup' && el >= A.windup) {
+        u.fire = s.time + STRIKE.bombEvery * SCALE; (s.bombs ??= []).push({ ...t.pos, gy: groundUnder(w, t.pos.x, t.pos.y - 0.3, t.pos.z), t: s.time }); s.events.push({ t: 'sfx', id: 'drop' });
+        begin(s, u, 'strike', t.pos, me);
+      } else if (a.ph === 'strike') {
+        const h = u.id * 2.4 + s.time / SCALE;
+        u.atk = { ph: 'recover', at: s.time, n: 0, to: { x: me.x + Math.cos(h) * A.far, y: over.y, z: me.z + Math.sin(h) * A.far } };
+      } else if (a.ph === 'recover' && el >= A.recover) begin(s, u, 'move', t.pos, me);
+      t.path = [u.atk!.ph === 'recover' ? u.atk!.to! : over]; t.i = 0;
     }
   }
   // The grenades falling, bursting where they land.

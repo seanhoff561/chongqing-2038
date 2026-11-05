@@ -13,7 +13,7 @@ import { raycast } from '../world/geom';
 import { heightAt } from '../world/heightfield';
 import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
-import { orbitPoint, bounding, strafePoint } from './combat';
+import { orbitPoint, bounding, strafePoint, fight, holds, pace } from './combat';
 import { farFromBeat } from './perception';
 import { layerAt } from './automap';
 import { keepApart, stepAside } from './spacing';
@@ -70,20 +70,23 @@ function sewerWay(w: World, a: V3, b: V3): V3[] {
   return [[b], [{ x: b.x, y: a.y, z: a.z }, b], [{ x: a.x, y: a.y, z: b.z }, b]].find(ps => ps.every((q, i) => below(i ? ps[i - 1] : a, q))) ?? [];
 }
 
+/** The floor felt for under a point near a height: a solid's top, or the ground's; underground, in a building or in
+ *  the street. */
+function floorAt(w: World, kind: UnitKind, x: number, z: number, near: number) {
+  const h = raycast(w.index, x, near + 1, z, 0, -1, 0, 1 + STEP[kind] + 1), t = w.ground ? heightAt(w.ground, x, z) : null;
+  const s = h ? near + 1 - h.t : null;
+  return s !== null && (t === null || t < s || Math.abs(t - near) > Math.abs(s - near)) ? s : t;
+}
+
 /** Close by over open ground (across a divided road, a square): nothing in the way of its body and no step up or
  *  down on the ground between bigger than the kind takes, so it goes straight there and not round by the streets. */
 function open(w: World, kind: UnitKind, a: V3, b: V3): boolean {
-  const d = Math.hypot(b.x - a.x, b.z - a.z), g = w.ground;
+  const d = Math.hypot(b.x - a.x, b.z - a.z);
   if (d > 30 || d < 0.1) return false;
   // (Its whole body's width clear, not just its middle: M10-45.)
   const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z), r = BODY[kind][2], sx = ((b.z - a.z) / d) * r, sz = (-(b.x - a.x) / d) * r;
   if ([0, -1, 1].some(k => raycast(w.index, a.x + sx * k, a.y + 1, a.z + sz * k, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L))) return false;
-  // (The floor felt for under each step: a solid's top, or the ground's; underground, in a building or in the street.)
-  const floor = (x: number, z: number, near: number) => {
-    const h = raycast(w.index, x, near + 1, z, 0, -1, 0, 1 + STEP[kind] + 1), t = g ? heightAt(g, x, z) : null;
-    const s = h ? near + 1 - h.t : null;
-    return s !== null && (t === null || t < s || Math.abs(t - near) > Math.abs(s - near)) ? s : t;
-  };
+  const floor = (x: number, z: number, near: number) => floorAt(w, kind, x, z, near);
   let y = floor(a.x, a.z, a.y);
   if (y === null || Math.abs(y - a.y) > 0.3) return false;
   for (let k = 1, n = Math.ceil(d / 1.5); k <= n; k++) {
@@ -112,11 +115,11 @@ function walk(s: SimState, w: World, u: Unit) {
 /** Walking (running when Engaged, or hunting him for the network), looking about at the far end, back, and onto the
  *  beat. */
 function go(s: SimState, w: World, u: Unit) {
-  const t = u.trip!, speed = (u.state === 'engaged' || (t.kind === 'hunt' && !t.back) ? UNITS[u.kind].chase : UNITS[u.kind].patrol) * (u.limp ? 0.5 : 1);
+  const t = u.trip!, speed = (u.state === 'engaged' || (t.kind === 'hunt' && !t.back) ? UNITS[u.kind].chase : UNITS[u.kind].patrol) * (u.limp ? 0.5 : 1) * pace(u);
   // Immobilised (M4-19): it stands where it is.
   if (u.lame) return;
-  // A humanoid with him in its sights stands and shoots (M4-18), unless it's making for cover.
-  if ((u.kind === 'humanoid' || u.kind === 'heavy') && u.aim && !t.cover && !t.back && !t.strafe) return;
+  // In its attack (M10-46): winding up, or a gunner firing, it stands, its eye on him; there, it waits on its next.
+  if (u.atk && (holds(u) || t.i >= t.path.length)) { if (u.seen) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z); return; }
   if (t.i >= t.path.length) {
     if (!t.back) {
       // Holding its cover while it can see him (M4-10); strafing, it's done its step aside.
@@ -156,7 +159,7 @@ function go(s: SimState, w: World, u: Unit) {
     if (d <= step) { t.pos = { ...q }; t.i++; step -= d; } else { t.pos = { x: t.pos.x + (dx / d) * step, y: t.pos.y + (dy / d) * step, z: t.pos.z + (dz / d) * step }; step = 0; }
   }
   // A drone circling him in a fight keeps its eye on him (M4-45), and a humanoid stepping aside its gun (M4-54).
-  if ((u.kind === 'drone' || u.kind === 'hunter' || t.strafe) && u.state === 'engaged' && u.seen && !t.back) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z);
+  if ((u.kind === 'drone' || u.kind === 'hunter' || t.strafe || u.atk) && u.state === 'engaged' && u.seen && !t.back) t.yaw = Math.atan2(u.seen.x - t.pos.x, u.seen.z - t.pos.z);
 }
 
 export function stepAlert(s: SimState, w: World) {
@@ -186,6 +189,19 @@ export function stepAlert(s: SimState, w: World) {
       // Still seeing him while it goes: on to where he is now; a humanoid fighting him makes for cover where it can
       // still see him, and holds it while it can (M4-10).
       const t = u.trip;
+      // Fighting him (M10-46): its attack's phase, and where that has it go (a flyer the way round, through a wall).
+      const f = fight(s, u);
+      if (u.atk) t.scan = 0;
+      if (f) {
+        const fly = UNITS[u.kind].fly > 0, y = fly ? null : floorAt(w, u.kind, f.x, f.z, t.pos.y);
+        if (y !== null) f.y = y;
+        const d = Math.hypot(f.x - t.pos.x, f.y - t.pos.y, f.z - t.pos.z), him = u.seen!;
+        // (A walker on the floor there, if it can go straight to it, else it stands: not off a ledge, through a wall.)
+        t.path = fly ? (d > 0.1 && raycast(w.index, t.pos.x, t.pos.y, t.pos.z, (f.x - t.pos.x) / d, (f.y - t.pos.y) / d, (f.z - t.pos.z) / d, d) ? way(w, u.kind, t.pos, him) : [f])
+          : u.kind === 'crawler' ? sewerWay(w, t.pos, f) : d < 0.1 || open(w, u.kind, t.pos, f) ? [f] : [];
+        t.i = 0; t.visits = undefined; t.cover = undefined; t.strafe = false;
+        walk(s, w, u); continue;
+      }
       if (!t.back && t.kind !== 'check' && u.seen && (u.id + s.tick) % 6 === 0 && a >= SIGHT.min) {
         const seesNow = Math.hypot(u.seen.x - s.player.pos.x, u.seen.z - s.player.pos.z) < 0.5, him = s.player.pos;
         if (seesNow) t.followed = false;
