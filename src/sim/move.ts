@@ -74,8 +74,8 @@ export function stepPlayer(state: SimState, world: World, input: InputFrame): vo
   // Stunned (M4-18): he can't move for it.
   if (p.stun > 0) { p.stun = Math.max(0, p.stun - DT); input = { ...input, mx: 0, my: 0, buttons: 0, pressed: 0 }; }
   if (p.mode === 'noclip') p.mode = 'air';
-  // (At the boat's helm, it moves him: sim/boat.ts.)
-  if (p.mode === 'boat') return;
+  // (At the boat's helm, or on the cableway, it moves him: sim/boat.ts, sim/cablecar.ts.)
+  if (p.mode === 'boat' || p.mode === 'cable') return;
   // Empty hands reaching for a line take it (M3-52).
   if ((p.mode === 'air' || p.mode === 'ground') && (input.pressed & B.USE) && state.inv.held === 0 && tryZip(state, world)) return;
   stepHands(state, world, input);

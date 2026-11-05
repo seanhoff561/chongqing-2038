@@ -109,8 +109,9 @@ export function rangeOf(s: SimState, kind: UnitKind) {
   return (S.night + (S.day - S.night) * d) * (f > 0.6 ? 0.45 : f > 0.25 ? 0.75 : 1) * (r > 0.3 ? 0.85 : 1);
 }
 
-/** How visible he is to a unit standing at a pose: 0 (not at all) to 1. */
-export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose): number {
+/** How visible he is to a unit standing at a pose: 0 (not at all) to 1. Behind `glass` (a band of window, the cabin's,
+ *  M7-05), only what of him is in it shows, and none of his heat. */
+export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose, glass?: { y0: number; y1: number }): number {
   const S = SENSES[kind], eye = { x: at.x, y: at.y + S.eye, z: at.z }, range = rangeOf(s, kind), p = s.player.pos;
   const d = Math.hypot(p.x - eye.x, p.y + 1 - eye.y, p.z - eye.z);
   if (d > range || s.player.mode === 'dead') return 0;
@@ -120,6 +121,7 @@ export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose): num
   const pc = Math.cos((S.pitch * Math.PI) / 180), ax = Math.sin(at.yaw) * pc, ay = -Math.sin((S.pitch * Math.PI) / 180), az = Math.cos(at.yaw) * pc, half = Math.cos((S.fov * Math.PI) / 360);
   let seen = 0;
   for (const q of bodyPoints(s)) {
+    if (glass && (q.y < glass.y0 || q.y > glass.y1)) continue;
     const dx = q.x - eye.x, dy = q.y - eye.y, dz = q.z - eye.z, L = Math.hypot(dx, dy, dz);
     if (L < 0.01 || (dx * ax + dy * ay + dz * az) / L < half) continue;
     // (Not through a powder cloud, M5-19.)
@@ -132,7 +134,7 @@ export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose): num
     // By night: in a searchlight's spot he's lit; within thermal range his heat shows (M4-06).
     const cx = p.x - eye.x, cy = p.y + 0.9 - eye.y, cz = p.z - eye.z, cl = Math.hypot(cx, cy, cz) || 1;
     if (S.lamp && (cx * ax + cy * ay + cz * az) / cl > Math.cos((S.lamp * Math.PI) / 180)) light = 1;
-    else if (S.thermal && d <= S.thermal) light = Math.max(light, heat(s, w));
+    else if (S.thermal && d <= S.thermal && !glass) light = Math.max(light, heat(s, w));
   }
   return (seen / 5) * light * posture(s) * motion(s) * (1 - (d / range) ** 2);
 }

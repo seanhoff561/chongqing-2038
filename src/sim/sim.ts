@@ -46,6 +46,7 @@ import { stepBinos } from './binoculars';
 import { stepSdr } from './sdr';
 import './camtap';
 import { stepBoat } from './boat';
+import { stepCabin } from './cablecar';
 import './pry';
 import './water';
 import './backpack';
@@ -126,6 +127,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepInteract(state, world, input);
   stepPlayer(state, world, input);
   stepBoat(state, world, input);
+  stepCabin(state, world, input);
   stepSight(state, world);
   stepAlert(state, world);
   stepChangeover(state, world);
