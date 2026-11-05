@@ -48,6 +48,8 @@ export type SimEvent =
   | { t: 'swing'; kind: string; on: 'machine' | 'metal' | 'hard' | 'soft' | 'air' }
   /** where a round or blow left its mark (M4-61): the point, the surface's normal, what it was and what it hit */
   | { t: 'mark'; x: number; y: number; z: number; nx: number; ny: number; nz: number; kind: 'bullet' | 'scrape' | 'cut'; on: 'metal' | 'hard' | 'soft' | 'machine' }
+  /** something blew up (M10-65): where, and how far it hurts */
+  | { t: 'blast'; x: number; y: number; z: number; r: number }
   /** he hit a machine (M4-19) */
   | { t: 'hit'; id: number; zone: string; dmg: number }
   | { t: 'slept'; from: number; to: number; where: 'bed' | 'rough' | 'collapse' }

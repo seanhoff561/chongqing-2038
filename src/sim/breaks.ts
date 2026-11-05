@@ -3,8 +3,7 @@
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { unitPose } from './units';
-import { damage } from './body';
-import { knock } from './knock';
+import { blast } from './strike';
 import { CRASH } from '../data/units';
 
 export function stepBreaks(s: SimState, w: World) {
@@ -17,10 +16,6 @@ export function stepBreaks(s: SimState, w: World) {
     // A light patrol drone just clatters down, heard close by (M4-87: shot down quietly, the network needn't know);
     // the hunters and bombers blow up.
     if (u.kind === 'drone') { s.events.push({ t: 'noise', x: p.x, y: p.y, z: p.z, r: CRASH.clatter, kind: 'crash' }, { t: 'sfx', id: 'land-hard' }); continue; }
-    s.events.push({ t: 'noise', x: p.x, y: p.y, z: p.z, r: CRASH.noise, kind: 'explosion' }, { t: 'sfx', id: 'boom' },
-      { t: 'mark', x: p.x, y: p.y + 0.3, z: p.z, nx: 0, ny: 1, nz: 0, kind: 'bullet', on: 'machine' });
-    const d = Math.hypot(s.player.pos.x - p.x, s.player.pos.y + 1 - p.y, s.player.pos.z - p.z);
-    if (d < CRASH.reach) { const dmg = CRASH.damage * (1 - d / CRASH.reach); damage(s, dmg, 'blast'); s.events.push({ t: 'hurt', dmg, cause: 'blast' }); }
-    if (d < CRASH.reach * 1.5) knock(s, p, 2 + 6 * (1 - d / (CRASH.reach * 1.5)));
+    blast(s, w, { x: p.x, y: p.y + 0.3, z: p.z }, CRASH, CRASH.noise);
   }
 }

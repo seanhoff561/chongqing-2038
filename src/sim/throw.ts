@@ -62,7 +62,7 @@ for (const id of THROWN) if (id !== 'bottle') onUseId(id, (s, _w, st) => throwIt
 /** A grenade's burst: machines by how near, him by how near, weak doors blown open. */
 function burst(s: SimState, w: World, at: V3) {
   const G = THROW.grenade;
-  blast(s, at, G);
+  blast(s, w, at, G);
   s.events.push({ t: 'noise', x: at.x, y: at.y, z: at.z, r: G.noise, kind: 'grenade' });
   for (const u of s.units) {
     if (u.dead || (u.reserve && !u.trip)) continue;

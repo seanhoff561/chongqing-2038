@@ -10,7 +10,7 @@ describe('knocked down (M4-64)', () => {
     const { world, state } = setup([floor(0, 100)], { x: 0, y: 0, z: 0, yaw: 0 });
     state.flags.god = true;
     run(state, world, 5);
-    blast(state, { x: 2, y: 0.5, z: 0 }, STRIKE.bomb);
+    blast(state, world, { x: 2, y: 0.5, z: 0 }, STRIKE.bomb);
     expect(state.player.vel.x).toBeLessThan(-4);
     expect(state.player.mode).toBe('air');
     let down = -1, up = -1;
