@@ -278,9 +278,12 @@ export function liFlat(w: World) {
   // A living room or bedroom on an upper floor (not the ground floor) of a house in Shibati, the nearest to the top
   // of the stair that he can walk up to from the street (U-104), with room to turn over: from the corner its feature
   // marks, across to the far one.
-  const rooms = w.features.filter(f => (f.kind === 'inside:living' || f.kind === 'inside:bedroom') && districtAt(f.x, f.z).district === 'shibati' && f.y > (heightAt(g, f.x, f.z) ?? 0) + 2.5)
-    .map(f => ({ x: f.x + f.nx! / 2, y: f.y, z: f.z + f.nz! / 2 }))
+  // (Where some city has no such house in Shibati itself, the nearest in the streets round it: never no flat.)
+  const upper = w.features.filter(f => (f.kind === 'inside:living' || f.kind === 'inside:bedroom') && f.y > (heightAt(g, f.x, f.z) ?? 0) + 2.5);
+  const near = (fs: typeof upper) => fs.map(f => ({ x: f.x + f.nx! / 2, y: f.y, z: f.z + f.nz! / 2 }))
     .sort((a, b) => Math.hypot(a.x - top.x, a.z - top.z) - Math.hypot(b.x - top.x, b.z - top.z));
+  const inShibati = (f: (typeof upper)[number]) => districtAt(f.x, f.z).district === 'shibati';
+  const rooms = [...near(upper.filter(inShibati)), ...near(upper.filter(f => !inShibati(f) && Math.hypot(f.x - top.x, f.z - top.z) < 600))];
   for (const s of rooms) {
     // (One he can walk up to from the street.)
     const plot = walkUp(w, s);
@@ -315,5 +318,5 @@ export function liFlat(w: World) {
     forced(w, plot, s.y);
     return s;
   }
-  throw new Error('no flat for the Li family in upper Shibati');
+  throw new Error('no flat for the Li family near upper Shibati');
 }
