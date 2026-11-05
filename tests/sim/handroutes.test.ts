@@ -1,14 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { run, secs, aim, LMB, RMB } from './helpers';
-import { buildGym } from '../../src/world/sets/gym';
-import { createState } from '../../src/sim/sim';
+import { setup, floor, run, secs, aim, LMB, RMB } from './helpers';
 import { findGrab } from '../../src/sim/grip';
 import { B } from '../../src/sim/types';
+import { solid } from '../../src/world/geom';
+import { MAT } from '../../src/world/mats';
 
-describe('gym climbing routes (M1-28)', () => {
+// A 9 m brick wall with five concrete sills up its face 1.6 m apart (push-off dynos between them; the top lip in reach
+// from the last), and beside it a 9 m glass wall with nothing to hold.
+const routes = () => setup([
+  floor(0, 100),
+  solid(-62, 0, -30, -54, 9, -24, MAT.brick),
+  ...[2.0, 3.6, 5.2, 6.8, 8.4].map(y => solid(-59, y - 0.1, -24, -57, y, -23.85, MAT.concrete)),
+  solid(-52, 0, -30, -48, 9, -24, MAT.glass),
+]);
+
+describe('hand climbing routes (M1-28)', () => {
   it('the sill route goes to the top of the 9 m wall with push-off dynos', () => {
-    const world = buildGym();
-    const state = createState(1, world);
+    const { world, state } = routes();
     Object.assign(state.player.pos, { x: -58, y: 0, z: -23.4 });
     state.player.yaw = 0;
     run(state, world, 5);
@@ -35,8 +43,7 @@ describe('gym climbing routes (M1-28)', () => {
     expect(state.player.pos.y).toBeCloseTo(9, 2);
   });
   it('the smooth glass wall offers nothing to hold', () => {
-    const world = buildGym();
-    const state = createState(1, world);
+    const { world, state } = routes();
     Object.assign(state.player.pos, { x: -50, y: 0, z: -23.6 });
     for (const y of [1.5, 2.0, 2.2]) {
       aim(state, -50, y, -24);

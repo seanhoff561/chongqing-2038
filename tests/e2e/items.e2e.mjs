@@ -16,9 +16,9 @@ const tiles = (shots, cols) => `(async () => {
 
 export default async function ({ open, fail, screenshot }) {
   if (ids.length < 100) { fail('items', `only ${ids.length} items read from items.ts`); return; }
-  const page = await open('?scenario=gym&seed=1', 'items');
+  const page = await open('?scenario=hideout&seed=1', 'items');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
-  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: -60, y: 0, z: 60 }); g.input.yaw = 0; g.input.pitch = 0; window.__sheet = []; })()`);
+  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: 80, y: 9, z: 25 }); g.input.yaw = 0; g.input.pitch = 0; window.__sheet = []; })()`);
 
   // Each held in turn: one model in the right hand, built of parts, not too big for it; a shot of the hand.
   const hand = [];

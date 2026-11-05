@@ -1,8 +1,10 @@
 // M4-70: every item in the backpack shows its picture, drawn to its footprint and turned with it.
 export default async function ({ open, fail, screenshot }) {
-  const page = await open('?scenario=gym&seed=1', 'pictures');
+  const page = await open('?scenario=hideout&seed=1', 'pictures');
+  // (The run's start fills his pack: emptied first, so there's room for them all and for the crowbar turned.)
+  await page.evaluate(`(() => { const inv = window.__cq.game.state.inv; inv.pack.items.length = 0; inv.hotbar.fill(null); inv.held = 0; })()`);
   await page.evaluate(`for (const id of ['crowbar','firstaid','pistol','water','bread','noodles','luncheon','bandage','mag9','knife','binoculars','tape','lockpick','energy','badge','sausage','grenade','board','painkillers','headlamp','tourniquet','chocolate','zongzi','cammod']) window.__cq.give(id)`);
-  await page.keyboard.press('Tab');
+  await page.keyboard.press('AltLeft');
   await page.evaluate('window.__cq.runFrames(2)');
   const all = await page.evaluate(`[...document.querySelectorAll('#inv .inv-item')].map(e => e.style.backgroundImage.startsWith('url("data:image/png'))`);
   if (all.length < 15) fail('pictures', `only ${all.length} items in the pack`);

@@ -1,6 +1,6 @@
 // M3-30 (U-014, U-015): the body status indicator shows a sprained leg, light bleeding and thirst, and vanishes when he's fine.
 export default async function ({ open, fail, screenshot }) {
-  const page = await open('?scenario=gym&seed=1', 'status');
+  const page = await open('?scenario=hideout&seed=1', 'status');
   const read = js => page.evaluate(`(() => { const g = window.__cq.game; ${js}; window.__cq.runFrames(3); const el = document.getElementById('status'); return { legs: el.querySelector('[data-part=legs]').getAttribute('fill'), pulse: !!el.querySelector('.pulse'), needs: el.querySelector('.needs').textContent, opacity: Number(el.style.opacity) }; })()`);
   const hurt = await read(`const b = g.state.body; b.leg = 'sprain'; b.legHealAt = g.state.time + 1e6; b.lightBleed = 0; b.hydration = 20`);
   if (hurt.legs !== '#d9a520' || !hurt.pulse || !hurt.needs.includes('thirsty') || hurt.opacity < 0.9) fail('status', JSON.stringify(hurt));

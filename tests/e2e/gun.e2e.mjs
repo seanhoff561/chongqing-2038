@@ -1,9 +1,9 @@
 // M4-21b: guns made real (U-032). The pistol in his hands; aimed down the sights it comes up to the eye and the view
-// zooms; a shot runs the slide back and kicks the view, no flash (U-058); E leans him round to the right. A screenshot of each.
+// zooms; a shot runs the slide back and kicks the view, no flash (U-058); the lean-right button (Mouse5) leans him round to the right. A screenshot of each.
 export default async function ({ open, fail, screenshot }) {
-  const page = await open('?scenario=gym&seed=1', 'gun');
+  const page = await open('?scenario=hideout&seed=1', 'gun');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
-  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: -60, y: 0, z: 60 }); g.input.yaw = 0; g.input.pitch = 0;
+  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: 80, y: 9, z: 25 }); g.input.yaw = 0; g.input.pitch = 0;
     window.__cq.give('pistol'); const st = g.state.inv.pack.items.find(x => x.id === 'pistol'); st.charge = 15; g.input.cmds.push({ c: 'bind', slot: 0, uid: st.uid }); g.runFrames(2); })()`);
   await page.keyboard.press('Digit1');
   await page.evaluate('window.__cq.runFrames(30)');
@@ -25,14 +25,14 @@ export default async function ({ open, fail, screenshot }) {
   if (shot.kick <= 0.02) fail('gun', `no kick (${shot.kick})`);
   if (shot.rounds !== 14) fail('gun', `rounds ${shot.rounds}`);
   await screenshot(page, 'gun-fire');
-  // Leaning right with E.
+  // Leaning right on its button (Mouse5, the mouse's forward side button).
   await page.evaluate(`(() => { const g = window.__cq.game; g.input.mouse = 0; g.runFrames(30); })()`);
-  await page.keyboard.down('KeyE');
+  await page.evaluate(`dispatchEvent(new MouseEvent('mousedown', { button: 4 }))`);
   await page.evaluate('window.__cq.runFrames(40)');
   const lean = await page.evaluate(`(() => { const g = window.__cq.game; return { lean: g.state.player.lean, roll: g.view.fp.cam.rotation.z }; })()`);
   if (lean.lean < 0.9) fail('gun', `lean ${lean.lean.toFixed(2)}`);
   if (lean.roll > -0.08) fail('gun', `no tilt leaning (${lean.roll.toFixed(3)})`);
   await screenshot(page, 'gun-lean');
-  await page.keyboard.up('KeyE');
+  await page.evaluate(`dispatchEvent(new MouseEvent('mouseup', { button: 4 }))`);
   await page.close();
 }

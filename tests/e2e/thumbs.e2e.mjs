@@ -5,9 +5,9 @@ const CHAINS = { thumb: ['thumb-phalanx-proximal', 'thumb-phalanx-distal', 'thum
 for (const f of ['index', 'middle', 'ring', 'pinky']) CHAINS[f] = [`${f}-finger-phalanx-proximal`, `${f}-finger-phalanx-intermediate`, `${f}-finger-phalanx-distal`, `${f}-finger-tip`];
 
 export default async function ({ open, fail }) {
-  const page = await open('?scenario=gym&seed=1', 'thumbs');
+  const page = await open('?scenario=hideout&seed=1', 'thumbs');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
-  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: -60, y: 0, z: 60 }); g.input.yaw = 0; g.input.pitch = 0;
+  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; Object.assign(g.state.player.pos, { x: 80, y: 9, z: 25 }); g.input.yaw = 0; g.input.pitch = 0;
     window.__cq.give('pistol'); const st = g.state.inv.pack.items.find(x => x.id === 'pistol'); st.charge = 15; g.input.cmds.push({ c: 'bind', slot: 0, uid: st.uid }); g.runFrames(2); g.state.inv.held = 1; g.runFrames(60); })()`);
   /** For each hand and digit, how deep it goes into the gun (m, less its own half-thickness): > 0 is through it. */
   const depth = () => page.evaluate(`((CHAINS) => {
