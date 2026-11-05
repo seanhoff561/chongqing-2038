@@ -7,7 +7,7 @@ import { B, DT, type InputFrame, type SimState } from './types';
 import type { World } from '../world/world';
 import type { Player, Grip } from './player';
 import { movement as M } from '../data/movement';
-import { raycast, topAt, topOver, frameIn, frameOut, frameDirOut, query } from '../world/geom';
+import { raycast, topAt, topOver, frameIn, frameOut, frameDirOut, query, type Solid } from '../world/geom';
 import { heightAt } from '../world/heightfield';
 import { free, moveHorizontal, moveVertical, groundGap } from './physics';
 import { tooFast, startAction, kickOff, fitOn } from './parkour';
@@ -55,10 +55,12 @@ export function findGrab(world: World, p: Player): Grip | null {
     const px = ex + d.x * t, pz = ez + d.z * t, py = ey + d.y * t;
     if (Math.hypot(px - cx, pz - cz) > G.pipeRadius || py < c.y0 || py > c.y1) continue;
     bestT = t;
-    best = { x: cx, y: py, z: cz, nx: c.nx, nz: c.nz, kind: c.kind === 'pipe' || c.kind === 'rope' ? 'pipe' : 'rung', top: c.y1 };
+    best = { x: cx, y: py, z: cz, nx: c.nx, nz: c.nz, kind: c.kind === 'ladder' ? 'rung' : 'pipe', top: c.y1 };
   }
   const h = raycast(world.index, ex, ey, ez, d.x, d.y, d.z, bestT);
-  if (h) {
+  // (A solid the hold is on, such as a tree's or lamppost's box round the bark it grips, U-104, doesn't hide it.)
+  const on = (s: Solid, g: Grip) => { const b = s.rot ?? s, [lx, lz] = frameIn(s, g.x, g.z); return lx >= b.x0 && lx <= b.x1 && lz >= b.z0 && lz <= b.z1 && g.y >= s.y0 && g.y <= s.y1; };
+  if (h && !(best && h.id >= 0 && on(world.index.solids[h.id], best))) {
     // The ground (a cut terrace edge) can be a lip too; only solids have edges to grip from on top.
     const s = h.id >= 0 ? world.index.solids[h.id] : null;
     const hx = ex + d.x * h.t, hy = ey + d.y * h.t, hz = ez + d.z * h.t;

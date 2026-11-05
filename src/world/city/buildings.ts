@@ -68,7 +68,7 @@ export function buildLot(l: Lot, r: Rng, out: Fabric) {
   // roof where the ground's high beside it: up to a sill, not on up the building (U-036).
   for (let i = out.climbables.length - 1; i >= c0; i--) {
     const c = out.climbables[i];
-    if (c.kind !== 'pipe' || c.y0 > (l.ground?.(c.x + c.nx * 0.6, c.z + c.nz * 0.6) ?? l.base) + 1.5) continue;
+    if ((c.kind !== 'vine' && c.kind !== 'pipe') || c.y0 > (l.ground?.(c.x + c.nx * 0.6, c.z + c.nz * 0.6) ?? l.base) + 1.5) continue;
     // (Anything on its walls: what's not the block itself, well inside them.)
     const near = (x: number, z: number) => Math.hypot(x - c.x, z - c.z) < 2.6, body = (x: number, z: number) => x > l.x0 + 0.35 && x < l.x1 - 0.35 && z > l.z0 + 0.35 && z < l.z1 - 0.35;
     const over = out.solids.slice(s0).filter(s => s.y1 > c.y0 + 1 && s.y1 < l.wall + 0.3 && near((s.x0 + s.x1) / 2, (s.z0 + s.z1) / 2) && !body((s.x0 + s.x1) / 2, (s.z0 + s.z1) / 2)).map(s => s.y1)

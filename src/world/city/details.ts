@@ -72,7 +72,7 @@ function dress(l: Lot, all: Side[], roof: number, out: Fabric) {
     if (rand(r) < 0.18) {
       const v = onWall(s, s.a + 2 + rand(r) * (s.b - s.a - 4)), h = Math.min(roof - l.base, 3 + rand(r) * 8), foot = Math.min(footOf(l, s), l.ground?.(v.x + s.nx * 0.6, v.z + s.nz * 0.6) ?? Infinity), top = Math.min(l.base + h - 0.3, foot + E.wallKick.comfortable);
       out.props.push({ kind: 'vine', ...v, y: l.base, w: 2 + rand(r) * 3, h });
-      if (top > foot + 2.2) out.climbables.push({ kind: 'pipe', x: v.x + s.nx * 0.12, z: v.z + s.nz * 0.12, y0: foot + 0.4, y1: top, nx: s.nx, nz: s.nz });
+      if (top > foot + 2.2) out.climbables.push({ kind: 'vine', x: v.x + s.nx * 0.12, z: v.z + s.nz * 0.12, y0: foot + 0.4, y1: top, nx: s.nx, nz: s.nz });
     }
   }
   const edge = () => {

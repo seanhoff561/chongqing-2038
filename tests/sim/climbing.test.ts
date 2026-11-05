@@ -1,18 +1,14 @@
 // M3-67 (U-032): no building is climbed by itself. Its own holds (everything built on its walls, off the ground:
 // sills, AC units, balconies, pipes, ladders, beam ends, window openings, awnings, sign bars) never chain from the
-// street to its roof; its ground floors are bare; street poles start the climbs. (No climbing lines any more, U-044:
+// street to its roof; its ground floors are bare; the trees and lampposts in the street start the climbs (U-104). (No climbing lines any more, U-044:
 // the bot that climbed them went with them.)
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { heightAt } from '../../src/world/heightfield';
-import { createState } from '../../src/sim/sim';
-import { teleport } from '../../src/sim/player';
 import { ENVELOPE as E } from '../../src/data/envelope';
 import { BARE } from '../../src/world/city/climb';
 import { free } from '../../src/sim/physics';
 import type { Plot } from '../../src/world/world';
-import { run } from './helpers';
-import { climbPole } from './climbbot';
 
 const w = getWorld('yuzhong'), g = w.ground!, near = w.plots.filter(p => !p.far);
 /** From the street a lip this high is in reach (a wall kick); from a lip, the next this much higher (a jump and a
@@ -69,7 +65,7 @@ function holds(p: Plot): { x: number; z: number; y: number }[] {
   for (let i = p.own!.climbables[0]; i < p.own!.climbables[1]; i++) {
     const c = w.climbables[i];
     // (Not one inside it: a ladder up through a hole in a room's floor, M3-36.)
-    if (c.kind !== 'pole' && !within(p, c.x, c.z, -0.35)) for (let y = c.y0; y <= c.y1; y += 0.5) out.push({ x: c.x, z: c.z, y });
+    if (!within(p, c.x, c.z, -0.35)) for (let y = c.y0; y <= c.y1; y += 0.5) out.push({ x: c.x, z: c.z, y });
   }
   return out;
 }
@@ -127,16 +123,5 @@ describe('climbing reworked (M3-67)', () => {
     // Most walls hold nothing: under one hold feature for every 4 m of a building's height on average.
     const tall = near.filter(p => p.wall - p.base >= 12);
     expect(counted / tall.reduce((a, p) => a + (p.wall - p.base) / 4, 0)).toBeLessThan(1);
-  });
-
-  it('stands climbable poles in the streets, and a bot climbs one from the pavement', () => {
-    const poles = w.climbables.filter(c => c.kind === 'pole');
-    expect(poles.length).toBeGreaterThan(200);
-    const c = poles.find(q => q.y1 - q.y0 >= 8)!, s = createState(1, w);
-    s.flags.clear = true;
-    teleport(s.player, c.x + c.nx * 0.6, c.y0 + 0.05, c.z + c.nz * 0.6);
-    run(s, w, 30);
-    expect(climbPole(s, w, c)).toBe(true);
-    expect(s.player.pos.y).toBeGreaterThan(c.y0 + 5);
   });
 });

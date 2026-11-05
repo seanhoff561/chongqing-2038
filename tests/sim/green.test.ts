@@ -57,8 +57,8 @@ describe('foliage (M3-62)', () => {
     for (const [k, n] of [['camphor', 300], ['figtree', 400], ['palm', 150], ['bamboo', 120], ['ginkgo', 250], ['shrub', 200], ['hedge', 150], ['fern', 60], ['potplant', 100]] as const) expect(count(k), k).toBeGreaterThan(n);
   });
   it('lets him climb the big trees up their trunks and the vines on the walls', async () => {
-    const trunks = w.climbables.filter(c => c.kind === 'pole' && w.props.some(p => ['camphor', 'figtree', 'ginkgo', 'tree'].includes(p.kind) && Math.hypot(p.x - c.x, p.z - c.z) < 0.6));
-    const vines = w.climbables.filter(c => c.kind === 'pipe' && w.props.some(p => p.kind === 'vine' && Math.hypot(p.x - c.x, p.z - c.z) < 0.3));
+    const trunks = w.climbables.filter(c => c.kind === 'tree' && w.props.some(p => ['camphor', 'figtree', 'ginkgo', 'tree'].includes(p.kind) && Math.hypot(p.x - c.x, p.z - c.z) < 0.6));
+    const vines = w.climbables.filter(c => c.kind === 'vine' && w.props.some(p => p.kind === 'vine' && Math.hypot(p.x - c.x, p.z - c.z) < 0.3));
     expect(trunks.length).toBeGreaterThan(1000);
     expect(vines.length).toBeGreaterThan(300);
     await settle();
