@@ -17,9 +17,12 @@ const server = http.createServer((req, res) => {
 });
 await new Promise(r => server.listen(0, r));
 const base = `http://127.0.0.1:${server.address().port}/`;
-const browser = await puppeteer.launch({
+// (A long protocol timeout: a whole-city page in software GL can take minutes over one call on a busy machine.)
+const launch = () => puppeteer.launch({
+  protocolTimeout: 900000,
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox', '--autoplay-policy=no-user-gesture-required'],
 });
+let browser = await launch();
 const fails = [];
 let passes = 0;
 
@@ -76,6 +79,8 @@ try {
     const before = fails.length;
     try { await mod.default(ctx); } catch (e) { fails.push(`${f}: ${String(e.message ?? e).split('\n')[0]}`); }
     if (fails.length === before) passes++;
+    // (A browser that died, out of memory or crashed, is started again, so one failure doesn't fail every check after it.)
+    if (!browser.connected) { shared.clear(); browser = await launch(); fails.push(`${f}: the browser died; started again`); }
   }
 } catch (e) {
   fails.push(`harness: ${String(e.message ?? e).split('\n')[0]}`);
