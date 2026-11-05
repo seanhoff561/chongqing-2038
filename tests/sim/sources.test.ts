@@ -1,8 +1,9 @@
 // M10-26 (U-104, "loot and areas finished"): every item can be found somewhere. Each item's sources, gathered from the
 // game as it stands: the loot tables the world's containers and loose spots roll (and only those some container or
 // spot uses), what's placed in containers by hand, what a new run starts with (his pack, the friends' crate, the Li
-// flat's floor), the wrecks of the machines the run has, what's made at the bench from things found, and what's made
-// in the hand (a bottle filled at the river). None without one; and every high-security site rolls its own table.
+// flat's floor, his sister's trail to each exit), the wrecks of the machines the run has, what's made at the bench from
+// things found, and what's made in the hand (a bottle filled at the river). None without one; and every high-security
+// site rolls its own table.
 import { describe, it, expect } from 'vitest';
 import { items } from '../../src/data/items';
 import { loot, LEFTOVER } from '../../src/data/loot';
@@ -14,6 +15,7 @@ import { createState } from '../../src/sim/sim';
 import { startRun } from '../../src/sim/run';
 import { addItem } from '../../src/sim/inventory';
 import { useStack } from '../../src/sim/use';
+import { ROUTES, layTrail } from '../../src/sim/sister';
 
 const w = getWorld('yuzhong');
 
@@ -38,6 +40,8 @@ function sources() {
   for (const i of s.inv.pack.items) add(i.id, 'his pack at the start');
   for (const [k, g] of Object.entries(s.containers)) for (const i of g.items) add(i.id, `${k} at the start`);
   for (const d of s.dropped) add(d.stack.id, 'lying in the world at the start');
+  // His sister's notes (M10-39): a run lays the trail to her exit; each exit's, for a run she's gone that way.
+  for (const r of ROUTES) { const t = createState(1, w); layTrail(t, w, r); for (const d of t.dropped) add(d.stack.id, `on her trail to ${r}`); }
   // The found documents (M10-37), each put in a container for the run.
   for (const [k, id] of Object.entries(s.docs ?? {})) add(id, `a document in ${k}`);
   // The machines' wrecks, of the kinds the run has.

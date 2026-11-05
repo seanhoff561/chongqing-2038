@@ -167,7 +167,7 @@ function floorRooms(w: World, p: Plot, y: number) {
  *  for three on a table by the room he's put in, two bowls eaten from, his father's under a plate, the registration
  *  reminder by it (its story document); a calendar on that room's wall crossed off to the 13th; packed bags by the
  *  stairs, two (Xiaoyu took hers); the children's height marks up a door frame; Xiaoyu's desk in a room of its own,
- *  a map on it with a way drawn across the city (where her trail starts, M10-39). The table and the desk stand solid.
+ *  a map on it with a way drawn across the city, her note beside it (where her trail starts, M10-39). The table and the desk stand solid.
  *  Gives back what's laid on the floor, for the ransack to leave be, and the middles of the flat's rooms. */
 function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid: Put[]; rooms: { x: number; z: number }[] } {
   const y = s.y, land = p.route![2], rooms = floorRooms(w, p, y), taken: Put[] = [];
@@ -222,8 +222,10 @@ function home(w: World, p: Plot, s: { x: number; y: number; z: number }): { laid
   for (const n of [...others, big, lounge]) {
     const desk = put(room(n), 'desk', 1.0, 0.76, 0.5, farFrom(n, rooms[n].door ?? rooms[n].cells[0]), { solid: true, face: middle(n) });
     if (!desk) continue;
-    const c = local(desk, -0.2, 0);
+    const c = local(desk, -0.2, 0), note = local(desk, 0.3, 0.05);
     w.props.push({ kind: 'f:map', x: c.x, y: y + 0.765, z: c.z, yaw: desk.yaw, w: 0.5, h: 0.01, d: 0.36 });
+    // (And beside it where her note lies, the first on her trail: M10-39.)
+    w.features.push({ kind: 'xiaoyu:desk', x: note.x, y: y + 0.76, z: note.z, group: w.features.length });
     break;
   }
   // The bedding, side by side, from the far end of the biggest room.

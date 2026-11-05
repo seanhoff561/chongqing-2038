@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { M, P, glow, steel, black, worn, chrome, brass, box, cyl, group, ring, slab, rbox, at } from './items3d-kit';
 import { DOCS } from '../data/documents';
+import { NOTES } from '../data/sister';
 
 /** An access card held up out of the fist, its face to him: printed PVC (base), with a coloured band and whatever else
  *  marks it as that card. */
@@ -66,6 +67,6 @@ export const keysModels: Record<string, () => THREE.Object3D> = {
     ...[[0.07, -0.25], [0.05, 0.3], [0.04, -0.9], [0.012, 2.6], [0.045, -0.5]].map(([l, a]) => at(box(l, 0.0007, 0.0002, crack), -0.1 + Math.cos(a) * l / 2, 0.015 + Math.sin(a) * l / 2, 0.0046, 0, 0, a)),
     rbox(0.03, 0.022, 0.002, 0.005, M(0x1a1b1c, 0.4, 0.4), -0.09, 0.016, -0.005), cyl(0.0045, 0.002, M(0x0a0a0a, 0.1, 0.5), 'z', -0.09, 0.02, -0.0065, 0.0045, 10), box(0.02, 0.001, 0.003, M(0x3a3c40, 0.4, 0.6), -0.07, 0.0365, 0),
     box(0.012, 0.001, 0.003, M(0x3a3c40, 0.4, 0.6), -0.1, 0.0365, 0), cyl(0.0012, 0.0005, glow(0x1a2a1a, 0.2), 'z', -0.105, -0.025, 0.0045, 0.0012, 6)); },
-  // The found documents (M10-37).
-  ...Object.fromEntries(DOCS.map(d => [d.id, sheet])),
+  // The found documents (M10-37) and his sister's notes (M10-39).
+  ...Object.fromEntries([...DOCS, ...NOTES].map(d => [d.id, sheet])),
 };

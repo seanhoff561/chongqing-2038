@@ -1,6 +1,7 @@
 // Item pictures, continued (M4-70): parts, keys and cards, and the rest. Same rules as icon-art.ts.
 import { box, disc, ell, poly, line, ring, marks, shine, type C } from './icon-draw';
 import { DOCS } from '../data/documents';
+import { NOTES } from '../data/sister';
 
 const STEEL = '#8d959c', DARK = '#2b2e31', BLACK = '#1c1d1f', RED = '#b8322c', COPPER = '#b8733a', GOLD = '#d4b04a';
 
@@ -86,8 +87,8 @@ export const ART2: Record<string, (c: C) => void> = {
   schedule: c => { poly(c, [0.18, 0.12, 0.66, 0.12, 0.82, 0.28, 0.82, 0.88, 0.18, 0.88], '#ece6d4', 'f'); poly(c, [0.66, 0.12, 0.66, 0.28, 0.82, 0.28], '#cfc8b2', 'f'); marks(c, [0.24, 0.36, 0.76, 0.36, 0.24, 0.48, 0.76, 0.48, 0.24, 0.6, 0.76, 0.6, 0.24, 0.72, 0.76, 0.72, 0.42, 0.3, 0.42, 0.8]); },
   phone: c => { box(c, 0.28, 0.08, 0.44, 0.84, BLACK, 0.07); box(c, 0.31, 0.14, 0.38, 0.7, '#1e2a3a', 0.03, 'f'); marks(c, [0.36, 0.2, 0.5, 0.42, 0.5, 0.42, 0.44, 0.6, 0.5, 0.42, 0.64, 0.5, 0.44, 0.6, 0.6, 0.78], 'rgba(220,230,240,0.7)', 0.012); },
   hikingpack: c => { line(c, [0.9, 0.6, 0.7, 2.6], BLACK, 0.12); line(c, [2.1, 0.6, 2.3, 2.6], BLACK, 0.12); box(c, 0.5, 0.35, 2.0, 2.45, '#3d4f6a', 0.4); box(c, 0.6, 0.2, 1.8, 0.65, '#2f3e54', 0.3); box(c, 0.85, 1.55, 1.3, 0.95, '#34465e', 0.2); marks(c, [0.9, 1.75, 2.1, 1.75], '#1c2430', 0.04); box(c, 0.55, 2.6, 1.9, 0.32, '#5a6a3a', 0.16, 'y'); for (const x of [1.1, 1.8]) box(c, x, 0.7, 0.1, 0.5, BLACK, 0.02, 'x'); ell(c, 1.5, 0.52, 0.08, 0.06, STEEL); },
-  // The found documents (M10-37): each a sheet with a corner turned down, written on.
-  ...Object.fromEntries(DOCS.map(d => [d.id, sheet])),
+  // The found documents (M10-37) and his sister's notes (M10-39): each a sheet with a corner turned down, written on.
+  ...Object.fromEntries([...DOCS, ...NOTES].map(d => [d.id, sheet])),
 };
 
 /** A small cylinder standing, as on a board. */

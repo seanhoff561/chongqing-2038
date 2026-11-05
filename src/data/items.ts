@@ -1,5 +1,6 @@
 // Every item in the game (DESIGN section 8). Sizes are backpack cells (w x h); weights in kg.
 import { DOCS } from './documents';
+import { NOTES } from './sister';
 
 export type ItemCat = 'food' | 'drink' | 'tool' | 'weapon' | 'ammo' | 'med' | 'part' | 'key' | 'wear' | 'throw' | 'device' | 'misc' | 'doc';
 
@@ -150,8 +151,8 @@ export const items: ItemDef[] = [
   I('schedule', '检修时刻表', 'Rail-deck schedule', 1, 1, 0.01, 'key', 'Maintenance drone timings on the Line 6 deck.'),
   I('phone', '破手机', 'Cracked phone', 1, 1, 0.15, 'misc', 'His father\'s. One voicemail: "Weiwei, it\'s Dad. What\'s happening where you are? Pick up. It\'s chaos at the substation. Those things... they\'re pulling the breakers. Don\'t come home, you hear me? Don\'t come back. Go to that tunnel of yours and hide. Look after yourself. Yourself first. Your mum and Xiaoyu, I\'ll..." (the line breaks up)'),
   I('hikingpack', '登山包', 'Hiking pack', 3, 3, 1.8, 'wear', 'A bigger backpack (10 x 7).'),
-  // Found documents (M10-37): a sheet each, its text what it says.
-  ...DOCS.map(d => I(d.id, d.zh, d.en, 1, 1, 0.01, 'doc', d.text)),
+  // Found documents (M10-37) and his sister's notes (M10-39): a sheet each, its text what it says.
+  ...[...DOCS, ...NOTES].map(d => I(d.id, d.zh, d.en, 1, 1, 0.01, 'doc', d.text)),
 ];
 
 export const itemById = new Map(items.map(i => [i.id, i]));

@@ -18,11 +18,12 @@ export function stepDone(s: SimState, route: string, step: string) {
   if (r[step] === undefined) r[step] = s.time;
 }
 
-/** The run ends on a route. */
+/** The run ends on a route: with his sister if it's her exit and she said she'd come (M10-39). */
 export function endRun(s: SimState, route: string) {
   if (s.ended || s.dead) return;
-  s.ended = { route, t: s.time };
-  s.events.push({ t: 'ending', route });
+  const sister = s.sister?.route === route && !!s.sister.with;
+  s.ended = { route, t: s.time, sister };
+  s.events.push({ t: 'ending', route, sister });
 }
 
 /** Days survived, sites got into, times seen. */

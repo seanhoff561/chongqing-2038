@@ -9,6 +9,7 @@ import { VOICEMAIL } from '../data/dialogue';
 import { CONTAINER } from './containers';
 import { claimBed } from './shelter';
 import { placeDocuments } from './documents';
+import { layTrail } from './sister';
 
 export const STARTING_SUPPLIES: [string, number, number?][] = [
   ['noodles', 2], ['luncheon', 1], ['bread', 1, 1], ['water', 3], ['bandage', 1],
@@ -38,6 +39,8 @@ export function startRun(s: SimState, w: World) {
   }
   // The found documents, each in its place (M10-37).
   placeDocuments(s, w);
+  // His sister's notes on her way to the exit she's gone to, and her there (M10-39).
+  layTrail(s, w);
   quietStart(s, w);
   s.events.length = 0;
 }

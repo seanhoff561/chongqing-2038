@@ -27,6 +27,7 @@ import './grate';
 import './sinks';
 import './signs';
 import './scrap';
+import './sister';
 import { survival } from '../data/survival';
 import { createUnits } from './units';
 import { stepSight, stepHearing } from './perception';
