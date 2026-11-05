@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M10. Next: M10-38d Key places, hand designed: the cableway, the pier, the construction site (U-104).
-Features done: 390 / 438 | Last done: M10-38c
+Features done: 391 / 438 | Last done: M10-49
 <!-- /status -->
 
 ## What's built
@@ -66,3 +66,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-40: key places on the map only as he learns of them (a note naming one, or walking in), Anna's word on each
 - M10-38c: under the city made by hand (the air-raid shelter's hotpot, the metro's control room, the Grand Tunnel's cool room)
 - M10-38 fix: a city with no house for the Li family's flat in Shibati puts it in the nearest round it (no crash on a new run)
+- M10-49: many machines without the lag (a crowd's tick and frame cut), and the draw calls back under budget everywhere
