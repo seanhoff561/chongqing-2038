@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { itemModel } from './items3d';
 import type { SimState } from '../sim/types';
+import { GFX, mergeGeometries } from './view';
 
 const lam = (c: number) => new THREE.MeshLambertMaterial({ color: c });
 const box = (w: number, h: number, d: number, m: THREE.Material, y = h / 2) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.y = y; return o; };
@@ -39,31 +40,44 @@ function sister(standing: boolean) {
   return g;
 }
 
+/** A model's parts merged, one mesh to a material (a dropped thing's dozen parts in a few draw calls: M10-04). */
+function merged(o: THREE.Object3D) {
+  o.updateMatrixWorld(true);
+  const by = new Map<THREE.Material, THREE.BufferGeometry[]>(), g = new THREE.Group();
+  o.traverse(c => {
+    const m = c as THREE.Mesh;
+    if (m.isMesh && !Array.isArray(m.material)) (by.get(m.material) ?? by.set(m.material, []).get(m.material)!).push(m.geometry.clone().applyMatrix4(m.matrixWorld));
+  });
+  for (const [mat, gs] of by) g.add(new THREE.Mesh(mergeGeometries(gs), mat));
+  return g;
+}
+
 export class Furniture {
   readonly group = new THREE.Group();
   private sig = '';
 
-  /** Rebuild when what's placed changes. */
-  sync(s: SimState) {
+  /** Rebuild when what's placed changes; each drawn only within the detail radius of the camera, as small props are. */
+  sync(s: SimState, cam: THREE.Vector3) {
+    for (const o of this.group.children) o.visible = Math.hypot(o.position.x - cam.x, o.position.z - cam.z) < GFX.detail;
     const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with}` : '');
     if (sig === this.sig) return;
     this.sig = sig;
     this.group.clear();
     for (const p of s.placed) {
-      const m = MODELS[p.item]?.();
+      const m = MODELS[p.item] && merged(MODELS[p.item]());
       if (!m) continue;
       m.position.set(p.x, p.y, p.z);
       m.rotation.y = p.yaw;
       this.group.add(m);
     }
     for (const d of s.dropped) {
-      const m = itemModel(d.stack.id);
+      const m = merged(itemModel(d.stack.id));
       m.position.set(d.x, d.y + 0.05, d.z);
       m.rotation.set(Math.PI / 2, 0, d.stack.uid * 2.4);
       this.group.add(m);
     }
     if (s.sister) {
-      const m = sister(!!s.sister.with);
+      const m = merged(sister(!!s.sister.with));
       m.position.set(s.sister.x, s.sister.y, s.sister.z);
       // (The model faces +z; her yaw is the sim's, facing -z.)
       m.rotation.y = s.sister.yaw + Math.PI;

@@ -161,7 +161,7 @@ export class Game {
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.settings = new Settings(this, opts.dev);
-    this.laptop3d = new Laptop3D(this.view.scene);
+    this.laptop3d = new Laptop3D(this.view.scene, this.view.renderer);
     this.laptop = new LaptopUI(this);
     this.craft = new CraftUI(this);
     this.ending = new EndingSequence(this);
@@ -394,7 +394,7 @@ export class Game {
     this.updatePrompt();
     this.updateHeld();
     this.hud.tick(dt);
-    this.furniture.sync(this.state);
+    this.furniture.sync(this.state, this.view.fp.cam.position);
     this.status.update(this.state, dt);
     const cam = this.view.fp.cam.position;
     this.sky.update(this.state.time, cam, this.hazeDistance(), this.underAmount(dt), this.state.weather, this.lit);
@@ -419,7 +419,7 @@ export class Game {
     updateScreens(this.state, performance.now() / 1000);
     this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);
     this.view.setLamp(this.state.player.lamp);
-    this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
+    this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam);
     // What he hears of the city and its machines (audio/soundscape.ts; its music silent under his songs or the main
     // menu); the main menu's own music while it's up.
     this.menuMusic.update(this.menuUp());

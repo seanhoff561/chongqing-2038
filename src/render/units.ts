@@ -15,6 +15,7 @@ import { night } from './materials';
 import { ragdoll, settle, type Ragdoll } from './ragdoll';
 import { raycast } from '../world/geom';
 import { STATIC, UNITS } from '../data/units';
+import { BODY } from '../sim/damage';
 
 /** How near a unit must be to be drawn. */
 const NEAR = 220;
@@ -33,6 +34,11 @@ const RECHECK = 30;
 /** Seconds a destroyed machine takes to go grey-black. */
 const FADE = 1.5;
 const C4 = new THREE.Vector4();
+/** Metres round a unit's body (BODY's height and girth) its posed model may reach: a heli's tail, a giant's legs. */
+const REACH = 10;
+/** Metres off past which a walker is posed every other frame. */
+const LOD = 40;
+const FRUSTUM = new THREE.Frustum(), VP = new THREE.Matrix4(), SPHERE = new THREE.Sphere();
 
 /** Every unit near him in one batch, each part of it an instance: one draw call for all the machines near him. */
 export class UnitView {
@@ -55,6 +61,9 @@ export class UnitView {
   /** each unit's paint as last set (1 its white, 0 a grey-black wreck), when it was seen destroyed (real seconds), and
    *  its parts come down (a machine on the ground) */
   private paint: number[] = [];
+  /** each unit's set hidden as out of his view (its pose not worked out) */
+  private hid: boolean[] = [];
+  private frame = 0;
   private gone: number[] = [];
   private rag: (Ragdoll | undefined)[] = [];
   private foot = new THREE.Vector3();
@@ -80,7 +89,11 @@ export class UnitView {
       for (let i = 0; i < n(k); i++) sets.push(looks[0].map(g => { const id = this.batch.addInstance(g); this.batch.setVisibleAt(id, false); this.batch.setColorAt(id, LIGHT.unaware); return id; }));
       this.pool.set(k, { sets, free: sets.map((_, i) => i).reverse(), looks });
     }
+    // (Culled and drawn unit by unit, not part by part, unsorted: M10-49, the batch's own per-part culling and sorting
+    // were a crowd's frame's biggest cost after the posing.)
     this.batch.frustumCulled = false;
+    this.batch.perObjectFrustumCulled = false;
+    this.batch.sortObjects = false;
     this.group.add(this.batch);
   }
 
@@ -90,6 +103,7 @@ export class UnitView {
     for (const id of pl.sets[this.slot[i]]) this.batch.setVisibleAt(id, false);
     pl.free.push(this.slot[i]);
     this.slot[i] = -1;
+    this.hid[i] = false;
   }
 
   /** Its lights and how far its paint is left, on each of its parts. */
@@ -98,11 +112,14 @@ export class UnitView {
     for (const id of ids) this.batch.setColorAt(id, C4.set(c.r, c.g, c.b, paint));
   }
 
-  update(w: World, units: Unit[], time: number, cam: THREE.Vector3) {
+  update(w: World, units: Unit[], time: number, eye: THREE.Camera) {
     let shown = 0;
-    const t = time / SCALE;
+    const t = time / SCALE, cam = eye.position;
+    eye.updateMatrixWorld();
+    FRUSTUM.setFromProjectionMatrix(VP.multiplyMatrices(eye.projectionMatrix, eye.matrixWorldInverse));
     BOOST.value = 1 + 1.6 * night.k;
-    while (this.slot.length < units.length) { this.slot.push(-1); this.lit.push('unaware'); this.wait.push(0); this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: this.last.length, aim: 0, crouch: 0 }); this.paint.push(1); this.gone.push(NaN); this.rag.push(undefined); }
+    this.frame++;
+    while (this.slot.length < units.length) { this.slot.push(-1); this.lit.push('unaware'); this.wait.push(0); this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: this.last.length, aim: 0, crouch: 0 }); this.paint.push(1); this.hid.push(false); this.gone.push(NaN); this.rag.push(undefined); }
     units.forEach((u, i) => {
       const pl = this.pool.get(u.kind);
       if (!pl) return;
@@ -121,8 +138,19 @@ export class UnitView {
         this.last[i].t = -1;
       }
       const ids = pl.sets[this.slot[i]];
+      // Out of his view, it's left as it was and not drawn (a crowd behind him costs nothing); back in view, posed again.
+      // (A tripwire's beam as long as it runs.)
+      const B = BODY[u.kind], h = (B[1] - B[0]) / 2, to = u.cam !== undefined ? w.cameras[u.cam].to : undefined;
+      const seen = FRUSTUM.intersectsSphere(SPHERE.set(SPHERE.center.set(p.x, p.y + B[0] + h, p.z), h + REACH + (to ? Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z) : 0)));
+      const back = this.hid[i] && seen;
+      if (seen === this.hid[i]) { for (const id of ids) this.batch.setVisibleAt(id, seen); this.hid[i] = !seen; }
+      if (!seen) return;
+      // Further off than LOD, a walker is posed every other frame, half of them each frame (its parts left where they
+      // were between): a step too small to see from there, and a crowd's posing halved (M10-49).
+      const L = this.last[i];
+      if (d2 > LOD && !back && L.t >= 0 && !u.dead && !UNITS[u.kind].fly && (this.frame + i) % 2) { shown++; return; }
       // (Destroyed just now if it was drawn just now: it falls and fades as he watches; else it was already a wreck.)
-      const L = this.last[i], dt = t - L.t;
+      const dt = t - L.t;
       if (u.dead && Number.isNaN(this.gone[i])) this.gone[i] = L.t >= 0 && dt < 1 ? t : -Infinity;
       // How it moves: its speed and stride from where it was (not across a jump: first drawn, or put somewhere), its
       // rifle up while it has him in its sights, crouched at the cover it holds.

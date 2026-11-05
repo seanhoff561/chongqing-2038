@@ -12,7 +12,7 @@ import { alarm, lampPool, iceNeon } from './materials';
 import { SCREEN_EDICT } from './edicts';
 
 // One material for every library prop: the atlas carries every surface, leaves included (alpha-tested).
-const PROP_MAT = atlasMaterial(new THREE.MeshPhongMaterial({ map: propAtlas(), alphaTest: 0.45, vertexColors: true, shininess: 8 }));
+export const PROP_MAT = atlasMaterial(new THREE.MeshPhongMaterial({ map: propAtlas(), alphaTest: 0.45, vertexColors: true, shininess: 8 }));
 const leaves = () => PROP_MAT;
 // The ASI's cyan strips and red camera lights share one unlit material, coloured per vertex: one draw per chunk.
 const GLOW_MAT = new THREE.MeshBasicMaterial({ vertexColors: true });

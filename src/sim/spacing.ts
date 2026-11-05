@@ -24,7 +24,7 @@ type V3 = { x: number; y: number; z: number };
 export const SPACE = { near: 20, room: 0.6, steer: 1.5, weave: 0.3, rate: 1.1, cap: 0.3, back: 0.5 };
 
 /** A machine's body this tick, where it is now (moved this tick, if it has). */
-type Body = { u: Unit; x: number; y: number; z: number };
+type Body = { u: Unit; x: number; y: number; z: number; /** its girth */ r: number };
 let memo: { s: SimState | null; tick: number; list: Body[] } = { s: null, tick: -1, list: [] };
 
 /** This tick's bodies: every machine off its beat or stopped (a wreck, a lame one), and those on their beats near him. */
@@ -40,7 +40,7 @@ function crowd(s: SimState, w: World): Body[] {
     const p = unitPose(w, u, s.time);
     if (!p.active && !u.stop) continue;
     if (!u.trip && !u.stop && Math.hypot(p.x - him.x, p.z - him.z) > SPACE.near + 5) continue;
-    list.push({ u, x: p.x, y: p.y, z: p.z });
+    list.push({ u, x: p.x, y: p.y, z: p.z, r: BODY[u.kind][2] });
   }
   memo = { s, tick: s.tick, list };
   return list;
@@ -57,24 +57,29 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
   const [y0, y1, r] = BODY[u.kind], fly = UNITS[u.kind].fly > 0;
   const near: { x: number; y: number; z: number; r: number; lo: number; hi: number; him?: boolean }[] = [];
   for (const b of crowd(s, w)) {
-    if (b.u === u) continue;
-    const q = where(b);
-    if (Math.abs(q.x - base.x) > SPACE.near || Math.abs(q.z - base.z) > SPACE.near) continue;
-    const B = BODY[b.u.kind];
+    // (Only bodies it could come within its room of this tick, first by where they stood as the tick began, give or take
+    // a step: the rest change nothing, and in a crowd they were most of a tick's work, M10-49.)
+    const reach = r + b.r + SPACE.room + SPACE.cap + 1;
+    if (b.u === u || Math.abs(b.x - base.x) > reach + 1 || Math.abs(b.z - base.z) > reach + 1) continue;
+    const q = where(b), B = BODY[b.u.kind];
+    if (Math.abs(q.x - base.x) > reach || Math.abs(q.z - base.z) > reach) continue;
     near.push({ x: q.x, y: q.y, z: q.z, r: B[2], lo: q.y + B[0], hi: q.y + B[1] });
   }
   const P = s.player.pos;
   if (s.player.mode !== 'dead' && Math.abs(P.x - base.x) < SPACE.near && Math.abs(P.z - base.z) < SPACE.near) near.push({ x: P.x, y: P.y, z: P.z, r: M.width / 2, lo: P.y, hi: P.y + M.height[s.player.posture], him: true });
   if (!near.length && fly) return [base, false];
-  // How far its body's edge is from another's (less than 0 inside it), and the way out: his body is a box.
-  const gap = (p: V3, b: (typeof near)[number]): [number, number, number] => {
-    if (p.y + y1 <= b.lo || p.y + y0 >= b.hi) return [Infinity, 0, 0];
+  // How far its body's edge is from another's (less than 0 inside it), and the way out (into nx, nz: no garbage made, a
+  // crowd calls it thousands of times a tick): his body is a box.
+  let nx = 0, nz = 0;
+  const gap = (p: V3, b: (typeof near)[number]): number => {
+    if (p.y + y1 <= b.lo || p.y + y0 >= b.hi) { nx = nz = 0; return Infinity; }
     const cx = b.him ? Math.max(b.x - b.r, Math.min(b.x + b.r, p.x)) : b.x, cz = b.him ? Math.max(b.z - b.r, Math.min(b.z + b.r, p.z)) : b.z;
     let dx = p.x - cx, dz = p.z - cz, d = Math.hypot(dx, dz);
-    if (d < 1e-6) { dx = p.x - b.x; dz = p.z - b.z; d = Math.hypot(dx, dz); if (d < 1e-6) { dx = -Math.sin(yaw); dz = -Math.cos(yaw); d = 1; } return [-r - b.r, dx / d, dz / d]; }
-    return [d - r - (b.him ? 0 : b.r), dx / d, dz / d];
+    if (d < 1e-6) { dx = p.x - b.x; dz = p.z - b.z; d = Math.hypot(dx, dz); if (d < 1e-6) { dx = -Math.sin(yaw); dz = -Math.cos(yaw); d = 1; } nx = dx / d; nz = dz / d; return -r - b.r; }
+    nx = dx / d; nz = dz / d;
+    return d - r - (b.him ? 0 : b.r);
   };
-  const pen = (p: V3) => near.reduce((a, b) => a - Math.min(0, gap(p, b)[0]), 0);
+  const pen = (p: V3) => { let a = 0; for (const b of near) a -= Math.min(0, gap(p, b)); return a; };
   // (Its walls: what's higher than it steps, up its body; a flyer's, all of it.)
   const wall = (p: V3) => overlaps(w.index, { x0: p.x - r, z0: p.z - r, x1: p.x + r, z1: p.z + r, y0: fly ? p.y + y0 : p.y + step + 0.05, y1: fly ? p.y + y1 : p.y + Math.max(y1, step + 0.3) });
   const mx = base.x - from.x, mz = base.z - from.z, m = Math.hypot(mx, mz), fx = m > 1e-4 ? mx / m : 0, fz = m > 1e-4 ? mz / m : 0;
@@ -88,7 +93,7 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
   // Steered off the bodies near it: one in its way it gives way to (slowing) and steps round, on the side it's off
   // to already (its right, square on); one beside or behind, it eases off.
   for (const b of near) {
-    const [g, nx, nz] = gap(base, b);
+    const g = gap(base, b);
     if (g >= SPACE.room) continue;
     const k = Math.min(1, (SPACE.room - g) / SPACE.room) * SPACE.steer * DT, ahead = m > 1e-4 ? -(nx * fx + nz * fz) : 0;
     if (ahead > 0.3) {
@@ -97,7 +102,7 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
     } else { c.x += nx * k * 0.5; c.z += nz * k * 0.5; }
   }
   // Put just clear of any body it's still in, a few times over (one may push it into another).
-  for (let k = 0; k < 3; k++) for (const b of near) { const [g, nx, nz] = gap(c, b); if (g < 0) { c.x += nx * (1e-3 - g); c.z += nz * (1e-3 - g); } }
+  for (let k = 0; k < 3; k++) for (const b of near) { const g = gap(c, b); if (g < 0) { c.x += nx * (1e-3 - g); c.z += nz * (1e-3 - g); } }
   const ax = c.x - base.x, az = c.z - base.z, a = Math.hypot(ax, az);
   if (a > SPACE.cap) { c.x = base.x + (ax / a) * SPACE.cap; c.z = base.z + (az / a) * SPACE.cap; }
   // No deeper into a body than it was, and not into a wall it wasn't in: else along the wall, or its plain step, or
