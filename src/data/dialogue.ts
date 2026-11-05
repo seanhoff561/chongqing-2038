@@ -4,7 +4,7 @@ import { ANNOUNCE } from './announce';
 
 export interface Line { id: string; speaker: string; zh: string; en: string }
 
-export const SPEAKERS: Record<string, [string, string]> = { liguorong: ['李国荣', 'Li Guorong'], pa: ['广播', 'Speakers'], anna: ['安娜', 'Anna'], liwei: ['李伟', 'Li Wei'], none: ['', ''] };
+export const SPEAKERS: Record<string, [string, string]> = { liguorong: ['李国荣', 'Li Guorong'], pa: ['广播', 'Speakers'], anna: ['安娜', 'Anna'], liwei: ['李伟', 'Li Wei'], xiaoyu: ['小雨', 'Xiaoyu'], none: ['', ''] };
 
 /** The one voicemail on his father's phone, left the night of the attack (M3-19). */
 export const VOICEMAIL: Line[] = [
@@ -15,7 +15,8 @@ export const VOICEMAIL: Line[] = [
   { id: 'vm-05', speaker: 'none', zh: '（信号中断）', en: '(the line breaks up)' },
 ];
 
-/** Each ending's last exchange between him and Anna (M7-15, DESIGN section 13); his in Chongqing speech. */
+/** Each ending's last exchange between him and Anna (M7-15, DESIGN section 13), alone; his in Chongqing speech. With
+ *  his sister (M10-51) the first two lines are the same and the last two hers and Anna's (ENDING_WITH). */
 export const ENDING_LINES: Record<string, Line[]> = {
   bridge: [
     { id: 'end-bridge-1', speaker: 'liwei', zh: '过来了……我们真的过来了哦。', en: "We're across... we're really across." },
@@ -66,7 +67,30 @@ export const MAP_LINES: Record<string, Line[]> = {
   steps: [{ id: 'map-steps', speaker: 'anna', zh: '朝天门下面的江边石梯。起雾的晚上，有人从这里走。', en: 'The river steps below Chaotianmen. On foggy nights, people leave from here.' }],
 };
 
-/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna on the map (M10-40), the endings. */
-export const SPOKEN: Line[] = [...VOICEMAIL, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat()];
+/** The last two lines of each ending's exchange with Xiaoyu there (M10-51). */
+export const ENDING_WITH: Record<string, Line[]> = {
+  bridge: [
+    { id: 'end-bridge-x3', speaker: 'xiaoyu', zh: '哥，火车……这回我们是在这边看它过去。', en: "Ge, the train... this time we're watching it go over from this side." },
+    { id: 'end-bridge-x4', speaker: 'anna', zh: '两个人。我数过了，两个。走吧。', en: 'Two of you. I counted. Two. Go.' },
+  ],
+  cable: [
+    { id: 'end-cable-x3', speaker: 'xiaoyu', zh: '哥，你还记得不？你就是从这个窗子吐出去的。', en: 'Ge, remember? This is the window you were sick out of.' },
+    { id: 'end-cable-x4', speaker: 'anna', zh: '我存下来了。以后用来威胁你。', en: "I've saved that. For blackmail, later." },
+  ],
+  boat: [
+    { id: 'end-boat-x3', speaker: 'xiaoyu', zh: '邓叔叔的船……他要骂死我们。', en: "Uncle Deng's boat... he's going to kill us." },
+    { id: 'end-boat-x4', speaker: 'anna', zh: '那他得先找到你们。声呐都没找到。', en: "He'll have to find you first. The sonar couldn't." },
+  ],
+  tunnel: [
+    { id: 'end-tunnel-x3', speaker: 'xiaoyu', zh: '哥，我说过我会等你的嘛。', en: "Ge, I said I'd wait for you." },
+    { id: 'end-tunnel-x4', speaker: 'anna', zh: '她确实等了。往前走吧，你们两个。', en: 'She did. Keep walking, both of you.' },
+  ],
+};
+
+/** An ending's exchange: alone, or with his sister. */
+export const endingLines = (route: string, sister?: boolean): Line[] => (sister ? [...(ENDING_LINES[route] ?? []).slice(0, 2), ...(ENDING_WITH[route] ?? [])] : ENDING_LINES[route] ?? []);
+
+/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna on the map, the endings. */
+export const SPOKEN: Line[] = [...VOICEMAIL, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat(), ...Object.values(ENDING_WITH).flat()];
 
 export const lineById = new Map([...SPOKEN, ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

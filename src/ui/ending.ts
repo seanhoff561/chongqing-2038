@@ -1,8 +1,9 @@
-// An ending's sequence (M7-15, DESIGN section 13): the view lifts slowly up and back from where he stands, letterboxed,
-// the fog thick, while he and Anna have their last exchange in subtitles; then the run's summary (death.ts's screen).
+// An ending's sequence (M7-15, M10-51, DESIGN section 2): the view lifts slowly up and back from where he stands,
+// letterboxed, the fog thick, while he and Anna have their last exchange (Xiaoyu in it if she came; only Anna's lines
+// read); then the run's summary (death.ts's screen).
 import * as THREE from 'three';
 import type { Game } from '../game';
-import { ENDING_LINES } from '../data/dialogue';
+import { endingLines } from '../data/dialogue';
 import { speak } from '../audio/voice';
 
 /** Seconds the last line holds before the summary, and the rise (m) and pull back (m) over the whole sequence. */
@@ -39,7 +40,7 @@ export class EndingSequence {
   update(dt: number) {
     if (!this.active) return;
     // (Each line held as long as the subtitles take to read it, as hud.ts holds them.)
-    const lines = ENDING_LINES[this.route] ?? [], at = (n: number) => 0.6 + lines.slice(0, n).reduce((a, l) => a + readSecs(l.zh), 0), total = at(lines.length) + SEQ.line, g = this.game, cam = g.view.fp.cam;
+    const lines = endingLines(this.route, this.game.state.ended?.sister), at = (n: number) => 0.6 + lines.slice(0, n).reduce((a, l) => a + readSecs(l.zh), 0), total = at(lines.length) + SEQ.line, g = this.game, cam = g.view.fp.cam;
     this.t += dt;
     const k = Math.min(1, this.t / total), e = k * k * (3 - 2 * k), yaw = g.input.yaw;
     cam.position.set(this.from.x + Math.sin(yaw) * SEQ.back * e, this.from.y + SEQ.rise * e, this.from.z + Math.cos(yaw) * SEQ.back * e);

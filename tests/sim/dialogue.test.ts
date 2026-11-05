@@ -1,10 +1,10 @@
 // M8-01: the dialogue data. Every line has an id, a known speaker, Chinese and English; every line the game refers to
-// (the voicemail, Anna on the map, the endings, the speakers' announcements) is there; Li Wei talks like a
+// (the voicemail, Anna on the map, the endings alone and with his sister, the speakers' announcements) is there; Li Wei talks like a
 // Chongqing lad.
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import { lineById, SPEAKERS, SPOKEN, ENDING_LINES } from '../../src/data/dialogue';
+import { lineById, SPEAKERS, SPOKEN, ENDING_LINES, ENDING_WITH } from '../../src/data/dialogue';
 import { ANNOUNCE } from '../../src/data/announce';
 
 const files = (d: string): string[] => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => (e.isDirectory() ? files(path.join(d, e.name)) : e.name.endsWith('.ts') ? [path.join(d, e.name)] : []));
@@ -13,7 +13,7 @@ const DIALECT = /啥子|老汉|莫|噻|屋头|外头|耗儿|记得到|嘛|哦|�
 describe('the dialogue (M8-01)', () => {
   it('holds every line the game refers to, each whole', () => {
     const all = [...SPOKEN, ...Object.values(ANNOUNCE).flat()];
-    expect(Object.keys(ENDING_LINES).sort()).toEqual(['boat', 'bridge', 'cable', 'tunnel']);
+    for (const E of [ENDING_LINES, ENDING_WITH]) expect(Object.keys(E).sort()).toEqual(['boat', 'bridge', 'cable', 'tunnel']);
     for (const l of all) {
       expect(SPEAKERS[l.speaker], `${l.id}: ${l.speaker}`).toBeDefined();
       expect(l.zh.length * l.en.length, l.id).toBeGreaterThan(0);

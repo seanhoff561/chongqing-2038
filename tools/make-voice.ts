@@ -9,7 +9,7 @@ import { execSync } from 'child_process';
 import { SPOKEN } from '../src/data/dialogue';
 
 /** Each speaker's voice. */
-export const VOICES: Record<string, string> = { anna: 'zf_039', liwei: 'zm_010', liguorong: 'zm_029', none: '' };
+export const VOICES: Record<string, string> = { anna: 'zf_039', liwei: 'zm_010', liguorong: 'zm_029', xiaoyu: 'zf_017', none: '' };
 const OUT = 'public/audio/vo';
 
 /** Every line to be spoken, its voice and where its mp3 goes (lines with no speaker, a caption, are skipped). */

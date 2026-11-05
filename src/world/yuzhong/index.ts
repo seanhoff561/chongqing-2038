@@ -24,6 +24,7 @@ import { buildUnder } from './under';
 import { buildSite } from './site';
 import { siteWays } from './siteways';
 import { placeFinds } from './finds';
+import { exitZones } from './exits';
 import { podiumMask, buildFactory } from './factory';
 import { verticalCity } from './vertical';
 import { crossings, layLinks, windowBridges } from './crossings';
@@ -269,6 +270,8 @@ export function buildYuzhong(): World {
     world.hides.push({ id: world.hides.length, kind: h.kind, yaw: p.yaw, inner: { x0: x - h.w / 2, y0: p.y + h.y, z0: z - h.d / 2, x1: x + h.w / 2, y1: p.y + h.y + h.h, z1: z + h.d / 2 } });
   }
   liFlat(world);
+  // The ways out's far ends (M10-51).
+  world.zones.push(...exitZones(world));
   // The machines' ways about on foot as the world stands now (M4-02); the street layer between the key points along
   // them (M3-21).
   world.nav = buildNav(sts, g, world.index, walksOf(world.features));
