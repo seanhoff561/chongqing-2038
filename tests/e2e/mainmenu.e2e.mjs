@@ -1,5 +1,5 @@
 // M8-11, M10-10 (U-104): the main menu on a boot into the game: 重庆 2038, New Run, Settings (the Esc panel), Maps (the
-// map editor, M10-32), the version (the changelog: README, changes, credits, the repository and that Claude coded it;
+// maps' list, M10-33), the version (the changelog: README, changes, credits, the repository and that Claude coded it;
 // Back); with a save, Continue too; its own music, stopped when play starts (M10-60). A ?scenario= load goes straight in.
 export default async function ({ open, fail }) {
   const page = await open('?scenario=hideout&seed=3', 'mainmenu');
@@ -9,14 +9,15 @@ export default async function ({ open, fail }) {
   await page.waitForFunction('window.__cq && window.__cq.ready', { timeout: 240000 });
   const items = await page.evaluate(`[...document.querySelectorAll('#boot > *')].map(b => b.textContent)`);
   if (items.length !== 5 || items[0] !== '重庆 2038' || !items[1].includes('New Run') || !items[2].includes('Settings') || !items[3].includes('Maps') || !/^v\d+\.\d+\.\d+$/.test(items[4])) fail('mainmenu', `menu: ${items.join(' | ')}`);
-  // M10-32: Maps opens the map editor (for now: the list is M10-33's); its Menu comes back here.
+  // M10-33: Maps opens the maps' list (tests/e2e/maps.e2e.mjs); Esc comes back here.
   await page.click('#boot .maps');
-  if (!(await page.$('#editor')) || await page.$('#boot')) fail('mainmenu', 'Maps did not open the editor');
-  await page.click('#editor [data-a="menu"]');
-  if (await page.$('#editor') || !(await page.$('#boot'))) fail('mainmenu', "the editor's Menu did not come back to the menu");
+  await page.waitForFunction(() => document.querySelector('#boot .bt-maps'), { timeout: 5000 }).catch(() => fail('mainmenu', 'Maps did not open the list'));
+  await page.keyboard.press('Escape');
+  if (!(await page.$('#boot .maps'))) fail('mainmenu', 'Esc did not come back from the maps to the menu');
   // M10-60: its music, once a click has started the sound: playing on the menu.
   await page.mouse.click(5, 5);
-  await page.evaluate('new Promise(r => setTimeout(r, 1500))');
+  // (A frame of the city behind the menu can take seconds in software GL: waited for, not timed.)
+  await page.waitForFunction('window.__cq.game.menuMusic.notes > 0', { timeout: 20000 }).catch(() => {});
   const mus = await page.evaluate('(() => { const m = window.__cq.game.menuMusic; return { on: m.playing, notes: m.notes, ready: window.__cq.game.audio.ready }; })()');
   if (!mus.ready || !mus.on || !(mus.notes > 0)) fail('mainmenu', `no music on the menu: ${JSON.stringify(mus)}`);
   // (Settings: the same panel as Esc in play, U-104; Esc closes it.)

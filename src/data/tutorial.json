@@ -1,0 +1,264 @@
+{
+ "v": 1,
+ "name": "教程 Tutorial",
+ "pieces": [
+  {
+   "kind": "spawn",
+   "x": 0,
+   "y": 0,
+   "z": 0,
+   "yaw": 0,
+   "w": 0.6,
+   "h": 1.8,
+   "d": 0.6
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -2.5,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "训练室 TRAINING ROOM\nW A S D 走 walk · 鼠标 mouse: look\nE 读红牌 read the red signs\nEsc 摘下眼镜 take off the goggles"
+  },
+  {
+   "kind": "platform",
+   "x": 0,
+   "y": 0,
+   "z": -7,
+   "yaw": 0,
+   "w": 3,
+   "h": 0.9,
+   "d": 2,
+   "mat": "block"
+  },
+  {
+   "kind": "redsign",
+   "x": 0,
+   "y": 0.05,
+   "z": -6,
+   "yaw": 0,
+   "w": 2.2,
+   "h": 0.8,
+   "d": 0.03,
+   "text": "Space 跳 jump\n0.5-1.2 m 的台子: 跳上去 hop up"
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -10.5,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "Shift 冲刺 sprint\n冲向矮墙: 翻过去 vault it"
+  },
+  {
+   "kind": "wall",
+   "x": 0,
+   "y": 0,
+   "z": -14,
+   "yaw": 0,
+   "w": 3,
+   "h": 1,
+   "d": 0.3,
+   "mat": "block"
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -17,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "冲刺中按 Ctrl: 滑铲 slide\n从板下滑过去 under the slab\nC 爬行 crawl"
+  },
+  {
+   "kind": "pillar",
+   "x": -1.35,
+   "y": 0,
+   "z": -21,
+   "yaw": 0,
+   "w": 0.3,
+   "h": 0.8,
+   "d": 0.3
+  },
+  {
+   "kind": "pillar",
+   "x": 1.35,
+   "y": 0,
+   "z": -21,
+   "yaw": 0,
+   "w": 0.3,
+   "h": 0.8,
+   "d": 0.3
+  },
+  {
+   "kind": "platform",
+   "x": 0,
+   "y": 0.8,
+   "z": -21,
+   "yaw": 0,
+   "w": 3,
+   "h": 0.3,
+   "d": 2,
+   "mat": "concrete"
+  },
+  {
+   "kind": "platform",
+   "x": 0,
+   "y": 0,
+   "z": -28,
+   "yaw": 0,
+   "w": 3,
+   "h": 2.2,
+   "d": 3,
+   "mat": "brick"
+  },
+  {
+   "kind": "redsign",
+   "x": 0,
+   "y": 0.4,
+   "z": -26.5,
+   "yaw": 0,
+   "w": 2.6,
+   "h": 1.1,
+   "d": 0.03,
+   "text": "跳起, 按住鼠标键: 抓住边缘\njump, hold a mouse button: grab the lip\nW 爬上去 climb up · 松开 let go"
+  },
+  {
+   "kind": "platform",
+   "x": 0,
+   "y": 0,
+   "z": -36,
+   "yaw": 0,
+   "w": 4,
+   "h": 5,
+   "d": 3,
+   "mat": "brick"
+  },
+  {
+   "kind": "pipe",
+   "x": -1.2,
+   "y": 0,
+   "z": -34.5,
+   "yaw": 0,
+   "w": 0.12,
+   "h": 5,
+   "d": 0.12
+  },
+  {
+   "kind": "redsign",
+   "x": 0.7,
+   "y": 0.9,
+   "z": -34.5,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 1.1,
+   "d": 0.03,
+   "text": "左右鼠标键轮流抓住水管 grab the pipe\nhand over hand: left, right mouse in turn\nW 往上拉 pull up · 到顶 W 爬上去 climb over"
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 5,
+   "z": -35.5,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "后面有梯子 a ladder down the back\n或者跳下去: 7 m 以内安全 or drop: safe up to 7 m"
+  },
+  {
+   "kind": "ladder",
+   "x": 0,
+   "y": 0,
+   "z": -37.5,
+   "yaw": 3.1416,
+   "w": 0.6,
+   "h": 5,
+   "d": 0.1
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -41,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "空中对着墙按 Space: 蹬墙上跃 up-kick\n跳, 再按 Space, 抓住边缘 jump, Space, grab the lip"
+  },
+  {
+   "kind": "platform",
+   "x": 0,
+   "y": 0,
+   "z": -45,
+   "yaw": 0,
+   "w": 4,
+   "h": 3.4,
+   "d": 2,
+   "mat": "concrete"
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -49.5,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "单杠 swing bar: 跳起抓住 jump and grab\nSpace 加力摆荡 pump · 松开鼠标 let go"
+  },
+  {
+   "kind": "bar",
+   "x": 0,
+   "y": 0,
+   "z": -52.5,
+   "yaw": 0,
+   "w": 3,
+   "h": 2.2,
+   "d": 0.2
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -56,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "两墙之间按 X: 撑墙 chimney\n往上看, W 往上 look up, W: up\nX 或 Space 放开 let go"
+  },
+  {
+   "kind": "chimney",
+   "x": 0,
+   "y": 0,
+   "z": -60,
+   "yaw": 1.5708,
+   "w": 3,
+   "h": 4,
+   "d": 1.4,
+   "mat": "brick"
+  },
+  {
+   "kind": "redfloor",
+   "x": 0,
+   "y": 0,
+   "z": -64,
+   "yaw": 0,
+   "w": 2.4,
+   "h": 0.02,
+   "d": 1.4,
+   "text": "完成 DONE\n回到起点再练 walk back to practise again\nEsc 摘下眼镜 take off the goggles"
+  }
+ ]
+}

@@ -2,8 +2,9 @@
 // seen from a free camera (ui/editor-view.ts). The palette on the left places a piece where the cursor points (on a
 // wall, a wall piece faces out from it); clicking a piece selects it, dragging moves it (along its wall, a wall
 // piece), its handles size, lift and turn it; the panel on the right sets its numbers, its material, a sign's text, a
-// container's things. R turns, Delete removes, Esc lets go. The bar: the map's name, New, Save, Open, Export, Import,
-// Play (the map as a run of its own, from its spawn; Esc's Back to the editor returns) and Menu.
+// container's things. R turns, Delete removes, Esc lets go. The bar: the map's name, New, Save (to the maps folder,
+// ui/mapfiles.ts; never over the built-in tutorial), Export, Import, Play (the map as a run of its own, from its spawn;
+// Esc's Back to the editor returns) and Maps (the main menu's list of them, ui/maps-menu.ts).
 import * as THREE from 'three';
 import type { Game } from '../game';
 import { setMap } from '../world/build';
@@ -15,7 +16,7 @@ import { loot } from '../data/loot';
 import { readSave } from '../sim/save';
 import { bootMenu } from './boot-menu';
 import { EditView, enterPiece, alongLine, onPlane, toWorld, type Handle, type Ray } from './editor-view';
-import { savedMaps, loadMap, lastMap, saveMap, exportMap, parseMap } from './mapfiles';
+import { writeMap, exportMap, parseMap, TUTORIAL } from './mapfiles';
 
 /** The map being edited, kept while it's played. */
 let current: MapDoc | null = null;
@@ -23,8 +24,19 @@ const snap = (v: number, s: number) => Math.round(v / s) * s;
 const TURN = Math.PI / 12;
 const esc = (t: string) => t.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
-/** Opens the editor on a map: the one given, the one last edited or played, the one last saved, or a new one. */
-export function openEditor(game: Game, doc?: MapDoc) { return new Editor(game, doc ?? current ?? lastMap() ?? emptyMap()); }
+/** Opens the editor on a map: the one given, the one last edited or played, or a new one. */
+export function openEditor(game: Game, doc?: MapDoc) { return new Editor(game, doc ?? current ?? emptyMap()); }
+
+/** A map played as a run of its own, from its spawn (Esc's Back to the editor edits it). */
+export function playMap(game: Game, doc: MapDoc) {
+  current = doc;
+  setMap(doc);
+  game.load('map', Math.floor(Math.random() * 1e9), game.state.worldSeed ?? game.state.seed);
+  // (Keys pressed while editing don't carry into play: the laptop's, a jump.)
+  game.input.uiKeys.length = 0;
+  game.input.frame();
+  game.input.capture();
+}
 
 type Drag = { h: Handle | 'move' | 'look'; x: number; y: number; start: Piece; off?: THREE.Vector3; u0?: number; moved?: boolean };
 
@@ -82,25 +94,14 @@ export class Editor {
     this.game.editor = null;
   }
 
-  /** The map played as a run of its own, from its spawn. */
-  play() {
-    this.close();
-    setMap(this.doc);
-    this.game.load('map', Math.floor(Math.random() * 1e9), this.ws);
-    // (Keys pressed while editing don't carry into play: the laptop's, a jump.)
-    this.game.input.uiKeys.length = 0;
-    this.game.input.frame();
-    this.game.input.capture();
-  }
+  play() { this.close(); playMap(this.game, this.doc); }
 
   // The panels.
   private render() {
-    const opts = (xs: readonly string[], v: string) => xs.map(x => `<option${x === v ? ' selected' : ''}>${esc(x)}</option>`).join('');
     this.el.innerHTML = `<div class="ed-bar"><input class="ed-name" value="${esc(this.doc.name)}" spellcheck="false">` +
       `<button data-a="new">新建 New</button><button data-a="save">保存 Save</button>` +
-      `<select class="ed-open"><option value="">打开 Open…</option>${opts(savedMaps(), '')}</select>` +
       `<button data-a="export">导出 Export</button><button data-a="import">导入 Import</button><input type="file" class="ed-file" accept=".json,application/json" hidden>` +
-      `<button data-a="play" class="ed-play">试玩 Play</button><button data-a="menu">菜单 Menu</button><span class="ed-msg"></span></div>` +
+      `<button data-a="play" class="ed-play">试玩 Play</button><button data-a="menu">地图 Maps</button><span class="ed-msg"></span></div>` +
       `<div class="ed-pal">${GROUPS.map(([g, name]) => `<div class="ed-h">${name}</div>` + Object.entries(PIECES).filter(([, d]) => d.group === g).map(([k, d]) => `<button data-k="${k}" title="${d.zh}"${k === this.tool ? ' class="on"' : ''}>${d.en}</button>`).join('')).join('')}</div>` +
       `<div class="ed-insp"></div>` +
       `<div class="ed-help">右键拖动 Right-drag: look · W A S D Q E: fly (Shift fast) · click: place / select · drag: move · handles: size, lift, turn · R: turn · Del: delete · Esc: let go</div>`;
@@ -108,7 +109,6 @@ export class Editor {
     q<HTMLInputElement>('.ed-name').onchange = e => { this.doc.name = (e.target as HTMLInputElement).value.trim() || 'map'; };
     this.el.querySelectorAll<HTMLButtonElement>('.ed-bar button').forEach(b => (b.onclick = () => this.act(b.dataset.a!)));
     this.el.querySelectorAll<HTMLButtonElement>('.ed-pal button').forEach(b => (b.onclick = () => { this.tool = this.tool === b.dataset.k ? '' : b.dataset.k!; this.sel = -1; this.render(); }));
-    q<HTMLSelectElement>('.ed-open').onchange = e => { const m = loadMap((e.target as HTMLSelectElement).value); if (m) this.load(m, 'opened'); };
     q<HTMLInputElement>('.ed-file').onchange = async e => {
       const f = (e.target as HTMLInputElement).files?.[0];
       const m = f ? parseMap(await f.text()) : null;
@@ -123,11 +123,14 @@ export class Editor {
 
   private act(a: string) {
     if (a === 'new') this.load(emptyMap(), 'new map');
-    else if (a === 'save') { saveMap(JSON.parse(JSON.stringify(this.doc))); this.render(); this.say('saved'); }
+    else if (a === 'save') {
+      if (this.doc.name === TUTORIAL) { this.say('the built-in tutorial stays as it is: rename it to save'); return; }
+      writeMap(JSON.parse(JSON.stringify(this.doc))).then(() => this.say('saved'), () => this.say('not saved'));
+    }
     else if (a === 'export') exportMap(this.doc);
     else if (a === 'import') this.el.querySelector<HTMLInputElement>('.ed-file')!.click();
     else if (a === 'play') this.play();
-    else if (a === 'menu') { this.close(); bootMenu(this.game, readSave(localStorage)); }
+    else if (a === 'menu') { this.close(); bootMenu(this.game, readSave(localStorage), true); }
   }
 
   /** The selected piece's panel: where it is, which way, its sizes; its material, text or things. */

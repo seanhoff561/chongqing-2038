@@ -29,7 +29,7 @@ export default async function ({ open, fail, screenshot }) {
     if (id !== 'map') await click(`#laptop .lt-task [data-app="${id}"]`);
     d = await desk();
     if (d.front !== id) fail('focus', `the ${id} icon brought ${d.front} to the front`);
-    if (['drone', 'cams', 'logs', 'training'].includes(id) && !(d.locked && /needs/.test(d.text))) fail('focus', `locked ${id} says nothing of what it needs: ${d.text}`);
+    if (['drone', 'cams', 'logs'].includes(id) && !(d.locked && /needs/.test(d.text))) fail('focus', `locked ${id} says nothing of what it needs: ${d.text}`);
   }
   if (d.open.join() !== apps.join() || d.shown.length !== 9) fail('focus', `not all open: ${JSON.stringify(d)}`);
   await screenshot(page, 'focus');

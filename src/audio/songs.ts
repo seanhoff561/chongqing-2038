@@ -7,7 +7,11 @@ import type { Audio } from './audio';
 declare global {
   interface Window {
     /** the desktop game's own (desktop/preload.cjs) */
-    desktop?: { songs: () => Promise<string[]>; folder: (which: 'songs' | 'maps') => Promise<void> };
+    desktop?: {
+      songs: () => Promise<string[]>; folder: (which: 'songs' | 'maps') => Promise<void>;
+      /** the maps folder's .json files (M10-33) */
+      maps: { list: () => Promise<string[]>; read: (file: string) => Promise<string | null>; write: (file: string, text: string) => Promise<void>; remove: (file: string) => Promise<void> };
+    };
   }
 }
 

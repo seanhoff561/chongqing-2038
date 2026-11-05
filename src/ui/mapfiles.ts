@@ -1,21 +1,47 @@
-// Maps kept in the browser (M10-32): saved by name in localStorage, the last one edited remembered; exported as a
-// .json file to download and imported from one, checked piece by piece as it's read.
+// The maps (M10-32, M10-33): kept in the desktop game's maps folder (Documents/Chongqing 2038/maps, a .json file each,
+// named after the map) or, in the browser, by name in localStorage; exported as a .json file to download and imported
+// from one, checked piece by piece as it's read. The tutorial is built in (src/data/tutorial.json): listed first,
+// played and copied, never deleted or overwritten.
 import type { MapDoc, Piece } from '../world/sets/usermap';
 import { PIECES } from '../world/sets/pieces';
+import tutorial from '../data/tutorial.json';
 
-const KEY = 'cq2038.maps', LAST = 'cq2038.maps.last';
+/** The built-in tutorial (a copy each time: the editor changes what it's given). */
+export const TUTORIAL = tutorial.name;
+export const tutorialMap = (): MapDoc => parseMap(JSON.stringify(tutorial))!;
 
+const KEY = 'cq2038.maps';
+const folder = () => window.desktop?.maps;
+/** A map's file in the folder: its name, with only letters, digits, spaces, dots, dashes and underscores. */
+const file = (name: string) => `${name.replace(/[^\p{L}\p{N}_ .-]+/gu, '_').trim() || 'map'}.json`;
 function all(): Record<string, MapDoc> {
   try { return JSON.parse(localStorage.getItem(KEY) ?? '{}'); } catch { return {}; }
 }
-export const savedMaps = () => Object.keys(all()).sort();
-export const loadMap = (name: string): MapDoc | null => all()[name] ?? null;
-export const lastMap = (): MapDoc | null => loadMap(localStorage.getItem(LAST) ?? '');
-export function saveMap(doc: MapDoc) {
+
+/** The saved maps' names, sorted (in the folder, its files' names). */
+export async function listMaps(): Promise<string[]> {
+  const f = folder();
+  return (f ? (await f.list()).map(n => n.slice(0, -5)) : Object.keys(all())).sort((a, b) => a.localeCompare(b));
+}
+export async function readMap(name: string): Promise<MapDoc | null> {
+  const f = folder();
+  if (!f) return all()[name] ?? null;
+  const t = await f.read(file(name)), m = t ? parseMap(t) : null;
+  return m && { ...m, name };
+}
+export async function writeMap(doc: MapDoc) {
+  const f = folder();
+  if (f) return f.write(file(doc.name), JSON.stringify(doc, null, 1));
   const maps = all();
   maps[doc.name] = doc;
   localStorage.setItem(KEY, JSON.stringify(maps));
-  localStorage.setItem(LAST, doc.name);
+}
+export async function removeMap(name: string) {
+  const f = folder();
+  if (f) return f.remove(file(name));
+  const maps = all();
+  delete maps[name];
+  localStorage.setItem(KEY, JSON.stringify(maps));
 }
 
 /** The map as a file to download, named after it. */
