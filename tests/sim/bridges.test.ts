@@ -13,6 +13,7 @@ import { TRUSS, at, rail, road } from '../../src/world/yuzhong/bridges';
 import { CHECK } from '../../src/world/yuzhong/checkpoint';
 import { B, type SimState } from '../../src/sim/types';
 import { run, aim, secs, settle, LMB, RMB } from './helpers';
+import { walk, crossDeck } from './routekit';
 
 type V3 = { x: number; y: number; z: number };
 const w = getWorld('yuzhong'), [b, q] = w.bridges!, H = TRUSS.half;
@@ -29,23 +30,7 @@ function at0(p: V3) {
   run(s, w, 10);
   return s;
 }
-/** Walk him to each point in turn (sprinting if asked), hopping when he's stopped against something. */
-function go(s: SimState, pts: V3[], buttons = 0): number {
-  const p = s.player;
-  for (let i = 0; i < pts.length; i++) {
-    const g = pts[i];
-    let still = 0, last = { ...p.pos };
-    const until = secs(30 + Math.hypot(g.x - p.pos.x, g.z - p.pos.z) / 2);
-    for (let k = 0; k < until && Math.hypot(g.x - p.pos.x, g.z - p.pos.z) > 0.6 && !s.ended; k++) {
-      const hop = still > 30 && still % 40 < 2;
-      run(s, w, 1, { my: 1, yaw: Math.atan2(-(g.x - p.pos.x), -(g.z - p.pos.z)), buttons: buttons | (hop ? B.JUMP : 0), pressed: hop ? B.JUMP : 0 });
-      if (Math.hypot(p.pos.x - last.x, p.pos.z - last.z) < 0.02) still++; else { still = 0; last = { ...p.pos }; }
-    }
-    if (s.ended) return pts.length;
-    if (Math.hypot(g.x - p.pos.x, g.z - p.pos.z) > 1) return i;
-  }
-  return pts.length;
-}
+const go = (s: SimState, pts: V3[]) => walk(s, w, pts);
 
 describe('the bridges (M6-07, M6-08)', () => {
   it("has the Dongshuimen's truss over the Yangtze, its road deck and rail deck, and the Qiansimen's span fallen", () => {
@@ -89,23 +74,8 @@ describe('the bridges (M6-07, M6-08)', () => {
 
   it('crosses the truss from its north end to the south bank: the stringers, the gap, the derailed car', async () => {
     await settle();
-    const s = at0(w.teleports.find(t => t.name === 'Dongshuimen Bridge: rail deck')!), [a0, a1] = b.holes![0], [g0, g1] = b.holes![1], c = b.car!;
-    // Up the deck and along a stringer where the plates are gone.
-    expect(go(s, [P(a0 - 6, -2.6), P(a0 - 1, -2.6), P(a1 + 3, -2.6), P(g0 - 30, -5)]), where(s)).toBe(4);
-    // A run and a jump across the gap.
-    const p = s.player;
-    for (let k = 0; k < secs(10) && (p.pos.x - b.ox) * b.ux + (p.pos.z - b.oz) * b.uz < g0 - 0.3; k++) run(s, w, 1, { my: 1, yaw: Math.atan2(-b.ux, -b.uz), buttons: B.SPRINT });
-    run(s, w, 1, { my: 1, yaw: Math.atan2(-b.ux, -b.uz), buttons: B.SPRINT | B.JUMP, pressed: B.JUMP });
-    run(s, w, secs(1.5), { my: 1, yaw: Math.atan2(-b.ux, -b.uz), buttons: B.SPRINT | B.JUMP });
-    expect(Math.abs(p.pos.y - rail(b, g1)), where(s)).toBeLessThan(0.5);
-    // Up onto the derailed car (its lip grabbed, pulled up and over), along it, down, and on to the Nan'an end.
-    expect(go(s, [P(c - 3, -5), P(c - 0.9, -5)]), where(s)).toBe(2);
-    const lip = P(c, -5), top = lip.y + 2;
-    for (let k = 0; k < 40 && p.mode !== 'grip'; k++) { aim(s, lip.x, top - 0.1, lip.z); run(s, w, 1, { buttons: LMB }); }
-    expect(p.mode, where(s)).toBe('grip');
-    run(s, w, secs(3), { buttons: LMB, my: 1 });
-    expect(p.pos.y, where(s)).toBeGreaterThan(top - 0.2);
-    expect(go(s, [P(c + 5, -5), P(c + 15, -5), P(b.tb - 2, -5)]), where(s)).toBe(3);
+    const s = at0(w.teleports.find(t => t.name === 'Dongshuimen Bridge: rail deck')!);
+    expect(crossDeck(s, w), where(s)).toBe(5);
     expect(s.ended?.route, where(s)).toBe('bridge');
   });
 });

@@ -148,7 +148,7 @@ export const items: ItemDef[] = [
   I('hospcard', '医院门禁卡', 'Hospital access card', 1, 1, 0.01, 'key', 'Hospital staff doors.'),
   I('telcard', '电信门禁卡', 'Exchange access card', 1, 1, 0.01, 'key', 'Telecom exchange gate.'),
   I('netcreds', '网络凭证', 'Network credentials', 1, 1, 0.01, 'key', 'Admin tokens for the exchange.'),
-  I('schedule', '检修时刻表', 'Rail-deck schedule', 1, 1, 0.01, 'key', 'Maintenance drone timings on the Line 6 deck.'),
+  I('schedule', '检修时刻表', 'Rail-deck schedule', 1, 1, 0.01, 'key', 'Maintenance drones on the Line 6 deck of the Dongshuimen Bridge: no. 1 leaves the north bridgehead at 00:00, 04:00, 08:00, 12:00, 16:00 and 20:00 and turns at the Nan\'an end two hours on; no. 2 the same hours from the Nan\'an end. Inspection range 20 m.'),
   I('phone', '破手机', 'Cracked phone', 1, 1, 0.15, 'misc', 'His father\'s. One voicemail: "Weiwei, it\'s Dad. What\'s happening where you are? Pick up. It\'s chaos at the substation. Those things... they\'re pulling the breakers. Don\'t come home, you hear me? Don\'t come back. Go to that tunnel of yours and hide. Look after yourself. Yourself first. Your mum and Xiaoyu, I\'ll..." (the line breaks up)'),
   I('hikingpack', '登山包', 'Hiking pack', 3, 3, 1.8, 'wear', 'A bigger backpack (10 x 7).'),
   // Found documents (M10-37) and his sister's notes (M10-39): a sheet each, its text what it says.

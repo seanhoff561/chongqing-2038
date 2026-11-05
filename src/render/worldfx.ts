@@ -17,6 +17,7 @@ import { SiteLoad } from './siteload';
 import { Blasts } from './blastfx';
 import { BoatView } from './boat3d';
 import { CableView } from './cable3d';
+import { DeckView } from './deck3d';
 
 export class WorldFx {
   private rockets: THREE.Group[] = [];
@@ -27,6 +28,7 @@ export class WorldFx {
   private load: SiteLoad | null = null;
   private boat: BoatView;
   private cable: CableView;
+  private deck: DeckView;
   readonly blasts: Blasts;
   private trailIn = 0;
   private smokeIn = 0;
@@ -46,6 +48,7 @@ export class WorldFx {
     this.blasts = new Blasts(scene, marks);
     this.boat = new BoatView(scene);
     this.cable = new CableView(scene);
+    this.deck = new DeckView(scene);
   }
 
   /** Every frame: `held` what's in his hand, `aiming` the right mouse held, `cam` where he looks from. */
@@ -57,6 +60,7 @@ export class WorldFx {
     this.rigs.update(s);
     this.boat.update(s, w);
     this.cable.update(s, w);
+    this.deck.update(s, w);
     this.fences.update(s, w);
     this.shutters.update(s, w, cam);
     if (this.load?.w !== w) { if (this.load) this.scene.remove(this.load.group); this.load = new SiteLoad(w); this.scene.add(this.load.group); }

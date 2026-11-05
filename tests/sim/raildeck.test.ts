@@ -1,7 +1,9 @@
 // M7-02, M7-03: Route A on the Dongshuimen Bridge. The sensor bus relay at the Xinhua Road substation: bare-handed
 // its live cabinet throws him off; with bolt cutters and insulated gloves (his father's, in his locker there) it's
 // cut and the deck is deaf till the next 06:00, when it's mended. Live, the deck feels him move on it and 20 s later
-// he's caught.
+// he's caught. The rail deck's maintenance drones on their schedule: with the sensors cut and a jammer running he
+// crosses the truss to the Nan'an end and the run ends there (桥下), Xiaoyu with him if she said she'd come; without
+// the jammer a drone sees him, and without the cut the deck feels him: caught on the truss.
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { createState } from '../../src/sim/sim';
@@ -9,10 +11,10 @@ import { teleport } from '../../src/sim/player';
 import { lookTarget } from '../../src/sim/interact';
 import { addItem } from '../../src/sim/inventory';
 import { at, rail } from '../../src/world/yuzhong/bridges';
-import { BUS, DECK, busDown } from '../../src/sim/bridge';
+import { BUS, DECK, busDown, deckDrones } from '../../src/sim/bridge';
 import { B, type SimState } from '../../src/sim/types';
 import { run, secs, settle } from './helpers';
-import { standBy, hold } from './routekit';
+import { standBy, hold, crossDeck } from './routekit';
 
 const w = getWorld('yuzhong'), b = w.bridges![0], sub = w.secure!.find(q => q.id === 'substation')!;
 const relay = w.inter.find(i => i.kind === 'busrelay')!;
@@ -80,5 +82,56 @@ describe('Route A: the bridge sensor relay (M7-02)', () => {
     expect(s.deck?.spotted).toBeUndefined();
     run(s, w, secs(DECK.feel + 0.5), { my: 1, buttons: B.CROUCH, yaw: Math.atan2(-b.ux, -b.uz) });
     expect(s.deck?.spotted).toBeDefined();
+  });
+});
+
+describe('Route A: the rail deck (M7-03)', () => {
+  const T = (x: number, z: number) => (x - b.ox) * b.ux + (z - b.oz) * b.uz;
+  /** At the rail deck's north end at an hour of day 2, the bus cut or not, a jammer in his pack (on) or not. */
+  function onDeck(hour: number, cut: boolean, jam: boolean) {
+    const s = fresh(24 + hour), tp = w.teleports.find(t => t.name === 'Dongshuimen Bridge: rail deck')!;
+    if (cut) s.bus = 2 * DAY + 6 * 3600;
+    teleport(s.player, tp.x, tp.y + 0.1, tp.z);
+    run(s, w, 10);
+    if (jam) { addItem(s, s.inv.pack, 'jammer', 1); run(s, w, 1, { cmds: [{ c: 'use', uid: s.inv.pack.items.find(i => i.id === 'jammer')!.uid }] }); expect(s.jam).toBeDefined(); }
+    return s;
+  }
+
+  it('flies its two maintenance drones on their schedule, out from either end every four hours', () => {
+    const s = fresh(0), at = (h: number) => { s.time = DAY + h * 3600; return deckDrones(s, b).map(q => T(q.x, q.z)); };
+    const [n0, s0] = at(0), [n2, s2] = at(2), [m1, m1b] = at(1);
+    expect(n0).toBeLessThan(b.ta + 10);
+    expect(s0).toBeGreaterThan(b.tb - 10);
+    expect(n2).toBeGreaterThan(b.tb - 10);
+    expect(s2).toBeLessThan(b.ta + 10);
+    expect(Math.abs(m1 - m1b)).toBeLessThan(2);
+    expect(at(4)).toEqual(at(0));
+  });
+
+  it("with the sensors cut and a jammer running, crosses the truss to the Nan'an end: 桥下, Xiaoyu with him", async () => {
+    await settle();
+    const s = onDeck(1, true, true);
+    s.sister = { route: 'bridge', x: 0, y: 0, z: 0, yaw: 0, with: true };
+    // (At 01:00 drone 2 is mid-deck coming north: it passes him on the way.)
+    const [, d2] = deckDrones(s, b);
+    expect(T(d2.x, d2.z)).toBeGreaterThan(T(s.player.pos.x, s.player.pos.z) + 100);
+    expect([crossDeck(s, w), s.dead ?? null]).toEqual([5, null]);
+    expect(s.ended).toMatchObject({ route: 'bridge', sister: true });
+    expect(s.deck?.spotted).toBeUndefined();
+  });
+
+  it('with the sensors cut but no jammer, a maintenance drone sees him and he is caught on the truss', () => {
+    const s = onDeck(0, true, false);
+    run(s, w, secs(2));
+    expect(s.deck?.spotted, 'drone 1 leaving the north end').toBeDefined();
+    run(s, w, secs(DECK.caught), { my: 1, yaw: Math.atan2(-b.ux, -b.uz) });
+    expect(s.dead).toBe('bridge');
+  });
+
+  it('with a jammer but the sensors live, the deck feels him and he is caught on the truss', () => {
+    const s = onDeck(1, false, true);
+    expect(crossDeck(s, w)).toBeLessThan(5);
+    expect(s.dead).toBe('bridge');
+    expect(s.ended).toBeUndefined();
   });
 });
