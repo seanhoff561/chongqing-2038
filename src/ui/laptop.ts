@@ -131,6 +131,25 @@ export class LaptopUI {
     this.flyShown = html; this.flying.innerHTML = html; this.flying.style.display = f ? 'block' : 'none';
   }
 
+  /** An app's page: what it shows, or what it needs if he can't use it yet. */
+  private html(app: string, sit: boolean) {
+    const P = PAGES.find(q => q.id === app)!, locked = P.needs?.(this.game);
+    return locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : (app === 'map' && sit ? this.map.tools() : '') + P.draw(this.game);
+  }
+
+  /** As the world loads: the page built and laid out once, unseen, and its map drawn (the city's plots gathered), so
+   *  the first time he takes it out has nothing to build (M10-64). */
+  warm() {
+    const st = this.root.style;
+    st.visibility = 'hidden'; st.display = 'block';
+    this.desk.render(false, PAGES[this.page].id, app => this.html(app, false));
+    const slot = this.desk.win('map', false)?.content.querySelector('.lt-map');
+    if (slot) this.map.place(slot);
+    this.map.draw();
+    this.root.getBoundingClientRect();
+    st.display = 'none'; st.visibility = '';
+  }
+
   /** Every frame: on the glass while it's out, its corner and page kept up to date. */
   update(dt: number) {
     this.flyHud();
@@ -158,10 +177,7 @@ export class LaptopUI {
     st.setProperty('--grain', (0.012 + 0.05 * g.laptop3d.focus).toFixed(3));
     st.setProperty('--bloom', (0.08 + 0.22 * night.k).toFixed(3));
     // The desktop: each app's page in its window, redrawn only when it changes.
-    const { shown } = this.desk.render(sit, PAGES[this.page].id, app => {
-      const P = PAGES.find(q => q.id === app)!, locked = P.needs?.(g);
-      return locked ? `<div class="lt-locked">${locked[0]}<br><span>${locked[1]}</span></div>` : (app === 'map' && sit ? this.map.tools() : '') + P.draw(g);
-    });
+    const { shown } = this.desk.render(sit, PAGES[this.page].id, app => this.html(app, sit));
     this.frame++;
     // The map, drawn into its place a few times a second; the feed likewise.
     const mw = this.desk.win('map', sit), slot = mw && shown.includes(mw) ? mw.content.querySelector('.lt-map') : null;

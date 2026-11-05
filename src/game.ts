@@ -191,6 +191,7 @@ export class Game {
     this.sky.overcast = sc.overcast ?? 0;
     this.applyDraw();
     if (this.shown !== this.world) { this.view.setWorld(this.world); this.shown = this.world; }
+    this.laptop.warm();
     this.units?.dispose();
     this.units = new UnitView(this.state.units);
     this.view.scene.add(this.units.group);

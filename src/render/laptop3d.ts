@@ -25,7 +25,10 @@ export class Laptop3D {
     const { lid, deck, screen } = buildLaptop(LAPTOP3D.w, LAPTOP3D.h);
     this.screen = screen; this.deck = deck;
     this.group.add(lid, deck);
-    this.group.visible = false;
+    // (Never hidden: put away it's drawn shrunk to nothing, so its shaders stay compiled for the scene's lights as they
+    // change (night, lamps streaming in), and the screen's glow in it (ui/laptop.ts) is always among those lights, so
+    // taking it out changes nothing to compile, here or for every material in view: M10-64.)
+    this.group.traverse(o => { o.frustumCulled = false; });
     this.group.rotation.order = 'YXZ';
     scene.add(this.group);
   }
@@ -36,7 +39,7 @@ export class Laptop3D {
     this.up += ((open ? 1 : 0) - this.up) * k;
     this.focus += ((sit ? 1 : 0) - this.focus) * k;
     if (!open && this.up < 0.02) this.up = 0;
-    this.group.visible = this.up > 0;
+    this.group.scale.setScalar(this.up > 0 ? 1 : 1e-4);
     const at = LAPTOP3D.held.clone().lerp(LAPTOP3D.focus, this.focus), yaw = cam.rotation.y;
     at.y -= (1 - this.up) * 0.4;
     this.group.position.copy(cam.position).add(at.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw));
@@ -47,7 +50,7 @@ export class Laptop3D {
   /** The screen's corners on the page (CSS pixels: top left, top right, bottom right, bottom left), or null while
    *  it's away. */
   corners(cam: THREE.Camera, width: number, height: number): [number, number][] | null {
-    if (!this.group.visible || this.up < 0.9) return null;
+    if (this.up < 0.9) return null;
     this.group.updateMatrixWorld();
     cam.updateMatrixWorld();
     const { w, h } = LAPTOP3D, out: [number, number][] = [];
