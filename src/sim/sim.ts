@@ -44,7 +44,7 @@ import { stepMap } from './automap';
 import { stepBinos } from './binoculars';
 import { stepSdr } from './sdr';
 import './camtap';
-import './boat';
+import { stepBoat } from './boat';
 import './pry';
 import './water';
 import './backpack';
@@ -124,6 +124,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepPlanks(state, world);
   stepInteract(state, world, input);
   stepPlayer(state, world, input);
+  stepBoat(state, world, input);
   stepSight(state, world);
   stepAlert(state, world);
   stepChangeover(state, world);

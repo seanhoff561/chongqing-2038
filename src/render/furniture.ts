@@ -41,7 +41,7 @@ function sister(standing: boolean) {
 }
 
 /** A model's parts merged, one mesh to a material (a dropped thing's dozen parts in a few draw calls: M10-04). */
-function merged(o: THREE.Object3D) {
+export function merged(o: THREE.Object3D) {
   o.updateMatrixWorld(true);
   const by = new Map<THREE.Material, THREE.BufferGeometry[]>(), g = new THREE.Group();
   o.traverse(c => {

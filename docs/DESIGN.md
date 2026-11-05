@@ -307,6 +307,8 @@ Every site has an approach unwatched for 10 s or more (the coverage test).
 | C. River at night 雾中 | the police boat + 20 L of fuel + a battery + the key or a CAN hotwire; past the buoys and drone boats in fog, drifting, or jammed |
 | D. Underground 隧道尽头 | the flooded section (pumps on the spare fuse, or the oxygen kit), the blast door (grinder, charge or keycard), the seismic sensors |
 
+**The patrol boat (M7-08, `sim/boat.ts`).** Boat 3 lies alongside the river-police pier, drawn and moved from the run's state (`render/boat3d.ts`). E on it from the pontoon does the next thing it needs that he has, each a hold: pour in a jerrycan (20 L of diesel, 5 s), wire in a car battery (4 s; one under 25% charge won't turn the engine over, and a better one takes its place), hotwire its controller with the CAN interface (8 s); with all that, or its key in his pack, E takes the helm and casts off. At the helm: W and S throttle ahead (7 m/s) and astern (2 m/s), A and D the rudder (it turns better with way on), E starts and stops the engine (a start draws 2% of the battery; a flat one just clicks), jump steps off over the side onto a footing within 6 m, else into the river (the kill cord stops the engine). With the engine off he paddles, 0.6 m/s and silent. The river's current (1.8 m/s) carries it on toward the open reach past Chaotianmen either way; it runs up against banks, pontoons and piers and slides along them. The engine is heard 60 m round and burns its 20 L in about 25 minutes at full throttle.
+
 There is one spare HV fuse (a second in the Raffles hub). The construction site feeds three routes. Each route has its own short ending, with or without his sister (she waits at the route the run's seed picked, section 2).
 
 ## 11. The laptop (U-104)
