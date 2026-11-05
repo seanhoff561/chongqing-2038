@@ -49,6 +49,7 @@ import { stepSdr } from './sdr';
 import './camtap';
 import { stepBoat } from './boat';
 import { stepCabin } from './cablecar';
+import { stepDeck } from './bridge';
 import { stepTrolley } from './trolley';
 import './pry';
 import './water';
@@ -178,6 +179,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepBody(state);
   stepKitLines(state, world);
   stepRiver(state, world);
+  stepDeck(state, world);
   stepEscape(state, world);
   stepPlaces(state, world);
   stepBeats(state);

@@ -242,4 +242,8 @@ export interface SimState {
   wheelHit?: number;
   /** a district's relay cut (M6-14): until when its machines can't pass word on */
   relayDown?: Record<string, number>;
+  /** the Dongshuimen Bridge's sensor bus relay cut (M7-02): until when (the next 06:00) the deck is deaf */
+  bus?: number;
+  /** on its truss (M7-02, M7-03): how long the live bus has felt him moving (real s), when it or a drone had him */
+  deck?: { felt?: number; spotted?: number };
 }
