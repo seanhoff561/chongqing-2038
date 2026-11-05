@@ -3,9 +3,9 @@
 // The alley is the one at the heart of the district's routes, nearest the middle of its other key points (Jiaochangkou,
 // the top of Shibati's stair, the riverfront); a drainpipe goes up the taller wall beside it onto the roofs. The
 // chamber is sealed: no tunnel joins it to the Grand Tunnel or the underground, and no stairway mouth or way down is
-// within 60 m of the grate. Its one other way out (M4-24) has to be opened first: a rubble fall at the end of the
-// passage stub east, cleared with a crowbar, and past it the old tunnel jogs on under the alley to an old vent with iron
-// rungs up to a manhole further along.
+// within 60 m of the grate. Its other old way out (M4-24) has fallen in: rubbish heaped across the passage stub east,
+// impassable and unnamed (M10-52); past it the old tunnel jogs on under the alley to an old vent with iron rungs up to
+// a manhole further along.
 import { solid, carve, turn, type Solid, type Box } from '../geom';
 import { MAT } from '../mats';
 import { hideoutParts, HIDEOUT } from '../sets/hideout';
@@ -124,8 +124,8 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
     solid(px - t, floor + 3, pz - hs, px - hs, sh, pz + hs, MAT.stone), solid(px + hs, floor + 3, pz - hs, px + t, sh, pz + hs, MAT.stone),
     solid(px - r, gy - 0.4, pz - r, px + r, gy + 0.02, pz - hs, MAT.concrete), solid(px - r, gy - 0.4, pz + hs, px + r, gy + 0.02, pz + r, MAT.concrete),
     solid(px - r, gy - 0.4, pz - hs, px - hs, gy + 0.02, pz + hs, MAT.concrete), solid(px + hs, gy - 0.4, pz - hs, px + r, gy + 0.02, pz + hs, MAT.concrete)];
-  // The old way out (M4-24): the rubble fall at the stub's end, the tunnel on past it with its jog, the vent shaft
-  // with its rungs up to a manhole, paved round like the grate.
+  // The old way out (M4-24), fallen in: the rubbish heaped at the stub's end, the tunnel on past it with its jog, the
+  // vent shaft with its rungs up to a manhole, paved round like the grate.
   const d = q.exit, J = EXIT.jog, eh = EXIT.half, [ex, ez] = P(px + d, pz + J), top = heightAt(g, ex, ez)!, et = eh + 0.3, er = eh + 1.3, cx = px + d, cz = pz + J;
   const exitCuts: Box[] = [
     { x0: px + 16, y0: floor, z0: pz - 0.9, x1: px + 20, y1: floor + 2.2, z1: pz + 0.9 },
@@ -139,11 +139,11 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
     solid(cx - er, top - 0.4, cz - er, cx + er, top + 0.02, cz - eh, MAT.concrete), solid(cx - er, top - 0.4, cz + eh, cx + er, top + 0.02, cz + er, MAT.concrete),
     solid(cx - er, top - 0.4, cz - eh, cx - eh, top + 0.02, cz + eh, MAT.concrete), solid(cx + eh, top - 0.4, cz - eh, cx + er, top + 0.02, cz + eh, MAT.concrete));
   for (const b of h.cuts.concat(exitCuts)) rock = carve(rock, b);
-  const shut = [{ ...solid(px + 14.45, floor, pz - 0.95, px + 15.95, floor + 2.35, pz + 0.95, MAT.hidden), part: 'airraid-plug' }, { ...solid(cx - eh, top - 0.08, cz - eh, cx + eh, top, cz + eh, MAT.hidden), part: 'airraid-exit' }];
-  h.inter.push({ id: 'airraid-plug', kind: 'rubble', x: px + 14.4, y: floor + 1, z: pz, r: 1.3, zh: '塌方', en: 'Rubble', data: { part: 'airraid-plug' } },
-    { id: 'airraid-exit', kind: 'grate', x: cx, y: top - 0.04, z: cz, r: 1.5, zh: '井盖', en: 'Manhole cover', data: { part: 'airraid-exit', half: eh, manhole: true } });
+  // (The rubbish heaped across the stub can't be passed and isn't named: M10-52, U-104.)
+  const shut = [solid(px + 14.45, floor, pz - 0.95, px + 15.95, floor + 2.35, pz + 0.95, MAT.hidden), { ...solid(cx - eh, top - 0.08, cz - eh, cx + eh, top, cz + eh, MAT.hidden), part: 'airraid-exit' }];
+  h.inter.push({ id: 'airraid-exit', kind: 'grate', x: cx, y: top - 0.04, z: cz, r: 1.5, zh: '井盖', en: 'Manhole cover', data: { part: 'airraid-exit', half: eh, manhole: true } });
   // (Three heaps deep, across the passage.)
-  h.props.push(...[[14.9, 0, 0], [15.3, -0.1, 2.9], [15.7, 0.1, 0.3]].map(([x, z, t]) => ({ kind: 'rubble', x: px + x, y: floor, z: pz + z, yaw: Math.PI / 2 + t, w: 1.9, h: 2.4, text: 'airraid-plug' })), { kind: 'hatch', x: cx, y: top - 0.02, z: cz, yaw: 0, w: 2 * eh, text: 'airraid-exit' });
+  h.props.push(...[[14.9, 0, 0], [15.3, -0.1, 2.9], [15.7, 0.1, 0.3]].map(([x, z, t]) => ({ kind: 'rubble', x: px + x, y: floor, z: pz + z, yaw: Math.PI / 2 + t, w: 1.9, h: 2.4 })), { kind: 'hatch', x: cx, y: top - 0.02, z: cz, yaw: 0, w: 2 * eh, text: 'airraid-exit' });
   h.climbables.push({ kind: 'ladder', x: cx, z: cz - eh, y0: floor, y1: top + 1, nx: 0, nz: 1 });
   h.zones.push({ kind: 'under', box: { x0: px + 15, y0: floor - 1, z0: pz - 1, x1: cx + 1, y1: top - 0.5, z1: cz + 1 } });
   // The ground holed over both shafts.
@@ -162,8 +162,6 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
   for (const [k, v] of Object.entries(h.at)) { const [x, z] = P(v.x, v.z); out.at[k] = { x, y: v.y, z }; }
   out.at.grate = { x: px, y: gy, z: pz };
   out.at.exit = { x: ex, y: top, z: ez };
-  // (The way out from the chamber, for tests: past the shaft's foot, through the rubble, the jog, the vent's foot.)
-  ([[13, 0], [17.4, 0], [19.1, 0], [19.1, J], [d - 0.3, J]] as const).forEach(([a, b], n) => { const [x, z] = P(px + a, pz + b); out.features.push({ kind: 'homeExit', x, y: floor, z, group: n }); });
   out.sites.push({ id: 'airraid', kind: 'cellar', x: out.at.table.x, y: floor, z: out.at.table.z, bed: null, table: 'airraid-table', containers: ['airraid-stash'], exits: 1, windows: 0, streetSides: 0 });
   // The alley's dressing: shop neon on both walls over the grate (a noodle bar's, a mahjong room's), its glow, a bin.
   const ux = -q.az, uz = q.ax, half = q.gap / 2;

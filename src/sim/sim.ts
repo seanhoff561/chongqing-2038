@@ -39,6 +39,7 @@ import { stepHeli } from './heli';
 import { stepPa } from './announce';
 import { stepLoose } from './loose';
 import { stepLaptop, laptopHands } from './laptop';
+import { stepOpening, openingInput } from './opening';
 import { stepScan } from './scan';
 import { stepMap } from './automap';
 import { stepBinos } from './binoculars';
@@ -117,7 +118,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   state.events.length = 0;
   // (Flying the drone, M5-11: his body takes none of his input.)
   // (Flying the drone, or holding the laptop up: U-104.)
-  const input = laptopHands(state, stillWhileFlying(state, raw));
+  const input = openingInput(state, laptopHands(state, stillWhileFlying(state, raw)));
   applyCmds(state, world, input.cmds);
   stepRopes(state);
   stepRappel(state, input);
@@ -141,6 +142,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepPa(state, world);
   stepLoose(state, world);
   stepLaptop(state);
+  stepOpening(state);
   stepPower(state);
   stepScan(state, world);
   stepMap(state, world);

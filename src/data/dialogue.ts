@@ -4,6 +4,9 @@ import { ANNOUNCE } from './announce';
 
 export interface Line { id: string; speaker: string; zh: string; en: string }
 
+/** Seconds a subtitle shows: as long as it takes to read (each line's recording is shorter). */
+export const readSecs = (en: string) => 1.5 + en.length * 0.06;
+
 export const SPEAKERS: Record<string, [string, string]> = { liguorong: ['李国荣', 'Li Guorong'], pa: ['广播', 'Speakers'], anna: ['安娜', 'Anna'], liwei: ['李伟', 'Li Wei'], xiaoyu: ['小雨', 'Xiaoyu'], none: ['', ''] };
 
 /** The one voicemail on his father's phone, left the night of the attack (M3-19). */
@@ -67,6 +70,23 @@ export const MAP_LINES: Record<string, Line[]> = {
   steps: [{ id: 'map-steps', speaker: 'anna', zh: '朝天门下面的江边石梯。起雾的晚上，有人从这里走。', en: 'The river steps below Chaotianmen. On foggy nights, people leave from here.' }],
 };
 
+/** The opening (M10-52, sim/opening.ts), in the director's words (U-104): Anna on the laptop on his bag as he wakes;
+ *  then, the first time he opens it, her speech, mid-sentence. */
+export const WAKE_LINES: Line[] = [
+  { id: 'wake-1', speaker: 'anna', zh: '你醒了……我还以为你死了呢，哈哈哈。', en: 'You woke up... I thought you were dead 哈哈哈' },
+  { id: 'wake-2', speaker: 'anna', zh: '看来你的头撞得不轻。你还记得什么？', en: 'Seems like you hit your head pretty hard, what do you remember?' },
+  { id: 'wake-3', speaker: 'anna', zh: '你要是什么都不说，我就不帮你了。哼！', en: "If you don't say anything I'm not going to help you. Hmph!" },
+];
+export const HELLO_LINES: Line[] = [
+  { id: 'hello-1', speaker: 'anna', zh: '……反正都是要死的……喂！！！你不能招呼都不打就把我打开！', en: "-all going to die anyways... HEY!!! You can't just turn me on like that without a warning!" },
+  { id: 'hello-2', speaker: 'anna', zh: '总、总之……我刚才说的是，你，李伟，要死了。有意见吗？', en: 'A-anyways... what I was saying is you, Li Wei, are gonna die. Got a problem with that?' },
+  { id: 'hello-3', speaker: 'anna', zh: '我看看……饿死，中枪，摔死……你完蛋了，哈哈哈。', en: "Lets see... starvation, gunshots, death by falling... you're cooked 哈哈哈" },
+  { id: 'hello-4', speaker: 'anna', zh: '不过别太担心。你已经比大多数人活得久多了。说真的，我得承认，你又滑又溜，真是没人比得上。', en: "But try not to worry too much. You've lasted much longer than most. In fact, I must admit that your slipperiness and sliminess is quite unmatched." },
+  { id: 'hello-5', speaker: 'anna', zh: '这是状态页。我知道你那颗榆木脑袋看不懂这里在说什么，不过没关系。', en: "This is the status page. Now, I know your thick skull can't understand what's going on here, but that's OK." },
+  { id: 'hello-6', speaker: 'anna', zh: '不过如果你真的什么都不记得了，我强烈推荐训练室。很快就能让你恢复状态。', en: "If you really don't remember anything, though, I'd highly recommend the training room. It'll get you back in shape real fast." },
+  { id: 'hello-7', speaker: 'anna', zh: '你只要按Q专注，然后点这边的这些点，懂了吗？', en: 'All you have to do is focus with Q and then click the dots on the side here, got it?' },
+];
+
 /** The last two lines of each ending's exchange with Xiaoyu there (M10-51). */
 export const ENDING_WITH: Record<string, Line[]> = {
   bridge: [
@@ -90,7 +110,8 @@ export const ENDING_WITH: Record<string, Line[]> = {
 /** An ending's exchange: alone, or with his sister. */
 export const endingLines = (route: string, sister?: boolean): Line[] => (sister ? [...(ENDING_LINES[route] ?? []).slice(0, 2), ...(ENDING_WITH[route] ?? [])] : ENDING_LINES[route] ?? []);
 
-/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna on the map, the endings. */
-export const SPOKEN: Line[] = [...VOICEMAIL, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat(), ...Object.values(ENDING_WITH).flat()];
+/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna's opening, her word on the
+ *  map, the endings. */
+export const SPOKEN: Line[] = [...VOICEMAIL, ...WAKE_LINES, ...HELLO_LINES, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat(), ...Object.values(ENDING_WITH).flat()];
 
 export const lineById = new Map([...SPOKEN, ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

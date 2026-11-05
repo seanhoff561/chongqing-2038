@@ -1,4 +1,4 @@
-// M8-02, M10-09 (U-104): one of Anna's story lines said with no recording and no Mandarin voice in the browser: its
+// M8-02, M10-09 (U-104): one of Anna's story lines said (her recording, or the browser's Mandarin voice if none): its
 // English subtitle alone, and nothing breaks (no console errors: the harness fails on any).
 export default async function ({ open, fail }) {
   const page = await open('?scenario=hideout&seed=1', 'voice');

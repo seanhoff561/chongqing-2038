@@ -27,7 +27,8 @@ onCmd((s, c) => {
 onCmd((s, c) => {
   // Sitting down at it and getting up (focus, M10-13): only while it's out.
   if (c.c === 'act' && c.name === 'focus' && s.laptop?.open && !s.flight && !s.dead) { s.laptop.sit = !s.laptop.sit; return; }
-  if (c.c !== 'act' || c.name !== 'laptop' || s.dead) return;
+  // (Not while it's still on the floor where he woke: M10-52.)
+  if (c.c !== 'act' || c.name !== 'laptop' || s.dead || s.gear?.laptop) return;
   const L = (s.laptop ??= { open: false, charge: 1 });
   if (!L.open && L.charge <= 0) { s.events.push({ t: 'msg', text: "the laptop's flat" }); return; }
   // (Taken out only on his feet, with his hands free of holds: U-104.)

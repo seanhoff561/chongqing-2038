@@ -1,7 +1,7 @@
 :root { --ice: #bfe6f5; --ice-hi: #e6f7ff; --ice-dim: #7aa6b8; --ice-line: #2b4250; --ice-bg: rgba(6, 11, 15, 0.92); --ice-btn: #0c141a; }
 html, body { margin: 0; height: 100%; background: #07080a; overflow: hidden; font-family: "IBM Plex Mono", "Noto Sans Mono CJK SC", "Noto Sans CJK SC", Consolas, monospace; color: #b8b2a2; }
 canvas { display: block; }
-#hud { position: fixed; inset: 0; pointer-events: none; }
+#hud { position: fixed; inset: 0; pointer-events: none; z-index: 7; }
 #hud .dot { position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px; background: rgba(235,230,215,0.85); border-radius: 50%; box-shadow: 0 0 0 1px rgba(0,0,0,0.45); }
 #hud .scope { display: none; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, transparent 0, transparent 33vh, rgba(0,0,0,0.85) 34vh, #000 36vh); }
 #hud .scope.binos { background: #000; -webkit-mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); -webkit-mask-composite: source-in; mask: radial-gradient(circle at calc(50% - 17vh) 50%, transparent 30vh, #000 33vh), radial-gradient(circle at calc(50% + 17vh) 50%, transparent 30vh, #000 33vh); mask-composite: intersect; }
@@ -151,6 +151,14 @@ body.vr::after { content: 'VR 训练室 TRAINING ROOM · Esc'; position: fixed; 
 #laptop .lt-content { position: relative; flex: 1; overflow: hidden; padding: 5px 10px; font-size: 11.5px; line-height: 1.38; }
 #laptop .lt-anna { position: absolute; z-index: 1; right: 6px; bottom: 29px; width: 66px; height: 86px; pointer-events: none; filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5)); }
 #laptop .lt-anna svg { width: 100%; height: 100%; display: block; }
+#laptop .lt-anna { transition: right 0.9s ease, bottom 0.9s ease, width 0.9s ease, height 0.9s ease; }
+#laptop .lt-stage { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.9s; background: radial-gradient(ellipse 70% 80% at 50% 70%, #17394a 0%, #0a1b24 55%, #050c11 100%); }
+#laptop.full .lt-stage { opacity: 1; }
+#laptop.full .lt-task { visibility: hidden; }
+#laptop.full .lt-anna { z-index: 2; right: 170px; bottom: -110px; width: 300px; height: 390px; }
+#laptop.full.close .lt-anna { right: 120px; bottom: -235px; width: 400px; height: 520px; }
+body.opening #hud .dot, body.opening #hud .prompt, body.opening #hud .held, body.opening #hud .notice { display: none; }
+#wake { position: fixed; inset: 0; z-index: 39; background: #000; pointer-events: none; opacity: 0; }
 #laptop .lt-task { position: absolute; z-index: 1; left: 0; bottom: 0; width: 640px; height: 28px; display: flex; align-items: center; background: rgba(9, 19, 26, 0.96); border-top: 1px solid var(--ice-line); }
 #laptop .lt-apps { display: flex; gap: 2px; margin: 0 auto; }
 #laptop .lt-apps button { position: relative; width: 30px; height: 24px; display: flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: 4px; color: var(--ice); }
