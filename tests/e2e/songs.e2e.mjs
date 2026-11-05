@@ -4,9 +4,12 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-/** A short WAV: a quiet tone. */
+/** A WAV of a quiet tone, two minutes long (a loaded machine can take tens of seconds between Play and Skip, and a
+ *  song ending on its own moves on by itself). */
+// ( a loaded machine can take tens of seconds between Play and Skip, and a song ending on its own
+// moves on by itself.)
 function wav(file, hz) {
-  const rate = 8000, n = rate * 20, b = Buffer.alloc(44 + n * 2);
+  const rate = 8000, n = rate * 120, b = Buffer.alloc(44 + n * 2);
   b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
   b.writeUInt32LE(rate, 24); b.writeUInt32LE(rate * 2, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34); b.write('data', 36); b.writeUInt32LE(n * 2, 40);
   for (let i = 0; i < n; i++) b.writeInt16LE(Math.round(Math.sin((2 * Math.PI * hz * i) / rate) * 3000), 44 + i * 2);
@@ -34,6 +37,8 @@ export default async function ({ open, fail, screenshot }) {
   await input.evaluate(el => el.removeAttribute('webkitdirectory'));
   await input.uploadFile(a, b);
   const st = () => page.evaluate(`(() => { window.__cq.runFrames(3); const S = window.__cq.game.songs; return { n: S.list.length, playing: S.playing, cur: S.current()?.name, started: S.started, paused: S.el.paused, city: window.__cq.game.sound.music.playing, shown: document.querySelector('${W} [data-k="song"]')?.textContent ?? '' }; })()`);
+  // (What the song player did, to tell why a skip went wrong.)
+  await page.evaluate(`(() => { const S = window.__cq.game.songs, ev = window.__songEv = []; for (const k of ['error', 'ended', 'abort', 'emptied']) S.el.addEventListener(k, () => ev.push(k + (k === 'error' ? ':' + S.el.error?.code + ' ' + S.el.error?.message : '') + '@' + S.started + ' t' + Math.round(performance.now()) + ' ct' + S.el.currentTime.toFixed(1) + ' d' + S.el.duration)); const sk = S.skip.bind(S); S.skip = () => { ev.push('skip@' + S.started + ' t' + Math.round(performance.now()) + ' ' + new Error().stack.split('\\n')[2]?.trim()); sk(); }; })()`);
   let s = await st();
   if (s.n !== 2) fail('songs', `picked: ${JSON.stringify(s)}`);
   await click(`${W} [data-act="play"]`);
@@ -45,7 +50,7 @@ export default async function ({ open, fail, screenshot }) {
   await click(`${W} [data-act="skip"]`);
   await page.evaluate('new Promise(r => setTimeout(r, 400))');
   s = await st();
-  if (!s.playing || s.cur === first || !/song\.wav$/.test(s.cur ?? '') || s.started !== 2 || !s.shown.includes(s.cur)) fail('songs', `Skip: ${JSON.stringify(s)} after ${first}`);
+  if (!s.playing || s.cur === first || !/song\.wav$/.test(s.cur ?? '') || s.started !== 2 || !s.shown.includes(s.cur)) fail('songs', `Skip: ${JSON.stringify(s)} after ${first}; ${await page.evaluate('JSON.stringify(window.__songEv)')}`);
   await click(`${W} [data-act="pause"]`);
   s = await st();
   if (s.playing || !s.paused) fail('songs', `Pause: ${JSON.stringify(s)}`);
