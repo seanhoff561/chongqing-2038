@@ -15,6 +15,7 @@ import { unitPose, loopOf, isOff, type Unit, type Trip } from './units';
 import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint } from './combat';
 import { farFromBeat } from './perception';
+import { keepApart } from './spacing';
 import { SCALE } from './clock';
 import { DT } from './types';
 
@@ -84,9 +85,17 @@ export function leave(s: SimState, w: World, u: Unit, kind: Trip['kind'], to: V3
   u.trip = { kind, path, i: 0, pos: { x: at.x, y: at.y, z: at.z }, yaw: at.yaw, scan: 0, back: false, left: { x: at.x, y: at.y, z: at.z }, leftAt: s.time };
 }
 
-/** A tick along the trip: walking (running when Engaged, or hunting him for the network), looking about at the far
- *  end, back, and onto the beat. */
+/** A tick along the trip, keeping out of the bodies near it and the walls (M10-45; not the helicopter, nor one that
+ *  can't move). */
 function walk(s: SimState, w: World, u: Unit) {
+  const t = u.trip!, from = { ...t.pos };
+  go(s, w, u);
+  if (u.trip === t && !u.lame && u.kind !== 'heli') keepApart(s, w, u, from, STEP[u.kind]);
+}
+
+/** Walking (running when Engaged, or hunting him for the network), looking about at the far end, back, and onto the
+ *  beat. */
+function go(s: SimState, w: World, u: Unit) {
   const t = u.trip!, speed = (u.state === 'engaged' || (t.kind === 'hunt' && !t.back) ? UNITS[u.kind].chase : UNITS[u.kind].patrol) * (u.limp ? 0.5 : 1);
   // Immobilised (M4-19): it stands where it is.
   if (u.lame) return;
@@ -96,9 +105,10 @@ function walk(s: SimState, w: World, u: Unit) {
     if (!t.back) {
       // Holding its cover while it can see him (M4-10); strafing, it's done its step aside.
       if (t.cover || t.strafe) return;
-      // Lost him here: on the way he was going (M4-46), once each time it sees him.
-      const g = u.went, gs = g ? Math.hypot(g.x, g.z) : 0;
-      if (g && gs > 1 && !t.followed && t.kind !== 'check' && t.kind !== 'swap' && u.state !== 'unaware') {
+      // Lost him here: on the way he was going (M4-46), once each time it sees him. (Not while it still sees him: held
+      // off him by his body, M10-45.)
+      const g = u.went, gs = g ? Math.hypot(g.x, g.z) : 0, lost = u.saw === undefined || s.time - u.saw > SCALE;
+      if (g && gs > 1 && lost && !t.followed && t.kind !== 'check' && t.kind !== 'swap' && u.state !== 'unaware') {
         t.followed = true;
         t.path = way(w, u.kind, t.pos, { x: t.pos.x + g.x * 4, y: t.pos.y, z: t.pos.z + g.z * 4 }); t.i = 0; t.scan = 0;
         return;
