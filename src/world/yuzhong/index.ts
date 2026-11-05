@@ -121,7 +121,7 @@ export function buildYuzhong(): World {
   const cwPlan = plans.find(q => q.inside === SECURE.find(S => S.id === 'cableway')!.inside), cable = cwPlan ? cableLine(plans, cwPlan) : null;
   // And under the bridges' decks (M6-07).
   const spans = bridgeSpans(g), bc = bridgeCeil(spans), cc = cable ? cableCeil(cable) : null, ceil: Ceil = pts => Math.min(cc ? cc(pts) : Infinity, bc(pts));
-  const cuts = cutsUnder(plans, ceil), inWay = inWayUnder(ceil, cuts);
+  const cuts = cutsUnder(plans, ceil, bc), inWay = inWayUnder(ceil, cuts);
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
   // Holes knocked through from one building into the next where their floors meet (M3-76).
@@ -161,7 +161,7 @@ export function buildYuzhong(): World {
   // big bridges their trusses, pylons and piers (M6-07).
   for (const s of sts) if (onGround(s) && s.steps) surface(s, g, decor); else if (s.bridge && s.layer > 0) deck(s, g, out.solids, MAIN_ROADS.has(s.kind), spanFor(spans, s));
   const trusses = spans.map(b => buildBridge(b, g, plots));
-  for (const q of trusses) { out.solids.push(...q.solids); decor.push(...q.decor); out.far.push(...q.far); }
+  for (const q of trusses) { out.solids.push(...q.solids); decor.push(...q.decor); out.far.push(...q.far); out.climbables.push(...q.climbables); }
   const [W, H] = GEO.size;
   const L = GEO.landmarks, at = (k: string, yaw = 0): Teleport => ({ name: k, x: L[k].x, y: hAt(g, L[k].x, L[k].z) + 1.5, z: L[k].z, yaw });
   const hide = { name: "Friends' hideout (vent grate)", x: home.at.spawn.x, y: home.at.spawn.y + 0.05, z: home.at.spawn.z, yaw: -Math.PI / 2 - home.yaw };
@@ -216,7 +216,7 @@ export function buildYuzhong(): World {
   }
   // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
   const ways = site ? siteWays(site, plots, g) : null;
-  teleports.push(...(ways?.teleports ?? []));
+  teleports.push(...(ways?.teleports ?? []), ...trusses.flatMap(q => q.teleports));
   const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, linked.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;

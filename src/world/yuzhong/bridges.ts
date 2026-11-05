@@ -13,7 +13,7 @@ import { GEO } from '../geo';
 import { streets, WATER_Y, type Street } from './ground';
 import { inside } from './shapes';
 import type { Ceil } from './cutdown';
-import type { Line, Plot } from '../world';
+import type { Line, Plot, Climbable, Teleport } from '../world';
 import { sin, atan2 } from '../trig';
 
 /** The truss: its panels' length, its half-width, the rail deck under the road (m), the road plate's and the rail
@@ -25,10 +25,12 @@ const RED = 0xb8452a, WHITE = 0xe4e2dc, STAY = 0xd8693a, GREY = 0x6a6e72;
 
 /** A bridge's line: its axis from its Yuzhong end (t along, s across, both in m), its road's height at either end,
  *  where its truss runs (ta to tb), the river under it, its pylons; the stretches with no road plate over the truss
- *  (`lifted`) and with nothing at all (`fallen`). */
+ *  (`lifted`) and with nothing at all (`fallen`); its rail deck's holes (from, to, whether the stringers are left), a
+ *  derailed car's (from, 11 m long), the north pier whose ladder climbs to it (M6-08). */
 export interface Span {
   name: string; ox: number; oz: number; ux: number; uz: number; len: number; y0: number; y1: number;
   ta: number; tb: number; river: [number, number]; pylons: number[]; lifted?: [number, number]; fallen?: [number, number];
+  holes?: [number, number, boolean][]; car?: number; pier?: number;
 }
 
 export const road = (b: Span, t: number) => b.y0 + ((b.y1 - b.y0) * t) / b.len;
@@ -59,7 +61,18 @@ function spanOf(name: string, g: Heightfield, two: boolean): Span | null {
   for (b.ta = 0; b.ta < r0 && ground(b.ta) > rail(b, b.ta) - 0.5; b.ta += 1);
   for (b.tb = b.len; b.tb > r1 && ground(b.tb) > rail(b, b.tb) - 0.5; b.tb -= 1);
   b.pylons = two ? [r0 + 20, r1 - 20] : [r1 - 20];
-  if (!two) b.fallen = [r0 + (r1 - r0) * FALLEN[0], r0 + (r1 - r0) * FALLEN[1]];
+  // (The fallen span from panel to panel.)
+  const P = (b.tb - b.ta) / Math.max(1, Math.round((b.tb - b.ta) / TRUSS.panel)), panel = (t: number, up: boolean) => b.ta + (up ? Math.ceil : Math.floor)((t - b.ta) / P) * P;
+  if (!two) b.fallen = [panel(r0 + (r1 - r0) * FALLEN[0], false), panel(r0 + (r1 - r0) * FALLEN[1], true)];
+  else {
+    // The Dongshuimen's rail deck as the war left it (M6-08): over the river a stretch whose plates are gone but for
+    // the stringers under the tracks, mid-river a gap the deck's width a run and a jump cross, a derailed maintenance
+    // car across it to climb over; the road's plates lifted out a panel past the bridgehead.
+    const mid = (r0 + r1) / 2;
+    b.lifted = [b.ta + 4 * P, b.ta + 5 * P];
+    b.holes = [[r0 + 60, r0 + 69, true], [mid, mid + 2.4, false]];
+    b.car = r1 - 120;
+  }
   return b;
 }
 
@@ -133,8 +146,8 @@ const spread = (f: number) => 4 + 13 * sin(Math.PI * Math.pow(Math.max(0, Math.m
 
 /** The bridge built: its truss (chords, posts, the road plate on top, the rail deck's floor and handrails inside, its
  *  diagonals drawn), its pylons and their cables, its piers where the ground under it is clear of buildings, the
- *  portals its rail deck goes into the hills by, and a fallen span's wreck; and its stand-ins for the far view. Returns
- *  the Yuzhong side's piers' t, nearest the river first. */
+ *  portals its rail deck goes into the hills by, a fallen span's wreck; its rail deck's holes, derailed car and ladders
+ *  (M6-08); and its stand-ins for the far view. */
 export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
   const T = TRUSS, H = T.half, local: Solid[] = [], decor: Solid[] = [], lines: Line[] = [], piers: number[] = [];
   const box = (t0: number, t1: number, s0: number, s1: number, y0: number, y1: number, mat: number, tint?: number, out = local) => { const q = solid(b.ox + t0, y0, b.oz + s0, b.ox + t1, y1, b.oz + s1, mat); if (tint) q.tint = tint; out.push(q); };
@@ -146,18 +159,40 @@ export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
   const P3 = (t: number, s: number, y: number) => { const [x, z] = at(b, t, s); return { x, y, z }; };
   const strut = (a: { x: number; y: number; z: number }, c: { x: number; y: number; z: number }, r: number, color: number) => lines.push({ a, b: c, r, color });
   const R = (t: number) => rail(b, t), Y = (t: number) => road(b, t), gone = (t0: number, t1: number) => !!b.fallen && t1 > b.fallen[0] && t0 < b.fallen[1];
-  const n = Math.max(1, Math.round((b.tb - b.ta) / T.panel)), P = (b.tb - b.ta) / n;
+  const n = Math.max(1, Math.round((b.tb - b.ta) / T.panel)), P = (b.tb - b.ta) / n, post = (t: number) => { const k = (t - b.ta) / P; return Math.abs(k - Math.round(k)) * P < 1.5; };
+  // The piers under the side spans, every 50 m or so in from the pylons, each where its two columns stand clear of the
+  // city's buildings: two columns under the chords and a cap across under the truss.
+  const clear = (t: number) => [-1, 1].every(sd => [-1.7, 0, 1.7].every(dt => [-1.7, 0, 1.7, 2.6].every(ds => { const [x, z] = at(b, t + dt, sd * (H - 1.2) + ds); return !plots.some(p => inside(p.corners, x, z)); })));
+  const ends = [[b.pylons[0], b.ta + 8, -1], [b.pylons[b.pylons.length - 1], b.tb - 8, 1]] as const;
+  for (const [tp, stop, dir] of ends) for (let t = tp + dir * (dir < 0 && b.pylons.length === 1 ? 200 : 50); dir < 0 ? t > stop : t < stop; t += dir * 50) {
+    const q = [0, 4, -4, 8, -8, 12, -12].map(o => t + o).find(c => (dir < 0 ? c > stop : c < stop) && !gone(c - 2, c + 2) && !post(c) && clear(c));
+    if (q === undefined) continue;
+    for (const sd of [-1, 1]) box(q - 1.2, q + 1.2, sd * (H - 1.2) - 1.2, sd * (H - 1.2) + 1.2, hAt(g, ...at(b, q, sd * (H - 1.2))) - 1, R(q) - 3.6, MAT.plaster, WHITE);
+    box(q - 1.2, q + 1.2, -H, H, R(q) - 3.6, R(q) - T.floor, MAT.plaster, WHITE);
+    if (dir < 0) piers.push(q);
+  }
+  // The north pier's ladder (M6-08): up its outer column's face to the rail deck's edge, from the ground on the bank.
+  if (b.holes) b.pier = piers.find(q => hAt(g, ...at(b, q, H + 1)) > WATER_Y + 1);
   for (let k = 0; k < n; k++) {
     const t0 = b.ta + k * P, t1 = t0 + P, tm = t0 + P / 2;
     if (gone(t0, t1)) continue;
-    ramp(t0, t1, -H, H, T.floor, R, MAT.concrete);
+    // (Its floor round the holes in it; a hole's stringers, if they're left.)
+    let u = t0;
+    for (const [h0, h1, beams] of (b.holes ?? []).filter(([h0, h1]) => h1 > t0 && h0 < t1)) {
+      if (h0 > u) ramp(u, h0, -H, H, T.floor, R, MAT.concrete);
+      if (beams) for (const c of [-2.6, 2.6]) ramp(Math.max(h0, t0), Math.min(h1, t1), c - 0.3, c + 0.3, T.floor, R, MAT.metal, RED);
+      u = Math.max(u, h1);
+    }
+    if (u < t1) ramp(u, t1, -H, H, T.floor, R, MAT.concrete);
     if (!(b.lifted && t1 > b.lifted[0] && t0 < b.lifted[1])) ramp(t0, t1, -H, H, T.plate, t => Y(t) - 0.02, MAT.concrete);
     for (const sd of [-1, 1]) {
       const [s0, s1] = sd < 0 ? [-H, -H + T.chord] : [H - T.chord, H], my = (Y(t0) + Y(t1)) / 2, mr = (R(t0) + R(t1)) / 2;
       box(t0, t1, s0, s1, mr - 1.6, mr, MAT.metal, RED);
       box(t0, t1, s0, s1, my - 2.2, my + 0.25, MAT.metal, RED);
       box(t0 - 0.3, t0 + 0.3, s0, s1, mr, my - 2.2, MAT.metal, RED);
-      box(t0, t1, sd * (H - 0.7) - 0.04, sd * (H - 0.7) + 0.04, mr, mr + 1.1, MAT.metal, GREY);
+      // (The handrail, open where the pier's ladder comes up.)
+      const gap = sd > 0 && b.pier !== undefined && b.pier > t0 && b.pier < t1 ? b.pier : undefined;
+      for (const [r0, r1] of gap === undefined ? [[t0, t1]] : [[t0, gap - 0.8], [gap + 0.8, t1]]) box(r0, r1, sd * (H - 0.7) - 0.04, sd * (H - 0.7) + 0.04, mr, mr + 1.1, MAT.metal, GREY);
       // (The Warren diagonals, up from the bottom chord to the top and down again.)
       const sw = sd * (H - T.chord / 2);
       strut(P3(t0, sw, R(t0)), P3(tm, sw, Y(tm) - 2.2), 0.22, RED);
@@ -190,17 +225,18 @@ export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
       strut(from, P3(ta, sd * (H - 0.3), Y(ta) + 0.2), 0.07, STAY);
     }
   }
-  // The piers under the side spans, every 50 m or so in from the pylons, each where its two columns stand clear of the
-  // city's buildings: two columns under the chords and a cap across under the truss.
-  const clear = (t: number) => [-1, 1].every(sd => [-1.7, 0, 1.7].every(dt => [-1.7, 0, 1.7].every(ds => { const [x, z] = at(b, t + dt, sd * (H - 1.2) + ds); return !plots.some(p => inside(p.corners, x, z)); })));
-  const ends = [[b.pylons[0], b.ta + 8, -1], [b.pylons[b.pylons.length - 1], b.tb - 8, 1]] as const;
-  for (const [tp, stop, dir] of ends) for (let t = tp + dir * (dir < 0 && b.pylons.length === 1 ? 200 : 50); dir < 0 ? t > stop : t < stop; t += dir * 50) {
-    const q = [0, 4, -4, 8, -8, 12, -12].map(o => t + o).find(c => (dir < 0 ? c > stop : c < stop) && !gone(c - 2, c + 2) && clear(c));
-    if (q === undefined) continue;
-    for (const sd of [-1, 1]) box(q - 1.2, q + 1.2, sd * (H - 1.2) - 1.2, sd * (H - 1.2) + 1.2, hAt(g, ...at(b, q, sd * (H - 1.2))) - 1, R(q) - 3.6, MAT.plaster, WHITE);
-    box(q - 1.2, q + 1.2, -H, H, R(q) - 3.6, R(q) - T.floor, MAT.plaster, WHITE);
-    if (dir < 0) piers.push(q);
+  // The derailed car, across the rail deck from handrail to handrail.
+  if (b.car !== undefined) { const m = (R(b.car) + R(b.car + 11)) / 2; box(b.car, b.car + 11, -H + 0.75, H - 0.75, m, m + 2, MAT.metal, 0x6f767c); }
+  // The ladders: up the north pier from the bank to the rail deck's edge; at the lifted plates' edge from the rail deck
+  // up to the road. Where he's put to come at them.
+  const climbables: Climbable[] = [], teleports: Teleport[] = [];
+  if (b.pier !== undefined) {
+    const q = b.pier, [x, z] = at(b, q, H + 0.05), [fx, fz] = at(b, q, H + 1), gy = hAt(g, fx, fz);
+    climbables.push({ kind: 'ladder', x, z, y0: gy, y1: R(q) + 0.3, nx: -b.uz, nz: b.ux });
+    teleports.push({ name: 'Dongshuimen Bridge: north pier', x: fx, y: gy + 0.3, z: fz, yaw: atan2(-b.uz, b.ux) });
   }
+  if (b.lifted) { const t = b.lifted[0] + 0.05, [x, z] = at(b, t, 0); climbables.push({ kind: 'ladder', x, z, y0: R(t), y1: Y(t) + 0.3, nx: b.ux, nz: b.uz }); }
+  if (b.holes) { const [x, z] = at(b, b.ta + 6, -6); teleports.push({ name: 'Dongshuimen Bridge: rail deck', x, y: R(b.ta + 6) + 0.1, z, yaw: atan2(-b.ux, -b.uz) }); }
   // A fallen span: its torn ends hanging toward the river, the wreck of it in the water below.
   if (b.fallen) for (const [t, d] of [[b.fallen[0], 1], [b.fallen[1], -1]] as const) {
     for (const sd of [-1, 1]) {
@@ -215,5 +251,5 @@ export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
   }
   // (Seen from afar, past the city's detail, its steel and concrete as they are, but for the thin handrails.)
   const yaw = atan2(b.uz, b.ux), far = local.filter(q => Math.min(q.x1 - q.x0, q.y1 - q.y0, q.z1 - q.z0) >= 0.5).map(q => ({ ...q }));
-  return { solids: turn(local, yaw, b.ox, b.oz), decor: turn(decor, yaw, b.ox, b.oz), far: turn(far, yaw, b.ox, b.oz), lines, piers: piers.sort((p, q) => q - p) };
+  return { solids: turn(local, yaw, b.ox, b.oz), decor: turn(decor, yaw, b.ox, b.oz), far: turn(far, yaw, b.ox, b.oz), lines, climbables, teleports };
 }

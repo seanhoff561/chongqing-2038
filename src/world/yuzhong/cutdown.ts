@@ -14,13 +14,14 @@ import { sin, cos } from '../trig';
 export type Ceil = (pts: [number, number][]) => number;
 
 /** The city's own buildings (none on the map, nor one made by hand) in the way, and the height each is cut down to:
- *  by whole floors to under the ceiling, a floor at least. Found before the city's built, cut once it stands
+ *  by whole floors to under the ceiling, a floor at least (none, under a `bare` one). Found before the city's built, cut once it stands
  *  (cutDown()): everything drawn for its dice is drawn as it was. */
-export function cutsUnder(plans: Plan[], ceil: Ceil): Map<Plan, number> {
+export function cutsUnder(plans: Plan[], ceil: Ceil, bare?: Ceil): Map<Plan, number> {
   const cuts = new Map<Plan, number>();
   for (const p of plans) {
     if (p.osm || p.inside) continue;
-    const y = ceil(corners(p.obb)), c = p.base + Math.max(1, Math.floor((y - p.base) / FLOOR)) * FLOOR;
+    // (Under a bridge's deck where it comes down to the ground, not a floor kept: razed to its ground floor's slab.)
+    const k = corners(p.obb), y = ceil(k), least = bare && bare(k) <= y ? 0 : 1, c = p.base + Math.max(least, Math.floor((y - p.base) / FLOOR)) * FLOOR;
     if (c < p.wall) cuts.set(p, c);
   }
   return cuts;
