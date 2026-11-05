@@ -2,7 +2,7 @@
 // building's footprint coloured by its type, the districts named, him. Where he's been (the 10 m cells round him,
 // sim/automap.ts): the ways down he's come across; underground, the city dimmed over the tunnels he's walked. Over it,
 // what the SDR heard (drone beats, docks: M5-08), the routes of machines logged more than once (M5-07), the key places
-// (U-102) and his own marks (M10-14). His hideouts aren't marked: he remembers them.
+// he knows of (M10-40) and his own marks (M10-14). His hideouts aren't marked: he remembers them.
 import type { Game } from '../game';
 import type { World, Plot, Inter } from '../world/world';
 import type { BuildingType } from '../world/city/types';
@@ -15,8 +15,8 @@ import { droneBeats } from '../sim/sdr';
 import { districtOf } from '../sim/district';
 import { dockTimes } from '../sim/units';
 import { GEO } from '../world/geo';
+import { keyPlaces, isNew } from '../sim/places';
 import { DISTRICT_NAMES } from '../world/yuzhong/lots';
-import { SECURE } from '../world/yuzhong/secure';
 
 /** The canvas (px), metres to a pixel standing, and the nearest and farthest it zooms sitting (M10-14). */
 export const MAPV = { w: 520, h: 276, m: 1.25, near: 0.25, far: 8 };
@@ -39,26 +39,6 @@ function prep(w: World) {
     const plots = w.plots.filter(p => !p.far).map(p => { const xs = p.corners.map(c => c[0]), zs = p.corners.map(c => c[1]); return { p, x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs), z1: Math.max(...zs) }; });
     prepped.set(w, (v = { plots, grates: w.inter.filter(i => i.kind === 'grate') }));
   }
-  return v;
-}
-
-/** The key places (U-102): the high-security sites, the construction site, the pier, the cableway, the metro
- *  stations, the Grand Tunnel and the air-raid shelter; where each is. */
-const PLACES: [string, string, string][] = [
-  ['Construction site', '工地', 'Construction site'], ['River-police pier: gangway', '水警码头', 'River-police pier'],
-  ['Grand Tunnel entrance', '大隧道', 'Grand Tunnel'], ['Air-raid shelter', '防空洞', 'Air-raid shelter'],
-];
-const placesOf = new WeakMap<World, { x: number; z: number; zh: string; en: string }[]>();
-export function keyPlaces(w: World) {
-  let v = placesOf.get(w);
-  if (v) return v;
-  v = (w.secure ?? []).map(q => { const d = SECURE.find(x => x.id === q.id)!; return { x: q.x, z: q.z, zh: d.zh, en: d.en }; });
-  for (const [name, zh, en] of PLACES) { const t = w.teleports.find(q => q.name === name); if (t) v.push({ x: t.x, z: t.z, zh, en }); }
-  const cw = GEO.landmarks.cablewayNorth;
-  if (cw && w.name === 'yuzhong') v.push({ x: cw.x, z: cw.z, zh: '长江索道', en: 'Yangtze cableway' });
-  // (The metro stations, one mark each.)
-  for (const t of w.teleports) if (t.name.startsWith('Metro ') && !t.name.startsWith('Metro station') && !t.name.startsWith('Metro tunnel') && !v.some(q => q.zh === `地铁${t.name.slice(6)}`)) v.push({ x: t.x, z: t.z, zh: `地铁${t.name.slice(6)}`, en: 'metro' });
-  placesOf.set(w, v);
   return v;
 }
 
@@ -99,11 +79,10 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
   // The districts, named.
   ctx.fillStyle = '#7aa6b8';
   for (const [k, [zh, en]] of Object.entries(DISTRICT_NAMES)) { const L = GEO.landmarks[k]; if (L && inView(L.x, L.z)) ctx.fillText(`${zh} ${en}`, X(L.x) - 30, Z(L.z) - 6); }
-  // The key places (U-102): a diamond each, named.
+  // The key places he knows of (M10-40): a diamond each, named; one new since he last had the map up ringed.
   // (Off the map: at its edge, the way it lies, and how far.)
-  // (And his family's flat, once he knows of it: U-104.)
-  const flat = s.known?.liflat ? w.teleports.find(t => t.name === 'Li family flat') : undefined;
-  for (const q of flat ? [...keyPlaces(w), { x: flat.x, z: flat.z, zh: '李家', en: 'the Li flat' }] : keyPlaces(w)) {
+  for (const q of keyPlaces(w)) {
+    if (s.known?.[q.id] === undefined) continue;
     if (!inView(q.x, q.z)) {
       const dx = q.x - cx, dz = q.z - cz, k = Math.min((W / 2 - 8) * m / Math.max(1e-6, Math.abs(dx)), (H / 2 - 8) * m / Math.max(1e-6, Math.abs(dz)));
       const ex = W / 2 + (dx * k) / m, ez = H / 2 + (dz * k) / m;
@@ -114,6 +93,7 @@ export function drawMap(c: HTMLCanvasElement, g: Game, v: MapView) {
     ctx.fillStyle = '#e8a04a'; ctx.strokeStyle = '#061016';
     ctx.beginPath(); ctx.moveTo(X(q.x), Z(q.z) - 5); ctx.lineTo(X(q.x) + 5, Z(q.z)); ctx.lineTo(X(q.x), Z(q.z) + 5); ctx.lineTo(X(q.x) - 5, Z(q.z)); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#e8c090'; ctx.fillText(`${q.zh} ${q.en}`, X(q.x) + 7, Z(q.z) - 5);
+    if (isNew(s, q.id)) { ctx.strokeStyle = MARK; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(X(q.x), Z(q.z), 9 + 2 * Math.sin(s.tick / 8), 0, Math.PI * 2); ctx.stroke(); ctx.lineWidth = 1; }
   }
   const line = (pts: { x: number; z: number }[]) => { ctx.beginPath(); pts.forEach((q, k) => (k ? ctx.lineTo(X(q.x), Z(q.z)) : ctx.moveTo(X(q.x), Z(q.z)))); ctx.stroke(); };
   // The drones' beats and docks of the districts she's heard on the SDR (M5-08).

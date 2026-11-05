@@ -180,8 +180,9 @@ export interface SimState {
   ended?: { route: string; t: number; sister?: boolean };
   /** his sister (M10-39): the exit she's gone to this run, where she waits at it, and whether she'll leave with him */
   sister?: { route: string; x: number; y: number; z: number; yaw: number; with?: boolean };
-  /** the run's tally: sites got into, times the machines had him (and which districts have him now) */
-  stats?: { sites: Record<string, true>; seen: number; engaged: Record<string, boolean> };
+  /** the run's tally: sites got into, times the machines had him (and which districts have him now); metres gone (and
+   *  where he was at the last count), machines destroyed, documents found (M10-51) */
+  stats?: { sites: Record<string, true>; seen: number; engaged: Record<string, boolean>; dist?: number; at?: Vec3; kills?: number; docs?: Record<string, true> };
   /** out too far on the river (M6-27): since when, and when the drone boats set out */
   river?: { since: number; boats?: number };
   /** the zipline kit's first clamp, on (M5-33) */
@@ -191,8 +192,10 @@ export interface SimState {
   flight?: { x: number; y: number; z: number; yaw: number; pitch: number; seen: number };
   /** the jammer running (M5-13): since when (game time), and whether it's become a beacon */
   jam?: { since: number; beacon?: boolean };
-  /** places he's come to know of (U-104): 'liflat' once Anna's shown it him on the map */
-  known?: Record<string, true>;
+  /** the key places he's come to know of (M10-40, sim/places.ts), each with the game time he learned of it */
+  known?: Record<string, number>;
+  /** the game time he last put Anna's map away: places learned since are new on it */
+  mapAt?: number;
   /** when his position last went to the network, tracked (U-104) */
   pinged?: number;
   /** EMP devices rigged as traps (M5-14): the device and where */

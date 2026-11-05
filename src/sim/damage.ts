@@ -12,6 +12,7 @@ import type { UnitKind } from '../data/units';
 import { raycast } from '../world/geom';
 import { rayGround } from '../world/heightfield';
 import { MAT } from '../world/mats';
+import { tally } from './escape';
 
 /** What a surface is made of, for the sound of a blow and the mark a round leaves (M4-60, M4-61). */
 export const METAL: Set<number> = new Set([MAT.metal, MAT.tealMetal, MAT.facadeWorks, MAT.screen, MAT.lamp, MAT.cable]);
@@ -32,6 +33,8 @@ export function hurtUnit(s: SimState, w: World, u: Unit, zone: string, dmg: numb
     // A machine on the ground comes down where it was hit (M10-47): its wreck lies there, not a step on along its beat.
     if (!u.stop && !UNITS[u.kind].fly && u.cam === undefined) { const p = unitPose(w, u, s.time); u.stop = { x: p.x, y: p.y, z: p.z, yaw: p.yaw, t: s.time }; }
     u.dead = true;
+    // (A machine of his destroying, for the run's tally: M10-51.)
+    if (u.cam === undefined) tally(s).kills = (tally(s).kills ?? 0) + 1;
     // A camera or sensor shot out (U-093): its glass goes and it sparks.
     if (u.cam !== undefined) { const c = w.cameras[u.cam]; s.events.push({ t: 'sfx', id: 'blow-glass' }, { t: 'mark', x: c.x, y: c.y, z: c.z, nx: 0, ny: -1, nz: 0, kind: 'bullet', on: 'metal' }); }
   }

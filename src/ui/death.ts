@@ -1,11 +1,13 @@
 // Death (U-104): black at once, every sound stopped, what killed him and the run's death count; then he wakes where he
-// last slept (a key or a click sooner). A test scene starts over instead. An ending (M7-01): its name and the run's
-// summary, the save gone; Esc for the main menu.
+// last slept (a key or a click sooner). A test scene starts over instead. An ending (M7-01, M10-51): its name, the
+// crossing and the far side, his last words alone or with Xiaoyu, and the run's summary, the save gone; Esc for the
+// main menu.
 import type { Game } from '../game';
 import { afterDeath, deleteSave, readSave } from '../sim/save';
 import { bootMenu } from './boot-menu';
 import { clockText } from '../sim/clock';
-import { ENDINGS, summary } from '../sim/escape';
+import { summary } from '../sim/escape';
+import { ENDINGS } from '../data/endings';
 
 const CAUSES: Record<string, [string, string]> = {
   fall: ['坠落', 'Fell'], bleeding: ['失血', 'Bled out'], drown: ['溺水', 'Drowned'], starvation: ['饥饿', 'Starved'],
@@ -14,6 +16,7 @@ const CAUSES: Record<string, [string, string]> = {
   turret: ['被炮塔击毙', 'Cut down by a turret'], rifle: ['被步枪击毙', "Shot by a humanoid's rifle"], smg: ['被冲锋枪击毙', 'Shot by a hunter drone'],
   prod: ['被电击棍击倒', 'Shocked by a prod'], river: ['被无人艇截杀', 'Run down by drone boats on the river'], cannon: ['被重型机甲击毙', 'Cut down by a heavy walker'], shock: ['触电', 'Electrocuted'], gas: ['在机房被灭火气体窒息', 'Suffocated by the server hall\'s gas'],
 };
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 /** Seconds the death screen holds before he wakes; seconds it fades off him. */
 export const DEATH = { hold: 3, fade: 1.2 };
 
@@ -33,7 +36,8 @@ export class DeathScreen {
     const el = document.createElement('div');
     el.id = 'death';
     el.innerHTML = end
-      ? `<div class="d-title out">逃出去了</div><div class="d-sub">${zh} · ${en}</div><div class="d-sum">${clockText(s.time)} · survived ${sum.days} nights · got into ${sum.sites} site${sum.sites === 1 ? '' : 's'} · seen ${sum.seen} time${sum.seen === 1 ? '' : 's'}</div><div class="d-new">Esc · 主菜单 Main menu</div>`
+      ? `<div class="d-title out">逃出去了</div><div class="d-sub">${zh} · ${en}</div><div class="d-far">${end.far}</div><div class="d-far">${sum.sister ? end.together : end.alone}</div>` +
+        `<div class="d-sum">${clockText(s.time)} · survived ${plural(sum.days, 'night')} · ${sum.km} km on foot · ${plural(sum.kills, 'machine')} destroyed · seen ${plural(sum.seen, 'time')} · got into ${plural(sum.sites, 'site')} · ${plural(sum.docs, 'document')} found · ${sum.sister ? 'with Xiaoyu' : 'without Xiaoyu'}</div><div class="d-new">Esc · 主菜单 Main menu</div>`
       : `<div class="d-title">你死了</div><div class="d-sub">${zh} · ${en}</div><div class="d-sum">☠ ${wake?.state.deaths ?? (s.deaths ?? 0) + 1}</div>`;
     document.body.appendChild(el);
     g.input.uiOpen = true;

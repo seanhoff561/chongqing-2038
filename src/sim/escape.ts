@@ -1,16 +1,18 @@
-// Escapes and endings (M7-01, DESIGN sections 11 and 13): the routes' progress kept in the run (each step he's done,
-// and when); an ending zone at a route's far end ends the run with that route; and the run's summary (days survived,
-// the sites he got into, the times the machines had him), for the ending's screen and death's.
+// Escapes and endings (M7-01, M10-51, DESIGN sections 2 and 10): the routes' progress kept in the run (each step he's
+// done, and when); an ending zone at a route's far end (world/yuzhong/exits.ts) ends the run with that route, his
+// sister with him or not; and the run's tally for the ending's summary (days survived, how far he went, the machines
+// he destroyed, the times they had him, the sites he got into, the documents he found, whether she came).
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { dayOf } from './clock';
 import { deleteSave, type Storage } from './save';
+import { docById } from '../data/documents';
+import { NOTES } from '../data/sister';
 
-/** The four endings: each route's id, its name, and where it leaves him. */
-export const ENDINGS: Record<string, { zh: string; en: string }> = {
-  bridge: { zh: '桥下', en: 'Beneath the Bridge' }, cable: { zh: '索道', en: 'The Cable' },
-  boat: { zh: '雾中', en: 'Into the Fog' }, tunnel: { zh: '隧道尽头', en: "Tunnel's End" },
-};
+/** Every document's and note's id, for the tally. */
+const PAPERS = new Set([...docById.keys(), ...NOTES.map(n => n.id)]);
+/** The furthest he goes in half a second on his own (m): more is a teleport, not walked. */
+const STRIDE = 25;
 
 /** A route's step done (the routes' own features mark them). */
 export function stepDone(s: SimState, route: string, step: string) {
@@ -26,18 +28,29 @@ export function endRun(s: SimState, route: string) {
   s.events.push({ t: 'ending', route, sister });
 }
 
-/** Days survived, sites got into, times seen. */
-export const summary = (s: SimState) => ({ days: dayOf(s.time) - 1, sites: Object.keys(s.stats?.sites ?? {}).length, seen: s.stats?.seen ?? 0 });
+/** The run's tally: days survived, km gone, machines destroyed, times seen, sites got into, documents found, and
+ *  whether his sister left with him. */
+export const summary = (s: SimState) => ({
+  days: dayOf(s.time) - 1, km: Math.round((s.stats?.dist ?? 0) / 100) / 10, kills: s.stats?.kills ?? 0, seen: s.stats?.seen ?? 0,
+  sites: Object.keys(s.stats?.sites ?? {}).length, docs: Object.keys(s.stats?.docs ?? {}).length, sister: !!s.ended?.sister,
+});
+
+/** The run's tally, begun as needed. */
+export const tally = (s: SimState) => (s.stats ??= { sites: {}, seen: 0, engaged: {} });
 
 /** An ended run's save is gone, as a dead one's is. */
 export function closeRun(st: Storage, s: SimState) { if (s.ended) deleteSave(st); }
 
 const inBox = (b: { x0: number; y0: number; z0: number; x1: number; y1: number; z1: number }, p: { x: number; y: number; z: number }) => p.x >= b.x0 && p.x <= b.x1 && p.y >= b.y0 && p.y <= b.y1 && p.z >= b.z0 && p.z <= b.z1;
 
-/** Twice a second: an ending zone reached; a site got into; a district newly after him counted as a time seen. */
+/** Twice a second: an ending zone reached; a site got into; a district newly after him counted as a time seen; how far
+ *  he's gone; a document he has. */
 export function stepEscape(s: SimState, w: World) {
   if (s.tick % 30 || s.ended || s.dead) return;
-  const p = s.player.pos, st = (s.stats ??= { sites: {}, seen: 0, engaged: {} });
+  const p = s.player.pos, st = tally(s), d = st.at ? Math.hypot(p.x - st.at.x, p.y - st.at.y, p.z - st.at.z) : 0;
+  if (d < STRIDE) st.dist = (st.dist ?? 0) + d;
+  st.at = { x: p.x, y: p.y, z: p.z };
+  for (const it of s.inv.pack.items) if (PAPERS.has(it.id)) (st.docs ??= {})[it.id] = true;
   for (const z of w.zones) {
     if (!inBox(z.box, p)) continue;
     if (z.kind.startsWith('ending:')) { endRun(s, z.kind.slice(7)); return; }
