@@ -1,5 +1,5 @@
 // Rockets (M4-65, U-052). A street heavy with him in its sights fires a rocket from its pod every 9 s when he's 20 to
-// 120 m off; he can fire his own from a rocket launcher, one at a time. A rocket flies straight at 45 m/s, seen and
+// 120 m off (in its strike, M10-46); he can fire his own from a rocket launcher, one at a time. A rocket flies straight at 45 m/s, seen and
 // heard (its trail, its roar), and bursts on the first thing it meets (him, for a heavy's): the blast hurts and throws
 // him by how near, and wrecks the machines round it, armour or no.
 import { DT, type SimState } from './types';
@@ -50,7 +50,8 @@ export function stepRockets(s: SimState, w: World) {
   // The heavies with him in their sights, in range.
   const me = s.player.pos;
   if (s.tick % 6 === 0) for (const u of s.units) {
-    if (u.kind !== 'heavy' || !u.aim || isOff(s, u) || (u.rocketAt ?? -Infinity) > s.time) continue;
+    // (In its attack, as it strikes: M10-46.)
+    if (u.kind !== 'heavy' || !u.aim || isOff(s, u) || (u.rocketAt ?? -Infinity) > s.time || (u.atk && u.atk.ph !== 'strike')) continue;
     const q = unitPose(w, u, s.time), d = Math.hypot(me.x - q.x, me.z - q.z);
     if (d < ROCKET.near || d > ROCKET.far) continue;
     u.rocketAt = s.time + ROCKET.every * SCALE;

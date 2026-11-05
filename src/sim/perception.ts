@@ -186,8 +186,9 @@ export function stepHearing(s: SimState, w: World) {
       const S = SENSES[u.kind], ear = { x: at.x, y: at.y + Math.max(0.3, S.eye), z: at.z }, d = Math.hypot(e.x - ear.x, e.y + 0.5 - ear.y, e.z - ear.z), r = e.r * S.hear;
       if (d > r) continue;
       if (d > r * HEARING.occluded && raycast(w.index, e.x, e.y + 0.5, e.z, (ear.x - e.x) / d, (ear.y - e.y - 0.5) / d, (ear.z - e.z) / d, d - 0.1)) continue;
-      // Machine fire (its own or its fellows') tells it where the fight is, not where he is: a fresh sight of him stands.
-      if (e.kind === 'gunfire' && u.saw !== undefined && s.time - u.saw < HEARING.fresh * SCALE) continue;
+      // Machine fire (its own or its fellows', a tag launcher's pop too) tells it where the fight is, not where he is: a
+      // fresh sight of him stands.
+      if ((e.kind === 'gunfire' || e.kind === 'tag') && u.saw !== undefined && s.time - u.saw < HEARING.fresh * SCALE) continue;
       // A delivery robot doesn't look into a loud noise (a firecracker, a shot): it's scared off its route, away from
       // it, and back to its round after (M4-34).
       if (u.kind === 'delivery') {

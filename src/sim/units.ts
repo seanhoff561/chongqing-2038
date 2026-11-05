@@ -77,6 +77,9 @@ export interface Unit {
   aim?: boolean;
   /** a quadruped's seconds till its tag launcher's next shot (M4-22) */
   tagIn?: number;
+  /** its attack (M10-46, sim/combat.ts): the phase it's in, since when (game time), the bursts left in its strike's
+   *  volley, what it makes for in it */
+  atk?: { ph: 'windup' | 'strike' | 'recover' | 'move'; at: number; n: number; to?: { x: number; y: number; z: number } };
   /** how far aside of its beat it walks, having given way (M10-45, sim/spacing.ts) */
   aside?: { x: number; z: number };
 }

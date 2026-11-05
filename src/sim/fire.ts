@@ -3,7 +3,8 @@
 // and fewer on to 60; a humanoid's rifle bursts of three every 1 s, each hitting 0.75 x how well it sees him (twice
 // its visibility, at most 1) x (1 - 0.11 x his speed, M4-54) x (1 - d/80) (30 a round, every 1 s since M4-54), a street heavy's cannon (M4-26b) six every 2 s, 0.45 the same way to 100 m;
 // a hunter drone's SMG bursts of two every 0.8 s, 40%; a quadruped's prod at
-// arm's length every 1.5 s, stunning him a second. A hit hurts: its damage, then 30% a heavy bleed or else a light
+// arm's length every 1.5 s, stunning him a second. In its attack (M10-46, sim/combat.ts) a machine fires only as it
+// strikes, its bursts in a volley 0.25 s apart, as many as that cadence gives over its cycle. A hit hurts: its damage, then 30% a heavy bleed or else a light
 // one, and 15% a limb (a sprained leg, or a graze to an arm that only bleeds).
 import type { SimState } from './types';
 import type { World } from '../world/world';
@@ -15,6 +16,7 @@ import { visibility, farFromBeat } from './perception';
 import { districtOf } from './district';
 import { DT } from './types';
 import { launcher } from './tag';
+import { FIGHT } from './combat';
 
 /** A hit: its damage (taken as the tick's body step reads the 'hurt'), a bleed, maybe a limb. */
 export function hitHim(s: SimState, dmg: number, cause: string) {
@@ -38,11 +40,14 @@ export function stepFire(s: SimState, w: World) {
     // (A prod's reach from its body to his middle: not up through a ledge he's on.)
     const W = WEAPONS[wpn], d = wpn === 'prod' ? Math.hypot(p.pos.x - at.x, p.pos.y + 0.9 - at.y - 0.6, p.pos.z - at.z) : Math.hypot(p.pos.x - at.x, p.pos.y + 1 - at.y, p.pos.z - at.z);
     if (u.kind === 'quadruped') launcher(s, w, u, at, d);
-    // It looks for him along its gun ten times a second, as it sees.
-    if ((u.id + s.tick) % 6 === 0) u.aim = !u.blind && !u.disarmed && d <= W.reach && visibility(s, w, u.kind, at) >= SIGHT.min;
+    // It looks for him along its gun ten times a second, as it sees (every tick of a lunge with its prod).
+    const A = u.atk;
+    if ((u.id + s.tick) % 6 === 0 || (A?.ph === 'strike' && wpn === 'prod')) u.aim = !u.blind && !u.disarmed && d <= W.reach && visibility(s, w, u.kind, at) >= SIGHT.min;
     if (!u.aim) { u.fire = Math.max(0, (u.fire ?? 0) - DT); continue; }
+    // In its attack (M10-46) it fires only in its strike: its volley, the bursts close together.
+    if (A && (A.ph !== 'strike' || A.n <= 0)) { u.fire = 0; u.left = undefined; continue; }
     u.fire = (u.fire ?? 0) - DT;
-    while (u.fire <= 0) {
+    while (u.fire <= 0 && (!A || A.n > 0)) {
       const speed = Math.hypot(p.vel.x, p.vel.z);
       const hit = wpn === 'rifle' || wpn === 'cannon' ? W.accuracy * Math.min(1, 2 * visibility(s, w, u.kind, at)) * Math.max(0, 1 - 0.11 * speed) * Math.max(0, 1 - d / W.reach)
         : W.accuracy * (d <= W.sure ? 1 : Math.max(0, 1 - (d - W.sure) / (W.reach - W.sure)));
@@ -52,6 +57,7 @@ export function stepFire(s: SimState, w: World) {
       if (struck) { hitHim(s, W.damage, wpn); if (W.stun) p.stun = Math.max(p.stun, W.stun); }
       u.left = (u.left ?? W.burst) - 1;
       if (u.left > 0) u.fire += 0.1;
+      else if (A) { u.left = W.burst; A.n--; u.fire += FIGHT.gap; }
       else { u.left = W.burst; u.fire += W.every - 0.1 * (W.burst - 1); }
     }
   }
