@@ -45,8 +45,9 @@ import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
 import { placeSensors } from './sensors';
-import { chooseAlley, buildHome } from './home';
-import { sin, cos, atan2 } from '../trig';
+import { chooseAlley, buildHome, VENT } from './home';
+import { links, cut } from './links';
+import { sin, cos, tan, atan2 } from '../trig';
 
 const empty = (): Fabric => ({ solids: [], decor: [], props: [], lots: [], inter: [], climbables: [], hides: [], features: [], sites: [], far: [] });
 
@@ -89,7 +90,9 @@ export function buildYuzhong(): World {
   const downs = [tun.at.entrance, tun.at.exit, ...metro.at, ...under.features.filter(f => f.kind.startsWith('way:'))].map(q => ({ x: q.x, y: 0, z: q.z }));
   const spot = chooseAlley(g, plans, heart, { points: downs, boxes: tun.zones.concat(under.zones).map(z => z.box) });
   if (!spot) throw new Error('no alley for the hideout');
-  const home = buildHome(g, plans, spot);
+  // (Its one vent, M6-21: up through the floor of the underground's junction room, in its corner off the ways through.)
+  const J = tun.at.junction, home = buildHome(g, plans, spot, { x: J.x + 2.8, y: J.y, z: J.z + 2.0 }), V = home.at.vent;
+  cut(under.solids, { x0: V.x - VENT.half, y0: V.y - 1, z0: V.z - VENT.half, x1: V.x + VENT.half, y1: V.y + 0.01, z1: V.z + VENT.half });
   out.solids.push(...home.solids); out.props.push(...home.props); out.inter.push(...home.inter); out.climbables.push(...home.climbables); out.sites.push(...home.sites); out.features.push(...home.features);
   const keys = [{ name: 'hideout gate', at: home.at.grate }, { name: 'jiaochangkou', at: { x: JK.x, y: hAt(g, JK.x, JK.z), z: JK.z } },
     { name: 'shibati top', at: { x: top[0], y: hAt(g, top[0], top[1]), z: top[1] } }, { name: 'riverfront', at: riverAt }], joins: [number, number][] = [[0, 1], [0, 3], [1, 2], [2, 3]];
@@ -127,6 +130,18 @@ export function buildYuzhong(): World {
   if (cable) cutCableway(cable, cuts, plans, plots, out);
   // The sewer maze under the basements (M3-73a).
   const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
+  // The cable tunnel to the telecom exchange and the hospital's basement link (M6-21), off Jiaochangkou's station hall:
+  // each to the foot of its site's basement shaft (the hospital's along the sewer under its street, taken in).
+  const shaftFoot = (id: string) => {
+    const plan = SECURE.find(S => S.id === id)!.plan, m = out.inter.find(i => i.id.startsWith(`${plan}-`) && i.kind === 'grate' && i.data?.manhole)!;
+    const lad = sew.climbables.find(c => c.kind === 'ladder' && Math.hypot(c.x - m.x, c.z - m.z) < 1.5)!;
+    return { x: m.x, y: lad.y0, z: m.z };
+  };
+  const jk = under.at.jkWest, tel = shaftFoot('telecom'), hosp = shaftFoot('hospital'), climb = (y: number) => (y - jk.y) / tan(0.61), side = { x: jk.x - 4, y: jk.y, z: jk.z }, { hospSewer: hz, telFlight: tz } = LINK_AT;
+  const linked = links({
+    'link:telecom': [jk, side, { ...side, z: tz }, { x: side.x, y: tel.y, z: tz + climb(tel.y) }, { x: side.x, y: tel.y, z: tel.z }, tel],
+    'link:hospital': [jk, side, { ...side, z: hz + 1.2 + climb(hosp.y) }, { x: side.x, y: hosp.y, z: hz + 1.2 }, { x: side.x, y: hosp.y, z: hz }, { x: hosp.x, y: hosp.y, z: hz }, hosp],
+  }, [under.solids, sew.solids], tun.zones.concat(home.zones, under.zones, sew.zones).map(z => z.box));
   // The caches, and the route network over everything that joins the roofs (M3-37).
   const gates = placeGates(gatePairs.filter(q => isolated(q, plans)), out), L0 = GEO.landmarks, lm = (k: string) => ({ x: L0[k].x, y: 0, z: L0[k].z });
   const net = network(plots, out.features.concat(vert.features, cross.features, under.features, sew.features), out.sites, sts, g,
@@ -195,7 +210,7 @@ export function buildYuzhong(): World {
   // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
   const ways = site ? siteWays(site, plots, g) : null;
   teleports.push(...(ways?.teleports ?? []));
-  const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
+  const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, linked.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
   // Street dressing goes last, round everything else (its solids append, so the gate's index holds).
@@ -235,10 +250,10 @@ export function buildYuzhong(): World {
   if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); river.props.push(...police.props); inter.push(...police.inter); }
   solids.push(...river.solids);
   const world = makeWorld({
-    name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
+    name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, linked.decor, laid.decor, filled.decor),
     props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], ways?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], ways?.climbables ?? [], vert.climbables, under.climbables),
-    hides: out.hides, sites: out.sites.filter(q => q.kind !== 'gone').concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones),
-    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, tun.features, site?.features ?? [], ways?.features ?? [], fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
+    hides: out.hides, sites: out.sites.filter(q => q.kind !== 'gone').concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones, linked.zones),
+    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, tun.features, site?.features ?? [], ways?.features ?? [], fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, linked.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water, ...under.water],
     teleports, spawn: hide,
   });
   // Nothing floats or sinks (M3-56): whatever stands on something above ground settles onto what's under it, or
@@ -298,6 +313,10 @@ export function buildYuzhong(): World {
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
   world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv;
+  // Jiefangbei station's (M6-17): the third rail, and the face-recognition gates' scan line at face height across them.
+  world.rail = under.rails;
+  const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
+  if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
@@ -425,6 +444,11 @@ function drawnStreets(sts: Street[], plots: Plot[]): { kind: string; w: number; 
 
 /** How far lots keep from the set pieces: past their aprons, which level the ground round them. */
 const KEEP = 5;
+/** The links' hand-placed lines (M6-21): the sewer under the hospital's street its basement link takes in, and
+ *  where the cable tunnel climbs to the telecom exchange's crawlway (z). */
+const LINK_AT = { hospSewer: 1820.9, telFlight: 2040 };
+/** How high the metro's face gates scan (a face standing; crouched he's under it): M6-17. */
+const FACE = 1.45;
 
 /** Grow a cell mask by r metres. */
 function dilate(g: Heightfield, m: Uint8Array, r: number) {

@@ -19,7 +19,7 @@ import type { Obb, P2 } from './shapes';
 import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } from './underkit';
 import { airRaid, clipped, SHELTER } from './airraid';
 import { metroRoom } from './metroroom';
-import { tan } from '../trig';
+import { tan, atan2 } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 export interface Under {
@@ -30,6 +30,10 @@ export interface Under {
   keep: Obb[];
   /** a walk from the Grand Tunnel under Jiaochangkou through both levels of the city to Xiaoshizi */
   route: V3[];
+  /** standing water (the flood culvert's) */
+  water: Box[];
+  /** the third rail's lines, along its top (M6-17) */
+  rails: { a: V3; b: V3 }[];
   /** a walk from Jiaochangkou's metro platform through its running tunnel and the Grand Tunnel to the friends'
    *  chamber (M3-43) */
   metroRoute: V3[];
@@ -49,7 +53,7 @@ const TW = 3.6, TH = 3.4;
 /** gt: the Grand Tunnel's floor, the end of its passage north (the junction), its ways in, and a walk along it
  *  from under Jiaochangkou into the passage. */
 export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; ways: V3[]; walk: V3[]; metro: V3; toJunction: V3[] }): Under {
-  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], at: {} };
+  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], water: [], rails: [], at: {} };
   const lining: Solid[] = [], bores: Box[] = [], kept: Solid[] = [], r = makeRng(hashString('under')), lr = makeRng(hashString('under-grates'));
   const k = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
   const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => g.street![k(x, z)] !== 0;
@@ -155,6 +159,7 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   /** From (x, z) on a tunnel at y out along (dx, dz) until the hillside falls away: covered while the ground's
    *  shell clears it, then an open cut between walls to the mouth. A storm culvert, or a drain to crawl; a high
    *  one runs on until its mouth stands 2.5 m up a wall over the slope below (a climb to get in). */
+  const flood: { mark: Feature; sign: Prop }[] = [];
   const culvert = (x: number, z: number, dx: number, dz: number, y: number, drain: boolean, high: boolean) => {
     const w = drain ? 1.0 : 3, h = drain ? 0.9 : 3, at = (d: number): P2 => [x + dx * d, z + dz * d];
     let cut = 0, end = 0;
@@ -182,6 +187,14 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
     keep(ox0, oz0, ox1, oz1);
     const [mx, mz] = at(end);
     way(drain ? 'drain' : 'culvert', mx, y, mz, dx, dz);
+    // The first big one the flood culvert (M6-21): standing water along it under the hill, its name stencilled inside
+    // its mouth (handed on last, as the hand-made places are).
+    if (!drain && !high && !flood.length) {
+      const [a0, b0, a1, b1] = box(TUBE.w / 2 + 1, cut, w / 2), [sx, sz] = at(cut - 1);
+      u.water.push({ x0: a0, y0: y - 0.1, z0: b0, x1: a1, y1: y + 0.45, z1: b1 });
+      flood.push({ mark: { kind: 'flood:culvert', x: (a0 + a1) / 2, y, z: (b0 + b1) / 2, group: 0 },
+        sign: { kind: 'graffiti', x: sx + dz * (w / 2 - 0.02), y: y + 1.8, z: sz - dx * (w / 2 - 0.02), yaw: atan2(-dz, dx), text: '防洪涵洞 · 雨季勿入  FLOOD CULVERT · KEEP OUT IN THE RAINS' } });
+    }
     return true;
   };
 
@@ -267,7 +280,6 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   tubes(dig, northT, 0, northT.len, LB);
   station(dig, run([xe, ze + SL], [xe, ze - 4]), SL + 4, LB, r);
   serviceRoom(run([xe, ze + SL], [xe, ze - 4]), (SL + 4) / 2, LB);
-
   // Ways in. Streets stepping down off the street in landings, open to the sky, onto the city's deck (U-032:
   // ground level keeps going down): one on each of two sides of the cavern, where one fits clear of the streets.
   const sides: [number, number, (t: number) => P2][] = [[0, 1, t => [C.x + t, Z0]], [0, -1, t => [C.x + t, Z1]], [1, 0, t => [X0, C.z + t]], [-1, 0, t => [X1, C.z + t]]];
@@ -373,9 +385,35 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   ];
   u.at = {
     deck: { x: C.x, y: LA, z: C.z }, concourse: { x: C.x, y: LB, z: C.z + 30 }, xiaoshizi: { x: xe, y: W, z: ze + 30 }, station: { x: X1 + 30, y: W, z: C.z },
-    metro: { x: X1 + SL + east.len * 0.3, y: LB, z: C.z - off }, shelter, jiaochangkou: u.metroRoute[0],
+    metro: { x: X1 + SL + east.len * 0.3, y: LB, z: C.z - off }, shelter, jiaochangkou: u.metroRoute[0], jkWest: { x: S0[0] - JL, y: F, z: Zs },
     ...(u.descents[0] ? { descent: u.descents[0][0] } : {}),
   };
+
+  // Line 6 (M6-21): its twin tubes east off Xiaoshizi's hall toward the Dongshuimen Bridge, as far as the hill over
+  // them holds; a steel shutter down across each short of its end, where they'd come out onto the bridge's rail deck
+  // (M7-03 goes on from its mark).
+  const x6 = xe + 9, z6 = ze + SL - 16;
+  let l6 = 0;
+  while (l6 < 400 && [-7, 0, 7].every(s => gy(x6 + l6 + 4, z6 + s) - g.thick > LB + TUBE.h + LINE + 0.3)) l6 += 2;
+  if (l6 > 30) {
+    const R6 = run([x6, z6], [x6 + l6, z6]);
+    tubes(dig, R6, 0, l6, LB);
+    for (const c of [-off, off]) kept.push(R6.box(l6 - 1.4, l6 - 1.2, c - TUBE.w / 2, c + TUBE.w / 2, LB, LB + TUBE.h, MAT.metal));
+    const [px6, pz6] = R6.pt(l6 - 1.6, 0);
+    marks.push({ kind: 'line6:portal', x: px6, y: LB, z: pz6, group: 0 });
+    const [sx, sz] = R6.pt(2, -off - TUBE.w / 2 + 0.02);
+    u.props.push({ kind: 'graffiti', x: sx, y: LB + 2.6, z: sz, yaw: 0, text: '6号线 → 东水门大桥  LINE 6 → DONGSHUIMEN BRIDGE' });
+  }
+
+  // The third rail (M6-17): along the outer side of each track from Jiefangbei's hall to the crossover, live.
+  const RR = run([X1, C.z], [xe - CX, C.z]);
+  for (const c of [-off, off]) {
+    const rs = c + Math.sign(c) * 1.3, [ax, az] = RR.pt(2, rs), [bx, bz] = RR.pt(RR.len, rs);
+    u.decor.push(RR.box(2, RR.len, rs - 0.05, rs + 0.05, LB + 0.1, LB + 0.25, MAT.metal), RR.box(2, RR.len, rs - 0.08, rs + 0.08, LB + 0.25, LB + 0.3, MAT.tealMetal));
+    u.rails.push({ a: { x: ax, y: LB + 0.3, z: az }, b: { x: bx, y: LB + 0.3, z: bz } });
+  }
+  // (The flood culvert's mark and sign.)
+  for (const f of flood) { marks.push(f.mark); u.props.push(f.sign); }
 
   let all = lining;
   for (const b of bores) all = carve(all, b);

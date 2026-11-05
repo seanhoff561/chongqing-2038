@@ -114,6 +114,8 @@ export interface World {
   gas?: { id: string; box: Box; sensor: number }[];
   /** live busbars (M6-15): each a line, end to end */
   hv?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
+  /** the metro's live third rail, along its top (M6-17: sim/metro.ts) */
+  rail?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
   /** render-only stand-ins for the far view (U-012): one box per block; empty for small worlds */
   far: Solid[];
   solids: Solid[];

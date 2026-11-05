@@ -1,11 +1,13 @@
-// Jiefangbei station's concourse and control room (M10-38c, U-104), made by hand over its platform hall (run R
+// Jiefangbei station's concourse and control room (M10-38c, U-104; M6-17), made by hand over its platform hall (run R
 // from the cavern's east wall along the station: t east, s across). The concourse over the hall's west end, level
 // with the underground city's deck (its street runs on into it), the stair up to it from the hall, the face-
-// recognition gates across it and the dead screens; behind its south wall the staff corridor, come down in the
-// middle, the control room (its heart) at its far end behind a card reader, the signal equipment room, the staff
-// lockers (the maintenance key that's the card), and behind them all the cable gallery to the control room's back
-// door; at the corridor's east end the staff stair down to a door in the hall's wall by the tracks. Its ways in:
-// the deck, the cavern's lower concourse into the hall, and the running tunnels from the east.
+// recognition gates across it (their scan line at face height alerts the district: duck under it) and the dead
+// screens; behind its south wall the staff corridor, come down in the middle, the control room (its heart) at its
+// far end behind a card reader (the traction breaker that kills the third rail, the pump panel), the signal
+// equipment room, the staff lockers (the maintenance key that's the card), and behind them all the cable gallery from
+// a door off the deck to the control room's back door; at the corridor's east end the staff stair down to the track
+// door (the maintenance key's) in the hall's wall by the tracks. Its ways in: the deck, the cable gallery's door, the
+// cavern's lower concourse into the hall, and the running tunnels from the east.
 import { MAT } from '../mats';
 import { stair } from '../steps';
 import type { Feature, Inter } from '../world';
@@ -31,6 +33,9 @@ export function metroRoom(d: Dig, R: Run, lo: number, hi: number, L: number, int
   for (const t of [21, 23, 25, 27]) { d.kept.push(R.box(t - 0.6, t + 0.6, 8.3, 9, hi, hi + 1.8, MAT.metal)); d.decor.push(R.box(t - 0.4, t + 0.4, 8.27, 8.3, hi + 1.0, hi + 1.5, MAT.screen)); }
   for (const t of [6, 30]) d.decor.push(R.box(t - 1.5, t + 1.5, -7.98, -7.94, hi + 2.2, hi + 3.2, MAT.screen));
   scrawl(H, 14.6, 8.98, [0, -1], '人脸识别通道  FACE RECOGNITION GATES', 2.2);
+  // (The gates' scan line, from end to end of them: yuzhong/index.ts hangs it.)
+  mark(H, 'metro:gates:a', 16, -7.6);
+  mark(H, 'metro:gates:b', 16, 8.6);
   scrawl(H, 30, -7.92, [0, 1], '暂停服务 请等待接收  SERVICE SUSPENDED · WAIT TO BE COLLECTED', 3.4);
   put(H, 'counter', 31, 4.5, [-1, 0], 2.4, 1.0, 0.7);
   for (const [t, s] of [[19, 2], [22.5, -3], [27, 5.5], [8, -5]]) put(H, 'bag', t, s, [1, 0], 0.4, 0.4, 0.3);
@@ -52,6 +57,14 @@ export function metroRoom(d: Dig, R: Run, lo: number, hi: number, L: number, int
   for (const [t, s] of [[7.4, -14.6], [9.2, -13.4], [11.4, -14.2], [6.2, -16.2]]) put(H, 'papers', t, s, [1, 0], 0.5, 0.02, 0.4);
   scrawl(H, 12.38, -14, [-1, 0], '1号线防护门 · 卡在抽屉里  LINE 1 PROTECTIVE DOOR · CARD IN THE DRAWER', 1.7);
   scrawl(H, 12.38, -14, [-1, 0], '(没有了 GONE)', 1.3);
+  // On its east wall the traction breaker (the third rail's 750 V) and the pump panel (dead with the feeder: M7-11).
+  for (const [s0, id, kind, zh, en] of [[-12.2, 'traction', 'traction', '牵引供电断路器', 'Traction breaker'], [-15.8, 'pumps', 'pumps', '排水泵控制盘', 'Pump panel']] as const) {
+    d.kept.push(R.box(12.1, 12.4, s0 - 0.5, s0 + 0.5, hi + 0.8, hi + 2.0, MAT.metal));
+    d.decor.push(R.box(12.08, 12.1, s0 - 0.3, s0 + 0.3, hi + 1.5, hi + 1.8, MAT.screen));
+    const [x, z] = R.pt(11.8, s0);
+    inter.push({ id: `metro-${id}`, kind, x, y: hi + 1.3, z, r: 0.8, zh, en });
+  }
+  scrawl(H, 12.38, -12.2, [-1, 0], '牵引 750V · 下轨道前断开  TRACTION 750 V · OPEN IT BEFORE GOING ON THE TRACK', 2.2);
   mark(H, 'doc:metro', 10.6, -16.5, 0.76);
   mark(H, 'heart:metro', 8, -13.6);
   // The signal equipment room: its relay racks, where the sensors' feed goes now.
@@ -64,20 +77,22 @@ export function metroRoom(d: Dig, R: Run, lo: number, hi: number, L: number, int
   door(H, 'lockers', 30, -10.7, 's', 'shut', { label: ['更衣室', 'Staff lockers'] });
   for (const t of [28.6, 29.3, 33.3, 34.0, 34.7]) put(H, 'locker', t, -16.7, [0, 1], 0.6, 1.9, 0.5, { id: `locker${Math.round(t * 10)}`, zh: '员工储物柜', en: 'Staff locker', type: 'locker', loot: 'bedroom', ...(t === 34.0 ? { items: [['metrokey', 1]] as [string, number][] } : {}) });
   put(H, 'clothes', 32.2, -12, [0, 1], 0.5, 0.15, 0.4);
-  // The cable gallery behind them all, from the lockers to the control room's back door.
-  H.space(4, 35, -19.6, -17.6, hi, hi + 2.2);
+  // The cable gallery behind them all, from its door off the deck past the control room's back door to the lockers.
+  H.space(-0.5, 35, -19.6, -17.6, hi, hi + 2.2);
+  door(H, 'cablein', 1.5, -18.6, 't', 'shut', { label: ['电缆通道检修门', 'Cable gallery door'] });
   door(H, 'cable', 31.5, -17.3, 's', 'jammed', { label: ['电缆通道', 'Cable gallery'] });
   door(H, 'back', 6, -17.3, 's', 'locked', { key: 'metrokey', label: ['控制室后门', 'Control room back door'] });
-  for (let t = 5; t < 35; t += 3) d.decor.push(R.box(t, t + 2.9, -19.55, -19.3, hi + 1.4, hi + 1.5, MAT.metal), R.box(t, t + 2.9, -19.5, -19.35, hi + 1.5, hi + 1.6, MAT.cloth));
+  for (let t = 2; t < 35; t += 3) d.decor.push(R.box(t, t + 2.9, -19.55, -19.3, hi + 1.4, hi + 1.5, MAT.metal), R.box(t, t + 2.9, -19.5, -19.35, hi + 1.5, hi + 1.6, MAT.cloth));
   // The staff stair: from the corridor's east end down to the hall's floor, out by a door in its wall by the tracks.
   H.space(36.6, 40.4, -13, -8.6, hi, hi + 3);
   H.space(40, 50, -13, -11, lo, hi + 3);
   stair(...R.rect(40, 50, -13, -11), lo, hi, R.down, d.kept, d.decor);
   B.space(49.6, 52.6, -13, -11, lo, lo + 3);
   B.space(50.8, 52, -11.2, -8.8, lo, lo + 2.1);
-  door(B, 'track', 51.4, -10, 's', 'jammed', { label: ['员工楼梯', 'Staff stair'] });
+  door(B, 'track', 51.4, -10, 's', 'locked', { key: 'metrokey', label: ['轨道门', 'Track door'] });
   // Its ways in.
   mark(H, 'in:metro:deck', -1.5, 0);
+  mark(H, 'in:metro:cable', -1.5, -18.6);
   mark(B, 'in:metro:hall', 1, -7);
   mark(B, 'in:metro:tracks', L + 2, -4.5);
 }
