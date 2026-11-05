@@ -285,6 +285,7 @@ This log has two parts. First, the director's notes (U-###), newest first, each 
 - **D-135** (M10-30): The second of two cables a route would lay side by side outside the start hideout is drawn from the dice into nothing, so the frozen city is otherwise unchanged (U-053).
 - **D-136** (M10-37): The takeover's timeline, as the found documents tell it: the ASI news in January 2038 (celebrated in Jiefangbei); the city's services run by the Municipal Dispatch Platform (its drone docks on the roofs); the cordon in late August (the bridges, ferries and cableway shut); registration at Jiaochangkou in early September; the machines taking over round 9-10 September. Clues, never stated outright.
 - **D-137** (M10-48): Machines take fewer hits (U-104): quadrupeds and humanoids half (a dog 15 pistol rounds to the body, 2 to the head; a humanoid 60 and 2), the other ground machines a third fewer, drones (the crawler among them) as they were. A humanoid's knee breaks at 60 damage and its battery at 90 (were 100 and 120), so they still come before it dies.
+- **D-138** (M10-38, M10-62, M10-63): M10-38 split by place: the Li family flat done; the secure sites (M10-38b), under the city (M10-38c), the cableway, pier and construction site walked from outside (M10-38d) carry the same criteria. Fallen leaves lie only near trees and bushes (a carpet by the trunk, nothing past 1.8 crowns), not over all grass. All the neon round the start hideout goes ice blue and night-only, not just the one sign.
 
 ## Removed or replaced
 

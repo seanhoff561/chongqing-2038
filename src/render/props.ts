@@ -1,7 +1,7 @@
 // Set dressing built from code by prop kind.
 import * as THREE from 'three';
 import type { Prop } from '../world/world';
-import { material, night } from './materials';
+import { material, night, iceNeonMap, ICE_NIGHT } from './materials';
 import { MAT } from '../world/mats';
 import { textTexture } from './textures';
 import { mergeGeometries } from './view';
@@ -68,24 +68,23 @@ function lamp(): THREE.Object3D {
   return g;
 }
 
-/** Neon sign: emissive canvas text, optionally vertical. */
+/** The neon round the start hideout (U-107): canvas text, optionally vertical, ice blue and lit only after dark. */
 function neon(p: Prop): THREE.Object3D {
   const vertical = (p.h ?? 0) > (p.w ?? 1);
   const text = vertical ? p.text!.split('').join('\n') : p.text!;
-  const colors = ['#ff3b6b', '#3bd6ff', '#ffcf3b', '#7dff6a', '#ff7a2f'];
-  const fg = colors[(p.text!.charCodeAt(0) + p.text!.length) % colors.length];
+  const fg = '#ffffff';
   const g = new THREE.Group();
   if (vertical) {
     const chars = p.text!.split('');
     chars.forEach((ch, i) => {
       const { tex } = textTexture(ch, { fg, size: 64, pad: 6 });
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(p.w!, p.w!), new THREE.MeshBasicMaterial({ map: tex, transparent: true, fog: true }));
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(p.w!, p.w!), iceNeonMap(tex));
       m.position.y = -i * p.w! * 1.05;
       g.add(m);
     });
   } else {
     const { tex, aspect } = textTexture(text, { fg, size: 64, pad: 8 });
-    g.add(new THREE.Mesh(new THREE.PlaneGeometry(p.h! * aspect, p.h!), new THREE.MeshBasicMaterial({ map: tex, transparent: true })));
+    g.add(new THREE.Mesh(new THREE.PlaneGeometry(p.h! * aspect, p.h!), iceNeonMap(tex)));
   }
   const back = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: 0x0a0a0c }));
   back.position.z = -0.03;
@@ -145,9 +144,13 @@ const builders: Record<string, Builder> = {
     for (const [x, z] of [[-o, -o], [o, -o], [-o, o], [o, o]]) parts.push(new THREE.BoxGeometry(0.1, p.h!, 0.1).translate(x, p.h! / 2, z));
     return new THREE.Mesh(mergeGeometries(parts), material(MAT.metal));
   },
-  // The alley's neon light, bright enough to read the alley by (U-050).
+  // The alley's neon light, bright enough to read the alley by after dark (U-050), ice blue and out by day (U-107).
   // (Its reach kept to the alley: a point light shines through rock.)
-  neonGlow: () => { const l = new THREE.PointLight(0xff3b8b, 14, 11, 1.3); return l; },
+  neonGlow: () => {
+    const l = new THREE.PointLight(ICE_NIGHT.getHex(), 0, 11, 1.3);
+    l.userData.tick = () => { l.intensity = 14 * Math.max(0, (night.k - 0.35) / 0.65); };
+    return l;
+  },
   // The vent's light into the chamber under it (M4-41, U-050): daylight down the shaft by day (more with the grate up and
   // the bags off it), the alley's neon by night, and a faint beam of it down the shaft; p.h the shaft's height.
   ventlight: p => {
@@ -156,7 +159,7 @@ const builders: Record<string, Builder> = {
       new THREE.MeshBasicMaterial({ color: 0xe8eeff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
     light.position.y = 2.5;
     g.add(light, beam);
-    const day = new THREE.Color(0xe8eeff), neon = new THREE.Color(0xff4f9a);
+    const day = new THREE.Color(0xe8eeff), neon = new THREE.Color(0xbfe6f5);
     g.userData.tick = (_t: number, open: Record<string, boolean>) => {
       const k = night.k, up = open[p.text!] ? 1.6 : 1;
       light.color.copy(day).lerp(neon, k);

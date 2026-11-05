@@ -28,6 +28,7 @@ import { WorldFx } from './render/worldfx';
 import { setSeason } from './render/season';
 import { Snow } from './render/snow';
 import { buildTops } from './render/snowcover';
+import { buildLeafMap } from './render/leafmap';
 import { updateScreens } from './render/edicts';
 import { seasonOf } from './sim/season';
 import { paKind, boardOf } from './data/announce';
@@ -398,7 +399,8 @@ export class Game {
     // Rain stops at a roof, underground or under water.
     const covered = wet || this.under > 0.5 || !!raycast(this.world.index, cam.x, cam.y, cam.z, 0, 1, 0, 40);
     this.rain.update(this.state.tick / 60, cam, this.state.weather.rain, covered);
-    setSeason(seasonOf(this.state.time), this.state.weather.cover ?? 0);
+    setSeason(seasonOf(this.state.time), this.state.weather.cover ?? 0, this.state.weather.rain);
+    buildLeafMap(this.world);
     if ((this.state.weather.cover ?? 0) > 0) buildTops(this.world.index);
     updateScreens(this.state, performance.now() / 1000);
     this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);

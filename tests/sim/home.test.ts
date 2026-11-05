@@ -13,11 +13,21 @@ import { GRATE } from '../../src/sim/grate';
 import { run, secs, aim, settle, LMB, RMB } from './helpers';
 import { B } from '../../src/sim/types';
 import { MAT } from '../../src/world/mats';
+import { localLight, lightsOf } from '../../src/sim/light';
 
 const w = getWorld('yuzhong'), grate = w.inter.find(i => i.id === 'airraid-grate')!, site = w.sites.find(s => s.id === 'airraid')!;
 const key = (n: string) => w.features.find(f => f.kind === `key:${n}`)!;
 
 describe("the friends' hideout (M4-22b)", () => {
+  it("has its alley's neon lighting it only after dark (M10-63, U-107)", () => {
+    const glow = w.props.find(p => p.kind === 'neonGlow' && Math.hypot(p.x - grate.x, p.z - grate.z) < 6)!;
+    expect(glow).toBeDefined();
+    const y = glow.y - 2.5;
+    expect(localLight(w, glow.x, y, glow.z, 23 * 3600)).toBeGreaterThan(0.2);
+    // (By day only what else is near lights it: a lamp's glass, not the neon.)
+    expect(localLight(w, glow.x, y, glow.z, 13 * 3600)).toBeLessThan(0.15);
+    expect(lightsOf(w).find(l => l.box.x0 === glow.x && l.box.z0 === glow.z)?.night).toBe(true);
+  });
   it('has one cable bundle outside it where two ran side by side (M10-30, U-104)', () => {
     // The cable bundles' walkable segments near the grate, joined into lines; no two lines end to end within a few
     // metres of each other.

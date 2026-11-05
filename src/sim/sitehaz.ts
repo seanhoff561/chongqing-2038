@@ -6,7 +6,7 @@
 import type { SimState } from './types';
 import type { World, Feature } from '../world/world';
 import { damage } from './body';
-import { onInteract } from './interact';
+import { onInteract, START_SOUND } from './interact';
 import { SCALE } from './clock';
 import { teleport } from './player';
 
@@ -71,7 +71,9 @@ export function stepSite(s: SimState, w: World) {
 const plankList = new WeakMap<World, World['inter']>();
 const planks = (w: World) => plankList.get(w) ?? (plankList.set(w, w.inter.filter(i => i.kind === 'looseplank' && typeof i.data?.solid === 'number')), plankList.get(w)!);
 
-// (Looked at, a loose plank gives itself away.)
+// (Looked at, a loose plank gives itself away; tried, it knocks. The hoist's cage clanks shut.)
+START_SOUND.looseplank = () => 'knock';
+START_SOUND.hoist = () => 'latch';
 onInteract('looseplank', {
   can: (s, it) => (s.wstate.open[it.id] ? 'gone' : 'it rocks underfoot: walk it, don\'t run'),
 });

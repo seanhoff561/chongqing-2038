@@ -357,10 +357,17 @@ export function lampPool() {
 
 /** Neon that's dark glass by day and burns ice blue only after dark (the sign by his family's flat: U-104). */
 const iceNeons: THREE.MeshBasicMaterial[] = [];
-const ICE_DAY = new THREE.Color(0x26323a), ICE_NIGHT = new THREE.Color(0xbfe6f5).multiplyScalar(1.6);
+export const ICE_DAY = new THREE.Color(0x26323a);
+export const ICE_NIGHT = new THREE.Color(0xbfe6f5).multiplyScalar(1.6);
 export function iceNeon() {
   if (!iceNeons.length) iceNeons.push(new THREE.MeshBasicMaterial({ color: ICE_DAY.clone(), toneMapped: false }));
   return iceNeons[0];
+}
+/** The same, lighting a texture's glyphs (the alley's signs by the start hideout: U-107). */
+export function iceNeonMap(map: THREE.Texture) {
+  const m = new THREE.MeshBasicMaterial({ map, color: ICE_DAY.clone().lerp(ICE_NIGHT, Math.max(0, (night.k - 0.35) / 0.65)), transparent: true, toneMapped: false });
+  iceNeons.push(m);
+  return m;
 }
 
 /** 0 by day to 1 at night: lit windows glow, signs burn brighter, the street lamps throw their pools (U-050: bright

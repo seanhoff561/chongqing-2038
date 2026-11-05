@@ -28,6 +28,8 @@ export function lightsOf(w: World): Light[] {
     // (A gate's floodlight, 11 m up its mast, lights the apron 8 m out in front.)
     else if (p.kind === 'floodlight') out.push({ kind: 'flood', box: point(p.x + fx * 8, p.y - 10, p.z + fz * 8), r: 10, v: 1 });
     else if (p.kind === 'lamp') out.push({ kind: 'lamp', box: point(p.x, p.y + 0.5, p.z), r: 5, v: 0.5 });
+    // (The alley's neon light by the start hideout, only after dark: U-107.)
+    else if (p.kind === 'neonGlow') out.push({ kind: 'neon', box: point(p.x, p.y, p.z), r: 8, v: 0.35, night: true });
     // (The neon by his family's flat, only after dark: U-104.)
     else if (p.kind === 'flatneon') out.push({ kind: 'neon', box: point(p.x + fx * 0.6, p.y + 0.9, p.z + fz * 0.6), r: 5, v: 0.35, night: true });
   }
