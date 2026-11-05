@@ -85,7 +85,7 @@ Parkour with the legs, climbing with the hands (U-002 to U-005). His collision i
 | Push-off from a hang | Space with wall under the feet: looking up dynos +4.6 m/s, else kicks off by the camera |
 | Bars and laches | no wall under the feet: he swings; Space pumps 1.6 m/s toward the camera, max 6.5 m/s; letting go keeps the swing |
 | Grip endurance | 100; drains 6/s one hand, 2/s two, half on ladders, double with a splinted arm; at 0 the hands slip until it refills (30/s with free hands) |
-| Climbing | pipes, ladders, street poles, tree trunks and vines are grabbable anywhere along them: hand over hand (U-104: the real ones, no added poles) |
+| Climbing | pipes, ladders, street poles, tree trunks and vines are grabbable anywhere along them: hand over hand. U-104: no added poles; at world build each big tree's trunk (to the crown), lamppost and camera pole (to under its head) and wall vine gets a climbing line on its surface |
 | Safe drops | 7 m (every fall lands as a roll did: U-054) |
 | Hide in a box | E at a box, crate, dumpster or cabinet with room inside: 0.6 s in, 0.5 s out |
 | Swimming | surface 1.4 m/s (sprint 2.2), dive with Ctrl, breath 40 s then 8 HP/s; climbs out onto banks up to 0.6 m |

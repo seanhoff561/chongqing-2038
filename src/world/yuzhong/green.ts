@@ -1,6 +1,6 @@
 // The green (M3-56b, U-028, M3-62): the land away from the buildings has gone back to woods, thick with trees and
 // shrubs; the parks keep their trees, shrubs and hedges; weeds come up through the grass on the open ground. The
-// trees by species, the big ones climbable up their trunks (U-035). One pass
+// trees by species, the big ones climbable up their trunks (U-035), as are the street poles (U-104). One pass
 // over the marks' cells, seeded per cell; nothing stands in anything built.
 import { overlaps, type Solid, type SolidIndex } from '../geom';
 import { heightAt, type Heightfield } from '../heightfield';
@@ -10,16 +10,23 @@ import { PROP_BOX } from '../../data/props';
 import { propBoxes } from './dressing';
 import { MARK, grassAt, type Marks } from './marks';
 
-/** Trees he can climb (U-035), by species: how far up the trunk goes before the crown (m). */
+/** Trees he can climb (U-035), by species: how far up the trunk goes before the crown (m). The street poles too
+ *  (U-104): a lamppost to under its camera, a camera pole to under its ring; their posts' radius at that height. */
 const TRUNK: Record<string, number> = { tree: 2.4, figtree: 3.6, camphor: 2.0, ginkgo: 2.6 };
+const POST: Record<string, { up: number; r: number }> = { lamppost: { up: 6.0, r: 0.085 }, campole: { up: 3.9, r: 0.065 } };
 
-/** A tree's trunk to climb hand over hand to where the crown starts (U-035, M3-62), on the side it faces; null if
- *  it isn't a tree he can climb. */
-export function trunk(p: Prop): Climbable | null {
-  const up = TRUNK[p.kind];
-  if (!up) return null;
-  const R = PROP_BOX[p.kind].w / 2, nx = Math.sin(p.yaw), nz = Math.cos(p.yaw);
-  return { kind: 'pole', x: p.x + nx * R, z: p.z + nz * R, y0: p.y + 0.3, y1: p.y + up, nx, nz };
+/** A tree's trunk to climb hand over hand to where the crown starts, on the side it faces (U-035, M3-62); a street
+ *  pole's post to under its head, from the side away from it (U-104); null for anything else. The hands hold the
+ *  bark or the paint: the line 0.08 m inside it (grip.ts holds 0.08 m out from a climbable's line). */
+export function climbOf(p: Prop): Climbable | null {
+  const up = TRUNK[p.kind], post = POST[p.kind];
+  if (up) {
+    const R = PROP_BOX[p.kind].w / 2 - 0.08, nx = Math.sin(p.yaw), nz = Math.cos(p.yaw);
+    return { kind: 'tree', x: p.x + nx * R, z: p.z + nz * R, y0: p.y + 0.3, y1: p.y + up, nx, nz };
+  }
+  if (!post) return null;
+  const R = post.r - 0.08, nx = -Math.sin(p.yaw), nz = -Math.cos(p.yaw);
+  return { kind: 'post', x: p.x + nx * R, z: p.z + nz * R, y0: p.y + 0.3, y1: p.y + post.up, nx, nz };
 }
 const pick = <T>(r: () => number, xs: T[]) => xs[Math.floor(r() * xs.length)];
 

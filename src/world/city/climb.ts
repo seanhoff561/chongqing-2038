@@ -1,6 +1,6 @@
 // Climbing and hiding in the city fabric (M3-05, U-002, U-005, U-032). Facades get a few holds high up: broken
 // downpipes, short ladders, runs of sills and AC units (1.4-1.9 m apart, now and then a 2.3-2.6 m gap that needs
-// a push-off), beam ends, balconies; the towers the same as the rest (U-036); poles in the street to start from. Alleys inside a block get hide crates and dumpsters,
+// a push-off), beam ends, balconies; the towers the same as the rest (U-036); the trees and lampposts in the street to start from. Alleys inside a block get hide crates and dumpsters,
 // scaffold bars to swing and lache along, or a fence with a crawl hole under it.
 import { solid, carve } from '../geom';
 import { MAT } from '../mats';
@@ -40,17 +40,10 @@ export function footOf(l: Lot, s: Side): number {
   return y;
 }
 
-/** A street pole with step bolts (U-032): its grip line at (x, z) facing n, its post behind it, from y0 to y1. */
-export function pole(x: number, z: number, nx: number, nz: number, y0: number, y1: number, out: Pick<Fabric, 'climbables' | 'solids' | 'features'>) {
-  out.climbables.push({ kind: 'pole', x, z, y0, y1, nx, nz });
-  out.solids.push(solid(x - nx * 0.12 - 0.11, y0 - 0.5, z - nz * 0.12 - 0.11, x - nx * 0.12 + 0.11, y1, z - nz * 0.12 + 0.11, MAT.hidden));
-  out.features.push({ kind: 'pole', x, y: y0, z, group: out.features.length, nx, nz });
-}
-
 /** The holds a facade offers (U-032): few, scattered, none in reach of the street. Most walls hold nothing; the
  *  rest a patch or two somewhere over BARE: a downpipe from the roof broken off partway down, a short ladder, a
  *  run of sills and AC units, a beam end left sticking out. Getting onto one takes something else: a neighbour's
- *  roof, a pole, scaffolding, a wall-run. Balconies start on the third floor; a shop sign's bar hangs low. */
+ *  roof, a tree or lamppost, scaffolding, a wall-run. Balconies start on the third floor; a shop sign's bar hangs low. */
 export function facades(l: Lot, r: Rng, out: Fabric) {
   // The roof edge he pulls over: its parapet.
   const top = l.top;

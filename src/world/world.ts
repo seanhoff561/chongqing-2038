@@ -5,8 +5,9 @@ import { buildIndex, solid, turn, type Box, type Solid, type SolidIndex } from '
 import { MAT } from './mats';
 
 /** Vertical climbable. (nx, nz) points from the wall out toward where the climber hangs. */
-/** pole: a street pole with step bolts up it (U-032), climbed like a ladder; its post stands behind the grip line. */
-export interface Climbable { kind: 'pipe' | 'ladder' | 'pole' | 'rope'; x: number; z: number; y0: number; y1: number; nx: number; nz: number }
+/** tree, post, vine (U-104): a tree's trunk, a lamppost's or camera pole's post, a vine on a wall, climbed hand over
+ *  hand as a pipe is; drawn by their props, (x, z) 0.08 m in from the surface the hands hold. */
+export interface Climbable { kind: 'pipe' | 'ladder' | 'rope' | 'tree' | 'post' | 'vine'; x: number; z: number; y0: number; y1: number; nx: number; nz: number }
 
 /** A box he can curl up in. The interior box is what must fit him. */
 /** A line he can ride hanging from it (M3-52): a cable strung between buildings, live with power or dead. */

@@ -9,7 +9,7 @@ import { makeRng, hashString } from '../../sim/rng';
 import { buildLot, PARAPET, type Fabric, type Lot } from '../city/buildings';
 import { stepsFor } from '../steps';
 import { findMarks } from './marks';
-import { greenery, trunk } from './green';
+import { greenery, climbOf } from './green';
 import { layout, doorPaths } from './layout';
 import { ruins } from './ruins';
 import { fill } from './fill';
@@ -219,9 +219,9 @@ export function buildYuzhong(): World {
   solids.push(...river.solids);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
-    props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], vert.climbables, under.climbables, dress.climbables),
+    props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], vert.climbables, under.climbables),
     hides: out.hides, sites: out.sites.concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones),
-    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, dress.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
+    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
     teleports, spawn: hide,
   });
   // Nothing floats or sinks (M3-56): whatever stands on something above ground settles onto what's under it, or
@@ -234,8 +234,9 @@ export function buildYuzhong(): World {
     const gy = heightAt(g, p.x, p.z) ?? p.y, from = (p.y < gy - 2.5 ? p.y : Math.max(p.y, gy)) + 0.5, hit = raycast(world.index, p.x, from, p.z, 0, -1, 0, 30);
     if (hit && hit.t > 0.01) p.y = from - hit.t;
   }
-  // The big trees climbable up their trunks, wherever they were planted (U-035, M3-62).
-  for (const p of world.props) { const c = trunk(p); if (c) world.climbables.push(c); }
+  // The big trees climbable up their trunks, the lampposts and camera poles up their posts, wherever they stand
+  // (U-035, M3-62, U-104).
+  for (const p of world.props) { const c = climbOf(p); if (c) world.climbables.push(c); }
   // Signs and screens only where they face a street with nothing in front of them; laundry only where both ends of
   // its cord meet a wall (U-031).
   const SIGNS = new Set(['neonblade', 'ledscreen', 'ledboard', 'redbanner']);

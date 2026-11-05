@@ -132,10 +132,11 @@ export class View {
     }
     // The cables over the streets (M3-52).
     for (const m of lineMeshes(w.lines)) this.world.add(m);
-    // Pipes and ladders merge into chunk meshes.
+    // Pipes and ladders merge into chunk meshes (trees, posts and vines are their props).
     const merger = new ChunkMerger();
     for (const c of w.climbables) {
-      const geo = c.kind === 'pipe' ? new THREE.CylinderGeometry(0.06, 0.06, c.y1 - c.y0, 8) : c.kind === 'pole' ? poleGeometry(c.y1 - c.y0) : ladderGeometry(c.y1 - c.y0);
+      if (c.kind !== 'pipe' && c.kind !== 'ladder') continue;
+      const geo = c.kind === 'pipe' ? new THREE.CylinderGeometry(0.06, 0.06, c.y1 - c.y0, 8) : ladderGeometry(c.y1 - c.y0);
       const m = new THREE.Mesh(geo, material(MAT.metal));
       m.position.set(c.x + c.nx * 0.08, (c.y0 + c.y1) / 2, c.z + c.nz * 0.08);
       m.rotation.y = Math.atan2(c.nx, c.nz);
@@ -325,13 +326,6 @@ function liveWalk(o: THREE.Object3D, force: boolean) {
  *  drawn, the sun's shadow map and the share of loose litter and clutter drawn; the draw calls and triangles a frame
  *  may take (tests/e2e/budgets.e2e.mjs). */
 export const GFX = { ratio: 1, draw: 160, detail: 90, inner: 35, shadow: 2048, props: 0.75, budget: { calls: 250, tris: 1_350_000 } };
-
-/** A street pole: a concrete post (its face on the grip line, 0.08 m in front) with step bolts either side up it. */
-function poleGeometry(h: number): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [new THREE.CylinderGeometry(0.1, 0.13, h, 8).translate(0, 0, -0.2)];
-  for (let y = -h / 2 + 0.5, k = 1; y < h / 2 - 0.2; y += 0.4, k = -k) parts.push(new THREE.BoxGeometry(0.26, 0.03, 0.03).translate(k * 0.14, y, -0.1));
-  return mergeGeometries(parts);
-}
 
 function ladderGeometry(h: number): THREE.BufferGeometry {
   const parts: THREE.BufferGeometry[] = [];
