@@ -17,6 +17,8 @@ import { stair } from '../steps';
 import { districtAt } from './lots';
 import type { Obb, P2 } from './shapes';
 import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } from './underkit';
+import { airRaid, clipped, SHELTER } from './airraid';
+import { metroRoom } from './metroroom';
 
 type V3 = { x: number; y: number; z: number };
 export interface Under {
@@ -63,11 +65,11 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
     u.zones.push({ kind: 'under', box: { x0: x0 - 0.3, y0: y0 - 0.5, z0: z0 - 0.3, x1: x1 + 0.3, y1, z1: z1 + 0.3 }, lit });
   };
   /** A level tunnel square to the map from a to b (each end run on half its width), lamps along its crown. */
-  const tunnel = (a: P2, b: P2, y: number, w = TW, h = TH) => {
+  const tunnel = (a: P2, b: P2, y: number, w = TW, h = TH, d: Dig = dig) => {
     const hw = w / 2, x0 = Math.min(a[0], b[0]) - hw, x1 = Math.max(a[0], b[0]) + hw, z0 = Math.min(a[1], b[1]) - hw, z1 = Math.max(a[1], b[1]) + hw;
-    space(x0, z0, x1, z1, y, y + h);
+    d.space(x0, z0, x1, z1, y, y + h);
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-    for (let t = 6; t < len - 2 && w > 2; t += 16) { const x = a[0] + ((b[0] - a[0]) * t) / len, z = a[1] + ((b[1] - a[1]) * t) / len; u.decor.push(solid(x - 0.3, y + h - 0.1, z - 0.3, x + 0.3, y + h, z + 0.3, MAT.lamp)); }
+    for (let t = 6; t < len - 2 && w > 2; t += 16) { const x = a[0] + ((b[0] - a[0]) * t) / len, z = a[1] + ((b[1] - a[1]) * t) / len; d.decor.push(solid(x - 0.3, y + h - 0.1, z - 0.3, x + 0.3, y + h, z + 0.3, MAT.lamp)); }
   };
   /** The metro staff's room off a station (M6-24b): through a door in the platform wall at its middle, beyond the
    *  track, a concrete room with a cot, a table and lockers; a shelter he could make his own. */
@@ -184,13 +186,14 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
 
   const dig: Dig = { space, bores, kept, decor: u.decor, props: u.props, gy, hole: holeRect, keep, clearOf, mark: (kind, [x, z], y) => { u.features.push({ kind, x, y, z, group: u.features.length }); } };
   /** A service tunnel from a to b at y, its fittings, and the rooms it passes through, evenly spaced (U-032: no long
-   *  empty runs). */
-  const service = (a: P2, b: P2, y: number, rooms: Parameters<typeof room>[4][]) => {
-    tunnel(a, b, y);
-    const R = run(a, b), gap = R.len / (rooms.length + 1);
+   *  empty runs); `by`: a stretch along it made by hand, left out (its dice thrown all the same). */
+  const service = (a: P2, b: P2, y: number, rooms: Parameters<typeof room>[4][], by?: [number, number]) => {
+    const R = run(a, b), c = by ? clipped(dig, R, ...by) : null, d = c?.dig ?? dig, gap = R.len / (rooms.length + 1);
+    tunnel(a, b, y, TW, TH, d);
     let t = 0;
-    rooms.forEach((kind, i) => { const c = gap * (i + 1); room(dig, R, c, y, kind, r); fit(dig, R, t + 3, c - 8, y, TW, TH, r); t = c + 8; });
-    fit(dig, R, t + 3, R.len - 3, y, TW, TH, r);
+    rooms.forEach((kind, i) => { const m = gap * (i + 1); room(d, R, m, y, kind, r); fit(d, R, t + 3, m - 8, y, TW, TH, r); t = m + 8; });
+    fit(d, R, t + 3, R.len - 3, y, TW, TH, r);
+    c?.flush();
     return R;
   };
 
@@ -200,7 +203,9 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   space(J.x - 4, J.z - 4, J.x + 4, J.z + 4, F, F + TH);
   // Where the passage comes in from the south-west, through the room's south wall.
   bores.push({ x0: J.x - 4, y0: F, z0: J.z + 3.5, x1: J.x + 0.3, y1: F + 3.2, z1: J.z + 5.5 });
-  const north = service([J.x, J.z], [J.x, C.z], F, ['shelter', 'store', 'pump', 'shelter']);
+  // (Its first stretch the air-raid shelter, made by hand: airraid.ts.)
+  // (Their interactables and marks handed on last, so the grates' ids and the ways' groups, numbered as they come, stand as they were.)
+  const hand: Inter[] = [], marks: Feature[] = [], north = service([J.x, J.z], [J.x, C.z], F, ['shelter', 'store', 'pump', 'shelter'], [SHELTER.t0, SHELTER.t1]), shelter = airRaid(dig, north, F, TH, hand, marks);
   // Up a flight to the network's level, east to the city's lower concourse.
   const fx0 = J.x + 1.5, fx1 = fx0 + (LB - F) / T35;
   space(fx0, C.z - 1.6, fx1, C.z + 1.6, F, LB + TH);
@@ -252,6 +257,7 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   // one), north to Xiaoshizi's station under its stair.
   const XS = GEO.landmarks.xiaoshizi, xe = XS.x, ze = XS.z + 18, SL = 70, CX = 12, off = TUBE.off;
   station(dig, run([X1, C.z], [X1 + SL, C.z]), SL, LB, r);
+  metroRoom(dig, run([X1, C.z], [X1 + SL, C.z]), LB, LA, SL, hand, marks);
   const east = run([X1 + SL, C.z], [xe - CX, C.z]);
   tubes(dig, east, 0, east.len, LB, east.len * 0.45);
   space(xe - CX, C.z - CX, xe + CX, C.z + CX, LB, LB + 6);
@@ -366,12 +372,14 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   ];
   u.at = {
     deck: { x: C.x, y: LA, z: C.z }, concourse: { x: C.x, y: LB, z: C.z + 30 }, xiaoshizi: { x: xe, y: W, z: ze + 30 }, station: { x: X1 + 30, y: W, z: C.z },
-    metro: { x: X1 + SL + east.len * 0.3, y: LB, z: C.z - off }, shelter: { x: J.x, y: F, z: J.z - north.len / 5 }, jiaochangkou: u.metroRoute[0],
+    metro: { x: X1 + SL + east.len * 0.3, y: LB, z: C.z - off }, shelter, jiaochangkou: u.metroRoute[0],
     ...(u.descents[0] ? { descent: u.descents[0][0] } : {}),
   };
 
   let all = lining;
   for (const b of bores) all = carve(all, b);
   u.solids.push(...all, ...kept);
+  u.inter.push(...hand);
+  u.features.push(...marks.map(f => ({ ...f, group: u.features.length })));
   return u;
 }

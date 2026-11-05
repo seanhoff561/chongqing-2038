@@ -24,7 +24,7 @@ Xiaoyu` },
 A woman sleeping by the loading dock knew him. She says the trains don't need a driver to see you on the bridge: the deck is wired, and a grey box at the bridgehead listens to the whole truss. Cut its wires and it's deaf. But it's live, it bites. Dad would know what to wear for that.
 And they hear each other talk. Get close and you need something that shouts over them, made out of what they used to sell up here. I can't make one.
 I'm going to Dad's work. Maybe he's there.` },
-    { id: 'xy-bridge-3', zh: '铅笔写的字条', en: 'Note in pencil', at: 'Xinhua Road substation: fence', text:
+    { id: 'xy-bridge-3', zh: '铅笔写的字条', en: 'Note in pencil', at: 'Xinhua Road substation: gate', text:
 `The back fence was already cut and twisted shut again with wire.
 Dad's not here. I called and called. Inside the hall something cracks like firecrackers and blue light jumps on the windows. I didn't go in.
 I could see his locker through the window, his name on it, his spare gloves on the hook. The thick orange ones. Couldn't reach.
@@ -46,7 +46,7 @@ Xiaoyu` },
 The two university students were still here last night. Ma says on the first day a cabin stopped halfway over the river with people in it, and the operator brought it in on some emergency motor, and the other cabin is still sitting in the station. It just needs its power back. The power comes from the substation on Xinhua Road.
 That's Dad's. The open day, where he let us wear the hard hats.
 If anybody can turn it back on it's him. I'm going there.` },
-    { id: 'xy-cable-3', zh: '撕下的一页', en: 'Torn-out page', at: 'Xinhua Road substation: fence', text:
+    { id: 'xy-cable-3', zh: '撕下的一页', en: 'Torn-out page', at: 'Xinhua Road substation: gate', text:
 `Dad isn't here.
 The back fence was cut already. I got as far as the yard. Inside, something hums and snaps and blue light jumps across the hall.
 Through the control room window there's his writing on the whiteboard: CABLEWAY FEEDER - FUSE GONE. SPARE: STORE. ONLY ONE.
