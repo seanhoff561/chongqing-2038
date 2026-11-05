@@ -1,6 +1,6 @@
 // What's moving in the world round him that isn't a machine or him (M4-62, M4-65, M5-14, M5-19 to M5-22): rockets in
 // flight trailing smoke, hurt machines smoking and sparking, what's thrown and its clouds, what he's rigged, and the
-// chain-link fences (cut or not) and the roller shutters near him.
+// chain-link fences (cut or not) and the roller shutters near him; the construction site's crane load (M6-10).
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
 import type { World } from '../world/world';
@@ -12,6 +12,7 @@ import { ThrowFx } from './throwfx';
 import { Rigs } from './rigs';
 import { Fences } from './fences';
 import { Shutters } from './shutters';
+import { SiteLoad } from './siteload';
 
 export class WorldFx {
   private rockets: THREE.Group[] = [];
@@ -19,10 +20,11 @@ export class WorldFx {
   private rigs: Rigs;
   private fences: Fences;
   private shutters: Shutters;
+  private load: SiteLoad | null = null;
   private trailIn = 0;
   private smokeIn = 0;
 
-  constructor(scene: THREE.Scene, private marks: Marks) {
+  constructor(private scene: THREE.Scene, private marks: Marks) {
     // Rockets in flight (M4-65): a body and a burning tail, eight at most.
     for (let i = 0; i < 8; i++) {
       const g = new THREE.Group();
@@ -45,6 +47,8 @@ export class WorldFx {
     this.rigs.update(s);
     this.fences.update(s, w);
     this.shutters.update(s, w, cam);
+    if (this.load?.w !== w) { if (this.load) this.scene.remove(this.load.group); this.load = new SiteLoad(w); this.scene.add(this.load.group); }
+    this.load.update(s.time);
     // Hurt machines near him smoke and spark (M4-62).
     if ((this.smokeIn -= dt) > 0) return;
     this.smokeIn = 0.25;

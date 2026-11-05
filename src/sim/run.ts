@@ -29,8 +29,9 @@ export function startRun(s: SimState, w: World) {
     for (const [id, n, charge] of FRIENDS_CRATE) addItem(s, g, id, n, charge ? { charge } : {});
     s.wstate.searched[START_CRATE] = true;
   }
-  // In the family flat in upper Shibati (M3-19): his father's badge, and the phone, nearly flat, with its voicemail.
-  for (const f of w.features) if (f.kind === 'li:badge' || f.kind === 'li:phone') {
+  // In the family flat in upper Shibati (M3-19): his father's badge, the phone, nearly flat, with its voicemail, and his
+  // own site card (M6-10).
+  for (const f of w.features) if (f.kind.startsWith('li:')) {
     const id = f.kind.slice(3);
     s.dropped.push({ stack: { uid: newUid(s), id, n: 1, x: 0, y: 0, rot: false, ...(id === 'phone' ? { charge: 6 } : {}) }, x: f.x, y: f.y, z: f.z });
   }

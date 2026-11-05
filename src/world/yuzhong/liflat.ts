@@ -1,7 +1,7 @@
 // The Li family flat (M3-19, DESIGN section 13): a flat on an upper floor nearest the top of Shibati's stair, its
 // room gone through: drawers pulled out and tipped, chairs over, papers, clothes and books across the floor, broken glass,
-// the family photo face down. His father's work badge and the cracked phone with its one voicemail lie on its
-// floor (put there when a run starts, sim/run.ts, from the 'li:' features).
+// the family photo face down. His father's work badge, the cracked phone with its one voicemail and his own site card
+// lie on its floor (put there when a run starts, sim/run.ts, from the 'li:' features).
 import type { World, Plot } from '../world';
 import { raycast, solid, overlaps } from '../geom';
 import { MAT } from '../mats';
@@ -147,6 +147,9 @@ export function liFlat(w: World) {
     prop('box', 0.5, 0.35, 0.4, true);
     prop('papers', 0.5, 0.02, 0.4); prop('clothes', 0.6, 0.05, 0.5); prop('books', 0.4, 0.2, 0.3);
     for (let i = 0; i < 3; i++) { prop('papers', 0.5, 0.02, 0.4); prop('clothes', 0.6, 0.05, 0.5); }
+    // (And his own site access card from when he worked on the tower, M6-10, thrown down with the rest.)
+    const [cx, cz] = take() ?? [px + 0.3, pz];
+    w.features.push({ kind: 'li:sitecard', x: cx, y: s.y + 0.03, z: cz, group: w.features.length });
     for (let i = 0; i < 6; i++) { const at = take(); if (!at) break; const a = 0.05 + rand(r) * 0.12; w.decor.push({ ...solid(at[0] - a, s.y + 0.03, at[1] - a * 0.6, at[0] + a, s.y + 0.04, at[1] + a * 0.6, MAT.glass), inner: true }); }
     w.teleports.push({ name: 'Li family flat', x: s.x, y: s.y + 1.5, z: s.z, yaw: Math.atan2(s.x - bx, s.z - bz) });
     flatNeon(w, s);

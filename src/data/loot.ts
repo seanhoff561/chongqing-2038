@@ -69,6 +69,13 @@ export const loot: Record<string, LootTable> = {
     { id: 'pistol', w: 2 }, { id: 'mag9', w: 4, n: [1, 2] }, { id: 'shotgun', w: 1 }, { id: 'shells', w: 3, n: [1, 2] }, { id: 'grenade', w: 2 }, { id: 'extinguisher', w: 1 },
     { id: 'breach', w: 1 }, { id: 'rfamp', w: 2 }, { id: 'fibretap', w: 1 }, { id: 'cameratap', w: 2 }, { id: 'coil', w: 1 }, { id: 'trigger', w: 1 }, { id: 'cloner', w: 1 },
   ] },
+  // The construction site's tool containers (M6-10): its tier 2 tools, what the tower's crews left (the steel hook,
+  // always in one, and the crane cab's pulley block are placed with the site, yuzhong/site.ts).
+  construction: { rolls: [1, 3], empty: 0.1, items: [
+    { id: 'boltcutters', w: 2 }, { id: 'rope', w: 2 }, { id: 'carabiner', w: 2, n: [1, 2] }, { id: 'harness', w: 2 }, { id: 'hook', w: 2 }, { id: 'nailgun', w: 1 },
+    { id: 'nails', w: 2 }, { id: 'grinder', w: 1 }, { id: 'battpack', w: 1 }, { id: 'jerrycan', w: 1 }, { id: 'breach', w: 1 }, { id: 'crowbar', w: 2 }, { id: 'rods', w: 2 },
+    { id: 'ladder', w: 1 }, { id: 'tape', w: 1 },
+  ] },
   // The sites' own (M6-11 to M6-13): the hospital's medicine (tier 2), the police station's weapons and keys (tier 3), the
   // electronics market's parts (tiers 2-3).
   hospital: { rolls: [1, 3], empty: 0.1, items: [
