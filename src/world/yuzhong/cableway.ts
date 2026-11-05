@@ -235,7 +235,14 @@ export function cutCableway(l: CableLine, cuts: Map<Plan, number>, plans: Plan[]
   for (const k of ['solids', 'decor', 'far'] as const) out[k].forEach((q, i) => { if (!owned[k][i] && q.y1 > under(l, bx(q))) drop[k].add(i); });
   for (const k of ['props', 'inter'] as const) out[k].forEach((q, i) => { if (!owned[k][i] && q.y > under(l, pt(q.x, q.z))) drop[k].add(i); });
   out.climbables.forEach((q, i) => { if (!owned.climbables[i] && q.y1 > under(l, pt(q.x, q.z))) drop.climbables.add(i); });
-  for (const k of K) if (drop[k].size) (out as unknown as Record<string, unknown[]>)[k] = out[k].filter((_: unknown, i: number) => !drop[k].has(i));
+  // (Each building's ranges in the lists moved down past what's gone before them.)
+  for (const k of K) {
+    if (!drop[k].size) continue;
+    const before = new Int32Array(out[k].length + 1);
+    for (let i = 0; i < out[k].length; i++) before[i + 1] = before[i] + (drop[k].has(i) ? 1 : 0);
+    (out as unknown as Record<string, unknown[]>)[k] = out[k].filter((_: unknown, i: number) => !drop[k].has(i));
+    for (const q of plots) if (q.own) q.own[k] = [q.own[k][0] - before[q.own[k][0]], q.own[k][1] - before[q.own[k][1]]];
+  }
   out.hides.forEach((h, i) => { h.id = i; });
 }
 
