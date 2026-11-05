@@ -22,7 +22,7 @@ import { endRun } from './sim/escape';
 import { LaptopUI } from './ui/laptop';
 import { Laptop3D } from './render/laptop3d';
 import { CraftUI } from './ui/craft-ui';
-import { speak } from './audio/voice';
+import { speak, warmVoice } from './audio/voice';
 import { EndingSequence } from './ui/ending';
 import { WorldFx } from './render/worldfx';
 import { setSeason } from './render/season';
@@ -432,6 +432,7 @@ export class Game {
     this.menuMusic.update(this.menuUp());
     this.alarmBoards();
     this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5, this.songs.playing || this.menuUp());
+    warmVoice(this.audio);
     this.view.render(this.state.tick / 60, this.state.wstate.open);
     this.frames++;
   }

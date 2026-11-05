@@ -21,6 +21,8 @@ import { isNew } from '../sim/places';
 
 /** The page's own size (CSS pixels), scaled onto the screen's glass. */
 export const SCREEN = { w: 640, h: 408 };
+/** Seconds on an app before Anna has her first word on it (flicking past says nothing). */
+const APP_WAIT = 0.8;
 /** The pages he turns through standing. */
 const STANDING = PAGES.filter(p => p.standing);
 
@@ -49,6 +51,9 @@ export class LaptopUI {
   private mapUp = false;
   /** whether he was sat down last frame */
   private sat = false;
+  /** the app in front, and for how long (s): after a moment there, its first time, Anna's word on it (M10-53) */
+  private app = '';
+  private onApp = 0;
   /** behind Anna while she fills the screen (M10-52) */
   private stage = document.createElement('div');
 
@@ -172,7 +177,7 @@ export class LaptopUI {
     // (Taken out, Anna waves.)
     if (open && !this.wasOpen) this.anna.set('wave', 1.6);
     this.wasOpen = open;
-    if (scene) this.anna.set(scene.pose as Pose, 1);
+    if (scene) this.anna.set(scene.pose as Pose, 2);
     if (out) this.anna.update(dt);
     // (Sat down, he looks straight ahead at it: U-105.)
     if (sit) g.input.pitch *= Math.exp(-8 * dt);
@@ -201,6 +206,10 @@ export class LaptopUI {
     if (scene?.full) return;
     // The desktop: each app's page in its window, redrawn only when it changes.
     const { shown } = this.desk.render(sit, PAGES[this.page].id, app => this.html(app, sit));
+    // (Turned to an app, and stayed a moment: her word on it the first time, M10-53.)
+    const app = this.current();
+    if (app !== this.app) { this.app = app; this.onApp = 0; }
+    else if (app && this.onApp < APP_WAIT && (this.onApp += dt) >= APP_WAIT && !g.state.tabs?.includes(app)) g.input.cmds.push({ c: 'act', name: 'tab', arg: app });
     this.frame++;
     // The map, drawn into its place a few times a second; the feed likewise.
     const mw = this.desk.win('map', sit), slot = mw && shown.includes(mw) ? mw.content.querySelector('.lt-map') : null;

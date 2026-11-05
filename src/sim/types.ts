@@ -199,6 +199,8 @@ export interface SimState {
   opening?: number;
   hello?: number;
   gear?: { x: number; y: number; z: number; yaw: number; laptop: boolean; pack: boolean };
+  /** the laptop's apps Anna has had her word on (M10-53) */
+  tabs?: string[];
   /** the game time he last put Anna's map away: places learned since are new on it */
   mapAt?: number;
   /** when his position last went to the network, tracked (U-104) */

@@ -155,8 +155,8 @@ body.vr::after { content: 'VR 训练室 TRAINING ROOM · Esc'; position: fixed; 
 #laptop .lt-stage { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.9s; background: radial-gradient(ellipse 70% 80% at 50% 70%, #17394a 0%, #0a1b24 55%, #050c11 100%); }
 #laptop.full .lt-stage { opacity: 1; }
 #laptop.full .lt-task { visibility: hidden; }
-#laptop.full .lt-anna { z-index: 2; right: 170px; bottom: -110px; width: 300px; height: 390px; }
-#laptop.full.close .lt-anna { right: 120px; bottom: -235px; width: 400px; height: 520px; }
+#laptop.full .lt-anna { z-index: 2; right: 190px; bottom: -8px; width: 260px; height: 338px; }
+#laptop.full.close .lt-anna { right: 150px; bottom: -150px; width: 340px; height: 442px; }
 body.opening #hud .dot, body.opening #hud .prompt, body.opening #hud .held, body.opening #hud .notice { display: none; }
 #wake { position: fixed; inset: 0; z-index: 39; background: #000; pointer-events: none; opacity: 0; }
 #laptop .lt-task { position: absolute; z-index: 1; left: 0; bottom: 0; width: 640px; height: 28px; display: flex; align-items: center; background: rgba(9, 19, 26, 0.96); border-top: 1px solid var(--ice-line); }

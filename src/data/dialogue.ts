@@ -87,6 +87,18 @@ export const HELLO_LINES: Line[] = [
   { id: 'hello-7', speaker: 'anna', zh: '你只要按Q专注，然后点这边的这些点，懂了吗？', en: 'All you have to do is focus with Q and then click the dots on the side here, got it?' },
 ];
 
+/** Her line the first time he turns to each of the laptop's apps (M10-53); the map's is MAP_LINES.flat, the status
+ *  page's in HELLO_LINES. */
+export const TAB_LINES: Record<string, Line[]> = {
+  scan: [{ id: 'tab-scan', speaker: 'anna', zh: '扫描。给我看个东西，我告诉你它是什么。我懂的比你多，这不难。', en: "Scan. Show me something and I'll tell you what it is. I know more than you. It's not hard." }],
+  notes: [{ id: 'tab-notes', speaker: 'anna', zh: '你的笔记。写下来吧，反正你的脑袋存不住东西。', en: "Your notes. Write things down, since your head clearly doesn't keep them." }],
+  drone: [{ id: 'tab-drone', speaker: 'anna', zh: '无人机。抓一架它们的，我教它替我们飞。别撞坏了。', en: "The drone. Catch one of theirs and I'll teach it to fly for us. Don't crash it." }],
+  cams: [{ id: 'tab-cams', speaker: 'anna', zh: '摄像头。接进它们的，我们就能看它们怎么看你。浪漫吧？', en: 'Cameras. Tap into theirs and we get to watch them watching you. Romantic, right?' }],
+  logs: [{ id: 'tab-logs', speaker: 'anna', zh: '日志。你拿望远镜看，我负责记。跟平时一样。', en: 'Logs. You look through the binoculars, I do the remembering. As usual.' }],
+  songs: [{ id: 'tab-songs', speaker: 'anna', zh: '歌曲。你自己的音乐，如果你有的话。拜托品味比上次好一点。', en: 'Songs. Your own music, if you have any. Please have better taste than last time.' }],
+  training: [{ id: 'tab-training', speaker: 'anna', zh: '训练室。戴上眼镜，你就可以摔下去而不会死。难得吧。', en: 'The training room. Goggles on, and you can fall off things without dying. For once.' }],
+};
+
 /** The last two lines of each ending's exchange with Xiaoyu there (M10-51). */
 export const ENDING_WITH: Record<string, Line[]> = {
   bridge: [
@@ -110,8 +122,8 @@ export const ENDING_WITH: Record<string, Line[]> = {
 /** An ending's exchange: alone, or with his sister. */
 export const endingLines = (route: string, sister?: boolean): Line[] => (sister ? [...(ENDING_LINES[route] ?? []).slice(0, 2), ...(ENDING_WITH[route] ?? [])] : ENDING_LINES[route] ?? []);
 
-/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna's opening, her word on the
- *  map, the endings. */
-export const SPOKEN: Line[] = [...VOICEMAIL, ...WAKE_LINES, ...HELLO_LINES, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat(), ...Object.values(ENDING_WITH).flat()];
+/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna's opening, her word on each
+ *  app and on the map, the endings. */
+export const SPOKEN: Line[] = [...VOICEMAIL, ...WAKE_LINES, ...HELLO_LINES, ...Object.values(TAB_LINES).flat(), ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat(), ...Object.values(ENDING_WITH).flat()];
 
 export const lineById = new Map([...SPOKEN, ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));
