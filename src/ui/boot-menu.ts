@@ -1,5 +1,5 @@
 // The main menu (U-104), on a boot into the game itself (a ?scenario= test load goes straight in), everything paused
-// under it: 重庆 2038, Continue (with a save: its date and time), New Run, Settings (the Esc panel), Maps (M10-33) and
+// under it: 重庆 2038, Continue (with a save: its date and time), New Run, Settings (the Esc panel), Maps and
 // the version, which opens the changelog: the README, then the changes (PROGRESS), then the credits, the repository's
 // link and that Claude coded it all.
 import type { Game } from '../game';
@@ -9,6 +9,7 @@ import { version } from '../../package.json';
 import readme from '../../README.md?raw';
 import progress from '../../docs/PROGRESS.md?raw';
 import credits from '../../CREDITS.md?raw';
+import { openEditor } from './editor';
 
 /** The game's repository. */
 export const REPO = 'https://github.com/seanhoff561/chongqing-2038';
@@ -46,13 +47,15 @@ export function bootMenu(game: Game, save: SaveFile | null) {
   const menu = () => {
     el.innerHTML = `<div class="bt-title">重庆 2038</div>` +
       (save ? `<button class="cont">继续 Continue · ${clockText(save.savedAt)}</button>` : '') +
-      `<button class="new">新的开始 New Run</button><button class="set">设置 Settings</button>` +
+      `<button class="new">新的开始 New Run</button><button class="set">设置 Settings</button><button class="maps">地图 Maps</button>` +
       `<button class="ver">v${version}</button>`;
     el.querySelector<HTMLButtonElement>('.cont')?.addEventListener('click', () => { game.loadSave(save!); close(); });
     el.querySelector<HTMLButtonElement>('.new')!.onclick = () => { game.newRun(); close(); };
     // (The same panel as Esc in play: U-104.)
     el.querySelector<HTMLButtonElement>('.set')!.onclick = () => game.settings.show();
     el.querySelector<HTMLButtonElement>('.ver')!.onclick = changelog;
+    // (For now straight into the map editor, on the map last edited: M10-32; the maps' list is M10-33's.)
+    el.querySelector<HTMLButtonElement>('.maps')!.onclick = () => { close(); openEditor(game); };
   };
   const changelog = () => {
     el.innerHTML = `<div class="bt-panel bt-log"><div class="bt-h1">重庆 2038 · v${version}</div>${md(readme)}${md(progress)}${md(credits)}` +

@@ -60,6 +60,7 @@ export type SimEvent =
   | { t: 'sfx'; id: string }
   | { t: 'ate'; id: string; sick: boolean }
   | { t: 'msg'; text: string }
+  | { t: 'read'; text: string }
   | { t: 'bench'; id: string }
   | { t: 'ending'; route: string }
   | { t: 'logged'; kind: import('../data/units').UnitKind; head: number }

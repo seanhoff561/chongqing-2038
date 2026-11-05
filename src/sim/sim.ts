@@ -25,6 +25,7 @@ import './shelter';
 import './drops';
 import './grate';
 import './sinks';
+import './signs';
 import './scrap';
 import { survival } from '../data/survival';
 import { createUnits } from './units';

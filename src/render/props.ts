@@ -10,6 +10,7 @@ import { ChunkMerger } from './world-mesh';
 import { libProp } from './props-lib';
 import { tickSigns } from './signs';
 import { siteBuilders } from './siteprops';
+import { signBuilders } from './redsigns';
 
 const lam = (color: number, emissive = 0) => new THREE.MeshLambertMaterial({ color, emissive });
 const box = (w: number, h: number, d: number, x: number, y: number, z: number) => new THREE.BoxGeometry(w, h, d).translate(x, y + h / 2, z);
@@ -132,6 +133,7 @@ const FLOOD = new THREE.MeshBasicMaterial({ color: 0xdfeaff, transparent: true, 
 
 const builders: Record<string, Builder> = {
   ...siteBuilders,
+  ...signBuilders,
   arches,
   beacon: () => new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), BEACON),
   floodlight: () => new THREE.Mesh(new THREE.ConeGeometry(4.5, 15, 16, 1, true).translate(0, -7.5, 0).rotateX(-0.63), FLOOD),

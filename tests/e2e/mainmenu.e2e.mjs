@@ -1,6 +1,6 @@
-// M8-11, M10-10 (U-104): the main menu on a boot into the game: 重庆 2038, New Run, Settings (the Esc panel), the
-// version (the changelog: README, changes, credits, the repository and that Claude coded it; Back); with a save,
-// Continue too; its own music, stopped when play starts (M10-60). A ?scenario= load goes straight in.
+// M8-11, M10-10 (U-104): the main menu on a boot into the game: 重庆 2038, New Run, Settings (the Esc panel), Maps (the
+// map editor, M10-32), the version (the changelog: README, changes, credits, the repository and that Claude coded it;
+// Back); with a save, Continue too; its own music, stopped when play starts (M10-60). A ?scenario= load goes straight in.
 export default async function ({ open, fail }) {
   const page = await open('?scenario=hideout&seed=3', 'mainmenu');
   if (await page.$('#boot')) fail('mainmenu', 'a scenario load showed the main menu');
@@ -8,7 +8,12 @@ export default async function ({ open, fail }) {
   await page.goto(page.url().split('?')[0] + '?seed=3', { waitUntil: 'load' });
   await page.waitForFunction('window.__cq && window.__cq.ready', { timeout: 240000 });
   const items = await page.evaluate(`[...document.querySelectorAll('#boot > *')].map(b => b.textContent)`);
-  if (items.length !== 4 || items[0] !== '重庆 2038' || !items[1].includes('New Run') || !items[2].includes('Settings') || !/^v\d+\.\d+\.\d+$/.test(items[3])) fail('mainmenu', `menu: ${items.join(' | ')}`);
+  if (items.length !== 5 || items[0] !== '重庆 2038' || !items[1].includes('New Run') || !items[2].includes('Settings') || !items[3].includes('Maps') || !/^v\d+\.\d+\.\d+$/.test(items[4])) fail('mainmenu', `menu: ${items.join(' | ')}`);
+  // M10-32: Maps opens the map editor (for now: the list is M10-33's); its Menu comes back here.
+  await page.click('#boot .maps');
+  if (!(await page.$('#editor')) || await page.$('#boot')) fail('mainmenu', 'Maps did not open the editor');
+  await page.click('#editor [data-a="menu"]');
+  if (await page.$('#editor') || !(await page.$('#boot'))) fail('mainmenu', "the editor's Menu did not come back to the menu");
   // M10-60: its music, once a click has started the sound: playing on the menu.
   await page.mouse.click(5, 5);
   await page.evaluate('new Promise(r => setTimeout(r, 1500))');

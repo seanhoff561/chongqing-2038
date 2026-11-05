@@ -6,8 +6,11 @@ import { buildReference } from './sets/reference';
 import { buildYuzhong } from './yuzhong';
 import { buildLineup } from './sets/lineup';
 import { BUILD } from './city/types';
+import { buildMap, emptyMap, type MapDoc } from './sets/usermap';
 
-const builders: Record<string, () => World> = { hideout: buildHideoutScene, reference: buildReference, yuzhong: buildYuzhong, lineup: buildLineup };
+/** The editor's map, built as 'map' (M10-32): an empty one until a map is played or edited. */
+let mapDoc: MapDoc = emptyMap();
+const builders: Record<string, () => World> = { hideout: buildHideoutScene, reference: buildReference, yuzhong: buildYuzhong, lineup: buildLineup, map: () => buildMap(mapDoc) };
 /** Which worlds are built for the run's seed. */
 const SEEDED = new Set(['yuzhong']);
 const cache = new Map<string, World>();
@@ -24,3 +27,9 @@ export function getWorld(name: string, seed = 0): World {
   return w;
 }
 
+
+/** The map built as 'map' from now on (a copy of it: the editor goes on changing its own). */
+export function setMap(doc: MapDoc) {
+  mapDoc = JSON.parse(JSON.stringify(doc));
+  cache.delete('map');
+}
