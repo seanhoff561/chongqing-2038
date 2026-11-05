@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M10. Next: M10-33 Maps menu (U-104).
-Features done: 384 / 438 | Last done: M10-46
+Features done: 385 / 438 | Last done: M10-39
 <!-- /status -->
 
 ## What's built
@@ -60,3 +60,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-64: the laptop opens without a hitch (no light added on opening, its page and map ready from load)
 - M10-32: the map editor (build on flat ground with every climbing piece, props, containers and signs; save, export, import, play)
 - M10-46: every enemy attacks like it means it (each kind's wind-up, strike, recovery and repositioning, keeping its distance)
+- M10-39: his sister's trail (her exit from the seed, her notes from the family flat to it, leaving with her or without)

@@ -9,7 +9,7 @@ import { raycast } from '../world/geom';
 import { free } from './physics';
 import { makeRng, randInt, hashString } from './rng';
 import { newUid } from './inventory';
-import { extraInters, onInteract } from './interact';
+import { extraInters, onInteract, START_SOUND } from './interact';
 
 export const ROUTES = Object.keys(TRAILS);
 
@@ -56,6 +56,9 @@ export function layTrail(s: SimState, w: World, route = sisterRoute(s.seed)) {
 
 /** Her, where she waits, sitting (standing once she'll come). */
 extraInters.push((s: SimState) => (s.sister ? [{ id: 'sister', kind: 'sister', x: s.sister.x, y: s.sister.y + 0.7, z: s.sister.z, r: 0.6, zh: '小雨', en: 'Xiaoyu' }] : []));
+
+// (Turning to her: a rustle of her coat.)
+START_SOUND.sister = () => 'rustle';
 
 /** E on her: she'll leave with him, or (again) she won't. */
 onInteract('sister', {
