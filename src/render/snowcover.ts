@@ -40,13 +40,13 @@ export function buildTops(idx: SolidIndex) {
 /** `leaves` and `straw`: GLSL for how thick fallen leaves lie on it (0 none, 1 grass's) and how far its grass dries to
  *  straw with the season (U-104), '' for neither. */
 export function snowPatch(sh: THREE.WebGLProgramParametersWithUniforms, leaves = '', straw = '') {
-  sh.uniforms.uSnow = SEASON_U.snow; sh.uniforms.uLitter = SEASON_U.litter; sh.uniforms.uStraw = SEASON_U.straw; sh.uniforms.uTops = TOPS.map; sh.uniforms.uTopsO = TOPS.o; sh.uniforms.uTopsS = TOPS.s;
+  sh.uniforms.uSnow = SEASON_U.snow; sh.uniforms.uLitter = SEASON_U.litter; sh.uniforms.uDry = SEASON_U.straw; sh.uniforms.uTops = TOPS.map; sh.uniforms.uTopsO = TOPS.o; sh.uniforms.uTopsS = TOPS.s;
   sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;')
     .replace('#include <project_vertex>', '#include <project_vertex>\nvSnowW = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvSnowUp = normalize(mat3(modelMatrix) * objectNormal).y;');
-  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;\nuniform float uSnow;\nuniform float uLitter;\nuniform float uStraw;\nuniform sampler2D uTops;\nuniform vec2 uTopsO, uTopsS;\nfloat snowHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
+  sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying vec3 vSnowW;\nvarying float vSnowUp;\nuniform float uSnow;\nuniform float uLitter;\nuniform float uDry;\nuniform sampler2D uTops;\nuniform vec2 uTopsO, uTopsS;\nfloat snowHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }')
     .replace('#include <color_fragment>', `#include <color_fragment>
 ${straw ? `// (The grass drying to straw, as the open ground's does: M5-28.)
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62), uStraw * 0.8 * (${straw}));
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(dot(diffuseColor.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62), uDry * 0.8 * (${straw}));
 ` : ''}${leaves ? `// Fallen leaves (U-104): one here and there on a 30 cm grid, lying flat, gold, brown and rust; in drifts.
 if (uLitter > 0.001 && vSnowUp > 0.7) {
   vec2 lc = vSnowW.xz * 3.3, li = floor(lc);
