@@ -54,8 +54,8 @@ export function layTrail(s: SimState, w: World, route = sisterRoute(s.seed)) {
   if (q) s.sister = { route, x: q.x, y: q.y, z: q.z, yaw: q.yaw + Math.PI };
 }
 
-/** Her, where she waits, sitting (standing once she'll come). */
-extraInters.push((s: SimState) => (s.sister ? [{ id: 'sister', kind: 'sister', x: s.sister.x, y: s.sister.y + 0.7, z: s.sister.z, r: 0.6, zh: '小雨', en: 'Xiaoyu' }] : []));
+/** Her, where she waits, sitting (standing once she'll come); in the boat, not there (M7-09). */
+extraInters.push((s: SimState) => (s.sister && !s.sister.aboard ? [{ id: 'sister', kind: 'sister', x: s.sister.x, y: s.sister.y + 0.7, z: s.sister.z, r: 0.6, zh: '小雨', en: 'Xiaoyu' }] : []));
 
 // (Turning to her: a rustle of her coat.)
 START_SOUND.sister = () => 'rustle';

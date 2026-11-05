@@ -101,7 +101,8 @@ describe('the four ways out (M10-51)', () => {
       s.flags.god = true;
       startRun(s, w);
       expect(s.sister?.route).toBe(route);
-      if (sister) s.sister!.with = true;
+      // (By the river she has to have come down into the boat: M7-09, tests/sim/crossing.test.ts.)
+      if (sister) { s.sister!.with = true; s.sister!.aboard = route === 'boat'; }
       run(s, w, 40);
       expect(s.ended).toBeUndefined();
       const p = mid(zone(route)), ends: unknown[] = [];

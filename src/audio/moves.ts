@@ -13,6 +13,12 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   crack: (a, t) => { a.noise(t, 0.03, 0.5, 'highpass', 2000); a.noise(t + 0.09, 0.025, 0.35, 'highpass', 2500); a.tone(t, 0.04, 0.2, 400, 120, 'square'); },
   // Drone boats on the river (M6-27): a sonar ping, then engines whining in.
   boats: (a, t) => { a.tone(t, 0.25, 0.12, 1800, 1800, 'sine'); a.tone(t + 0.6, 2.4, 0.08, 140, 190, 'sawtooth'); a.noise(t + 0.6, 2.4, 0.06, 'bandpass', 400, 1, 600); },
+  // The patrol boat's diesel (M7-08): the starter grinding and catching; its throb, half a second at a time while it
+  // runs; dying away; the starter's dead click on a flat battery.
+  'engine-start': (a, t) => { a.tone(t, 0.9, 0.14, 55, 75, 'sawtooth'); a.noise(t, 0.9, 0.08, 'bandpass', 300, 1, 400); a.tone(t + 0.9, 0.6, 0.2, 45, 38, 'sawtooth'); },
+  engine: (a, t) => { for (let k = 0; k < 6; k++) a.tone(t + k * 0.085, 0.07, 0.1, 42, 36, 'sawtooth'); a.noise(t, 0.52, 0.04, 'lowpass', 260); },
+  'engine-stop': (a, t) => { a.tone(t, 1.2, 0.14, 40, 18, 'sawtooth'); a.noise(t, 0.8, 0.04, 'lowpass', 200); },
+  'engine-click': (a, t) => { a.noise(t, 0.03, 0.3, 'highpass', 1800); a.tone(t, 0.05, 0.1, 160, 90, 'square'); },
   // The EMP's pulse (M5-14): a sharp electric crack and a falling whine.
   zap: (a, t) => { a.noise(t, 0.06, 0.4, 'highpass', 3000); a.tone(t, 0.5, 0.12, 2400, 180, 'sawtooth'); a.tone(t + 0.02, 0.3, 0.08, 60, 40, 'square'); },
   'step-crawl': (a, t) => a.noise(t, 0.16, 0.04, 'bandpass', 900, 0.8, 650),

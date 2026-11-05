@@ -27,6 +27,10 @@ export function pulse(s: SimState, w: World, at: { x: number; y: number; z: numb
     else if (d <= EMP.kill) u.shut = true;
     else u.off = Math.max(u.off ?? 0, s.time + EMP.robot * SCALE);
   }
+  // (A sonar buoy in reach, and the rest of the pier's string with it on their one cable, deaf as long as a sensor's
+  // out: M7-09.)
+  const buoys = w.features.flatMap((f, i) => (f.kind === 'pier:buoy' ? [i] : []));
+  if (buoys.some(i => Math.hypot(w.features[i].x - at.x, w.features[i].z - at.z) <= EMP.reach)) for (const i of buoys) (s.deaf ??= {})[i] = s.time + EMP.camera * SCALE;
   s.events.push({ t: 'noise', x: at.x, y: at.y, z: at.z, r: EMP.noise, kind: 'emp' }, { t: 'sfx', id: 'zap' });
 }
 

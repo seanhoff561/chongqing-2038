@@ -17,7 +17,7 @@ const MODELS: Record<string, () => THREE.Object3D> = {
 
 /** Xiaoyu (M10-39): a girl in a dark padded jacket and jeans, her black hair to her shoulders, her bag on her back;
  *  sat against the wall with her knees up while she waits, stood once she'll come. */
-function sister(standing: boolean) {
+export function sisterModel(standing: boolean) {
   const g = new THREE.Group(), coat = lam(0x2a3140), jeans = lam(0x3a4a66), skin = lam(0xd9b59a), hair = lam(0x141414), bag = lam(0x6a3030);
   const part = (o: THREE.Object3D, x: number, y: number, z: number, rx = 0) => { o.position.set(x, y, z); o.rotation.x = rx; g.add(o); return o; };
   const mesh = (geo: THREE.BufferGeometry, m: THREE.Material) => new THREE.Mesh(geo, m);
@@ -41,7 +41,7 @@ function sister(standing: boolean) {
 }
 
 /** A model's parts merged, one mesh to a material (a dropped thing's dozen parts in a few draw calls: M10-04). */
-function merged(o: THREE.Object3D) {
+export function merged(o: THREE.Object3D) {
   o.updateMatrixWorld(true);
   const by = new Map<THREE.Material, THREE.BufferGeometry[]>(), g = new THREE.Group();
   o.traverse(c => {
@@ -59,7 +59,7 @@ export class Furniture {
   /** Rebuild when what's placed changes; each drawn only within the detail radius of the camera, as small props are. */
   sync(s: SimState, cam: THREE.Vector3) {
     for (const o of this.group.children) o.visible = Math.hypot(o.position.x - cam.x, o.position.z - cam.z) < GFX.detail;
-    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with}` : '');
+    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with},${!!s.sister.aboard}` : '');
     if (sig === this.sig) return;
     this.sig = sig;
     this.group.clear();
@@ -76,8 +76,9 @@ export class Furniture {
       m.rotation.set(Math.PI / 2, 0, d.stack.uid * 2.4);
       this.group.add(m);
     }
-    if (s.sister) {
-      const m = merged(sister(!!s.sister.with));
+    // (Not there once she's in the boat: render/boat3d.ts.)
+    if (s.sister && !s.sister.aboard) {
+      const m = merged(sisterModel(!!s.sister.with));
       m.position.set(s.sister.x, s.sister.y, s.sister.z);
       // (The model faces +z; her yaw is the sim's, facing -z.)
       m.rotation.y = s.sister.yaw + Math.PI;

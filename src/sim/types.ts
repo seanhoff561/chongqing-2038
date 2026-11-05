@@ -179,12 +179,18 @@ export interface SimState {
   /** the run ended on a route (M7-01), his sister with him or not (M10-39) */
   ended?: { route: string; t: number; sister?: boolean };
   /** his sister (M10-39): the exit she's gone to this run, where she waits at it, and whether she'll leave with him */
-  sister?: { route: string; x: number; y: number; z: number; yaw: number; with?: boolean };
+  sister?: { route: string; x: number; y: number; z: number; yaw: number; with?: boolean; /** in the patrol boat (M7-09) */ aboard?: boolean };
   /** the run's tally: sites got into, times the machines had him (and which districts have him now); metres gone (and
    *  where he was at the last count), machines destroyed, documents found (M10-51) */
   stats?: { sites: Record<string, true>; seen: number; engaged: Record<string, boolean>; dist?: number; at?: Vec3; kills?: number; docs?: Record<string, true> };
   /** out too far on the river (M6-27): since when, and when the drone boats set out */
   river?: { since: number; boats?: number };
+  /** the river police's patrol boat once he's worked on it (M7-08, sim/boat.ts): where it is (the water's surface
+   *  under it), its heading (as his yaw) and speed ahead (m/s); still at its mooring or cast off; its engine running;
+   *  litres in its tank; its battery's charge (percent; none fitted, none); its ignition, the key or the CAN interface */
+  boat?: { x: number; y: number; z: number; yaw: number; v: number; moored: boolean; on?: boolean; fuel: number; batt?: number; ign?: 'key' | 'can' };
+  /** sonar buoys an EMP has deafened (M7-09): the buoy's index in the world's features, until when */
+  deaf?: Record<number, number>;
   /** the zipline kit's first clamp, on (M5-33) */
   kitRig?: Vec3;
   /** what Anna last remarked on, and when, and how things stood (M5-32) */

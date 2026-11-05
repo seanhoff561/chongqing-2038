@@ -60,11 +60,11 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
     const [jx, jz] = W(mu, side * -o.hd * 0.3);
     features.push({ kind: 'pier:crane', x: cx, y: base, z: cz, group: features.length }, { kind: 'pier:jib', x: jx, y: jib + 0.4, z: jz, group: features.length + 1 });
   }
-  // The patrol boat alongside on the river side.
-  const [L, Bw] = PIER.hull, bv = o.hd + Bw / 2 + 0.3;
-  solids.push(box(-o.hw * 0.3 - L / 2, -o.hw * 0.3 + L / 2, -bv - Bw / 2, -bv + Bw / 2, WATER_Y - 0.6, WATER_Y + 1, MAT.metal), box(-o.hw * 0.3 - 1.5, -o.hw * 0.3 + 1, -bv - 1, -bv + 1, WATER_Y + 1, WATER_Y + 2.8, MAT.metal));
+  // The patrol boat alongside on the river side, its bow along the pier (drawn and moved from the run's state:
+  // sim/boat.ts, render/boat3d.ts; its heading as his yaw, in its data).
+  const bv = o.hd + PIER.hull[1] / 2 + 0.3;
   const [bx, bz] = W(-o.hw * 0.3, -side * bv);
-  inter.push({ id: 'patrolboat', kind: 'boat', x: bx, y: WATER_Y + 1.8, z: bz, r: 1.5, zh: '水警巡逻艇', en: 'River-police patrol boat' });
+  inter.push({ id: 'patrolboat', kind: 'boat', x: bx, y: WATER_Y + 1.8, z: bz, r: 1.5, zh: '水警巡逻艇', en: 'River-police patrol boat', data: { yaw: Math.atan2(-c, -sn) } });
   // The sonar buoys round it.
   for (let k = 0; k < 4; k++) {
     const a = o.yaw + (k * Math.PI) / 2 + Math.PI / 4, x = o.cx + Math.cos(a) * PIER.buoys, z = o.cz + Math.sin(a) * PIER.buoys;
