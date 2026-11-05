@@ -40,7 +40,7 @@ import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
 import { riverPolice } from './pier';
-import { cableRopes } from './cableway';
+import { cableLine, cableCuts, inCableWay, cutCableway, cableRopes } from './cableway';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -105,17 +105,25 @@ export function buildYuzhong(): World {
     p.sky = p.base;
     for (const q of plans) if (q !== p && !q.far && q.wall > p.sky && Math.hypot(q.obb.cx - p.obb.cx, q.obb.cz - p.obb.cz) < p.obb.hw + p.obb.hd + q.obb.hw + q.obb.hd + 25 && obbOverlap(p.obb, q.obb, 12.5)) p.sky = q.wall;
   }
-  // The high-security sites' buildings, what they were fixed (M6-11: yuzhong/secure.ts).
+  // The high-security sites' buildings, what they were fixed (M6-11: yuzhong/secure.ts); the cableway's, the city's
+  // own building nearest its landmark.
+  const CW = GEO.landmarks.cablewayNorth, off = (o: Obb) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw), x = CW.x - o.cx, z = CW.z - o.cz; return Math.hypot(Math.max(0, Math.abs(c * x + s * z) - o.hw), Math.max(0, Math.abs(c * z - s * x) - o.hd)); };
+  SECURE.find(S => S.id === 'cableway')!.plan = plans.filter(p => !p.osm && !p.far).reduce((a, b) => (off(b.obb) < off(a.obb) ? b : a)).seed;
   for (const S of SECURE) { const p = plans.find(q => q.seed === S.plan); if (p) { p.siteType = S.type; p.inside = S.inside; } }
+  // The cableway's line over the city and the river to Shangxin Street (M6-16): what the city made in its way stands
+  // lower, under its cabins: found now, cut once the city stands and is joined up, its dice all thrown as they were.
+  const cwPlan = plans.find(q => q.inside === SECURE.find(S => S.id === 'cableway')!.inside), cable = cwPlan ? cableLine(plans, cwPlan) : null;
+  const cuts = cable ? cableCuts(plans, cable) : new Map<Plan, number>(), inWay = cable ? inCableWay(cable, cuts) : undefined;
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
   // Holes knocked through from one building into the next where their floors meet (M3-76).
   breaches(out);
   // The connections between them, each end on its wall (M3-81); planks out of windows across to a window or a roof.
   const built = buildIndex(out.solids);
-  layLinks(vert, built);
-  layLinks(cross, built);
-  windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross);
+  layLinks(vert, built, inWay);
+  layLinks(cross, built, inWay);
+  windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross, inWay);
+  if (cable) cutCableway(cable, cuts, plans, plots, out);
   // The sewer maze under the basements (M3-73a).
   const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
   // The caches, and the route network over everything that joins the roofs (M3-37).
@@ -272,8 +280,7 @@ export function buildYuzhong(): World {
   }
   liFlat(world);
   // The cableway's ropes over the river to its south station (M6-16).
-  const cr = cableRopes(world);
-  world.ropes = cr.ropes; world.features.push(...cr.features);
+  if (cable) { const cr = cableRopes(world, cable); world.ropes = cr.ropes; world.features.push(...cr.features); }
   // The ways out's far ends (M10-51).
   world.zones.push(...exitZones(world));
   // The machines' ways about on foot as the world stands now (M4-02); the street layer between the key points along
@@ -477,12 +484,12 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
     rasterPoly(corners({ cx: o.cx + c * (cx - o.cx) - s * (cz - o.cz), cz: o.cz + s * (cx - o.cx) + c * (cz - o.cz), hw: (bs.x1 - bs.x0) / 2 + 2, hd: (bs.z1 - bs.z0) / 2 + 2, yaw: o.yaw }), 0, 0, g.cell, g.w, g.h,
       (i0, i1, j) => { for (let i = i0; i <= i1; i++) if (i < g.w - 1 && j < g.h - 1) g.hole[j * (g.w - 1) + i] = 1; });
   }
-  const s0 = out.solids.length, c0 = out.climbables.length, pt = place(f, o, p.seed, out);
+  const K = ['solids', 'decor', 'far', 'props', 'inter', 'climbables', 'hides', 'features', 'sites'] as const, was = K.map(k => out[k].length), pt = place(f, o, p.seed, out);
   if (p.monument) { monument(o, l.base, out); l.top = l.wall = l.base + MONUMENT.height; }
   if (l.route) l.route = l.route.map(q => { const [x, z] = pt(q.x, q.z); return { ...q, x, z }; });
   out.lots.push(l);
   return { corners: corners(o), base: p.base, wall: l.wall, top: l.top, kind: p.monument ? 'monument' : l.kind, row: p.row, found: low - 1, route: l.route, blocked: l.blocked, type: l.type, far: p.far, osm: p.osm, prefix: p.seed,
-    own: { solids: [s0, out.solids.length], climbables: [c0, out.climbables.length] } };
+    own: Object.fromEntries(K.map((k, i) => [k, [was[i], out[k].length]])) as Plot['own'] };
 }
 
 /** Turn everything a lot's fabric made in its own frame (about the rectangle's middle) into place, ids prefixed.

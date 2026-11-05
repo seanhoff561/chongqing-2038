@@ -19,6 +19,8 @@ import { SITEHAZ } from '../../src/sim/sitehaz';
 import { WHEEL, wheelState } from '../../src/sim/cableway';
 import { WATER_Y } from '../../src/world/yuzhong/ground';
 import { heightAt } from '../../src/world/heightfield';
+import { GEO } from '../../src/world/geo';
+import { inside } from '../../src/world/yuzhong/shapes';
 import { B, type SimState } from '../../src/sim/types';
 import { walkPath } from './walker';
 import { climbPole } from './climbbot';
@@ -225,7 +227,10 @@ describe('the cableway station, the pier and the construction site, made by hand
       ['sewer', sewer],
     ] };
     told(pl, walkIn(pl));
-    expect(S.heart.y - plot.base, 'its cabin hall up its tower').toBeGreaterThan(90);
+    // Its cabin hall on its top two floors: the station stands as the city rolled it, nothing over its roof but its
+    // stairwell's hut.
+    expect(S.heart.y, 'its cabin hall on its top floors').toBeCloseTo(plot.wall - 2 * 3, 1);
+    expect(w.solids.filter(q => q.y1 > plot.top + 4 && inside(plot.corners, (q.x0 + q.x1) / 2, (q.z0 + q.z1) / 2)).length, 'nothing standing over it').toBe(0);
   }, 900000);
 
   it('the pier: walked from the gangway, out of the water by its ladder and off the crane to its watch room', () => {
@@ -289,10 +294,14 @@ describe('the cableway station, the pier and the construction site, made by hand
 
 describe('the cableway station (M6-16)', () => {
   const S = w.secure!.find(q => q.id === 'cableway')!;
-  it('has its tower, the haul rope and the track ropes over the Yangtze, the operator key at its desk, cabin 2 parked', () => {
-    const [a, b] = feat('cable:rope'), g = w.ground!;
+  it('has the haul rope and the track ropes over the Yangtze on the real line, a cabin\'s way clear under them, the operator key at its desk, cabin 2 parked', () => {
+    const [a, b] = feat('cable:rope'), g = w.ground!, sad = one('cable:saddle');
     expect(a && b, 'the haul rope\'s ends').toBeTruthy();
+    expect(Math.hypot(sad.x - a.x, sad.y - 0.2 - a.y, sad.z - a.z), 'from the hall\'s open end').toBeLessThan(0.05);
     expect(Math.hypot(b.x - a.x, b.z - a.z), 'across the river').toBeGreaterThan(800);
+    // On the real line's bearing (OpenStreetMap's 长江索道, north station to Shangxin Street) within a degree.
+    const real = GEO.aerial.filter(q => q[0] === '长江索道')[0][1];
+    expect(Math.abs(Math.atan2(b.z - a.z, b.x - a.x) - Math.atan2(real[3] - real[1], real[2] - real[0])), 'its bearing').toBeLessThan(Math.PI / 180);
     expect(heightAt(g, b.x, b.z)!, 'its far end on the far bank').toBeGreaterThan(WATER_Y);
     let wet = 0;
     for (let f = 0; f <= 1; f += 0.01) if ((heightAt(g, a.x + (b.x - a.x) * f, a.z + (b.z - a.z) * f) ?? 0) < WATER_Y) wet++;
@@ -302,6 +311,16 @@ describe('the cableway station (M6-16)', () => {
     for (const l of w.ropes!) {
       const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, dz = l.b.z - l.a.z, d = Math.hypot(dx, dy, dz);
       expect(raycast(w.index, l.a.x + (dx / d) * 0.5, l.a.y + (dy / d) * 0.5, l.a.z + (dz / d) * 0.5, dx / d, dy / d, dz / d, d - 0.5), `rope at ${l.a.x.toFixed(0)},${l.a.y.toFixed(0)},${l.a.z.toFixed(0)}`).toBeNull();
+    }
+    // A cabin's way along it clear (its floor 5.3 m under the haul rope, 1.6 m either side), out of the hall's open
+    // end to 6 m short of the south station's wall.
+    const L = Math.hypot(b.x - a.x, b.z - a.z), ux = (b.x - a.x) / L, uz = (b.z - a.z) / L, rope = w.ropes!.slice(16, 32);
+    for (const l of rope) for (const side of [-1.6, 1.6]) for (const down of [5.3, 2.5]) {
+      const t0 = Math.max((l.a.x - a.x) * ux + (l.a.z - a.z) * uz, 4), t1 = Math.min((l.b.x - a.x) * ux + (l.b.z - a.z) * uz, L - 6);
+      if (t1 <= t0) continue;
+      const p = (t: number) => { const f = (t - (l.a.x - a.x) * ux - (l.a.z - a.z) * uz) / Math.hypot(l.b.x - l.a.x, l.b.z - l.a.z); return { x: a.x + ux * t - uz * side, y: l.a.y + (l.b.y - l.a.y) * f - down, z: a.z + uz * t + ux * side }; };
+      const [q0, q1] = [p(t0), p(t1)], d = Math.hypot(q1.x - q0.x, q1.y - q0.y, q1.z - q0.z);
+      expect(raycast(w.index, q0.x, q0.y, q0.z, (q1.x - q0.x) / d, (q1.y - q0.y) / d, (q1.z - q0.z) / d, d), `cabin's way at ${q0.x.toFixed(0)},${q0.y.toFixed(0)},${q0.z.toFixed(0)}`).toBeNull();
     }
     // The ending's zone on its line, out over the water.
     const z = w.zones.find(q => q.kind === 'ending:cable')!.box, f = ((z.x0 + z.x1) / 2 - a.x) / (b.x - a.x);

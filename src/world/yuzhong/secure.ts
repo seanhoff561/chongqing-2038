@@ -22,8 +22,10 @@ export const SECURE: { id: string; plan: string; type?: BuildingType; zh: string
   { id: 'telecom', plan: 'osm9', type: 'office', zh: '电信枢纽', en: 'Telecom exchange', card: 'telcard', loot: 'telecom', hazard: 'gas', inside: telecom },
   { id: 'substation', plan: 'osm855', type: 'workshop', zh: '新华路变电站', en: 'Xinhua Road substation', card: 'badge', loot: 'substation', hazard: 'hv', inside: substation },
   // (The cableway's north station, M6-16: its hazard, the bullwheel up in its hall, sim/cableway.ts. Its type as the
-  // run rolls it: what it would have been decides the dice for the city round it.)
-  { id: 'cableway', plan: 'back4300', zh: '长江索道北站', en: 'Yangtze cableway', loot: 'workshop', hazard: 'bullwheel', inside: cableway },
+  // run rolls it: what it would have been decides the dice for the city round it. Its building is the one at its
+  // landmark, found as the city's planned (yuzhong/index.ts): the filled-in buildings' numbers aren't the same in
+  // every JavaScript engine.)
+  { id: 'cableway', plan: '', zh: '长江索道北站', en: 'Yangtze cableway', loot: 'workshop', hazard: 'bullwheel', inside: cableway },
 ];
 
 /** How far up a street door's camera hangs, out from the wall and along it from the door (m); the pharmacy's plate's
