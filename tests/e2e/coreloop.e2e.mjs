@@ -5,6 +5,8 @@
 // where he slept, two deaths.
 export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=1', 'coreloop');
+  // (A run already under way: past its opening, M10-52.)
+  await page.evaluate('(() => { const s = window.__cq.game.state; delete s.opening; delete s.gear; delete s.hello; window.__cq.runFrames(1); })()');
   const look = (x, y, z) => `(() => { const g = window.__cq.game, p = g.state.player.pos, dx = ${x} - p.x, dz = ${z} - p.z; g.input.yaw = Math.atan2(-dx, -dz); g.input.pitch = Math.atan2(${y} - p.y - 1.6, Math.hypot(dx, dz)); })()`;
   await page.evaluate(`(() => { const s = window.__cq.game.state; window.__cq.save(); s.flags.god = false; s.flags.clear = false; s.time = 12 * 3600; })()`);
 

@@ -55,6 +55,8 @@ export function hideoutParts(ox: number, oy: number, oz: number, o: { shaftTop?:
       { kind: 'f:table', x: ox + 11.4, y: oy, z: oz + 1.55, yaw: 0, w: 1.6, h: 0.78, d: 0.8 },
       { kind: 'boxes', x: ox + 15.5, y: oy, z: oz + 1.3, yaw: 0.4 },
       { kind: 'boxes', x: ox + 6.5, y: oy, z: oz + 0.8, yaw: 1.1 },
+      // (Debris everywhere: the ceiling's crumbs and a fall of brick, M10-52.)
+      ...[[1.6, -1.1, 0.3], [5.4, 1.2, 2.1], [8.2, -1.3, 4.0], [12.4, -0.9, 1.2], [17.5, 0.9, 5.3]].map(([x, z, yaw]) => ({ kind: 'debris', x: ox + x, y: oy, z: oz + z, yaw })),
     ]),
     { kind: 'rubble', x: ox + 4.25, y: oy, z: oz - 2.6, yaw: 0, w: 1.4, h: 2.2 },
     // The light down the vent (M4-41).
@@ -73,7 +75,7 @@ export function hideoutParts(ox: number, oy: number, oz: number, o: { shaftTop?:
       { id: id('mattress'), kind: 'mattress', x: ox + 2.2, y: oy + 0.25, z: oz + 1.3, r: 0.8, zh: '床垫', en: 'Sleep' },
       { id: id('bench'), kind: 'bench', x: ox + 9.2, y: oy + 0.95, z: oz + 1.62, r: 0.7, zh: '工作台', en: 'Workbench' },
     ] : [
-      { id: id('stash'), kind: 'container', x: ox + 13.15, y: oy + 0.6, z: oz + 1.55, r: 0.6, zh: '他们的箱子', en: "Friends' crate", data: { type: 'crate' } },
+      { id: id('stash'), kind: 'container', x: ox + 13.15, y: oy + 0.6, z: oz + 1.55, r: 0.6, zh: '箱子', en: 'Crate', data: { type: 'crate' } },
       { id: id('table'), kind: 'table', x: ox + 11.4, y: oy + 0.78, z: oz + 1.05, r: 0.8, zh: '桌子', en: 'Table' }, // (at its front, where he reaches it)
     ]),
     zones: [{ kind: 'under', box: { x0: ox - 1, y0: oy - 1, z0: oz - 8, x1: ox + H.length + 8, y1: oy + H.shaftTop - 0.5, z1: oz + 3 } }],

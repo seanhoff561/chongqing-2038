@@ -1,9 +1,9 @@
 // Anna (M10-18, U-104): the AI on his laptop, drawn as a small anime girl in its corner: straight black hair to her
 // shoulders with a straight fringe, a white collared shirt with an ice-blue tie, big dark eyes. Her poses are drawn
 // frames switched like a gif: idle (breathing, blinking now and then), waving, laughing, pouting with her arms crossed,
-// and blushing red. Each frame is an SVG (100 by 130).
+// blushing red; and for her lines in the opening (M10-52) talking and shouting. Each frame is an SVG (100 by 130).
 
-export type Pose = 'idle' | 'blink' | 'wave' | 'laugh' | 'pout' | 'blush';
+export type Pose = 'idle' | 'blink' | 'wave' | 'laugh' | 'pout' | 'blush' | 'talk' | 'shout';
 
 const SKIN = '#f6dccb', SHADE = '#e9c3ae', HAIR = '#15171c', HAIR_HI = '#2c3340', SHIRT = '#f4f6f8', SHIRT_SH = '#cfd6dd', TIE = '#7fc4e0', LINE = '#3a2a26';
 
@@ -86,6 +86,8 @@ export const POSES: Record<Pose, { frames: string[]; secs: number }> = {
   laugh: { frames: [frame({ eyes: 'happy', mouth: 'open', brows: 'up', cheeks: 0.45 }, 'down', 0), frame({ eyes: 'happy', mouth: 'open', brows: 'up', cheeks: 0.45 }, 'down', 1)], secs: 0.16 },
   pout: { frames: [frame({ eyes: 'cross', mouth: 'pout', brows: 'angry', cheeks: 0.5, puff: true }, 'crossed', 0), frame({ eyes: 'cross', mouth: 'pout', brows: 'angry', cheeks: 0.5, puff: true }, 'crossed', 1)], secs: 0.9 },
   blush: { frames: [frame({ eyes: 'shy', mouth: 'wobble', brows: 'worried', cheeks: 0.9, red: true }, 'down', 0), frame({ eyes: 'shy', mouth: 'wobble', brows: 'worried', cheeks: 0.9, red: true }, 'down', 1)], secs: 0.35 },
+  talk: { frames: [frame({ ...CALM, mouth: 'open' }, 'down', 0), frame({ ...CALM, mouth: 'small' }, 'down', 1), frame(CALM, 'down', 0)], secs: 0.13 },
+  shout: { frames: [frame({ eyes: 'cross', mouth: 'open', brows: 'angry', cheeks: 0.6 }, 'down', 0), frame({ eyes: 'cross', mouth: 'small', brows: 'angry', cheeks: 0.6 }, 'down', 1)], secs: 0.12 },
 };
 
 /** Her in the corner: a pose for a while (then back to idle), blinking now and then while idle. */

@@ -22,7 +22,7 @@ import { endRun } from './sim/escape';
 import { LaptopUI } from './ui/laptop';
 import { Laptop3D } from './render/laptop3d';
 import { CraftUI } from './ui/craft-ui';
-import { speak } from './audio/voice';
+import { speak, warmVoice } from './audio/voice';
 import { EndingSequence } from './ui/ending';
 import { WorldFx } from './render/worldfx';
 import { setSeason } from './render/season';
@@ -45,6 +45,8 @@ import { item } from './data/items';
 import { MAGS } from './data/units';
 import { Audio } from './audio/audio';
 import { startRun, furnish } from './sim/run';
+import { beginOpening } from './sim/opening';
+import { OpeningView, restPose } from './ui/opening';
 import { teleport } from './sim/player';
 import { writeSave, readSave, deleteSave, type SaveFile } from './sim/save';
 import { syncWorld } from './sim/doors';
@@ -90,6 +92,8 @@ export class Game {
   readonly input: Input;
   readonly hud = new Hud();
   laptop!: LaptopUI;
+  /** the opening scene seen (M10-52) */
+  readonly opening = new OpeningView(this);
   /** his laptop held in both hands while it's out (U-104) */
   laptop3d!: Laptop3D;
   /** a menu was up last frame */
@@ -179,7 +183,8 @@ export class Game {
     if (sc.hour !== undefined) this.state.time = ((sc.day ?? 1) - 1) * 86400 + sc.hour * 3600;
     if (sc.cover !== undefined) Object.assign(this.state.weather, { cover: sc.cover, at: this.state.time });
     Object.assign(this.state.flags, sc.flags);
-    if (sc.run) startRun(this.state, this.world);
+    // (A run in the start hideout opens with him waking there: M10-52.)
+    if (sc.run) { startRun(this.state, this.world); beginOpening(this.state, this.world); }
     if (sc.furnished) furnish(this.state, this.world);
     const sp = sc.spawn ?? this.world.teleports.find(t => t.name === sc.at);
     if (sp) teleport(this.state.player, sp.x, sp.y, sp.z);
@@ -244,7 +249,8 @@ export class Game {
   private uiKeys() {
     this.input.tabKeys = !!this.state.laptop?.open;
     for (const k of this.input.uiKeys.splice(0)) {
-      if (k === 'pack') this.inv.toggle();
+      // (Not till his bag's on: M10-52.)
+      if (k === 'pack') { if (!this.state.gear?.pack) this.inv.toggle(); }
       // Anna's laptop, opened and shut without stopping anything (M5-01).
       else if (k === 'laptop') this.input.cmds.push({ c: 'act', name: this.state.flight ? 'land' : 'laptop' });
       // Sitting down at it, and up again (M10-13).
@@ -372,6 +378,7 @@ export class Game {
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
     if (fl) { this.view.fp.cam.position.set(fl.x, fl.y, fl.z); this.view.fp.cam.rotation.set(this.input.pitch, this.input.yaw, 0); }
     this.editor?.camera(this.view.fp.cam, dt);
+    this.opening.update();
     document.body.classList.toggle('vr', !!this.training);
     this.ending.update(dt);
     this.bodyFx.update(this.state, this.view.fp, dt);
@@ -387,7 +394,7 @@ export class Game {
     const task = this.state.task;
     this.motion.update(dt, this.hands.group, this.heldId, { bob: this.view.fp.bob, speed: p.onGround ? Math.hypot(p.vel.x, p.vel.z) : 0, yaw: this.input.yaw, pitch: this.input.pitch, ads: this.gun.ads, reload: task?.id === 'reload' ? task.t / task.dur : -1 });
     this.inv.update();
-    this.laptop3d.update(!!this.state.laptop?.open && !this.state.flight, !!this.state.laptop?.sit, dt, this.view.fp.cam);
+    this.laptop3d.update(!!this.state.laptop?.open && !this.state.flight, !!this.state.laptop?.sit, dt, this.view.fp.cam, restPose(this.state, this.world.spawn));
     if (this.heldModel) this.heldModel.visible = !this.state.laptop?.open;
     this.laptop.update(dt);
     this.craft.update();
@@ -425,6 +432,7 @@ export class Game {
     this.menuMusic.update(this.menuUp());
     this.alarmBoards();
     this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5, this.songs.playing || this.menuUp());
+    warmVoice(this.audio);
     this.view.render(this.state.tick / 60, this.state.wstate.open);
     this.frames++;
   }
@@ -461,7 +469,7 @@ export class Game {
   private updateHands(dt: number) {
     const p = this.state.player, cam = this.view.fp.cam;
     // (No arms while the laptop's out: U-105.)
-    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight && !this.state.laptop?.open;
+    this.hands.group.visible = p.mode !== 'dead' && p.mode !== 'hidden' && !this.input.uiOpen && !this.state.flight && !this.state.laptop?.open && this.state.opening === undefined;
     this.hideView.update(p.mode === 'hidden' && p.hideId >= 0 ? this.world.hides[p.hideId] ?? null : null);
     if (!this.hands.ready || !this.hands.group.visible) return;
     const held = heldStack(this.state), support = held ? supportPoint(held.id) : null;

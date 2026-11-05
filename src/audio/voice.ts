@@ -9,6 +9,15 @@ let recorded: Promise<Set<string>> | null = null;
 /** The lines that have recordings. */
 const index = () => (recorded ??= fetch('./audio/vo/index.json').then(r => (r.ok ? r.json() : [])).then((ids: string[]) => new Set(ids)).catch(() => new Set<string>()));
 
+/** As the sound comes on: the recordings' list fetched and the first line of each of Anna's scenes decoded ahead, so
+ *  the first line she says (and the decoder's start) never hitches a frame (M10-52). */
+let warmed = false;
+export function warmVoice(a: Audio) {
+  if (warmed || !a.ready) return;
+  warmed = true;
+  index().then(have => { for (const id of ['wake-1', 'hello-1', 'map-flat-1']) if (have.has(id)) fetch(`./audio/vo/${id}.mp3`).then(r => r.arrayBuffer()).then(b => a.ctx!.decodeAudioData(b)).then(buf => clips.set(id, buf)).catch(() => {}); });
+}
+
 /** The browser's Mandarin voice, if it has one. */
 function zhVoice(): SpeechSynthesisVoice | null {
   const s = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;

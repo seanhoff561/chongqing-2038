@@ -6,7 +6,7 @@ import * as THREE from 'three';
 
 /** The bezel round the screen (m): its sides, top and chin; the lid's corner radius and thickness; the deck's depth
  *  and thickness. */
-const B = { side: 0.009, top: 0.013, chin: 0.02, r: 0.01, lid: 0.0055, deck: 0.235, slab: 0.011 };
+export const B = { side: 0.009, top: 0.013, chin: 0.02, r: 0.01, lid: 0.0055, deck: 0.235, slab: 0.011 };
 
 /** A rounded rectangle centred on (x, y). */
 function rounded(w: number, h: number, r: number, x = 0, y = 0) {

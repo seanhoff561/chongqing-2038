@@ -1,6 +1,8 @@
 // The only on-screen interface during play: a centre dot, the name of what he looks at, the held item, a short notice
 // of what just happened, and subtitles for Anna's story lines alone (U-104: English, one size); a ring round the dot
 // filling while he works at something (U-051).
+import { readSecs } from '../data/dialogue';
+
 /** A subtitle: one of Anna's lines, in English, and its seconds. */
 interface Sub { en: string; secs: number }
 
@@ -55,7 +57,7 @@ export class Hud {
   private subShown = '';
   private left = 0;
   /** One of Anna's story lines, after any before it, each for as long as it takes to read. */
-  say(en: string) { this.queue.push({ en, secs: 1.5 + en.length * 0.06 }); }
+  say(en: string) { this.queue.push({ en, secs: readSecs(en) }); }
   /** A short notice of what just happened ('ladder up', 'no room'): at once, in place of the last, gone soon. */
   notice(text: string, secs = Math.min(2.5, 1.2 + text.length * 0.04)) { this.note.textContent = text; this.noteLeft = secs; }
   /** Every frame: the next subtitle when this one's time is up; the notice fading. */

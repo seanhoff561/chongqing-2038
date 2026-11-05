@@ -3,13 +3,15 @@
 // it, and looking up he looks over it. Its screen's corners are projected each frame so the page (ui/laptop.ts) lies on
 // the glass. Sitting down at it (focus) it comes up close in front of his eyes.
 import * as THREE from 'three';
-import { buildLaptop } from './laptopmodel';
+import { buildLaptop, B } from './laptopmodel';
 
 /** Where the screen's middle sits from his eyes, turned his way but not tipped with his look: held (low and out in
  *  front) and sitting; its size (m); how fast it comes up (1/s). */
 export const LAPTOP3D = { held: new THREE.Vector3(0, -0.3, -0.45), focus: new THREE.Vector3(0, 0, -0.205), w: 0.33, h: 0.21, rise: 9 };
 /** Held, the screen tipped back to face his eyes. */
 const TILT = -Math.atan2(-LAPTOP3D.held.y, -LAPTOP3D.held.z);
+/** Lying open somewhere (on his bag as he wakes, M10-52): its lid leant back a little. */
+const LEAN = -0.25, Y = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0);
 
 export class Laptop3D {
   /** where it is (and the screen's glow, ui/laptop.ts, always in it) */
@@ -37,8 +39,19 @@ export class Laptop3D {
     scene.add(this.group);
   }
 
-  /** Every frame: up or away, held or sat at, in front of his eyes (the camera's place) the way he faces (its yaw). */
-  update(open: boolean, sit: boolean, dt: number, cam: THREE.Camera) {
+  /** Every frame: up or away, held or sat at, in front of his eyes (the camera's place) the way he faces (its yaw);
+   *  or lying open with its deck's middle at a point, the screen facing yaw. */
+  update(open: boolean, sit: boolean, dt: number, cam: THREE.Camera, rest: { x: number; y: number; z: number; yaw: number } | null = null) {
+    if (rest) {
+      this.up = 1; this.focus = 0;
+      this.body.visible = true; this.body.scale.setScalar(1);
+      // (The hinge half the deck behind its middle; the screen's middle up the lid from the hinge.)
+      const hinge = new THREE.Vector3(0, 0, -B.deck / 2).applyAxisAngle(Y, rest.yaw).add(new THREE.Vector3(rest.x, rest.y + B.slab, rest.z));
+      this.group.position.copy(hinge).sub(new THREE.Vector3(0, -LAPTOP3D.h / 2 - B.chin, 0).applyAxisAngle(X, LEAN).applyAxisAngle(Y, rest.yaw));
+      this.group.rotation.set(LEAN, rest.yaw, 0);
+      this.deck.rotation.x = -LEAN;
+      return;
+    }
     const k = 1 - Math.exp(-LAPTOP3D.rise * dt);
     this.up += ((open ? 1 : 0) - this.up) * k;
     this.focus += ((sit ? 1 : 0) - this.focus) * k;
