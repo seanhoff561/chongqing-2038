@@ -32,6 +32,8 @@ export interface Under {
   route: V3[];
   /** standing water (the flood culvert's) */
   water: Box[];
+  /** the third rail's lines, along its top (M6-17) */
+  rails: { a: V3; b: V3 }[];
   /** a walk from Jiaochangkou's metro platform through its running tunnel and the Grand Tunnel to the friends'
    *  chamber (M3-43) */
   metroRoute: V3[];
@@ -51,7 +53,7 @@ const TW = 3.6, TH = 3.4;
 /** gt: the Grand Tunnel's floor, the end of its passage north (the junction), its ways in, and a walk along it
  *  from under Jiaochangkou into the passage. */
 export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; ways: V3[]; walk: V3[]; metro: V3; toJunction: V3[] }): Under {
-  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], water: [], at: {} };
+  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], water: [], rails: [], at: {} };
   const lining: Solid[] = [], bores: Box[] = [], kept: Solid[] = [], r = makeRng(hashString('under')), lr = makeRng(hashString('under-grates'));
   const k = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
   const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => g.street![k(x, z)] !== 0;
@@ -403,6 +405,13 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
     u.props.push({ kind: 'graffiti', x: sx, y: LB + 2.6, z: sz, yaw: 0, text: '6号线 → 东水门大桥  LINE 6 → DONGSHUIMEN BRIDGE' });
   }
 
+  // The third rail (M6-17): along the outer side of each track from Jiefangbei's hall to the crossover, live.
+  const RR = run([X1, C.z], [xe - CX, C.z]);
+  for (const c of [-off, off]) {
+    const rs = c + Math.sign(c) * 1.3, [ax, az] = RR.pt(2, rs), [bx, bz] = RR.pt(RR.len, rs);
+    u.decor.push(RR.box(2, RR.len, rs - 0.05, rs + 0.05, LB + 0.1, LB + 0.25, MAT.metal), RR.box(2, RR.len, rs - 0.08, rs + 0.08, LB + 0.25, LB + 0.3, MAT.tealMetal));
+    u.rails.push({ a: { x: ax, y: LB + 0.3, z: az }, b: { x: bx, y: LB + 0.3, z: bz } });
+  }
   // (The flood culvert's mark and sign.)
   for (const f of flood) { marks.push(f.mark); u.props.push(f.sign); }
 

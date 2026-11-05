@@ -313,6 +313,10 @@ export function buildYuzhong(): World {
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
   world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv;
+  // Jiefangbei station's (M6-17): the third rail, and the face-recognition gates' scan line at face height across them.
+  world.rail = under.rails;
+  const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
+  if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
@@ -443,6 +447,8 @@ const KEEP = 5;
 /** The links' hand-placed lines (M6-21): the sewer under the hospital's street its basement link takes in, and
  *  where the cable tunnel climbs to the telecom exchange's crawlway (z). */
 const LINK_AT = { hospSewer: 1820.9, telFlight: 2040 };
+/** How high the metro's face gates scan (a face standing; crouched he's under it): M6-17. */
+const FACE = 1.45;
 
 /** Grow a cell mask by r metres. */
 function dilate(g: Heightfield, m: Uint8Array, r: number) {
