@@ -211,6 +211,50 @@ const MODELS: Record<string, Model> = {
   },
   clothes: (k, w, _h, d) => { for (let i = 0, n = 1 + Math.floor(k.r() * 3); i < n; i++) k.use('fabric').blob(0.12 + k.r() * 0.12, pick(k, CLOTH), (k.r() - 0.5) * w, 0.04, (k.r() - 0.5) * d, 0.3); },
   bag: (k, _w, _h, _d) => { k.use('bag').blob(0.2, pick(k, [0x2a2c2e, 0x5a4a3a, 0x3a4a6a]), 0, 0.15, 0, 0.8); k.use('fabric').cyl(0.01, 0.01, 0.3, 0x2a2a2a, -0.1, 0.3, 0, 4, 'x'); },
+  // The Li family flat's (M10-38). A bedroll slept in: its mat, the pillow dented, the quilt thrown back (head at -z).
+  bedroll: (k, w, _h, d) => {
+    k.use('fabric').box(w, 0.06, d, 0x4f5a6a, 0, 0, 0).box(w * 0.6, 0.07, 0.3, 0xe0dcd0, 0, 0.06, -d / 2 + 0.22, 0.2);
+    const q = pick(k, CLOTH);
+    k.box(w * 0.9, 0.05, d * 0.45, q, 0.04, 0.06, d * 0.22, 0.25).blob(0.2, q, w * 0.3, 0.12, d * 0.05, 0.35);
+  },
+  // One never slept in: the quilt still folded square at its foot, the pillow on it.
+  bedmade: (k, w, _h, d) => { k.use('fabric').box(w, 0.06, d, 0x4f5a6a, 0, 0, 0).box(w * 0.85, 0.14, 0.5, 0x8a4a4a, 0, 0.06, d / 2 - 0.32).box(w * 0.6, 0.08, 0.3, 0xe0dcd0, 0, 0.2, d / 2 - 0.32); },
+  // Dinner for three on a table's top (y the top): two bowls eaten from, chopsticks across them; the third full, a
+  // plate turned over it, its chopsticks laid by; the greens and the pork between them, cold.
+  dinner: (k, w, _h, d) => {
+    const bowl = (x: number, z: number) => k.use('plastic').cyl(0.045, 0.065, 0.06, 0xe8e4d8, x, 0, z, 10);
+    const sticks = (x: number, z: number, y: number, ry: number) => k.use('wood').box(0.006, 0.006, 0.23, 0x8a6442, x - 0.012, y, z, ry).box(0.006, 0.006, 0.23, 0x8a6442, x + 0.012, y, z, ry);
+    for (const s of [-1, 1]) { bowl(s * w * 0.3, -d * 0.3); k.use('plain').cyl(0.04, 0.04, 0.01, 0xf0eee6, s * w * 0.3, 0.035, -d * 0.3, 8); sticks(s * w * 0.3, -d * 0.3, 0.062, Math.PI / 2); }
+    bowl(0, d * 0.3); k.use('plastic').cyl(0.1, 0.075, 0.02, 0xd8d4c8, 0, 0.062, d * 0.3, 12); sticks(0.14, d * 0.3, 0, 0);
+    k.use('plastic').cyl(0.11, 0.12, 0.025, 0xd8d4c8, -0.13, 0, 0, 12).cyl(0.11, 0.12, 0.025, 0xd8d4c8, 0.14, 0, 0, 12);
+    k.use('plain').blob(0.07, 0x3a6a2a, -0.13, 0.03, 0, 0.3).blob(0.07, 0x8a2a1a, 0.14, 0.03, 0, 0.3);
+  },
+  // Height marks up a door frame (its face +z, y the floor): two children's, one in pencil, one in red pen.
+  marks: k => {
+    k.use('plain');
+    for (const h of [0.84, 0.97, 1.1, 1.24, 1.38, 1.52, 1.63, 1.72]) k.box(0.07, 0.006, 0.003, 0x3a3a3a, -0.02, h, 0.0015);
+    for (const h of [0.78, 0.9, 1.02, 1.14, 1.27, 1.39, 1.5, 1.57]) k.box(0.07, 0.006, 0.003, 0xa83a2a, 0.02, h, 0.0015);
+  },
+  // A wall calendar (its face +z, y its foot): a picture, the month's grid, the days crossed off to the 13th.
+  calendar: k => {
+    k.use('plain').box(0.34, 0.5, 0.004, 0xeeeae0, 0, 0, 0).box(0.3, 0.2, 0.002, 0x6a8aa0, 0, 0.27, 0.004).box(0.3, 0.03, 0.002, 0xa82a24, 0, 0.23, 0.004);
+    for (let n = 0; n < 30; n++) {
+      const x = -0.135 + (n % 7) * 0.045, y = 0.18 - Math.floor(n / 7) * 0.04;
+      if (n < 13) k.box(0.04, 0.004, 0.002, 0x2a2a2a, x, y, 0.005, 0, 0, 0.8).box(0.04, 0.004, 0.002, 0x2a2a2a, x, y, 0.005, 0, 0, -0.8);
+      else k.box(0.03, 0.025, 0.001, 0xd8d4c8, x, y - 0.012, 0.004);
+    }
+  },
+  // A city map spread on a desk (y the top): the peninsula between its two rivers meeting at its tip, a way drawn
+  // across it in red, a pencil.
+  map: (k, w, _h, d) => {
+    k.use('plain').box(w, 0.002, d, 0xe8e2cc, 0, 0, 0).box(w * 0.8, 0.002, d * 0.16, 0x7aa0b8, -w * 0.1, 0.002, -d * 0.38).box(w * 0.8, 0.002, d * 0.2, 0x7aa0b8, -w * 0.1, 0.002, d * 0.36).box(w * 0.2, 0.002, d, 0x7aa0b8, w * 0.4, 0.002, 0);
+    const pts: [number, number][] = [[-0.3, 0.2], [-0.12, 0.08], [0.02, 0.12], [0.12, -0.06], [0.24, -0.16]];
+    for (let i = 1; i < pts.length; i++) {
+      const [ax, az] = pts[i - 1], [bx, bz] = pts[i], dx = (bx - ax) * w, dz = (bz - az) * d;
+      k.box(0.006, 0.002, Math.hypot(dx, dz), 0xb02a20, ((ax + bx) / 2) * w, 0.004, ((az + bz) / 2) * d, Math.atan2(dx, dz));
+    }
+    k.use('wood').cyl(0.004, 0.004, 0.17, 0xc8a040, w * 0.2, 0.004, d * 0.15, 6, 'x', 0.6);
+  },
   // A light on the ceiling (y at the ceiling): a fluorescent fitting, or a bare bulb on its flex.
   light: (k, _w, _h, _d) => {
     if (k.r() < 0.6) {

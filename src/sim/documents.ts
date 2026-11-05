@@ -1,8 +1,8 @@
 // Found documents (M10-37, U-104): placed once as a run starts, by the run's seed. Each worldbuilding document goes
 // into one container, picked at random from those in the kind of building it belongs in (and in a building with a
 // basement drain grate, or in its district, if it says so), never two in one; it's in there when the container is
-// first searched (sim/loot.ts). Each story document goes into a container of its high-security site, or lies on the
-// floor at its other key place.
+// first searched (sim/loot.ts). Each story document goes into a container of its high-security site, or lies at its
+// other key place.
 import type { SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { DOCS, type Doc, type DocWhere } from '../data/documents';
@@ -17,6 +17,12 @@ export const DOC_SPOT: Record<string, string> = {
   site: 'Construction site', pier: 'River-police pier: gangway', tunnel: 'Grand Tunnel entrance', shelter: 'Air-raid shelter',
   metro: 'Metro station Jiefangbei', cableway: 'cablewayNorth',
 };
+
+/** Where a key place's story document lies, if not in one of its site's containers: the spot its place keeps for it
+ *  (a 'doc:<place>' feature: the Li family flat's table), or the spot he'd be put at there. */
+export function docSpot(w: World, where: string): { x: number; y: number; z: number } | undefined {
+  return w.features.find(f => f.kind === `doc:${where}`) ?? (DOC_SPOT[where] ? w.teleports.find(q => q.name === DOC_SPOT[where]) : undefined);
+}
 
 /** The building a container belongs to: its interactables' id prefix. */
 const owner = (id: string) => id.split('-')[0];
@@ -54,12 +60,12 @@ export function placeDocuments(s: SimState, w: World) {
   const inside: Record<string, string> = (s.docs = {}), r = makeRng(hashString(`${s.seed}:docs`)), spots = docSpots(w);
   for (const d of DOCS) {
     const site = w.secure?.find(q => q.id === d.where);
-    const pool = (site ? w.inter.filter(i => i.kind === 'container' && owner(i.id) === site.prefix) : DOC_SPOT[d.where] ? [] : spots.filter(q => docFits(d, q)).map(q => q.it))
+    const t = site ? undefined : docSpot(w, d.where);
+    const pool = (site ? w.inter.filter(i => i.kind === 'container' && owner(i.id) === site.prefix) : t ? [] : spots.filter(q => docFits(d, q)).map(q => q.it))
       .filter(i => !inside[i.id]);
     if (pool.length) { inside[pool[randInt(r, pool.length)].id] = d.id; continue; }
-    const t = DOC_SPOT[d.where] && w.teleports.find(q => q.name === DOC_SPOT[d.where]);
     if (!t) continue;
-    // On the floor under the spot (loose: not a trace of him).
+    // On whatever's under the spot (loose: not a trace of him).
     const hit = raycast(w.index, t.x, t.y + 0.2, t.z, 0, -1, 0, 60);
     s.dropped.push({ stack: { uid: newUid(s), id: d.id, n: 1, x: 0, y: 0, rot: false }, x: t.x, y: hit ? t.y + 0.2 - hit.t : t.y, z: t.z, loose: true });
   }

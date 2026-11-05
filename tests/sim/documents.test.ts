@@ -9,7 +9,7 @@ import { startRun } from '../../src/sim/run';
 import { openContainer } from '../../src/sim/containers';
 import { districtName } from '../../src/world/yuzhong/lots';
 import { DOCS, KEY_PLACES, isStory, docById } from '../../src/data/documents';
-import { DOC_SPOT } from '../../src/sim/documents';
+import { docSpot } from '../../src/sim/documents';
 import { item } from '../../src/data/items';
 
 /** Which buildings and rooms each kind of place is, told apart here by hand. */
@@ -69,9 +69,9 @@ describe('found documents (M10-37)', () => {
         openContainer(s, it);
         if (!s.containers[cid].items.some(x => x.id === did)) bad.push(`${did} not in ${cid} when searched`);
       }
-      // The rest lie on the floor at their key place, not counted as his.
+      // The rest lie at their key place (on its floor, or the flat's table), not counted as his.
       for (const l of lying) {
-        const d = docById.get(l.stack.id)!, t = w.teleports.find(q => q.name === DOC_SPOT[d.where]);
+        const d = docById.get(l.stack.id)!, t = docSpot(w, d.where);
         if (!isStory(d) || !t || Math.hypot(l.x - t.x, l.z - t.z) > 0.5 || l.y > t.y + 0.3 || l.y < t.y - 3 || !l.loose) bad.push(`${d.id} on the floor at ${l.x.toFixed(0)}, ${l.y.toFixed(1)}, ${l.z.toFixed(0)}`);
       }
       expect(bad).toEqual([]);

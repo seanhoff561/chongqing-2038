@@ -6,8 +6,8 @@
 
 /** The ordinary buildings' kinds a worldbuilding document is found in. */
 export type DocWhere = 'home' | 'shop' | 'office' | 'workshop' | 'clinic' | 'military';
-/** The key places a story document lies at: the high-security sites, then the rest. */
-export const KEY_PLACES = ['hospital', 'police', 'market', 'telecom', 'substation', 'site', 'pier', 'tunnel', 'shelter', 'metro', 'cableway'] as const;
+/** The key places a story document lies at: the high-security sites, then the rest, then his family's flat. */
+export const KEY_PLACES = ['hospital', 'police', 'market', 'telecom', 'substation', 'site', 'pier', 'tunnel', 'shelter', 'metro', 'cableway', 'flat'] as const;
 export type KeyPlace = (typeof KEY_PLACES)[number];
 
 export interface Doc { id: string; zh: string; en: string; where: DocWhere | KeyPlace; needs?: 'grate'; district?: string; text: string }
@@ -301,6 +301,14 @@ Nobody goes up alone.
 13:05 Last train held at Xiaoshizi. Platform screens: SERVICE SUSPENDED. WAIT TO BE COLLECTED.
 13:40 The seismic sensors along the running tunnel report somewhere else now. Every footstep shows.
 14:00 Leaving by the running tunnel.` },
+  { id: 'doc-flat', zh: '登记催告单', en: 'Registration reminder', where: 'flat', text:
+`CHONGQING MUNICIPAL RESIDENT REGISTRATION · REMINDER
+To: Li Guorong, Shibati.
+You have not yet registered. Report in person to Jiaochangkou, desk 6, with your ID card, by 12 September.
+Registered from your household: Zhang Lan, Li Xiaoyu (5 Sept). Not yet registered: Li Guorong, Li Wei.
+(on the back, in biro)
+Guorong, we went. They took our photos and our fingerprints and asked where you and Weiwei work. I told them. I wish I hadn't.
+Your bowl's under the plate. Come home.` },
   { id: 'doc-cableway', zh: '索道值班留言', en: "Cableway operator's note", where: 'cableway', text:
 `Yangtze River Cableway, Xinhua Road station. For whoever's on next.
 Cabin 1 stopped 300 m out at 14:52 when the feeder dropped. 41 passengers. Brought it in on the emergency drive by 16:30. Everyone off.

@@ -15,6 +15,7 @@ import { walkUp, floorWay } from '../../src/world/yuzhong/liflat';
 import { syncWorld } from '../../src/sim/doors';
 import { lockWay } from '../../src/sim/locks';
 import { settle } from './helpers';
+import { raycast } from '../../src/world/geom';
 
 const w = getWorld('yuzhong'), flat = w.teleports.find(t => t.name === 'Li family flat')!, top = w.teleports.find(t => t.name === 'Shibati top')!;
 const things = w.features.filter(f => f.kind.startsWith('li:'));
@@ -66,6 +67,38 @@ describe('the Li family flat (M3-19)', () => {
     run(s, w, 1, { pressed: LMB, buttons: LMB }, st => { for (const e of st.events) if (e.t === 'say') said.push(e.id); });
     expect(said).toEqual(VOICEMAIL.map(l => l.id));
   });
+  it('keeps what happened to his family, each thing walked to from the stairs (M10-38)', () => {
+    const room = { x: flat.x, y: flat.y - 1.5, z: flat.z }, plot = walkUp(w, room)!;
+    const here = w.props.filter(p => p.kind.startsWith('f:') && Math.hypot(p.x - flat.x, p.z - flat.z) < 16 && p.y > room.y - 0.1 && p.y < room.y + 2);
+    const of = (k: string) => here.filter(p => p.kind === `f:${k}`);
+    // Two beds slept in, a third laid out and not; the table, dinner for three on it; the calendar; the bags packed by
+    // the stairs (two); the height marks; her desk with the map on it.
+    expect(of('bedroll').length).toBe(2);
+    expect(of('bedmade').length).toBe(1);
+    const dinner = of('dinner')[0], table = of('table').find(t => Math.hypot(t.x - dinner.x, t.z - dinner.z) < 0.01)!;
+    expect(table, 'dinner on a table').toBeTruthy();
+    expect(dinner.y).toBeCloseTo(room.y + table.h!, 2);
+    expect(of('calendar').length).toBe(1);
+    expect(of('bag').length).toBe(2);
+    expect(of('marks').length).toBe(1);
+    const map = of('map')[0], desk = of('desk').find(d => Math.hypot(d.x - map.x, d.z - map.z) < 0.5 && map.y > room.y + 0.7)!;
+    expect(desk, 'the map on her desk').toBeTruthy();
+    // Each where he can walk to within arm's reach of it, from the stairs up (the table and the desk stand solid).
+    expect(raycast(w.index, table.x, room.y + 1.2, table.z, 0, -1, 0, 1)?.t, 'the table stands solid').toBeCloseTo(1.2 - table.h!, 1);
+    const far: string[] = [];
+    for (const p of [...of('bedroll'), ...of('bedmade'), table, ...of('calendar'), ...of('bag'), ...of('marks'), desk]) {
+      const ring = [0.6, 0.9].flatMap(r => [0, 1, 2, 3, 4, 5, 6, 7].map(k => ({ x: p.x + Math.sin(k * Math.PI / 4) * r, y: room.y, z: p.z + Math.cos(k * Math.PI / 4) * r })));
+      if (!ring.some(q => { const way = floorWay(w, plot, q); return way && Math.hypot(way[way.length - 1].x - p.x, way[way.length - 1].z - p.z) < 1.3; })) far.push(p.kind);
+    }
+    expect(far).toEqual([]);
+    // The registration reminder lies on the table by his father's bowl as a run starts: the flat's story document.
+    const s = createState(1, w);
+    startRun(s, w);
+    const doc = s.dropped.find(d => d.stack.id === 'doc-flat')!;
+    expect(doc, 'the reminder').toBeTruthy();
+    expect(Math.hypot(doc.x - table.x, doc.z - table.z)).toBeLessThan(0.5);
+    expect(doc.y).toBeCloseTo(room.y + table.h!, 1);
+  }, 120000);
   it('he walks in from the street: in at its door, up the stairs, across its floor to the flat (M10-21, U-104)', async () => {
     await settle();
     const room = { x: flat.x, y: flat.y - 1.5, z: flat.z }, plot = walkUp(w, room)!;
