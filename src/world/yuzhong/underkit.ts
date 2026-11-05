@@ -10,6 +10,7 @@ import { stair } from '../steps';
 import type { Prop } from '../world';
 import { propBoxes } from './dressing';
 import type { P2 } from './shapes';
+import { tan } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 /** What a part digs and builds with (under.ts). */
@@ -25,7 +26,7 @@ export interface Dig {
   mark(kind: string, at: P2, y: number): void;
 }
 
-const T35 = Math.tan(0.61);
+const T35 = tan(0.61);
 /** A metro tube: its width, height, the track centres either side of the run's line, the walkway's top. */
 export const TUBE = { w: 4.6, h: 5.0, off: 4.5, walk: 1.0 };
 
@@ -175,7 +176,7 @@ export function interchange(d: Dig, R: ReturnType<typeof run>, L: number, y: num
   }
   d.decor.push(R.box(2, L - 2, -0.2, 0.2, y + 6.42, y + 6.5, MAT.glare));
   // The escalators, side by side up the platform's middle at 30 degrees, stopped; the well over them.
-  const e0 = L / 2 - 6, e1 = e0 + (up - y - walk) / Math.tan(Math.PI / 6);
+  const e0 = L / 2 - 6, e1 = e0 + (up - y - walk) / tan(Math.PI / 6);
   for (const [s0, s1] of [[-1.15, -0.05], [0.05, 1.15]]) {
     stair(...R.rect(e0, e1, s0, s1), y + walk, up, R.up, d.kept, d.decor);
     // Balustrades either side, rising with it.

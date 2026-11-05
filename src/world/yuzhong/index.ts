@@ -46,6 +46,7 @@ import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
 import { placeSensors } from './sensors';
 import { chooseAlley, buildHome } from './home';
+import { sin, cos, atan2 } from '../trig';
 
 const empty = (): Fabric => ({ solids: [], decor: [], props: [], lots: [], inter: [], climbables: [], hides: [], features: [], sites: [], far: [] });
 
@@ -63,7 +64,7 @@ export function buildYuzhong(): World {
   for (const o of tun.keep.concat(metro.keep, under.keep)) mark(corners({ ...o, hw: o.hw + KEEP, hd: o.hd + KEEP }));
   for (const b of line.beams) for (let k = 0; k + 1 < b.pts.length; k++) {
     const [[ax, az], [bx, bz]] = [b.pts[k], b.pts[k + 1]];
-    mark(corners({ cx: (ax + bx) / 2, cz: (az + bz) / 2, hw: Math.hypot(bx - ax, bz - az) / 2 + 1, hd: BEAM.w / 2 + 3, yaw: Math.atan2(bz - az, bx - ax) }));
+    mark(corners({ cx: (ax + bx) / 2, cz: (az + bz) / 2, hw: Math.hypot(bx - ax, bz - az) / 2 + 1, hd: BEAM.w / 2 + 3, yaw: atan2(bz - az, bx - ax) }));
   }
   if (site) { const m = new Uint8Array(g.y.length); mark(site.poly, m); dilate(g, m, KEEP); for (let k = 0; k < m.length; k++) block[k] |= m[k]; }
   // The factory covers Raffles City's podium round its towers (M3-57b).
@@ -107,7 +108,7 @@ export function buildYuzhong(): World {
   }
   // The high-security sites' buildings, what they were fixed (M6-11: yuzhong/secure.ts); the cableway's, the city's
   // own building nearest its landmark.
-  const CW = GEO.landmarks.cablewayNorth, off = (o: Obb) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw), x = CW.x - o.cx, z = CW.z - o.cz; return Math.hypot(Math.max(0, Math.abs(c * x + s * z) - o.hw), Math.max(0, Math.abs(c * z - s * x) - o.hd)); };
+  const CW = GEO.landmarks.cablewayNorth, off = (o: Obb) => { const c = cos(o.yaw), s = sin(o.yaw), x = CW.x - o.cx, z = CW.z - o.cz; return Math.hypot(Math.max(0, Math.abs(c * x + s * z) - o.hw), Math.max(0, Math.abs(c * z - s * x) - o.hd)); };
   SECURE.find(S => S.id === 'cableway')!.plan = plans.filter(p => !p.osm && !p.far).reduce((a, b) => (off(b.obb) < off(a.obb) ? b : a)).seed;
   for (const S of SECURE) { const p = plans.find(q => q.seed === S.plan); if (p) { p.siteType = S.type; p.inside = S.inside; } }
   // The cableway's line over the city and the river to Shangxin Street (M6-16): what the city made in its way stands
@@ -143,10 +144,10 @@ export function buildYuzhong(): World {
   const L = GEO.landmarks, at = (k: string, yaw = 0): Teleport => ({ name: k, x: L[k].x, y: hAt(g, L[k].x, L[k].z) + 1.5, z: L[k].z, yaw });
   const hide = { name: "Friends' hideout (vent grate)", x: home.at.spawn.x, y: home.at.spawn.y + 0.05, z: home.at.spawn.z, yaw: -Math.PI / 2 - home.yaw };
   // (Looking down the stepped street from its mouth.)
-  const dw = under.features.find(f => f.kind === 'way:descent'), descentYaw = dw ? Math.atan2(-dw.nx!, -dw.nz!) : 0;
+  const dw = under.features.find(f => f.kind === 'way:descent'), descentYaw = dw ? atan2(-dw.nx!, -dw.nz!) : 0;
   // Shibati's stair from its top looking down and from its foot looking up (M3-18); the beam of Line 2 a third of the
   // way along its longest run, looking along it.
-  const look = (a: [number, number], b: [number, number]) => Math.atan2(a[0] - b[0], a[1] - b[1]);
+  const look = (a: [number, number], b: [number, number]) => atan2(a[0] - b[0], a[1] - b[1]);
   const run = line.beams.reduce((a, b) => (b.pts.length > a.pts.length ? b : a)), bi = Math.floor(run.pts.length / 3), bn = run.pts[Math.min(run.pts.length - 1, bi + 1)];
   const teleports = ['jiefangbei', 'shibati', 'jiaochangkou', 'hongyadong', 'xiaoshizi', 'chaotianmen', 'cablewayNorth'].map(k => at(k)).concat([
     { name: 'Shibati top', x: top[0], y: hAt(g, top[0], top[1]) + 1.5, z: top[1], yaw: look(top, foot) },
@@ -162,7 +163,7 @@ export function buildYuzhong(): World {
     // The vertical city's pieces (M3-57): on a skybridge, in a lane under a block, at a roof street's ramp, on a
     // roof under a megastructure.
     ...([['skybridge', 'Skybridge', 0, 0], ['overLane', 'Block over a lane', 0, -4.4], ['roofStreet', 'Roof street', -2, 0.3], ['mega', 'Megastructure', 0, -4.2]] as const).flatMap(([k, name, out, up]) =>
-      vert.features.filter((f, i, all) => f.kind === k && !all.some((q, j) => j < i && q.group === f.group)).slice(0, 3).map((f, n) => ({ name: `${name} ${n + 1}`, x: f.x + f.nx! * out, y: f.y + up + 1.5, z: f.z + f.nz! * out, yaw: Math.atan2(f.nx!, f.nz!) }))),
+      vert.features.filter((f, i, all) => f.kind === k && !all.some((q, j) => j < i && q.group === f.group)).slice(0, 3).map((f, n) => ({ name: `${name} ${n + 1}`, x: f.x + f.nx! * out, y: f.y + up + 1.5, z: f.z + f.nz! * out, yaw: atan2(f.nx!, f.nz!) }))),
     // Down below (M3-58).
     { name: 'Underground city deck', x: under.at.deck.x, y: under.at.deck.y + 1.5, z: under.at.deck.z, yaw: 0 },
     { name: 'Underground city concourse', x: under.at.concourse.x, y: under.at.concourse.y + 1.5, z: under.at.concourse.z, yaw: 0 },
@@ -172,7 +173,7 @@ export function buildYuzhong(): World {
     ...([['station', 'Metro station Jiefangbei', -Math.PI / 2], ['metro', 'Metro tunnel', -Math.PI / 2], ['shelter', 'Air-raid shelter', 0], ['descent', 'Stepped street down', 0]] as const)
       .filter(([k]) => under.at[k]).map(([k, name, yaw]) => ({ name, x: under.at[k].x, y: under.at[k].y + 1.5, z: under.at[k].z, yaw: k === 'descent' ? descentYaw : yaw })),
     ...under.features.filter(f => f.kind === 'way:culvert' || f.kind === 'way:drain').map((f, n) => ({ name: `${f.kind === 'way:drain' ? 'Drain' : 'Culvert'} mouth ${n + 1}`, x: f.x, y: f.y + 1.5, z: f.z, yaw: 0 })),
-    ...(fac?.gates ?? []).map((q, n) => ({ name: `Factory gate ${n + 1}`, x: q.x + q.nx * 16, y: q.y + 1.5, z: q.z + q.nz * 16, yaw: Math.atan2(q.nx, q.nz) })),
+    ...(fac?.gates ?? []).map((q, n) => ({ name: `Factory gate ${n + 1}`, x: q.x + q.nx * 16, y: q.y + 1.5, z: q.z + q.nz * 16, yaw: atan2(q.nx, q.nz) })),
   ], metro.at.map(m => ({ name: `Metro ${m.name}`, x: m.x, y: hAt(g, m.x, m.z) + 1.5, z: m.z, yaw: 0 })),
   site ? [
     { name: 'Construction site', x: site.frame.x, y: site.base + 0.05, z: site.frame.z, yaw: 0 },
@@ -189,7 +190,7 @@ export function buildYuzhong(): World {
       for (let i = 0; i <= n; i++) { const x = ax + ((bx - ax) * i) / n, z = az + ((bz - az) * i) / n, d = Math.hypot(x - mx, z - mz); if (d > MONUMENT.kerb[0] + 3 && (!best || d < best.d)) best = { x, z, d }; }
     }
     const q = best ?? { x: mx + MONUMENT.kerb[0] + 3, z: mz };
-    Object.assign(jt, { x: q.x, y: hAt(g, q.x, q.z) + 1.5, z: q.z, yaw: Math.atan2(-(mx - q.x), -(mz - q.z)) });
+    Object.assign(jt, { x: q.x, y: hAt(g, q.x, q.z) + 1.5, z: q.z, yaw: atan2(-(mx - q.x), -(mz - q.z)) });
   }
   // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
   const ways = site ? siteWays(site, plots, g) : null;
@@ -258,11 +259,11 @@ export function buildYuzhong(): World {
   const SIGNS = new Set(['neonblade', 'ledscreen', 'ledboard', 'redbanner']);
   world.props = world.props.filter(p => {
     if (p.kind === 'laundry' && p.w) {
-      const ux = Math.cos(p.yaw), uz = -Math.sin(p.yaw), half = p.w / 2;
+      const ux = cos(p.yaw), uz = -sin(p.yaw), half = p.w / 2;
       return [-1, 1].every(s => { const h = raycast(world.index, p.x, p.y + 2.3, p.z, ux * s, 0, uz * s, half + 0.4); return !!h && h.t > half - 0.6; });
     }
     if (!SIGNS.has(p.kind)) return true;
-    const dx = Math.sin(p.yaw), dz = Math.cos(p.yaw), y = p.y + 0.5;
+    const dx = sin(p.yaw), dz = cos(p.yaw), y = p.y + 0.5;
     // Under the ground (the underground city's streets): nothing in front of it across the street.
     if (p.y < (heightAt(g, p.x, p.z) ?? -Infinity) - 4) return !raycast(world.index, p.x + dx * 1.2, y, p.z + dz * 1.2, dx, 0, dz, 4);
     for (let d = 1.5; d <= 14; d += 1) {
@@ -275,7 +276,7 @@ export function buildYuzhong(): World {
   for (const p of world.props) {
     const h = PROP_HIDE[p.kind];
     if (!h) continue;
-    const x = p.x + Math.sin(p.yaw) * h.z, z = p.z + Math.cos(p.yaw) * h.z;
+    const x = p.x + sin(p.yaw) * h.z, z = p.z + cos(p.yaw) * h.z;
     world.hides.push({ id: world.hides.length, kind: h.kind, yaw: p.yaw, inner: { x0: x - h.w / 2, y0: p.y + h.y, z0: z - h.d / 2, x1: x + h.w / 2, y1: p.y + h.y + h.h, z1: z + h.d / 2 } });
   }
   liFlat(world);
@@ -301,7 +302,7 @@ export function buildYuzhong(): World {
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
     const f = world.features.find(q => q.kind === k), d = world.features.find(q => q.kind === 'pier:deck');
-    if (f && d) world.teleports.push({ name: `River-police pier: ${name}`, x: f.x, y: f.y + (k === 'pier:ladder' ? 0.3 : 0.1), z: f.z, yaw: Math.atan2(-(d.x - f.x), -(d.z - f.z)) });
+    if (f && d) world.teleports.push({ name: `River-police pier: ${name}`, x: f.x, y: f.y + (k === 'pier:ladder' ? 0.3 : 0.1), z: f.z, yaw: atan2(-(d.x - f.x), -(d.z - f.z)) });
   }
   // Each parked scooter's battery, prised out with a crowbar (M5-23).
   world.props.forEach((p, i) => { if (p.kind === 'scooter') world.inter.push({ id: `scooter${i}`, kind: 'scooter', x: p.x, y: p.y + 0.45, z: p.z, r: 0.6, zh: '电动车', en: 'Scooter' }); });
@@ -322,7 +323,7 @@ export function buildYuzhong(): World {
       const h = raycast(world.index, q.x, q.y + 1.2, q.z, dx, 0, dz, 4);
       if (!h) continue;
       const x = q.x + dx * (h.t - 0.02), z = q.z + dz * (h.t - 0.02);
-      world.props.push({ kind: 'chalkmouse', x, y: q.y + 0.9, z, yaw: Math.atan2(-dx, -dz) });
+      world.props.push({ kind: 'chalkmouse', x, y: q.y + 0.9, z, yaw: atan2(-dx, -dz) });
       world.features.push({ kind: `mark:${++k}`, x, y: q.y + 1.2, z, group: k });
       last = i;
       break;
@@ -375,7 +376,7 @@ function overSomething(w: World, s: Solid): Solid[] {
     if (q.rot) { const T = q.rot, lx = x - T.px, lz = z - T.pz; x = T.px + lx * T.c - lz * T.s; z = T.pz + lx * T.s + lz * T.c; }
     return !raycast(w.index, x, q.y1 + 0.05, z, 0, -1, 0, 0.4) && !rayGround(w.ground!, x, q.y1 + 0.05, z, 0, -1, 0, 0.4);
   }).length < 3; };
-  const out: Solid[] = [], yaw = R ? Math.atan2(R.s, R.c) : 0;
+  const out: Solid[] = [], yaw = R ? atan2(R.s, R.c) : 0;
   grid.forEach((row, v) => {
     for (let u = 0; u < nu; u++) {
       if (!row[u]) continue;
@@ -456,7 +457,7 @@ function landMask(g: Heightfield): Uint8Array {
 /** Build one lot in its own frame and turn everything it made into place. */
 function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
   const o = p.obb, l: Lot = { id: n, x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd, base: p.base, wall: p.wall, top: p.wall, kind: p.kind, mat: p.mat, street: p.street, across: p.across, noEnter: p.noEnter, edge: p.edge, sky: p.sky, bare: p.bare, pitched: p.pitched, sheer: p.sheer, holdless: p.holdless, district: p.district, type: p.siteType, inside: p.inside,
-    ground: (x, z) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw); return heightAt(g, o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)) ?? p.base; } };
+    ground: (x, z) => { const c = cos(o.yaw), s = sin(o.yaw); return heightAt(g, o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)) ?? p.base; } };
   const f = empty(), r = makeRng(hashString(p.seed));
   if (p.far) {
     // The far banks: one painted block each, to see across the river.
@@ -480,7 +481,7 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
   const bs = l.basement;
   if (bs) {
     f.solids.push(...carve([f.solids.pop()!], { x0: bs.x0, y0: low - 2, z0: bs.z0, x1: bs.x1, y1: l.base + 0.01, z1: bs.z1 }));
-    const c = Math.cos(o.yaw), s = Math.sin(o.yaw), cx = (bs.x0 + bs.x1) / 2, cz = (bs.z0 + bs.z1) / 2;
+    const c = cos(o.yaw), s = sin(o.yaw), cx = (bs.x0 + bs.x1) / 2, cz = (bs.z0 + bs.z1) / 2;
     rasterPoly(corners({ cx: o.cx + c * (cx - o.cx) - s * (cz - o.cz), cz: o.cz + s * (cx - o.cx) + c * (cz - o.cz), hw: (bs.x1 - bs.x0) / 2 + 2, hd: (bs.z1 - bs.z0) / 2 + 2, yaw: o.yaw }), 0, 0, g.cell, g.w, g.h,
       (i0, i1, j) => { for (let i = i0; i <= i1; i++) if (i < g.w - 1 && j < g.h - 1) g.hole[j * (g.w - 1) + i] = 1; });
   }
@@ -495,7 +496,7 @@ function buildPlan(p: Plan, n: number, out: Fabric, g: Heightfield): Plot {
 /** Turn everything a lot's fabric made in its own frame (about the rectangle's middle) into place, ids prefixed.
  *  Returns the frame-to-map point transform. */
 function place(f: Fabric, o: Obb, prefix: string, out: Fabric): (x: number, z: number) => [number, number] {
-  const c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+  const c = cos(o.yaw), s = sin(o.yaw);
   const pt = (x: number, z: number): [number, number] => [o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)];
   out.solids.push(...turn(f.solids, o.yaw, o.cx, o.cz));
   out.decor.push(...turn(f.decor, o.yaw, o.cx, o.cz));
@@ -523,8 +524,8 @@ function rowAlleys(plans: Plan[], out: Fabric, g: Heightfield, skip: number) {
   for (let n = 0; n + 1 < plans.length; n++) {
     const a = plans[n], b = plans[n + 1];
     // Neighbours square to each other (to a few degrees, round a bend): b laid out in a's frame.
-    if (!a.row || a.row !== b.row || a.far || Math.abs(Math.sin(a.obb.yaw - b.obb.yaw)) > 0.06) continue;
-    const o = a.obb, c = Math.cos(o.yaw), s = Math.sin(o.yaw), dx = b.obb.cx - o.cx, dz = b.obb.cz - o.cz;
+    if (!a.row || a.row !== b.row || a.far || Math.abs(sin(a.obb.yaw - b.obb.yaw)) > 0.06) continue;
+    const o = a.obb, c = cos(o.yaw), s = sin(o.yaw), dx = b.obb.cx - o.cx, dz = b.obb.cz - o.cz;
     const bx = o.cx + c * dx + s * dz, bz = o.cz - s * dx + c * dz;
     const lot = (cx: number, cz: number, hw: number, hd: number, base: number, wall: number): Lot => ({ id: -1, x0: cx - hw, z0: cz - hd, x1: cx + hw, z1: cz + hd, base, wall, top: wall, kind: 'res', mat: 0, street: [false, true, false, false], across: [0, 0, 0, 0] });
     const f = empty();
@@ -534,7 +535,7 @@ function rowAlleys(plans: Plan[], out: Fabric, g: Heightfield, skip: number) {
     // (The hideout's alley gets scaffold bars overhead: nothing over its grate, U-047.)
     const k = turn.get(a.row) ?? 0;
     turn.set(a.row, k + 1);
-    alleys([lot(o.cx, o.cz, o.hw, o.hd, y, a.wall), lot(bx, bz, b.obb.hw, b.obb.hd, y, b.wall)], makeRng(hashString(`alley${Math.round(o.cx)},${Math.round(o.cz)}`)), f, n === skip ? 0.5 : [0.1, 0.5, 0.9, 0.3, 0.8][k % 5], Math.abs(Math.sin(a.obb.yaw - b.obb.yaw)) < 0.01);
+    alleys([lot(o.cx, o.cz, o.hw, o.hd, y, a.wall), lot(bx, bz, b.obb.hw, b.obb.hd, y, b.wall)], makeRng(hashString(`alley${Math.round(o.cx)},${Math.round(o.cz)}`)), f, n === skip ? 0.5 : [0.1, 0.5, 0.9, 0.3, 0.8][k % 5], Math.abs(sin(a.obb.yaw - b.obb.yaw)) < 0.01);
     place(f, o, `${a.seed}a`, out);
   }
 }
@@ -546,7 +547,7 @@ function surface(s: Street, g: Heightfield, decor: Solid[]) {
   for (let k = 0; k + 1 < s.pts.length; k++) {
     const [ax, az] = s.pts[k], [bx, bz] = s.pts[k + 1], len = Math.hypot(bx - ax, bz - az);
     if (len < 0.5) continue;
-    const ya = hAt(g, ax, az), yb = hAt(g, bx, bz), cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = Math.atan2(bz - az, bx - ax);
+    const ya = hAt(g, ax, az), yb = hAt(g, bx, bz), cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = atan2(bz - az, bx - ax);
     const lo = Math.min(ya, yb), hi = Math.max(ya, yb), x0 = cx - len / 2 - 0.3, x1 = cx + len / 2 + 0.3, z0 = cz - s.w / 2, z1 = cz + s.w / 2;
     const r = hi - lo < 0.05 ? solid(x0, lo - 0.25, z0, x1, lo + 0.04, z1, mat) : rampSolid(x0, lo - 0.25, z0, x1, z1, lo + 0.04, hi + 0.04, ya < yb ? 1 : 2, mat);
     if (s.steps && hi - lo > 0.6) { const steps: Solid[] = []; stepsFor(r, steps, MAT.stone); decor.push(...turn(steps, yaw, cx, cz)); }
@@ -574,7 +575,7 @@ function bridge(s: Street, g: Heightfield, solids: Solid[]) {
     const [ax, az] = pts[k], [bx, bz] = pts[k + 1], len = Math.hypot(bx - ax, bz - az);
     if (len < 0.5) continue;
     const ya = deckY[k], yb = deckY[k + 1];
-    const cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = Math.atan2(bz - az, bx - ax), lo = Math.min(ya, yb), hi = Math.max(ya, yb);
+    const cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = atan2(bz - az, bx - ax), lo = Math.min(ya, yb), hi = Math.max(ya, yb);
     const x0 = cx - len / 2 - 0.2, x1 = cx + len / 2 + 0.2, z0 = cz - s.w / 2, z1 = cz + s.w / 2;
     const deck = hi - lo < 0.05 ? solid(x0, lo - thick, z0, x1, lo, z1, MAT.concrete) : rampSolid(x0, lo - thick, z0, x1, z1, lo, hi, ya < yb ? 1 : 2, MAT.concrete);
     solids.push(...turn([deck, solid(x0, lo, z0 - 0.25, x1, hi + 1.1, z0, MAT.metal), solid(x0, lo, z1, x1, hi + 1.1, z1 + 0.25, MAT.metal)], yaw, cx, cz));

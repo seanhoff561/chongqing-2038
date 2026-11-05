@@ -10,6 +10,7 @@ import { WATER_Y, type Street } from './ground';
 import { stepsFor } from '../steps';
 import { makeRng, rand } from '../../sim/rng';
 import type { Feature, Prop } from '../world';
+import { sin, cos, atan2 } from '../trig';
 
 const MAIN = new Set(['trunk', 'primary', 'secondary', 'tertiary']);
 const PANEL = { w: 1.5, gap: 0.05, h: 3.4, t: 0.3 };
@@ -36,7 +37,7 @@ function shoreAlong(g: Heightfield, x: number, z: number, dx: number, dz: number
 /** The nearest water from a point: where the shore is, and which way the water lies. */
 function nearestShore(g: Heightfield, from: { x: number; z: number }) {
   let best: { d: number; dx: number; dz: number } | null = null;
-  for (let a = 0; a < 128; a++) { const dx = Math.cos((a / 128) * Math.PI * 2), dz = Math.sin((a / 128) * Math.PI * 2), d = shoreAlong(g, from.x, from.z, dx, dz, 900); if (d !== null && (!best || d < best.d)) best = { d, dx, dz }; }
+  for (let a = 0; a < 128; a++) { const dx = cos((a / 128) * Math.PI * 2), dz = sin((a / 128) * Math.PI * 2), d = shoreAlong(g, from.x, from.z, dx, dz, 900); if (d !== null && (!best || d < best.d)) best = { d, dx, dz }; }
   if (!best) throw new Error('no river below Shibati');
   return { x: from.x + best.dx * best.d, z: from.z + best.dz * best.d, dx: best.dx, dz: best.dz };
 }
@@ -101,7 +102,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
     // (From 2 m inland of the edge, level with the ground there, so the bank's last drop is under it.)
     const ex = ox + dx * (d - 2), ez = oz + dz * (d - 2), top = h(ex, ez);
     if (top === null || top < WATER_Y + 1) continue;
-    const L = Math.max(4, (top - (WATER_Y - 2)) * 2), yaw = Math.atan2(dz, dx);
+    const L = Math.max(4, (top - (WATER_Y - 2)) * 2), yaw = atan2(dz, dx);
     const ramp = rampSolid(ex, WATER_Y - 4.5, ez - 3, ex + L, ez + 3, WATER_Y - 2, top, 2, MAT.stone), steps: Solid[] = [];
     stepsFor(ramp, steps, MAT.stone);
     const [rs] = turn([ramp], yaw, ex, ez);
@@ -119,7 +120,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
     for (let a = PANEL.w / 2; a < len; a += PANEL.w + PANEL.gap) {
       const cx = ax + ux * a + nx * off, cz = az + uz * a + nz * off, y = h(cx, cz);
       if (y === null || y < WATER_Y + 1) continue;
-      const yaw = Math.atan2(uz, ux), x0 = cx - PANEL.w / 2, z0 = cz - PANEL.t / 2;
+      const yaw = atan2(uz, ux), x0 = cx - PANEL.w / 2, z0 = cz - PANEL.t / 2;
       const [p] = turn([solid(x0, y - 0.6, z0, x0 + PANEL.w, y + PANEL.h, z0 + PANEL.t, MAT.concrete)], yaw, cx, cz);
       if (hits(idx, { x0: p.x0, y0: y + 0.3, z0: p.z0, x1: p.x1, y1: y + PANEL.h, z1: p.z1 }) || sts.some(o => o !== s && MAIN.has(o.kind) && near(o, cx, cz, o.w / 2 + 0.6)) || !fresh(cx, cz, 1.2)) continue;
       // One in 22 is down: lying flat on the river side, a way over it.
@@ -135,7 +136,7 @@ export function riverfront(idx: SolidIndex, g: Heightfield, sts: Street[], from:
         solid(x0, y + PANEL.h, cz - 0.12, x0 + PANEL.w, y + PANEL.h + 0.25, cz + 0.12, MAT.metal)], yaw, cx, cz));
       features.push({ kind: 'river:wall', x: cx, y, z: cz, group: features.length, nx, nz });
       // Now and then a banner on its road side: 禁止通行.
-      if (rand(r) < 0.04) props.push({ kind: 'redbanner', x: cx - nx * (PANEL.t / 2 + 0.05), y: y + 1.6, z: cz - nz * (PANEL.t / 2 + 0.05), yaw: Math.atan2(-nx, -nz), w: 1.4, text: '9' });
+      if (rand(r) < 0.04) props.push({ kind: 'redbanner', x: cx - nx * (PANEL.t / 2 + 0.05), y: y + 1.6, z: cz - nz * (PANEL.t / 2 + 0.05), yaw: atan2(-nx, -nz), w: 1.4, text: '9' });
     }
   }
   for (const [x, z] of mine) { const k = `${Math.floor(x / 4)},${Math.floor(z / 4)}`; (taken.get(k) ?? taken.set(k, []).get(k)!).push([x, z]); }
@@ -160,7 +161,7 @@ export function docks(g: Heightfield, piers: { cx: number; cz: number; hw: numbe
   const solids: Solid[] = [], decor: Solid[] = [], features: Feature[] = [], top = WATER_Y + DOCK.up;
   for (const o of piers) {
     // (Mostly over the water: the ground under it below the surface at three of five points.)
-    const c = Math.cos(o.yaw), s = Math.sin(o.yaw), at = (u: number, v: number) => heightAt(g, o.cx + c * u - s * v, o.cz + s * u + c * v);
+    const c = cos(o.yaw), s = sin(o.yaw), at = (u: number, v: number) => heightAt(g, o.cx + c * u - s * v, o.cz + s * u + c * v);
     const wet = [[0, 0], [o.hw * 0.7, 0], [-o.hw * 0.7, 0], [0, o.hd * 0.7], [0, -o.hd * 0.7]].filter(([u, v]) => (at(u, v) ?? top) < WATER_Y).length;
     if (wet < 3 || o.hw < 3 || o.hd < 1.5) continue;
     solids.push(...turn([solid(o.cx - o.hw, top - DOCK.t, o.cz - o.hd, o.cx + o.hw, top, o.cz + o.hd, MAT.concrete)], o.yaw, o.cx, o.cz));

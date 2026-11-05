@@ -11,6 +11,7 @@ import type { Climbable, Feature, Inter, Prop } from '../world';
 import { stair } from '../steps';
 import { minRect, points, rasterPoly, inside, type Obb, type P2 } from './shapes';
 import { siteOffice, OFFICE } from './siteoffice';
+import { sin, cos, atan2 } from '../trig';
 
 /** A stretch of the hoarding (up to 8 m): its middle, length and line; the ground outside, lowest and highest; out
  *  of the site; its top. */
@@ -38,7 +39,7 @@ export const sitePoly = (): P2[] | null => {
 export function buildSite(g: Heightfield): Site | null {
   const poly = sitePoly();
   if (!poly) return null;
-  const o = minRect(poly), c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+  const o = minRect(poly), c = cos(o.yaw), s = sin(o.yaw);
   /** Local (unturned about the rectangle's middle) to the map and back. */
   const P = (x: number, z: number): P2 => [o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)];
   const local = poly.map(([x, z]): P2 => [o.cx + c * (x - o.cx) + s * (z - o.cz), o.cz - s * (x - o.cx) + c * (z - o.cz)]);
@@ -57,7 +58,7 @@ export function buildSite(g: Heightfield): Site | null {
     for (let i = 0; i < n; i++) {
       const t0 = i / n, t1 = (i + 1) / n, x0 = ax + (bx - ax) * t0, z0 = az + (bz - az) * t0, x1 = ax + (bx - ax) * t1, z1 = az + (bz - az) * t1;
       const out = [[x0, z0], [x1, z1], [(x0 + x1) / 2, (z0 + z1) / 2]].map(([x, z]) => hAt(g, x + nx * 2.5, z + nz * 2.5));
-      pieces.push({ cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, len: len / n, yaw: Math.atan2(bz - az, bx - ax), lo: Math.min(...out), hi: Math.max(...out), nx, nz, cap: Math.max(base, Math.max(...out)) + 2.4 });
+      pieces.push({ cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, len: len / n, yaw: atan2(bz - az, bx - ax), lo: Math.min(...out), hi: Math.max(...out), nx, nz, cap: Math.max(base, Math.max(...out)) + 2.4 });
     }
   }
   // (By its highest sample: a lowest one at a corner can fall in the dug-out cells.)

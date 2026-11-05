@@ -14,6 +14,7 @@ import { makeRng, hashString, rand, type Rng } from '../../sim/rng';
 import type { Prop } from '../world';
 import { propBoxes } from './dressing';
 import { MARK, type Marks } from './marks';
+import { sin, cos, atan2 } from '../trig';
 
 /** Patches this many cells and up hold a collapsed building. */
 const BIG = 10;
@@ -35,7 +36,7 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
   const fall = (i: number, j: number) => {
     const h = (a: number, b: number) => heightAt(g, (i + a) * mk.cell, (j + b) * mk.cell) ?? 0;
     const gx = h(1, 0.5) - h(0, 0.5), gz = h(0.5, 1) - h(0.5, 0);
-    return { yaw: Math.atan2(-gx, -gz), drop: Math.hypot(gx, gz) };
+    return { yaw: atan2(-gx, -gz), drop: Math.hypot(gx, gz) };
   };
   const seen = new Uint8Array(mk.m.length);
   for (let k0 = 0; k0 < mk.m.length; k0++) {
@@ -114,7 +115,7 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
     let best: { mat: number; tint?: number; x: number; z: number; y: number; nx: number; nz: number; t: number } | null = null;
     if (y === null) return best;
     for (let k = 0; k < 8; k++) {
-      const a = (k * Math.PI) / 4, dx = Math.cos(a), dz = Math.sin(a), h = raycast(index, x, y + 3, z, dx, 0, dz, 18);
+      const a = (k * Math.PI) / 4, dx = cos(a), dz = sin(a), h = raycast(index, x, y + 3, z, dx, 0, dz, 18);
       if (!h || h.id < 0 || (best && h.t >= best.t)) continue;
       const s = index.solids[h.id];
       if (s.y1 - s.y0 >= 5 && WALLS.has(s.mat)) best = { mat: s.mat, tint: s.tint, x: x + dx * h.t, z: z + dz * h.t, y: y + 3, nx: h.nx, nz: h.nz, t: h.t };
@@ -131,7 +132,7 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
     const ym = heightAt(g, cx, cz) ?? Math.min(ya, yb), up = Math.max(0, ym + Math.min(...lift) - (ya + yb + lift[0] + lift[1]) / 2);
     const ta = ya + lift[0] + up, tb = yb + lift[1] + up, lo = Math.min(ta, tb), hi = Math.max(ta, tb), foot = Math.min(ya, yb) - 0.15;
     const s = hi - lo < 0.02 ? solid(cx - L / 2, foot, cz - w / 2, cx + L / 2, hi, cz + w / 2, mat) : rampSolid(cx - L / 2, foot, cz - w / 2, cx + L / 2, cz + w / 2, Math.max(lo, foot + t), hi, tb > ta ? 1 : 2, mat);
-    return turn([s], Math.atan2(bz - az, bx - ax), cx, cz)[0];
+    return turn([s], atan2(bz - az, bx - ax), cx, cz)[0];
   }
 
   /** What fell from the building beside a patch, between its wall and the patch: sections of its facade, broken
@@ -144,7 +145,7 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
     const at = (d: number, o: number): [number, number] => [b.x + b.nx * d + ux * o, b.z + b.nz * d + uz * o];
     for (let m = 0, want = big ? 3 : 1; m < want; m++) for (let tries = 0; tries < 5; tries++) {
       const [x, z] = at(1.5 + rand(r) * Math.min(5, b.t + 1), (rand(r) - 0.5) * 7), w = 2.5 + rand(r) * 2, tip = rand(r) * 0.25;
-      const yaw = Math.atan2(uz, ux) + (rand(r) - 0.5) * 0.7, c = Math.cos(yaw), sn = Math.sin(yaw);
+      const yaw = atan2(uz, ux) + (rand(r) - 0.5) * 0.7, c = cos(yaw), sn = sin(yaw);
       // Standing, broken off where it landed (its windows still in it); or lying tipped on the rubble, its face up.
       const stand = rand(r) < 0.55, d = stand ? 0.15 : 1 + rand(r);
       // (Standing only where the ground's near level across its foot.)
@@ -160,7 +161,7 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
     }
     // On all but the small ones, a column come down away from the wall and a beam with one end up on the heap.
     for (const [L, beam] of [[4 + rand(r) * 2, false], [5 + rand(r) * 2, true]] as const) for (let tries = 0; tries < 5 && cells.length >= 6; tries++) {
-      const [x, z] = at(1.2 + L / 2 + rand(r) * 2, (rand(r) - 0.5) * 6), yaw = Math.atan2(b.nz, b.nx) + (rand(r) - 0.5) * 1.6, dx = (Math.cos(yaw) * L) / 2, dz = (Math.sin(yaw) * L) / 2;
+      const [x, z] = at(1.2 + L / 2 + rand(r) * 2, (rand(r) - 0.5) * 6), yaw = atan2(b.nz, b.nx) + (rand(r) - 0.5) * 1.6, dx = (cos(yaw) * L) / 2, dz = (sin(yaw) * L) / 2;
       const piece = beam ? lying(x - dx, z - dz, x + dx, z + dz, 0.3, 0.35, rand(r) < 0.5 ? [0.25, 1.05] : [1.05, 0.25], MAT.metal) : lying(x - dx, z - dz, x + dx, z + dz, 0.55, 0.55, [0.45, 0.45], MAT.concrete);
       if (piece && lay([piece], true)) break;
     }
@@ -190,12 +191,12 @@ export function ruins(index: SolidIndex, g: Heightfield, mk: Marks): { props: Pr
       solid(x - L / 2, y - 0.3, z + 0.6, x + L / 2, y + h, z + 1.1, MAT.rubble)], yaw, x, z);
     if (parts.some(b => overlaps(index, { ...b, y0: b.y0 + 0.6 }) || solids.some(o => o.x0 < b.x1 && b.x0 < o.x1 && o.z0 < b.z1 && b.z0 < o.z1 && Math.abs(o.y0 - b.y0) < 2))) return;
     solids.push(...parts);
-    features.push({ kind: 'crawlspace', x, y, z, group: features.length, nx: Math.cos(yaw), nz: Math.sin(yaw) });
+    features.push({ kind: 'crawlspace', x, y, z, group: features.length, nx: cos(yaw), nz: sin(yaw) });
   }
 
   /** A collapsed building at cell k: a broken corner of wall, slabs piled against it, rubble round it. */
   function collapse(k: number, r: Rng): number {
-    const i = k % mk.w, j = (k - i) / mk.w, cx = (i + 0.5) * mk.cell, cz = (j + 0.5) * mk.cell, yaw = fall(i, j).yaw, c = Math.cos(yaw), s = Math.sin(yaw);
+    const i = k % mk.w, j = (k - i) / mk.w, cx = (i + 0.5) * mk.cell, cz = (j + 0.5) * mk.cell, yaw = fall(i, j).yaw, c = cos(yaw), s = sin(yaw);
     // In the heap's frame: u across the slope, v down it.
     const at = (u: number, v: number): [number, number] => [cx + u * c + v * s, cz - u * s + v * c];
     let n = 0;

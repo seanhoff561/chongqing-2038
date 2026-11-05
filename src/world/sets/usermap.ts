@@ -10,6 +10,7 @@ import { propBoxes } from '../yuzhong/dressing';
 import { climbOf } from '../yuzhong/green';
 import { PROP_HIDE } from '../../data/props';
 import { PIECES } from './pieces';
+import { sin, cos } from '../trig';
 
 /** A placed piece: where its foot is, which way it faces (yaw, as a prop's), its box's sizes; a built piece's
  *  material, a sign's or graffiti's text, a container's chosen things and the loot table it also rolls from. */
@@ -31,7 +32,7 @@ export function buildMap(doc: MapDoc): World {
   const decor: Solid[] = [], climbables: Climbable[] = [], props: Prop[] = [], inter: Inter[] = [], hides: HideSpot[] = [], lines: Line[] = [], water: Box[] = [], cuts: Box[] = [];
   let spawn = { x: 0, y: 0, z: 0, yaw: 0 };
   doc.pieces.forEach((p, i) => {
-    const c = Math.cos(p.yaw), s = Math.sin(p.yaw), id = `map-${i}`, { w, h, d } = p;
+    const c = cos(p.yaw), s = sin(p.yaw), id = `map-${i}`, { w, h, d } = p;
     const mat: number = MAT[(p.mat ?? PIECES[p.kind]?.mat ?? 'concrete') as keyof typeof MAT] ?? MAT.concrete;
     /** a point of its own frame in the world */
     const at = (lx: number, lz: number) => ({ x: p.x + lx * c + lz * s, z: p.z - lx * s + lz * c });

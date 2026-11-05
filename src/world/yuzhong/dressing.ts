@@ -13,6 +13,7 @@ import { heightAt, type Heightfield } from '../heightfield';
 import type { Prop, Inter } from '../world';
 import { onGround, ROAD, KERB_W, PAVE, type Street } from './ground';
 import { districtAt } from './lots';
+import { sin, cos, atan2 } from '../trig';
 
 /** Props that break a fall (U-024): rubbish bags, bins, cardboard, a tarp shelter (it gives under him). */
 export const SOFT = new Set(['bags', 'bin', 'boxes', 'tarp']);
@@ -24,7 +25,7 @@ export function propBoxes(p: Prop): Solid[] {
   // A rubble pile is p.w across; a broken wall p.w long and, along its jagged top, about three quarters of p.h.
   const w = p.kind === 'rubblepile' ? (p.w ?? 2) * 0.8 : b.w, d = p.kind === 'rubblepile' ? (p.w ?? 2) * 0.8 : p.kind === 'halfwall' || p.kind === 'hedge' ? p.w ?? b.d : b.d;
   const h = p.kind === 'halfwall' ? (p.h ?? b.h) * 0.75 : b.h;
-  const c = Math.cos(p.yaw), s = Math.sin(p.yaw), n = Math.max(1, Math.round(d / 1.4)), out: Solid[] = [];
+  const c = cos(p.yaw), s = sin(p.yaw), n = Math.max(1, Math.round(d / 1.4)), out: Solid[] = [];
   for (let i = 0; i < n; i++) {
     const z0 = -d / 2 + (i * d) / n, z1 = z0 + d / n;
     const pts = [[-w / 2, z0], [w / 2, z0], [-w / 2, z1], [w / 2, z1]].map(([x, z]) => [p.x + x * c + z * s, p.z - x * s + z * c]);
@@ -81,7 +82,7 @@ export function dressStreets(index: SolidIndex, g: Heightfield, sts: Street[], l
     for (let k = 0; k + 1 < s.pts.length; k++) {
       const [ax, az] = s.pts[k], [bx, bz] = s.pts[k + 1], len = Math.hypot(bx - ax, bz - az);
       if (len < 2) continue;
-      const ux = (bx - ax) / len, uz = (bz - az) / len, th = Math.atan2(uz, ux);
+      const ux = (bx - ax) / len, uz = (bz - az) / len, th = atan2(uz, ux);
       const at = (t: number, off: number): [number, number] => [ax + ux * t - uz * off, az + uz * t + ux * off];
       if (ROAD.has(s.kind)) road(s, len, at, th, r, put, g);
       else if (s.steps) stairs(s, len, at, th, r, put);

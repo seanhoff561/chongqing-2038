@@ -8,6 +8,7 @@ import { GEO } from '../geo';
 import type { Heightfield } from '../heightfield';
 import type { Prop, Inter, Climbable } from '../world';
 import { points, type P2, type Obb } from './shapes';
+import { sin, cos, atan2 } from '../trig';
 
 export const BEAM = { w: 0.85, depth: 1.6, over: 9 };
 export const TRAIN = { cars: 2, len: 14.8, gap: 0.4, w: 2.9, at: 120 };
@@ -65,13 +66,13 @@ export function buildLine2(g: Heightfield): Line2 {
     for (let pass = 0; pass < 30; pass++) top = top.map((y, i) => Math.max(ground[i] + 7, (top[Math.max(0, i - 1)] + y + top[Math.min(top.length - 1, i + 1)]) / 3));
     L.beams.push({ pts, top });
     for (let i = 0; i + 1 < pts.length; i++) {
-      const [ax, az] = pts[i], [bx, bz] = pts[i + 1], sl = Math.hypot(bx - ax, bz - az), cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = Math.atan2(bz - az, bx - ax);
+      const [ax, az] = pts[i], [bx, bz] = pts[i + 1], sl = Math.hypot(bx - ax, bz - az), cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = atan2(bz - az, bx - ax);
       const lo = Math.min(top[i], top[i + 1]), hi = Math.max(top[i], top[i + 1]);
       const x0 = cx - sl / 2 - 0.02, x1 = cx + sl / 2 + 0.02, z0 = cz - BEAM.w / 2, z1 = cz + BEAM.w / 2;
       const beam = hi - lo < 0.02 ? solid(x0, lo - BEAM.depth, z0, x1, lo, z1, MAT.concrete) : rampSolid(x0, lo - BEAM.depth, z0, x1, z1, lo, hi, top[i] < top[i + 1] ? 1 : 2, MAT.concrete);
       L.solids.push(...turn([beam], yaw, cx, cz));
       // Maintenance ladders up beside the beam every 150 m.
-      if (i % 25 === 12) { const nx = Math.sin(yaw), nz = -Math.cos(yaw), lx = cx - nx * 1.3, lz = cz - nz * 1.3; L.climbables.push({ kind: 'ladder', x: lx, z: lz, y0: hAt(g, lx, lz), y1: lo + 0.3, nx, nz }); }
+      if (i % 25 === 12) { const nx = sin(yaw), nz = -cos(yaw), lx = cx - nx * 1.3, lz = cz - nz * 1.3; L.climbables.push({ kind: 'ladder', x: lx, z: lz, y0: hAt(g, lx, lz), y1: lo + 0.3, nx, nz }); }
       // T-piers every 24 m.
       if (i % 4 === 2) L.solids.push(...turn([solid(cx - 0.6, ground[i] - 1, cz - 1.1, cx + 0.6, lo - BEAM.depth - 0.6, cz + 1.1, MAT.concrete), solid(cx - 0.9, lo - BEAM.depth - 0.6, cz - 1.4, cx + 0.9, lo - BEAM.depth, cz + 1.4, MAT.concrete)], yaw, cx, cz));
     }
@@ -93,7 +94,7 @@ export function buildLine2(g: Heightfield): Line2 {
     const mid = { x: 0, z: 0, top: 0 };
     for (let c = 0; c < TRAIN.cars; c++) {
       const A = on(s0 + c * (TRAIN.len + TRAIN.gap)), B = on(s0 + c * (TRAIN.len + TRAIN.gap) + TRAIN.len);
-      const cx = (A.x + B.x) / 2, cz = (A.z + B.z) / 2, top = (A.y + B.y) / 2, yaw = Math.atan2(B.z - A.z, B.x - A.x), x0 = cx - TRAIN.len / 2, x1 = cx + TRAIN.len / 2;
+      const cx = (A.x + B.x) / 2, cz = (A.z + B.z) / 2, top = (A.y + B.y) / 2, yaw = atan2(B.z - A.z, B.x - A.x), x0 = cx - TRAIN.len / 2, x1 = cx + TRAIN.len / 2;
       const lo = Math.min(A.y, B.y), hi = Math.max(A.y, B.y);
       // Its floor on the grade (a ramp), the roof over the higher end; each end wall at its own end's height.
       const local: Solid[] = [hi - lo < 0.02 ? solid(x0, top + 0.25, cz - hw + 0.08, x1, top + 0.4, cz + hw - 0.08, H) : rampSolid(x0, lo + 0.25, cz - hw + 0.08, x1, cz + hw - 0.08, lo + 0.4, hi + 0.4, B.y > A.y ? 1 : 2, H), solid(x0, hi + 2.7, cz - hw, x1, hi + 2.95, cz + hw, H)];
@@ -102,22 +103,22 @@ export function buildLine2(g: Heightfield): Line2 {
       L.solids.push(...turn(local, yaw, cx, cz));
       const [ix, iz] = rot(cx, cz, yaw, x0 + 4 + c * 5, cz + 1.0);
       L.inter.push({ id: `train${c}`, kind: 'container', x: ix, y: top + 0.9, z: iz, r: 1.0, zh: '包', en: 'Bag', data: { type: 'bag', loot: 'car' } });
-      L.props.push({ kind: 'train', x: cx, y: top, z: cz, yaw: Math.PI / 2 - yaw, w: TRAIN.cars, d: c, h: Math.atan2(B.y - A.y, TRAIN.len) });
+      L.props.push({ kind: 'train', x: cx, y: top, z: cz, yaw: Math.PI / 2 - yaw, w: TRAIN.cars, d: c, h: atan2(B.y - A.y, TRAIN.len) });
       mid.x += cx / TRAIN.cars; mid.z += cz / TRAIN.cars; mid.top += top / TRAIN.cars;
     }
     const ends = [on(s0), on(s0 + TRAIN.cars * (TRAIN.len + TRAIN.gap) - TRAIN.gap)];
-    L.train = { ...mid, yaw: Math.atan2(ends[1].z - ends[0].z, ends[1].x - ends[0].x) };
+    L.train = { ...mid, yaw: atan2(ends[1].z - ends[0].z, ends[1].x - ends[0].x) };
     // Maintenance ladders up the piers either side of the train.
     for (const s of [s0 - 6, s0 + TRAIN.cars * (TRAIN.len + TRAIN.gap) + 6]) {
-      const p = on(s), q = on(s + 1), yaw = Math.atan2(q.z - p.z, q.x - p.x), nx = Math.sin(yaw), nz = -Math.cos(yaw), lx = p.x - nx * 1.3, lz = p.z - nz * 1.3;
+      const p = on(s), q = on(s + 1), yaw = atan2(q.z - p.z, q.x - p.x), nx = sin(yaw), nz = -cos(yaw), lx = p.x - nx * 1.3, lz = p.z - nz * 1.3;
       L.climbables.push({ kind: 'ladder', x: lx, z: lz, y0: hAt(g, lx, lz), y1: p.y + 0.3, nx, nz });
     }
   }
   // The portal where the beams dive under the ridge toward Jiaochangkou: a cut in the hillside up to a concrete
   // frame, dark inside.
   if (tun && b) {
-    const p = points(tun[4], 0.1), [px, pz] = p[0], [qx, qz] = p[1], yaw = Math.atan2(qz - pz, qx - px), y = b.top[0] - BEAM.depth - 1;
-    const c = Math.cos(yaw), s = Math.sin(yaw);
+    const p = points(tun[4], 0.1), [px, pz] = p[0], [qx, qz] = p[1], yaw = atan2(qz - pz, qx - px), y = b.top[0] - BEAM.depth - 1;
+    const c = cos(yaw), s = sin(yaw);
     for (let j = 0; j < g.h; j++) for (let i = 0; i < g.w; i++) {
       const dx = i * g.cell - px, dz = j * g.cell - pz, u = c * dx + s * dz, v = -s * dx + c * dz;
       if (u > -30 && u < 2 && Math.abs(v) < 6 && g.y[j * g.w + i] > y) g.y[j * g.w + i] = y;
@@ -146,7 +147,7 @@ export function stationEntrances(g: Heightfield, sts: { pts: P2[]; w: number }[]
     }
     if (!best || best.d > 45) continue;
     const side = (px - best.x) * -best.uz + (pz - best.z) * best.ux >= 0 ? 1 : -1, nx = -best.uz * side, nz = best.ux * side;
-    const cx = best.x + nx * (best.w / 2 + 4.5), cz = best.z + nz * (best.w / 2 + 4.5), y = hAt(g, cx, cz), yaw = Math.atan2(nz, nx);
+    const cx = best.x + nx * (best.w / 2 + 4.5), cz = best.z + nz * (best.w / 2 + 4.5), y = hAt(g, cx, cz), yaw = atan2(nz, nx);
     // In its own frame: x away from the street (0 at the front), z along it.
     const box = (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, mat: number) => solid(cx + x0 - 3.5, y + y0, cz + z0, cx + x1 - 3.5, y + y1, cz + z1, mat);
     out.solids.push(...turn([
@@ -162,6 +163,6 @@ export function stationEntrances(g: Heightfield, sts: { pts: P2[]; w: number }[]
 
 /** (x, z) turned by yaw about (cx, cz), as geom's turn(). */
 function rot(cx: number, cz: number, yaw: number, x: number, z: number): [number, number] {
-  const c = Math.cos(yaw), s = Math.sin(yaw);
+  const c = cos(yaw), s = sin(yaw);
   return [cx + c * (x - cx) - s * (z - cz), cz + s * (x - cx) + c * (z - cz)];
 }

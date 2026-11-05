@@ -10,6 +10,7 @@ import { heightAt, type Heightfield } from '../heightfield';
 import type { Camera, Climbable, Feature, Inter, Plot, Prop, Teleport } from '../world';
 import { inside, type P2 } from './shapes';
 import type { Site, Piece } from './site';
+import { sin, cos, atan2 } from '../trig';
 
 /** The scaffold walkway's drop under the hoarding's top, its width, a plank's length, which planks are loose, each
  *  step down; the hoist's landing's drop under the neighbour's roof and the gap left to it. */
@@ -22,7 +23,7 @@ export function siteWays(site: Site, plots: Plot[], g: Heightfield) {
   const feat = (kind: string, x: number, y: number, z: number) => features.push({ kind, x, y, z, group: features.length });
   /** A piece's frame: u along it, v out from the site; a box in it, turned into place. */
   const frame = (p: Piece) => {
-    const dx = Math.cos(p.yaw), dz = Math.sin(p.yaw), sg = Math.sign(p.nx * -dz + p.nz * dx) || 1;
+    const dx = cos(p.yaw), dz = sin(p.yaw), sg = Math.sign(p.nx * -dz + p.nz * dx) || 1;
     const W = (u: number, v: number): P2 => [p.cx + dx * u + p.nx * v, p.cz + dz * u + p.nz * v];
     const box = (u0: number, u1: number, v0: number, v1: number, y0: number, y1: number, mat: number): Solid => turn([solid(p.cx + u0, y0, p.cz + Math.min(v0 * sg, v1 * sg), p.cx + u1, y1, p.cz + Math.max(v0 * sg, v1 * sg), mat)], p.yaw, p.cx, p.cz)[0];
     return { W, box };
@@ -37,10 +38,10 @@ export function siteWays(site: Site, plots: Plot[], g: Heightfield) {
     const [ix, iz] = W(0, 0.8);
     inter.push({ id: 'site-gate', kind: 'door', x: ix, y: y0 + 1.1, z: iz, r: 1.4, zh: '工地大门', en: 'Site gate', data: { part: 'site-gate', lock: 'locked', key: 'sitecard' } });
     const [cx, cz] = W(p.len / 2 + 0.2, -0.3), [lx, lz] = W(0, 6), [bx, bz] = W(p.len / 2 + 0.2, 0.3);
-    cameras.push({ kind: 'camera', x: cx, y: cap + 1.2, z: cz, yaw: Math.atan2(lx - cx, lz - cz), box: { x: bx, y: y0 + 1.3, z: bz, yaw: Math.atan2(p.nx, p.nz) } });
+    cameras.push({ kind: 'camera', x: cx, y: cap + 1.2, z: cz, yaw: atan2(lx - cx, lz - cz), box: { x: bx, y: y0 + 1.3, z: bz, yaw: atan2(p.nx, p.nz) } });
     const [ox, oz] = W(0, 3);
     feat('site:gate', ox, h(ox, oz), oz);
-    teleports.push({ name: 'Construction site: gate', x: ox, y: h(ox, oz) + 0.05, z: oz, yaw: Math.atan2(p.nx, p.nz) });
+    teleports.push({ name: 'Construction site: gate', x: ox, y: h(ox, oz) + 0.05, z: oz, yaw: atan2(p.nx, p.nz) });
     const [gx, gz] = W(0, -3);
     feat('site:gateIn', gx, base, gz);
   }
@@ -76,14 +77,14 @@ export function siteWays(site: Site, plots: Plot[], g: Heightfield) {
     decor.push(box(-2.6, 4.4, -wd - 0.18, -wd - 0.12, Y + 1, Y + 1.05, MAT.metal));
     const [ox, oz] = W(-2, 1.2), [ex, ez] = W(4.4 + n * SITEWAY.step + 2.5, -2.5);
     feat('site:scaffold', ox, sc.lo, oz); feat('site:scaffoldWalk', W(-1, -0.8)[0], Y, W(-1, -0.8)[1]); feat('site:scaffoldEnd', W(4.4 + n * SITEWAY.step - 0.6, -0.8)[0], Y - n * SITEWAY.step, W(4.4 + n * SITEWAY.step - 0.6, -0.8)[1]); feat('site:scaffoldIn', ex, base, ez);
-    teleports.push({ name: 'Construction site: scaffold', x: ox, y: sc.lo + 0.05, z: oz, yaw: Math.atan2(sc.nx, sc.nz) });
+    teleports.push({ name: 'Construction site: scaffold', x: ox, y: sc.lo + 0.05, z: oz, yaw: atan2(sc.nx, sc.nz) });
   }
 
   // The crawl under the hoarding along the ditch (site.ts leaves the gap).
   if (site.ditch) {
     const p = site.ditch, { W } = frame(p), [ox, oz] = W(0, 2.5), [ix, iz] = W(0, -2.5);
     feat('site:ditch', ox, h(ox, oz), oz); feat('site:ditchIn', ix, base, iz);
-    teleports.push({ name: 'Construction site: ditch', x: ox, y: h(ox, oz) + 0.05, z: oz, yaw: Math.atan2(p.nx, p.nz) });
+    teleports.push({ name: 'Construction site: ditch', x: ox, y: h(ox, oz) + 0.05, z: oz, yaw: atan2(p.nx, p.nz) });
   }
 
   // The hoist: by the edge nearest a neighbour's flat roof that's a safe drop above its top landing, the landing reaching
@@ -102,7 +103,7 @@ export function siteWays(site: Site, plots: Plot[], g: Heightfield) {
     const ux = (r.cx - r.ex) / r.d, uz = (r.cz - r.ez) / r.d, hx = r.ex - ux * 1.6, hz = r.ez - uz * 1.6;
     if (!inside(poly, hx, hz) || !inside(poly, hx - ux * 1.5, hz - uz * 1.5)) continue;
     // (The corner a little in from the roof's edge: where he stands to jump.)
-    const Yh = r.q.wall - SITEWAY.hoistDrop, reach = Math.max(1.6, Math.hypot(r.cx - hx, r.cz - hz) - SITEWAY.hoistGap), yaw = Math.atan2(uz, ux);
+    const Yh = r.q.wall - SITEWAY.hoistDrop, reach = Math.max(1.6, Math.hypot(r.cx - hx, r.cz - hz) - SITEWAY.hoistGap), yaw = atan2(uz, ux);
     solids.push(solid(hx - 0.8, base, hz - 0.8, hx + 0.8, Yh - 0.25, hz + 0.8, MAT.metal));
     solids.push(turn([solid(hx - 0.9, Yh - 0.25, hz - 1, hx + reach, Yh, hz + 1, MAT.metal)], yaw, hx, hz)[0]);
     // The cage's frame on the mast, and its ladder down the far side.
@@ -115,7 +116,7 @@ export function siteWays(site: Site, plots: Plot[], g: Heightfield) {
     const run = Math.min(5, md * 0.6), sx = r.cx + ((mx - r.cx) / md) * run, sz = r.cz + ((mz - r.cz) / md) * run;
     feat('site:hoistRoof', r.cx + ((mx - r.cx) / md) * 1, r.q.wall, r.cz + ((mz - r.cz) / md) * 1); feat('site:hoistRun', sx, r.q.wall, sz);
     feat('site:hoist', hx + ux * (reach * 0.6), Yh, hz + uz * (reach * 0.6)); feat('site:hoistIn', gx, base, gz);
-    teleports.push({ name: 'Construction site: hoist', x: sx, y: r.q.wall + 0.05, z: sz, yaw: Math.atan2(-(hx - sx), -(hz - sz)) });
+    teleports.push({ name: 'Construction site: hoist', x: sx, y: r.q.wall + 0.05, z: sz, yaw: atan2(-(hx - sx), -(hz - sz)) });
     break;
   }
   return { solids, decor, props, inter, climbables, cameras, features, teleports };

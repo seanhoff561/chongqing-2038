@@ -13,6 +13,7 @@ import type { Prop, Plot } from '../world';
 import { propBoxes } from './dressing';
 import { ENVELOPE as E } from '../../data/envelope';
 import { MARK, markAt, grassAt, type Marks } from './marks';
+import { sin, cos, atan2 } from '../trig';
 
 interface Wall { d: number; px: number; pz: number; ux: number; uz: number; nx: number; nz: number }
 
@@ -67,7 +68,7 @@ export function fill(index: SolidIndex, g: Heightfield, mk: Marks, plots: Plot[]
   };
   /** Solids built in a wall's frame (x along it, z out of it, from its foot), turned into place, if they fit. */
   const build = (w: Wall, local: Solid[], dec: Solid[]) => {
-    const yaw = Math.atan2(w.uz, w.ux), move = (s: Solid) => ({ ...s, x0: s.x0 + w.px, x1: s.x1 + w.px, z0: s.z0 + w.pz, z1: s.z1 + w.pz });
+    const yaw = atan2(w.uz, w.ux), move = (s: Solid) => ({ ...s, x0: s.x0 + w.px, x1: s.x1 + w.px, z0: s.z0 + w.pz, z1: s.z1 + w.pz });
     const ss = turn(local.map(move), yaw, w.px, w.pz), ds = turn(dec.map(move), yaw, w.px, w.pz);
     // Footings go into the ground, so only what's built is in the way; the ground under it must be near level.
     const hs = ss.flatMap(b => [[b.x0, b.z0], [b.x1, b.z0], [b.x0, b.z1], [b.x1, b.z1]].map(([x, z]) => heightAt(g, x, z) ?? NaN));
@@ -76,7 +77,7 @@ export function fill(index: SolidIndex, g: Heightfield, mk: Marks, plots: Plot[]
     return true;
   };
   /** Prop yaw facing out of the wall, and along it. */
-  const out = (w: Wall) => Math.atan2(w.nx, w.nz), along = (w: Wall) => Math.atan2(w.ux, w.uz);
+  const out = (w: Wall) => atan2(w.nx, w.nz), along = (w: Wall) => atan2(w.ux, w.uz);
 
   for (let j = 0; j < mk.h; j += 2) for (let i = 0; i < mk.w; i += 2) {
     // One of the slot's open cells, at random.
@@ -153,15 +154,15 @@ export function fill(index: SolidIndex, g: Heightfield, mk: Marks, plots: Plot[]
     if (q < 0.42) {
       // An abandoned market: a stall or two, a bench, boxes.
       let n = +put(rand(r) < 0.3 ? 'kiosk' : 'stall', x, z, turnTo);
-      n += +put('bench', x + Math.cos(yaw) * 2, z - Math.sin(yaw) * 2, turnTo);
-      n += +put('boxes', x - Math.cos(yaw) * 2, z + Math.sin(yaw) * 2, rand(r) * 6.3);
+      n += +put('bench', x + cos(yaw) * 2, z - sin(yaw) * 2, turnTo);
+      n += +put('boxes', x - cos(yaw) * 2, z + sin(yaw) * 2, rand(r) * 6.3);
       return n > 0;
     }
     if (q < 0.54) return put('tarp', x, z, yaw);
     if (q < 0.64) {
       // A sandbagged position from the fighting, in an L.
       let n = +put('sandbags', x, z, yaw);
-      n += +put('sandbags', x + Math.sin(yaw + Math.PI / 2) * 1.4, z + Math.cos(yaw + Math.PI / 2) * 1.4, yaw + Math.PI / 2);
+      n += +put('sandbags', x + sin(yaw + Math.PI / 2) * 1.4, z + cos(yaw + Math.PI / 2) * 1.4, yaw + Math.PI / 2);
       return n > 0;
     }
     if (q < 0.74) return rand(r) < 0.5 ? put('drum', x, z, rand(r) * 6.3) && (put('drum', x + 1.1, z + 0.3, rand(r) * 6.3) || true) : put('bags', x, z, rand(r) * 6.3) || put('bin', x, z, yaw);
@@ -185,7 +186,7 @@ export function fill(index: SolidIndex, g: Heightfield, mk: Marks, plots: Plot[]
       // Built along +z in its own frame (x across), from the top at z = -3 down to the foot at z = 3.
       const ss: Solid[] = [], ds: Solid[] = [];
       stair(-0.8, -3, 0.8, 3, foot, top, 4, ss, ds);
-      const yaw = Math.atan2(-ux, uz), turned = turn(ss.map(s => ({ ...s, x0: s.x0 + cx, x1: s.x1 + cx, z0: s.z0 + cz, z1: s.z1 + cz })), yaw, cx, cz);
+      const yaw = atan2(-ux, uz), turned = turn(ss.map(s => ({ ...s, x0: s.x0 + cx, x1: s.x1 + cx, z0: s.z0 + cz, z1: s.z1 + cz })), yaw, cx, cz);
       if (!free(turned.map(s => ({ ...s, y0: foot + 0.3 })), false)) continue;
       solids.push(...turned); keep(turned);
       decor.push(...turn(ds.map(s => ({ ...s, x0: s.x0 + cx, x1: s.x1 + cx, z0: s.z0 + cz, z1: s.z1 + cz })), yaw, cx, cz));

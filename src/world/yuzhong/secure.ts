@@ -13,6 +13,7 @@ import { hospital, police, market } from './insides';
 import { telecom, substation } from './insides2';
 import { cableway } from './cableway';
 import type { Lot } from '../city/buildings';
+import { sin, cos, atan2 } from '../trig';
 
 /** The sites: which building (its plan's seed), what it was (else as rolled), its card, its loot table, its hazard and its insides. */
 export const SECURE: { id: string; plan: string; type?: BuildingType; zh: string; en: string; card?: string; loot: string; hazard: 'plate+pir' | 'turret' | 'acoustic' | 'gas' | 'hv' | 'bullwheel'; inside: Lot['inside'] }[] = [
@@ -48,14 +49,14 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
       if (S.card) street.data = { ...street.data, lock: 'locked', key: S.card };
       // (Along the wall from it, aimed back at the doorstep: one right over the door can't see who stands at it.)
       // (Out of the wall the door's in, by its leaf: the way away from the building's middle.)
-      const leaf = w.props.find(p => p.text === street.id), ly = leaf?.yaw ?? Math.atan2(street.x - cx, street.z - cz);
-      let ux = -Math.sin(ly), uz = -Math.cos(ly);
-      if (!leaf) { ux = Math.sin(ly); uz = Math.cos(ly); } else if (ux * (street.x - cx) + uz * (street.z - cz) < 0) { ux = -ux; uz = -uz; }
+      const leaf = w.props.find(p => p.text === street.id), ly = leaf?.yaw ?? atan2(street.x - cx, street.z - cz);
+      let ux = -sin(ly), uz = -cos(ly);
+      if (!leaf) { ux = sin(ly); uz = cos(ly); } else if (ux * (street.x - cx) + uz * (street.z - cz) < 0) { ux = -ux; uz = -uz; }
       const y = street.y - 1.1 + DOOR_CAM.up, tx = street.x + ux * 2, tz = street.z + uz * 2;
       for (const side of [DOOR_CAM.side, -DOOR_CAM.side, DOOR_CAM.side / 2, -DOOR_CAM.side / 2]) {
         const x = street.x + ux * DOOR_CAM.out - uz * side, z = street.z + uz * DOOR_CAM.out + ux * side, d = Math.hypot(tx - x, street.y - y, tz - z);
         if (raycast(w.index, x, y, z, (tx - x) / d, (street.y - y) / d, (tz - z) / d, d)) continue;
-        cameras.push({ kind: 'camera', x, y, z, yaw: Math.atan2(tx - x, tz - z) });
+        cameras.push({ kind: 'camera', x, y, z, yaw: atan2(tx - x, tz - z) });
         break;
       }
       ways.push({ kind: S.card ? 'card' : 'door', id: street.id });
@@ -74,7 +75,7 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
     // The pharmacy's pressure plate: across its floor along the mark, 3 m long.
     for (const f of marks('plate')) {
       const y = f.y + 0.02, nx = f.nx!, nz = f.nz!;
-      cameras.push({ kind: 'tripwire', x: f.x - nx * 1.5, y, z: f.z - nz * 1.5, yaw: Math.atan2(nx, nz), to: { x: f.x + nx * 1.5, y, z: f.z + nz * 1.5 }, w: PLATE });
+      cameras.push({ kind: 'tripwire', x: f.x - nx * 1.5, y, z: f.z - nz * 1.5, yaw: atan2(nx, nz), to: { x: f.x + nx * 1.5, y, z: f.z + nz * 1.5 }, w: PLATE });
     }
     // The server hall: its floor racked with servers, the exchange's terminal and the district's relay rack in it, a
     // motion sensor that brings the gas down.
@@ -101,7 +102,7 @@ export function fitSecure(w: World): { sites: Secure[]; cameras: Camera[]; props
       c4.forEach((p, k) => {
         const ox = p[0] - cx, oz = p[1] - cz, od = Math.hypot(ox, oz) || 1, x = p[0] + (ox / od) * 0.6, z = p[1] + (oz / od) * 0.6, y = plot.base + 4.5;
         if (!free(w.index, x, y - 0.3, z, 0.6)) return;
-        for (const q of [c4[(k + 1) % c4.length], c4[(k + c4.length - 1) % c4.length]]) cameras.push({ kind: 'camera', x, y, z, yaw: Math.atan2(q[0] - p[0], q[1] - p[1]) });
+        for (const q of [c4[(k + 1) % c4.length], c4[(k + c4.length - 1) % c4.length]]) cameras.push({ kind: 'camera', x, y, z, yaw: atan2(q[0] - p[0], q[1] - p[1]) });
       });
     }
     const heart = marks('heart')[0] ?? { x: cx, y: plot.base, z: cz };
@@ -130,14 +131,14 @@ export function approaches(w: World, sites: Secure[]): Teleport[] {
         const ox = it.x - S.x, oz = it.z - S.z, od = Math.hypot(ox, oz) || 1;
         for (const d of [1.5, 2.2, 3]) for (const turn of [0, 0.5, -0.5, 1, -1, Math.PI / 2, -Math.PI / 2, Math.PI]) {
           if (at) break;
-          const a = Math.atan2(ox / od, oz / od) + turn, x = it.x + Math.sin(a) * d, z = it.z + Math.cos(a) * d;
+          const a = atan2(ox / od, oz / od) + turn, x = it.x + sin(a) * d, z = it.z + cos(a) * d;
           const down = raycast(w.index, x, it.y + 0.8, z, 0, -1, 0, 4);
           if (!down) continue;
           const y = it.y + 0.8 - down.t + 0.05;
           if (Math.abs(y - (it.y - 1.1)) < 1.6 && free(w.index, x, y, z, 1.8)) at = { x, y, z };
         }
       }
-      if (at) out.push({ name: `${meta.en}: ${way.kind}`, ...at, yaw: Math.atan2(-(it.x - at.x), -(it.z - at.z)) });
+      if (at) out.push({ name: `${meta.en}: ${way.kind}`, ...at, yaw: atan2(-(it.x - at.x), -(it.z - at.z)) });
     }
   }
   return out;

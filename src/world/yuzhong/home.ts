@@ -13,6 +13,7 @@ import type { Heightfield } from '../heightfield';
 import { heightAt } from '../heightfield';
 import type { Plan } from './lots';
 import type { Prop, Inter, Climbable, Zone, Site, Feature } from '../world';
+import { sin, cos, atan2 } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
 /** How deep the chamber's floor is under the alley; the alley's least and most width (wall to wall) and least length;
@@ -33,8 +34,8 @@ function alleysOf(plans: Plan[]) {
   const out: { n: number; x: number; z: number; ax: number; az: number; gap: number; len: number }[] = [];
   for (let n = 0; n + 1 < plans.length; n++) {
     const a = plans[n], b = plans[n + 1];
-    if (!a.row || a.row !== b.row || a.far || b.far || a.sheer || b.sheer || Math.abs(Math.sin(a.obb.yaw - b.obb.yaw)) > 0.06) continue;
-    const o = a.obb, c = Math.cos(o.yaw), s = Math.sin(o.yaw), dx = b.obb.cx - o.cx, dz = b.obb.cz - o.cz;
+    if (!a.row || a.row !== b.row || a.far || b.far || a.sheer || b.sheer || Math.abs(sin(a.obb.yaw - b.obb.yaw)) > 0.06) continue;
+    const o = a.obb, c = cos(o.yaw), s = sin(o.yaw), dx = b.obb.cx - o.cx, dz = b.obb.cz - o.cz;
     const lx = c * dx + s * dz, lz = -s * dx + c * dz, gap = Math.abs(lx) - o.hw - b.obb.hw;
     const z0 = Math.max(-o.hd, lz - b.obb.hd), z1 = Math.min(o.hd, lz + b.obb.hd), len = z1 - z0;
     if (gap < HOME.gap || gap > HOME.wide || len < HOME.length) continue;
@@ -47,7 +48,7 @@ function alleysOf(plans: Plan[]) {
 /** The chamber's room underground, on the map: its box (with a margin) for a chamber whose shaft is at (px, pz). */
 function chamberBox(px: number, pz: number, yaw: number, floor: number): Box {
   const x0 = px - HIDEOUT.shaftX - 1, x1 = px - HIDEOUT.shaftX + HIDEOUT.length + 7, z0 = pz - HOME.side - 1, z1 = pz + 3;
-  const c = Math.cos(yaw), s = Math.sin(yaw), cs = [[x0, z0], [x1, z0], [x0, z1], [x1, z1]].map(([x, z]) => [px + c * (x - px) - s * (z - pz), pz + s * (x - px) + c * (z - pz)]);
+  const c = cos(yaw), s = sin(yaw), cs = [[x0, z0], [x1, z0], [x0, z1], [x1, z1]].map(([x, z]) => [px + c * (x - px) - s * (z - pz), pz + s * (x - px) + c * (z - pz)]);
   return { x0: Math.min(...cs.map(q => q[0])) - 2, y0: floor - 2, z0: Math.min(...cs.map(q => q[1])) - 2, x1: Math.max(...cs.map(q => q[0])) + 2, y1: floor + 6, z1: Math.max(...cs.map(q => q[1])) + 2 };
 }
 /** The neighbour whose roof a drainpipe from the alley reaches (4 to 20 m up), the lower if both do. */
@@ -72,7 +73,7 @@ function exitOf(g: Heightfield, plans: Plan[], q: ReturnType<typeof alleysOf>[nu
   const floor = gy - HOME.depth, W = (a: number, b: number): [number, number] => [q.x + q.ax * a - q.az * b, q.z + q.az * a + q.ax * b];
   const over = (x: number, z: number, pad: number) => plans.find(p => {
     if (p.far) return false;
-    const o = p.obb, dx = x - o.cx, dz = z - o.cz, c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+    const o = p.obb, dx = x - o.cx, dz = z - o.cz, c = cos(o.yaw), s = sin(o.yaw);
     return Math.abs(c * dx + s * dz) <= o.hw + pad && Math.abs(-s * dx + c * dz) <= o.hd + pad;
   });
   for (let d = EXIT.from; d <= EXIT.to; d++) {
@@ -101,7 +102,7 @@ export function chooseAlley(g: Heightfield, plans: Plan[], heart: V3, avoid: { p
     if (d >= bd || avoid.points.some(p => Math.hypot(p.x - q.x, p.z - q.z) < HOME.clear)) continue;
     const gy = heightAt(g, q.x, q.z);
     if (gy === null || !climbTo(plans, q, gy)) continue;
-    const box = chamberBox(q.x, q.z, Math.atan2(q.az, q.ax), gy - HOME.depth);
+    const box = chamberBox(q.x, q.z, atan2(q.az, q.ax), gy - HOME.depth);
     if (avoid.boxes.some(b => overlap(b, box))) continue;
     const exit = exitOf(g, plans, q, gy, avoid.boxes);
     if (exit === null) continue;
@@ -112,8 +113,8 @@ export function chooseAlley(g: Heightfield, plans: Plan[], heart: V3, avoid: { p
 
 /** The hideout dug under the chosen alley; the ground holed over its shaft. */
 export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnType<typeof chooseAlley>>): Home {
-  const px = q.x, pz = q.z, yaw = Math.atan2(q.az, q.ax), gy = heightAt(g, px, pz)!, floor = gy - HOME.depth, hs = HOME.shaft;
-  const c = Math.cos(yaw), s = Math.sin(yaw), P = (x: number, z: number): [number, number] => [px + c * (x - px) - s * (z - pz), pz + s * (x - px) + c * (z - pz)];
+  const px = q.x, pz = q.z, yaw = atan2(q.az, q.ax), gy = heightAt(g, px, pz)!, floor = gy - HOME.depth, hs = HOME.shaft;
+  const c = cos(yaw), s = sin(yaw), P = (x: number, z: number): [number, number] => [px + c * (x - px) - s * (z - pz), pz + s * (x - px) + c * (z - pz)];
   const ox = px - HIDEOUT.shaftX, oz = pz;
   const h = hideoutParts(ox, floor, oz, { shaftTop: gy - floor, kit: 'start', prefix: 'airraid-', side: HOME.side + 2, shaftHalf: hs });
   // The rock it's dug from: round the chamber, its stub and side passage; round the shaft up to the paving; a ring of
@@ -173,7 +174,7 @@ export function buildHome(g: Heightfield, plans: Plan[], q: NonNullable<ReturnTy
   // (The vertical one hangs down from its top, four characters 1.05 apart: its letters sized to fit between 2.6 m up
   // and the lower roof, and never into the ground, U-079.)
   const vTop = Math.min(gy + 7.6, under), vw = Math.min(1.1, Math.max(0.5, (vTop - gy - 2.6) / (3 * 1.05 + 1))), vy = Math.max(vTop, gy + 2.6 + vw * (3 * 1.05 + 1) - vw / 2);
-  ([[-1, '老巷小面', vw, vw * 3.6, vy], [1, '麻将 · 24小时', 0, 0.5, Math.max(gy + 2.8, Math.min(gy + 4.4, under))]] as const).forEach(([k, text, w, h, y]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: Math.atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
+  ([[-1, '老巷小面', vw, vw * 3.6, vy], [1, '麻将 · 24小时', 0, 0.5, Math.max(gy + 2.8, Math.min(gy + 4.4, under))]] as const).forEach(([k, text, w, h, y]) => out.props.push({ kind: 'neon', x: px + ux * k * (half - 0.06) + q.ax * 2, y, z: pz + uz * k * (half - 0.06) + q.az * 2, yaw: atan2(-ux * k, -uz * k), ...(w ? { w } : {}), h, text }));
   out.props.push({ kind: 'neonGlow', x: px + q.ax * 2, y: gy + 4.5, z: pz + q.az * 2, yaw: 0 });
   out.props.push({ kind: 'trash', x: px + ux * (half - 0.5) - q.ax * 2.5, y: gy, z: pz + uz * (half - 0.5) - q.az * 2.5, yaw: yaw });
   // The way up: a drainpipe on a wall, 4 m along from the grate, from the alley to its roof.

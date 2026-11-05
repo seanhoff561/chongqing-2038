@@ -10,6 +10,7 @@ import { MAT } from '../mats';
 import type { LotKind } from '../city/buildings';
 import { onGround, WATER_Y, type Street } from './ground';
 import { minRect, obbOverlap, segNearObb, segDist, points, polyArea, corners, rasterPoly, type Obb, type P2 } from './shapes';
+import { sin, cos, atan2 } from '../trig';
 
 export interface Plan {
   obb: Obb; base: number; wall: number; kind: LotKind; mat: number; seed: string;
@@ -171,7 +172,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
     return f >= lo && f <= hi ? f : floors;
   };
   const sideStreets = (o: Obb): Plan['street'] => {
-    const c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+    const c = cos(o.yaw), s = sin(o.yaw);
     const mids: P2[] = [[0, -o.hd - 3], [0, o.hd + 3], [-o.hw - 3, 0], [o.hw + 3, 0]].map(([u, v]) => [o.cx + c * u - s * v, o.cz + s * u + c * v]);
     return mids.map(([x, z]) => { for (const sg of segs.near(x - 10, z - 10, x + 10, z + 10)) if (segDist(x, z, sg.ax, sg.az, sg.bx, sg.bz) < sg.half + 3) return true; return false; }) as Plan['street'];
   };
@@ -230,7 +231,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
         if (t + f > total - 1) break;
         const [ax, az] = along(Math.min(a, b)), [bx, bz] = along(Math.max(a, b)), len = Math.hypot(bx - ax, bz - az);
         if (len < f * 0.85) { t += 1.5; prev = null; continue; }
-        const ux = (bx - ax) / len, uz = (bz - az) / len, th = Math.atan2(uz, ux), yaw = side === 1 ? th + Math.PI : th, nx = -uz * side, nz = ux * side;
+        const ux = (bx - ax) / len, uz = (bz - az) / len, th = atan2(uz, ux), yaw = side === 1 ? th + Math.PI : th, nx = -uz * side, nz = ux * side;
         let ok: Obb | null = null;
         for (const d of [10, 8, 6]) {
           const off = half + 0.6 + d / 2, o = { cx: (ax + bx) / 2 + nx * off, cz: (az + bz) / 2 + nz * off, hw: len / 2, hd: d / 2, yaw };
@@ -271,7 +272,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
         const [ax, az] = along(t), [bx, bz] = along(t + f), len = Math.hypot(bx - ax, bz - az);
         // Round a sharp bend, move on.
         if (len < f * 0.85) { t += 2; continue; }
-        const ux = (bx - ax) / len, uz = (bz - az) / len, th = Math.atan2(uz, ux);
+        const ux = (bx - ax) / len, uz = (bz - az) / len, th = atan2(uz, ux);
         // Lots on the left of the street (side 1) look back across it: their own +z faces the street.
         const yaw = side === 1 ? th + Math.PI : th, nx = -uz * side, nz = ux * side;
         let ok: Obb | null = null;
@@ -357,7 +358,7 @@ export function planLots(g: Heightfield, sts: Street[], land: Uint8Array, block 
   }
   // A back building's door (the middle of its far end, hollow() in interiors.ts) needs 3 m clear in front of it.
   for (const p of plans) if (p.seed.startsWith('back') && !p.street.some(Boolean)) {
-    const o = p.obb, c = Math.cos(o.yaw), s = Math.sin(o.yaw), [u, v, hw, hd] = o.hd >= o.hw ? [1.3, o.hd + 1.6, 1, 1.5] : [o.hw + 1.6, 1.3, 1.5, 1];
+    const o = p.obb, c = cos(o.yaw), s = sin(o.yaw), [u, v, hw, hd] = o.hd >= o.hw ? [1.3, o.hd + 1.6, 1, 1.5] : [o.hw + 1.6, 1.3, 1.5, 1];
     const d = { cx: o.cx + c * u - s * v, cz: o.cz + s * u + c * v, hw, hd, yaw: o.yaw };
     if (!onLand(d) || hitsLot(d, 0) || blocked(d)) p.noEnter = true;
   }
@@ -397,7 +398,7 @@ export function markEnterable(g: Heightfield, plans: Plan[]) {
     if (hi <= p.base + 0.25) {
       // But the ground outside the door (in the middle of its far end, hollow() in interiors.ts) is made up to the
       // sill if it's within a landing's height, off the streets: a step out, not a drop. Otherwise it stays solid.
-      const c = Math.cos(p.obb.yaw), s = Math.sin(p.obb.yaw), z = p.obb.hd >= p.obb.hw, o = p.obb;
+      const c = cos(p.obb.yaw), s = sin(p.obb.yaw), z = p.obb.hd >= p.obb.hw, o = p.obb;
       const [bu, bv, bw, bd] = z ? [1.3, o.hd + 1.25, 1.8, 1.25] : [o.hw + 1.25, 1.3, 1.25, 1.8];
       rasterPoly(corners({ cx: o.cx + c * bu - s * bv, cz: o.cz + s * bu + c * bv, hw: bw, hd: bd, yaw: o.yaw }), 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) if (!foot[k] && !g.street![k] && g.y[k] < p.base && g.y[k] >= p.base - LANDING) g.y[k] = p.base; });
       const [du, dv] = z ? [1.3, o.hd + 0.75] : [o.hw + 0.75, 1.3];
@@ -417,7 +418,7 @@ export function markEnterable(g: Heightfield, plans: Plan[]) {
 
 /** Ground height at the middle of one of the lot's own sides (0 north, 1 south, 2 west, 3 east). */
 function edgeHeight(o: Obb, side: number, hAt: (x: number, z: number) => number): number {
-  const c = Math.cos(o.yaw), s = Math.sin(o.yaw), [u, v] = [[0, -o.hd], [0, o.hd], [-o.hw, 0], [o.hw, 0]][side];
+  const c = cos(o.yaw), s = sin(o.yaw), [u, v] = [[0, -o.hd], [0, o.hd], [-o.hw, 0], [o.hw, 0]][side];
   return hAt(o.cx + c * u - s * v, o.cz + s * u + c * v);
 }
 

@@ -9,6 +9,7 @@ import type { Climbable, Prop } from '../world';
 import { PROP_BOX } from '../../data/props';
 import { propBoxes } from './dressing';
 import { MARK, grassAt, type Marks } from './marks';
+import { sin, cos } from '../trig';
 
 /** Trees he can climb (U-035), by species: how far up the trunk goes before the crown (m). The street poles too
  *  (U-104): a lamppost to under its camera, a camera pole to under its ring; their posts' radius at that height. */
@@ -21,11 +22,11 @@ const POST: Record<string, { up: number; r: number }> = { lamppost: { up: 6.0, r
 export function climbOf(p: Prop): Climbable | null {
   const up = TRUNK[p.kind], post = POST[p.kind];
   if (up) {
-    const R = PROP_BOX[p.kind].w / 2 - 0.08, nx = Math.sin(p.yaw), nz = Math.cos(p.yaw);
+    const R = PROP_BOX[p.kind].w / 2 - 0.08, nx = sin(p.yaw), nz = cos(p.yaw);
     return { kind: 'tree', x: p.x + nx * R, z: p.z + nz * R, y0: p.y + 0.3, y1: p.y + up, nx, nz };
   }
   if (!post) return null;
-  const R = post.r - 0.08, nx = -Math.sin(p.yaw), nz = -Math.cos(p.yaw);
+  const R = post.r - 0.08, nx = -sin(p.yaw), nz = -cos(p.yaw);
   return { kind: 'post', x: p.x + nx * R, z: p.z + nz * R, y0: p.y + 0.3, y1: p.y + post.up, nx, nz };
 }
 const pick = <T>(r: () => number, xs: T[]) => xs[Math.floor(r() * xs.length)];

@@ -13,6 +13,7 @@ import type { Prop, Feature } from '../world';
 import { GEO } from '../geo';
 import { PODIUM, ROAD, onGround, type Street } from './ground';
 import { minRect, points, rasterPoly, type Obb, type P2 } from './shapes';
+import { sin, cos, atan2 } from '../trig';
 
 /** Hall cells (m), the longest and deepest hall in cells, the gap kept from the streets (m). */
 const CELL = 8, LONG = 7, DEEP = 5, CLEAR = 3;
@@ -33,7 +34,7 @@ export interface Factory {
 
 /** The towers rise through the podium: their footprints, padded. */
 const towers = (): Obb[] => GEO.buildings.filter(b => b[3].endsWith('塔楼')).map(b => { const o = minRect(points(b[4], 0.1)); return { ...o, hw: o.hw + 2, hd: o.hd + 2 }; });
-const inObb = (o: Obb, x: number, z: number) => { const c = Math.cos(o.yaw), s = Math.sin(o.yaw), dx = x - o.cx, dz = z - o.cz; return Math.abs(c * dx + s * dz) <= o.hw && Math.abs(-s * dx + c * dz) <= o.hd; };
+const inObb = (o: Obb, x: number, z: number) => { const c = cos(o.yaw), s = sin(o.yaw), dx = x - o.cx, dz = z - o.cz; return Math.abs(c * dx + s * dz) <= o.hw && Math.abs(-s * dx + c * dz) <= o.hd; };
 
 /** The podium's samples the works cover: inside its outline, clear of the streets round it, of the towers and of
  *  what's kept clear already (metro entrances, tunnels). */
@@ -56,7 +57,7 @@ export function podiumMask(g: Heightfield, block: Uint8Array): Uint8Array {
 export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): Factory | null {
   if (PODIUM.length < 3) return null;
   const f: Factory = { solids: [], decor: [], props: [], features: [], gates: [], convoys: [], under: new Uint8Array(g.y.length), far: [] };
-  const o = minRect(PODIUM), c = Math.cos(o.yaw), s = Math.sin(o.yaw), r = makeRng(hashString('factory'));
+  const o = minRect(PODIUM), c = cos(o.yaw), s = sin(o.yaw), r = makeRng(hashString('factory'));
   /** Local (unturned about the podium's middle) to the map. */
   const P = (x: number, z: number): P2 => [o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)];
   const sample = (x: number, z: number) => { const [wx, wz] = P(x, z), i = Math.round(wx / g.cell), j = Math.round(wz / g.cell); return i < 0 || j < 0 || i >= g.w || j >= g.h ? -1 : j * g.w + i; };
@@ -163,13 +164,13 @@ export function buildFactory(g: Heightfield, mask: Uint8Array, sts: Street[]): F
       const ks = sample(...onFace(h, k, uu, d));
       if (ks >= 0 && g.street![ks] === 0) g.y[ks] = y;
     }
-    const yaw = Math.atan2(n.nx, n.nz), mouth = face(u, 0, y);
+    const yaw = atan2(n.nx, n.nz), mouth = face(u, 0, y);
     for (const side of [-1, 1]) {
       for (const d of [1.5, 3.6]) { const p = face(u + side * 6, d, y); f.props.push({ kind: 'jersey', x: p.x, y, z: p.z, yaw }); }
       const m = onFace(h, k, u + side * 7.4, 0.8), top = face(u + side * 7.4, 0.8, y + 11), aim = face(u, 4, y);
       local.push(solid(m[0] - 0.15, y, m[1] - 0.15, m[0] + 0.15, y + 11, m[1] + 0.15, MAT.metal));
       decor.push(solid(m[0] - 0.6, y + 11, m[1] - 0.6, m[0] + 0.6, y + 11.5, m[1] + 0.6, MAT.glare));
-      f.props.push({ kind: 'floodlight', x: top.x, y: top.y, z: top.z, yaw: Math.atan2(aim.x - top.x, aim.z - top.z) });
+      f.props.push({ kind: 'floodlight', x: top.x, y: top.y, z: top.z, yaw: atan2(aim.x - top.x, aim.z - top.z) });
     }
     // A post on the roof over the gate (its searchlight gone, U-053).
     const sl = face(u - 4, -1, roof + 1.1);

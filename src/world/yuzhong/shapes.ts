@@ -1,5 +1,6 @@
 // 2D shapes for laying the city out on the real map (M3-41b): oriented rectangles fitted to footprints, tests
 // between them and street segments, and polygon rasterising.
+import { sin, cos, atan2 } from '../trig';
 
 /** An oriented rectangle: centre, half sizes along its own x and z, and its turn (as geom's turn()). */
 export interface Obb { cx: number; cz: number; hw: number; hd: number; yaw: number }
@@ -24,7 +25,7 @@ export function minRect(pts: P2[]): Obb {
   const h = convexHull(pts);
   let best: Obb | null = null, area = Infinity;
   for (let i = 0; i < h.length; i++) {
-    const a = h[i], b = h[(i + 1) % h.length], yaw = Math.atan2(b[1] - a[1], b[0] - a[0]), c = Math.cos(yaw), s = Math.sin(yaw);
+    const a = h[i], b = h[(i + 1) % h.length], yaw = atan2(b[1] - a[1], b[0] - a[0]), c = cos(yaw), s = sin(yaw);
     let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
     for (const [x, z] of h) { const u = c * x + s * z, v = -s * x + c * z; u0 = Math.min(u0, u); u1 = Math.max(u1, u); v0 = Math.min(v0, v); v1 = Math.max(v1, v); }
     const ar = (u1 - u0) * (v1 - v0);
@@ -41,15 +42,15 @@ export const polyArea = (p: P2[]) => Math.abs(p.reduce((a, q, i) => { const r = 
 
 /** The rectangle's corners in the world. */
 export function corners(o: Obb): P2[] {
-  const c = Math.cos(o.yaw), s = Math.sin(o.yaw);
+  const c = cos(o.yaw), s = sin(o.yaw);
   return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => [o.cx + c * a * o.hw - s * b * o.hd, o.cz + s * a * o.hw + c * b * o.hd]);
 }
 
 /** Separating-axis overlap of two rectangles grown by `pad`. */
 export function obbOverlap(a: Obb, b: Obb, pad = 0): boolean {
   const dx = b.cx - a.cx, dz = b.cz - a.cz;
-  for (const o of [a, b]) for (const [ux, uz] of [[Math.cos(o.yaw), Math.sin(o.yaw)], [-Math.sin(o.yaw), Math.cos(o.yaw)]]) {
-    const ext = (r: Obb) => { const c = Math.cos(r.yaw), s = Math.sin(r.yaw); return (r.hw + pad) * Math.abs(c * ux + s * uz) + (r.hd + pad) * Math.abs(-s * ux + c * uz); };
+  for (const o of [a, b]) for (const [ux, uz] of [[cos(o.yaw), sin(o.yaw)], [-sin(o.yaw), cos(o.yaw)]]) {
+    const ext = (r: Obb) => { const c = cos(r.yaw), s = sin(r.yaw); return (r.hw + pad) * Math.abs(c * ux + s * uz) + (r.hd + pad) * Math.abs(-s * ux + c * uz); };
     if (Math.abs(dx * ux + dz * uz) >= ext(a) + ext(b)) return false;
   }
   return true;
@@ -65,7 +66,7 @@ export function segDist(px: number, pz: number, ax: number, az: number, bx: numb
 /** Whether a segment comes within r of a rectangle: an end within r of it, a corner within r of the segment, or the
  *  segment through it. (In its frame, no arrays: lot planning asks it a few million times.) */
 export function segNearObb(o: Obb, ax: number, az: number, bx: number, bz: number, r: number): boolean {
-  const c = Math.cos(o.yaw), s = Math.sin(o.yaw), hw = o.hw, hd = o.hd;
+  const c = cos(o.yaw), s = sin(o.yaw), hw = o.hw, hd = o.hd;
   const u0 = c * (ax - o.cx) + s * (az - o.cz), v0 = -s * (ax - o.cx) + c * (az - o.cz);
   const u1 = c * (bx - o.cx) + s * (bz - o.cz), v1 = -s * (bx - o.cx) + c * (bz - o.cz);
   if (Math.min(u0, u1) > hw + r || Math.max(u0, u1) < -hw - r || Math.min(v0, v1) > hd + r || Math.max(v0, v1) < -hd - r) return false;

@@ -10,6 +10,7 @@ import { makeRng, hashString, rand } from '../../sim/rng';
 import { door as hang, type Lock } from '../city/access';
 import type { Fabric } from '../city/buildings';
 import type { Feature, Inter, Prop } from '../world';
+import { atan2 } from '../trig';
 
 export type Face = [number, number];
 export interface Hand {
@@ -62,7 +63,7 @@ export function heap(h: Hand, t0: number, t1: number, s0: number, s1: number, to
 export function put(h: Hand, kind: string, t: number, s: number, face: Face, w: number, ht: number, d: number,
   o: { id?: string; zh?: string; en?: string; type?: string; loot?: string; tier?: number; items?: [string, number][]; up?: number; fallen?: boolean } = {}) {
   const y = h.y + (o.up ?? 0), [x, z] = h.pt(t, s), [fx, fz] = along(h, ...face);
-  h.props.push({ kind: `f:${kind}`, x, y, z, yaw: Math.atan2(fx, fz), w, h: ht, d, ...(o.fallen ? { text: 'fallen' } : {}) });
+  h.props.push({ kind: `f:${kind}`, x, y, z, yaw: atan2(fx, fz), w, h: ht, d, ...(o.fallen ? { text: 'fallen' } : {}) });
   if (ht > 0.3 && !o.fallen) h.kept.push(face[0] ? h.box(t - d / 2, t + d / 2, s - w / 2, s + w / 2, y, y + ht, MAT.hidden) : h.box(t - w / 2, t + w / 2, s - d / 2, s + d / 2, y, y + ht, MAT.hidden));
   if (!o.id) return;
   const [lx, lz] = h.pt(t + face[0] * (d / 2 + 0.1), s + face[1] * (d / 2 + 0.1));
@@ -73,7 +74,7 @@ export function put(h: Hand, kind: string, t: number, s: number, face: Face, w: 
 /** Words written on a wall at (t, s), facing into the room along `face`. */
 export function scrawl(h: Hand, t: number, s: number, face: Face, text: string, up = 1.5) {
   const [x, z] = h.pt(t, s), [fx, fz] = along(h, ...face);
-  h.props.push({ kind: 'graffiti', x: x + fx * 0.02, y: h.y + up, z: z + fz * 0.02, yaw: Math.atan2(fx, fz), text });
+  h.props.push({ kind: 'graffiti', x: x + fx * 0.02, y: h.y + up, z: z + fz * 0.02, yaw: atan2(fx, fz), text });
 }
 
 /** A mark at (t, s) on its floor (or `up` over it): `in:<place>:<way>`, `heart:<place>`, `doc:<place>`. */

@@ -14,6 +14,7 @@ import { door as hang, glaze, shutter, type Lock } from './access';
 import { VENT, WIN, type Frame } from './puzzle';
 import type { Fabric } from './buildings';
 import type { Site } from '../world';
+import { atan2 } from '../trig';
 
 type Face = [number, number];
 type Rise = '+u' | '-u' | '+v' | '-v';
@@ -134,7 +135,7 @@ export function handmade(fr: Frame, from: number, out: Fabric, look: number) {
     prop(k: number, kind: string, u: number, v: number, face: Face, w: number, h: number, d: number, fallen = false, up = 0) {
       if (h > 0.3) kept(k, [u - w / 2, v - w / 2, u + w / 2, v + w / 2]);
       const [x, z] = at(u, v), [fx, fz] = unit(...face);
-      out.props.push({ kind: `f:${kind}`, x, y: y(k) + up, z, yaw: Math.atan2(fx, fz), w, h, d, ...(fallen ? { text: 'fallen' } : {}) });
+      out.props.push({ kind: `f:${kind}`, x, y: y(k) + up, z, yaw: atan2(fx, fz), w, h, d, ...(fallen ? { text: 'fallen' } : {}) });
     },
     /** Something solid set down where it stands in the way (a counter, a trolley across a door): a hidden box under a
      *  model. */
@@ -147,7 +148,7 @@ export function handmade(fr: Frame, from: number, out: Fabric, look: number) {
     /** Words written on a wall at (u, v), facing into the room along `face`. */
     scrawl(k: number, u: number, v: number, face: Face, text: string, up = 1.5) {
       const [x, z] = at(u, v), [fx, fz] = unit(...face);
-      out.props.push({ kind: 'graffiti', x: x + fx * 0.02, y: y(k) + up, z: z + fz * 0.02, yaw: Math.atan2(fx, fz), text });
+      out.props.push({ kind: 'graffiti', x: x + fx * 0.02, y: y(k) + up, z: z + fz * 0.02, yaw: atan2(fx, fz), text });
     },
     /** A mark for what's fitted once the city stands (yuzhong/secure.ts): 'secure:<what>' at (u, v) on floor k. */
     mark(what: string, k: number, u: number, v: number, face: Face = [1, 0]) {

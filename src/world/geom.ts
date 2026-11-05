@@ -1,4 +1,5 @@
 import { heightAt, spanOver, rayGround, GROUND_ID, type Heightfield } from './heightfield';
+import { sin, cos } from './trig';
 
 // Collision geometry: boxes and ramps in a uniform 4 m grid. A ramp is a box whose top slopes along one axis: it
 // rises from `low` to y1 toward `ramp` direction. A turned solid (M3-40, U-017) is a box turned by a yaw about a
@@ -32,7 +33,7 @@ export function rampSolid(x0: number, y0: number, z0: number, x1: number, z1: nu
 
 /** Turn solids by yaw about (px, pz): each keeps its box as `rot` and gets the world bounds of its corners. */
 export function turn(solids: Solid[], yaw: number, px: number, pz: number): Solid[] {
-  const c = Math.cos(yaw), sn = Math.sin(yaw);
+  const c = cos(yaw), sn = sin(yaw);
   return solids.map(s => {
     if (s.rot) throw new Error('turn: solid already turned');
     // (Its corners one by one: a city's worth of solids are turned.)

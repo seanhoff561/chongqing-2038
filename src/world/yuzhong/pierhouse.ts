@@ -14,12 +14,13 @@ import type { Feature, Inter, Prop } from '../world';
 import type { Obb } from './shapes';
 import { built } from './handbuilt';
 import { door, heap, put, scrawl, mark } from './handunder';
+import { sin, cos } from '../trig';
 
 /** The deckhouse along the pontoon (t), its half-depth across it (s), each deck's height, its slab. */
 export const HOUSE = { t0: 3, t1: 19, hs: 4.2, deck: 2.8, slab: 0.3 };
 
 export function pierHouse(o: Obb, side: number, top: number): { solids: Solid[]; decor: Solid[]; props: Prop[]; inter: Inter[]; features: Feature[] } {
-  const c = Math.cos(o.yaw), sn = Math.sin(o.yaw);
+  const c = cos(o.yaw), sn = sin(o.yaw);
   const box = (t0: number, t1: number, s0: number, s1: number, y0: number, y1: number, mat: number): Solid =>
     solid(o.cx + Math.min(t0, t1), y0, o.cz + Math.min(s0 * side, s1 * side), o.cx + Math.max(t0, t1), y1, o.cz + Math.max(s0 * side, s1 * side), mat);
   const pt = (t: number, s: number): [number, number] => [o.cx + c * t - sn * s * side, o.cz + sn * t + c * s * side];

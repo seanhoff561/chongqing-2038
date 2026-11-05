@@ -10,10 +10,11 @@ import { facades } from '../city/climb';
 import { stair } from '../steps';
 import { makeRng, rand, randInt } from '../../sim/rng';
 import { PARAPET, type Fabric, type Lot } from '../city/buildings';
+import { tan } from '../trig';
 
 /** The photo's camera: level, at the vantage eye, looking north (-z), 30 degrees of view across 1304 rows. */
 export const REF_CAMERA = { x: 0, y: 34.62, z: -4.6, fov: 30, w: 1080, h: 1304 };
-const T = Math.tan(((REF_CAMERA.fov / 2) * Math.PI) / 180);
+const T = tan(((REF_CAMERA.fov / 2) * Math.PI) / 180);
 /** Metres per photo pixel at distance d in front of the camera. */
 const mpp = (d: number) => (d * T) / (REF_CAMERA.h / 2);
 const X = (px: number, d: number) => REF_CAMERA.x + (px - REF_CAMERA.w / 2) * mpp(d);
