@@ -65,7 +65,7 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
   // sim/boat.ts, render/boat3d.ts; its heading as his yaw, in its data).
   const bv = o.hd + PIER.hull[1] / 2 + 0.3;
   const [bx, bz] = W(-o.hw * 0.3, -side * bv);
-  inter.push({ id: 'patrolboat', kind: 'boat', x: bx, y: WATER_Y + 1.8, z: bz, r: 1.5, zh: '水警巡逻艇', en: 'River-police patrol boat', data: { yaw: Math.atan2(-c, -sn) } });
+  inter.push({ id: 'patrolboat', kind: 'boat', x: bx, y: WATER_Y + 1.8, z: bz, r: 1.5, zh: '水警巡逻艇', en: 'River-police patrol boat', data: { yaw: atan2(-c, -sn) } });
   // The sonar buoys round it.
   for (let k = 0; k < 4; k++) {
     const a = o.yaw + (k * Math.PI) / 2 + Math.PI / 4, x = o.cx + cos(a) * PIER.buoys, z = o.cz + sin(a) * PIER.buoys;
