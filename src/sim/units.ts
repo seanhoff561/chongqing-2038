@@ -77,6 +77,8 @@ export interface Unit {
   aim?: boolean;
   /** a quadruped's seconds till its tag launcher's next shot (M4-22) */
   tagIn?: number;
+  /** how far aside of its beat it walks, having given way (M10-45, sim/spacing.ts) */
+  aside?: { x: number; z: number };
 }
 
 /** Whether a machine is out just now (M4-13). */
@@ -97,6 +99,8 @@ export interface Trip {
   /** gone on the way he was going from where it lost him (M4-46) */
   followed?: boolean;
   strafe?: boolean;
+  /** the point on its way it was put off making for (M10-45): till it's there, walls on the way aren't excused */
+  off?: { x: number; y: number; z: number };
 }
 export interface Pose { x: number; y: number; z: number; yaw: number; active: boolean; /** a drone on its dock, charging: sees nothing */ docked?: boolean }
 
@@ -227,6 +231,8 @@ export function unitPose(w: World, u: Unit, time: number): Pose {
   if (u.convoy) return columnPose(w, u, time / SCALE);
   // A reserve at home: a hunter on its dock (seen there, seeing nothing), a humanoid inside its garage.
   if (u.reserve) { const d = u.reserve.dock, h = d !== undefined ? w.docks[d] : w.garages[u.reserve.garage!]; return { x: h.x + ((u.id % 3) - 1) * 0.9, y: h.y, z: h.z, yaw: 0, active: d !== undefined, docked: true }; }
+  // Aside of its beat, having given way (M10-45).
+  if (u.aside) { const q = unitPose(w, { ...u, aside: undefined }, time); return { ...q, x: q.x + u.aside.x, z: q.z + u.aside.z }; }
   const p = w.patrols[u.patrol], start = p.pts[0], dock = p.dock !== undefined ? w.docks[p.dock] : null;
   if (u.extra && !u.on) return { x: start.x, y: start.y, z: start.z, yaw: 0, active: false };
   const home: Pose | null = dock && { x: dock.x, y: dock.y, z: dock.z, yaw: 0, active: true, docked: true };

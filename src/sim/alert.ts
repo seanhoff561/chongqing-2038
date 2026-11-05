@@ -16,7 +16,8 @@ import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint } from './combat';
 import { farFromBeat } from './perception';
 import { layerAt } from './automap';
-import { keepApart } from './spacing';
+import { keepApart, stepAside } from './spacing';
+import { BODY } from './damage';
 import { SCALE } from './clock';
 import { DT } from './types';
 
@@ -69,13 +70,14 @@ function sewerWay(w: World, a: V3, b: V3): V3[] {
   return [[b], [{ x: b.x, y: a.y, z: a.z }, b], [{ x: a.x, y: a.y, z: b.z }, b]].find(ps => ps.every((q, i) => below(i ? ps[i - 1] : a, q))) ?? [];
 }
 
-/** Close by over open ground (across a divided road, a square): nothing in the way at body height and no step up or
+/** Close by over open ground (across a divided road, a square): nothing in the way of its body and no step up or
  *  down on the ground between bigger than the kind takes, so it goes straight there and not round by the streets. */
 function open(w: World, kind: UnitKind, a: V3, b: V3): boolean {
   const d = Math.hypot(b.x - a.x, b.z - a.z), g = w.ground;
   if (d > 30 || d < 0.1) return false;
-  const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z);
-  if (raycast(w.index, a.x, a.y + 1, a.z, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L)) return false;
+  // (Its whole body's width clear, not just its middle: M10-45.)
+  const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z), r = BODY[kind][2], sx = ((b.z - a.z) / d) * r, sz = (-(b.x - a.x) / d) * r;
+  if ([0, -1, 1].some(k => raycast(w.index, a.x + sx * k, a.y + 1, a.z + sz * k, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L))) return false;
   // (The floor felt for under each step: a solid's top, or the ground's; underground, in a building or in the street.)
   const floor = (x: number, z: number, near: number) => {
     const h = raycast(w.index, x, near + 1, z, 0, -1, 0, 1 + STEP[kind] + 1), t = g ? heightAt(g, x, z) : null;
@@ -233,6 +235,8 @@ export function stepAlert(s: SimState, w: World) {
       if (nearestOnBeat(w, u, h) > Math.hypot(h.x - at.x, h.z - at.z) - 3) { u.checked = s.time; leave(s, w, u, 'check', h); break; }
     }
   }
+  // Those on their beats near him give way too (M10-45).
+  stepAside(s, w, u => STEP[u.kind]);
 }
 
 /** The nearest unit on its beat within 150 m of a camera: sent to look at where the camera saw him. */
