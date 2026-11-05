@@ -46,11 +46,14 @@ function clear(w: World, a: V3, b: V3, up: number) {
   return d < 0.1 || !raycast(w.index, a.x, a.y + up, a.z, (b.x - a.x) / d, (b.y - a.y) / d, (b.z - a.z) / d, d);
 }
 
-/** A drone's leg clear for its whole body (U-103: flown low among the buildings): five lines a drone's width apart
- *  through nothing, and 2 m or more over the ground all along. */
+/** A drone's leg clear for its whole body as it flies it (U-103: flown low among the buildings; M4-59: weaving and
+ *  bobbing off the straight line, most mid-leg): its line, and either side of it and over and under it a drone's
+ *  width past the most it weaves and bobs there, through nothing; and 2 m or more over the ground all along. */
 function airway(w: World, a: V3, b: V3) {
-  const d = Math.hypot(b.x - a.x, b.z - a.z) || 1, nx = -(b.z - a.z) / d, nz = (b.x - a.x) / d, g = w.ground!;
-  for (const [o, up] of [[0, 0], [0.6, 0], [-0.6, 0], [0, 0.5], [0, -0.5]]) if (!clear(w, { x: a.x + nx * o, y: a.y, z: a.z + nz * o }, { x: b.x + nx * o, y: b.y, z: b.z + nz * o }, up)) return false;
+  const d = Math.hypot(b.x - a.x, b.z - a.z) || 1, nx = -(b.z - a.z) / d, nz = (b.x - a.x) / d, g = w.ground!, n = Math.max(2, Math.ceil(d / 5));
+  const at = (f: number, side: number, up: number): V3 => { const e = d < 10 ? 0 : Math.sin(Math.PI * f), o = side * (0.6 + ALIVE.weave * e); return { x: a.x + (b.x - a.x) * f + nx * o, y: a.y + (b.y - a.y) * f + up * (0.5 + ALIVE.bob * e), z: a.z + (b.z - a.z) * f + nz * o }; };
+  if (!clear(w, a, b, 0)) return false;
+  for (const [side, up] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) for (let k = 0; k < n; k++) if (!clear(w, at(k / n, side, up), at((k + 1) / n, side, up), 0)) return false;
   for (let k = 0, n = Math.ceil(d / 4); k <= n; k++) { const t = k / n, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t; if (a.y + (b.y - a.y) * t < (heightAt(g, x, z) ?? -Infinity) + 2) return false; }
   return true;
 }
