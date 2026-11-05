@@ -68,6 +68,9 @@ function open(it: Inter, t = 6) {
 
 describe('everything to climb or crawl through has a cover, opened with F (M3-83)', () => {
   it('covers every basement hatch and drain, roof hatch, shaft duct, street grate and sewer mouth', () => {
+    // (Every cover as built: the city is shared by a worker's test files, and one walked through before this may have
+    // left some open; a new run shuts them all.)
+    createState(1, w);
     for (const [k, n] of Object.entries({ trapdoor: 200, 'roof hatch': 20, 'drain grate': 200, 'street grate': 3, 'sewer grate': 2, vent: 500 })) expect(covers[k as keyof typeof covers].length, k).toBeGreaterThan(n);
     // Each basement's ladder hatch and manhole.
     expect(covers.trapdoor.length).toBe(covers['drain grate'].length);
