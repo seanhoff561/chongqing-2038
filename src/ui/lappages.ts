@@ -155,5 +155,9 @@ export const PAGES: (Page & { standing?: boolean })[] = [
   { id: 'cams', zh: '摄像头', en: 'Cams', needs: g => (has(g, 'cameratap') || g.state.taps?.length ? null : ['需要摄像头分接器', 'needs a camera tap']), draw: g => camsPage(g) },
   { id: 'logs', zh: '日志', en: 'Logs', needs: g => (has(g, 'binoculars') ? null : ['需要望远镜', 'needs binoculars']), draw: g => logsPage(g) },
   { id: 'songs', zh: '歌曲', en: 'Songs', draw: g => songsPage(g) },
-  { id: 'training', zh: '训练室', en: 'Training Room', needs: () => ['需要训练地图', 'needs a training map'], draw: () => '' },
+  // (Sitting only, M10-34: the VR goggles, into the tutorial map, ui/training.ts.)
+  { id: 'training', zh: '训练室', en: 'Training Room', draw: () => `<div class="lt-h">VR 训练室 <span>VR training room</span></div>` +
+    `<div>在教程地图里练习攀爬和跑酷。<br><span>Practise climbing and parkour in the tutorial map.</span></div>` +
+    `<div class="lt-pick"><button data-act="train">戴上VR眼镜 <span>Put on the goggles</span></button></div>` +
+    `<div><span>你的地图里叫 tutorial 的那张会代替内置教程 · a map of yours named "tutorial" plays instead of the built-in one. Esc: 摘下 take them off</span></div>` },
 ];

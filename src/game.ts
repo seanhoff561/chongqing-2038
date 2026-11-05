@@ -58,6 +58,7 @@ import { windOf } from './sim/move';
 import { Marks } from './render/marks';
 import { SleepUI } from './ui/sleep-ui';
 import { DeathScreen } from './ui/death';
+import { restartTraining, type Training } from './ui/training';
 import { Furniture } from './render/furniture';
 import { Rain } from './render/rain';
 import { StatusIndicator } from './ui/status';
@@ -168,6 +169,7 @@ export class Game {
   }
 
   load(name: string, seed: number, worldSeed = seed) {
+    this.training = null;
     const sc = scenarioByName(name);
     if (!sc) throw new Error(`unknown scenario ${name}`);
     this.scenario = sc;
@@ -271,6 +273,9 @@ export class Game {
   /** The map editor, while it's open (M10-32): it flies the camera. */
   editor: { camera(cam: THREE.PerspectiveCamera, dt: number): void } | null = null;
 
+  /** In the Training Room (M10-34): his run kept aside till he takes the goggles off. */
+  training: Training | null = null;
+
   /** The main menu's up, or the map editor: nothing runs under it (U-104, M10-32). */
   menuUp() { return !!document.getElementById('boot') || !!this.editor; }
 
@@ -337,7 +342,8 @@ export class Game {
       else if (e.t === 'shot') this.sound.shot(e, this.world, this.view.fp.cam.position);
       else if (e.t === 'call') { const d = Math.hypot(e.x - this.state.player.pos.x, e.z - this.state.player.pos.z); if (d < 60) radio(this.audio, 0.25 * (1 - d / 60)); }
     }
-    if (this.state.dead) this.death.show();
+    // (Dying in the Training Room starts it over: M10-34.)
+    if (this.state.dead) { if (this.training) restartTraining(this); else this.death.show(); }
     // (An ending plays its sequence first, then the summary: M7-15.)
     else if (this.state.ended) this.ending.start(this.state.ended.route);
   }
@@ -366,6 +372,7 @@ export class Game {
     this.view.fp.update(p, pos, this.input.yaw, this.input.pitch, dt);
     if (fl) { this.view.fp.cam.position.set(fl.x, fl.y, fl.z); this.view.fp.cam.rotation.set(this.input.pitch, this.input.yaw, 0); }
     this.editor?.camera(this.view.fp.cam, dt);
+    document.body.classList.toggle('vr', !!this.training);
     this.ending.update(dt);
     this.bodyFx.update(this.state, this.view.fp, dt);
     this.updateHands(dt);

@@ -14,6 +14,7 @@ import { heightAt } from '../world/heightfield';
 import { PAGES, camList } from './lappages';
 import { Desk } from './lapos';
 import { Anna } from './anna';
+import { enterTraining } from './training';
 
 /** The page's own size (CSS pixels), scaled onto the screen's glass. */
 export const SCREEN = { w: 640, h: 408 };
@@ -77,6 +78,8 @@ export class LaptopUI {
       else if (d.act === 'pause') game.songs.pause();
       else if (d.act === 'skip') game.songs.skip();
       else if (d.act === 'songfolder') window.desktop?.folder('songs');
+      // (M10-34: the VR goggles on.)
+      else if (d.act === 'train') enterTraining(game);
       else if (d.act === 'loop') { const taps = camList(game); if (taps.length) game.input.cmds.push({ c: 'act', name: 'loop', arg: taps[Math.min(this.cam, taps.length - 1)] }); }
       else if (d.cam) this.cam = Number(d.cam);
       else if (d.sight) { const x = game.state.sightings?.[Number(d.sight)]; if (x) { this.desk.open('map'); this.map.show(x.x, x.z); } }

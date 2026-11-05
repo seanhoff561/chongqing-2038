@@ -315,7 +315,7 @@ There is one spare HV fuse (a second in the Raffles hub). The construction site 
 | Cams | | a button per tapped camera to pick its feed; Loop blinds the one shown for 90 s |
 | Logs | | machines logged through binoculars; one picked opens the Map on it, ringed |
 | Songs | | the song playing, Play or Pause and Skip: the songs in the songs folder (desktop; Open the songs folder, read again each time the app opens) or a folder he picks (browser), shuffled, one after another as background music through the master volume; the city's own music silent while they play |
-| Training Room | | VR goggles on, the screen fades into the tutorial map |
+| Training Room | | sitting only: Put on the goggles fades to black and up into the tutorial map (a map of his named "tutorial" in the maps folder, else the built-in one), at its spawn, a lens edge and a VR tag on screen; his run is kept aside whole (the same state); Esc's Take off the goggles fades back to it, sat at the laptop where he was. The world's clock doesn't stop: the time spent in the goggles passes for him, his needs with it (as sleep does), nothing else moving meanwhile; dying in there starts the map over (src/ui/training.ts) |
 
 A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a camera tap, a drone).
 
