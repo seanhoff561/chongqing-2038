@@ -17,6 +17,7 @@ import { tryChimney, stepChimney } from './chimney';
 import { stepDown, KNOCK } from './knock';
 import { limits, type Limits } from './body';
 import { onPlank } from './plank';
+import { blockHim } from './spacing';
 
 let L: Limits;
 let look = { dYaw: 0, dPitch: 0 };
@@ -217,6 +218,8 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   const blocked = moveHorizontal(idx, p.pos, h, p.vel.x * DT, p.vel.z * DT, p.onGround ? M.stepHeight : 0.05);
   if (blocked & 1) p.vel.x = 0;
   if (blocked & 2) p.vel.z = 0;
+  // Nor into a machine (M10-45).
+  blockHim(state, world, x0, z0, h);
   // Crouch held on the ground, he won't step off an edge (U-035, as Minecraft's sneak): a move that leaves nothing
   // under him within a step down is taken back, an axis at a time, so he edges along it. (Half a move is kept only
   // where he fits: at a ledge's end against a wall, a window's sill by its jamb, it would put him in the wall: M10-29.)
