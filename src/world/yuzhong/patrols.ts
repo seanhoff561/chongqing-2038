@@ -358,7 +358,7 @@ function skyDrones(w: World): Patrol[] {
     if (roofs.length < 8) continue;
     for (let d = 0; d < SKY.per; d++) {
       const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};
-      for (let j = 0, tries = 0; j < SKY.stops && tries < SKY.stops * 8; tries++) {
+      for (let j = 0, tries = 0; j < SKY.stops && tries < SKY.stops * 16; tries++) {
         // (Each stop a short hop from the last, 30 to 130 m: a wander down the streets, not across the sky.)
         const last = pts[pts.length - 1], near = last ? roofs.filter(r => { const m = Math.hypot(centre(r).x - last.x, centre(r).z - last.z); return m > 30 && m < 130; }) : roofs;
         if (!near.length) break;

@@ -86,7 +86,7 @@ export const cableway: Lot['inside'] = (fr, from, out, look, rolled) => {
   K.scrawl(T, 12.32, 2.5, [1, 0], '钥匙在操作台  KEY AT THE DESK · DON\'T TAKE IT HOME');
   // (Up here only what's set out by hand.)
   for (const u of [7.4, 8.6]) K.put(T, 'shelf', u, 0.2, [0, 1]);
-  K.put(T, 'locker', 11.0, 0.25, [0, 1], { zh: '绳索工具柜', en: 'Rope gear locker', items: [['carabiners', 2], ['harness', 1]] });
+  K.put(T, 'locker', 11.0, 0.25, [0, 1], { zh: '绳索工具柜', en: 'Rope gear locker', items: [['rope', 1], ['harness', 1]] });
   K.scrawl(T, 10.8, 5.98, [0, -1], '顶棚塌了 走机房  ROOF CAME DOWN · GO ROUND BY THE MACHINE DECK');
   // The bullwheel on the machine deck: its hub, its rim (solid where it stands), the haul rope off it over the deck
   // and up over the platform; its brake lever on the way round it, behind it.
