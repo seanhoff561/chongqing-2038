@@ -5,8 +5,6 @@ import os from 'os';
 import path from 'path';
 
 /** A WAV of a quiet tone, two minutes long (a loaded machine can take tens of seconds between Play and Skip, and a
- *  song ending on its own moves on by itself). */
-// ( a loaded machine can take tens of seconds between Play and Skip, and a song ending on its own
 // moves on by itself.)
 function wav(file, hz) {
   const rate = 8000, n = rate * 120, b = Buffer.alloc(44 + n * 2);
