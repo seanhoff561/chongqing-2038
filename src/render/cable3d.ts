@@ -1,9 +1,11 @@
-// The cableway (M7-05): cabin 2 out along its ropes where the run has it (sim/cablecar.ts), Xiaoyu sat by its window
-// if she came; and the line drone over its stretch of the line, a white disc on four rotors with its line of light.
+// The cableway (M7-05, M7-06): cabin 2 out along its ropes where the run has it (sim/cablecar.ts), Xiaoyu sat by its
+// window if she came; the line drone over its stretch of the line, a white disc on four rotors with its line of light;
+// and his trolley on the haul rope (sim/trolley.ts), its block on the rope and the sling down to his harness.
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
 import type { World } from '../world/world';
-import { CABIN, lineOf, cabinAt, lineDrone } from '../sim/cablecar';
+import { CABIN, lineOf, cabinAt, onLine, lineDrone } from '../sim/cablecar';
+import { TROLLEY } from '../sim/trolley';
 import { sisterModel, merged } from './furniture';
 
 const lam = (c: number) => new THREE.MeshLambertMaterial({ color: c });
@@ -40,10 +42,21 @@ function drone() {
   return g;
 }
 
+/** The trolley: its block and sheaves on the rope at the origin, the sling down to his harness. */
+function trolley() {
+  const g = new THREE.Group(), steel = lam(0x9aa0a6), red = lam(0xb03a2e), sling = lam(0x2a2a2a);
+  const add = (geo: THREE.BufferGeometry, m: THREE.Material, y: number) => { const o = new THREE.Mesh(geo, m); o.position.y = y; g.add(o); };
+  add(new THREE.BoxGeometry(0.06, 0.22, 0.3), red, -0.08);
+  for (const z of [-0.09, 0.09]) { const o = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 12).rotateZ(Math.PI / 2), steel); o.position.set(0, 0, z); g.add(o); }
+  add(new THREE.BoxGeometry(0.03, TROLLEY.hang - 0.9, 0.03), sling, -0.2 - (TROLLEY.hang - 0.9) / 2);
+  return g;
+}
+
 export class CableView {
   private car = new THREE.Group();
   private girl: THREE.Object3D;
   private drone = drone();
+  private block = trolley();
 
   constructor(scene: THREE.Scene) {
     this.car.add(merged(cabin()));
@@ -51,15 +64,17 @@ export class CableView {
     this.girl.position.set(-0.9, 0.1, 1.6);
     this.girl.rotation.y = Math.PI / 2;
     this.car.add(this.girl);
-    this.car.visible = this.drone.visible = false;
-    scene.add(this.car, this.drone);
+    this.car.visible = this.drone.visible = this.block.visible = false;
+    scene.add(this.car, this.drone, this.block);
   }
 
   update(s: SimState, w: World) {
     const l = lineOf(w), C = s.cable, d = C && (C.by === 'cabin' ? C.d : C.cabin);
     this.drone.visible = !!l;
     this.car.visible = !!l && d !== undefined;
+    this.block.visible = !!l && C?.by === 'trolley' && s.player.mode === 'cable';
     if (!l) return;
+    if (this.block.visible) { const r = onLine(l, C!.d); this.block.position.set(r.x, r.y - 0.2, r.z); this.block.rotation.y = Math.atan2(l.dx, l.dz); }
     const q = lineDrone(s, l);
     this.drone.position.set(q.x, q.y + Math.sin(s.time * 0.1) * 0.15, q.z);
     this.drone.rotation.y = q.yaw;

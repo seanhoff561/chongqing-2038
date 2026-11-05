@@ -121,8 +121,11 @@ export const cableway: Lot['inside'] = (fr, from, out, look, rolled) => {
   K.prop(T, 'papers', 8.5, 8.0, [1, 0], 0.5, 0.02, 0.4);
   K.scrawl(T, 7.32, r - 0.7, [1, 0], '2号车厢 停放 · 1号车厢在上新街  CABIN 2 PARKED · CABIN 1 AT SHANGXIN STREET');
   K.mark('heart', T, uc, r);
-  // Where the ropes leave, over the street and on across the river (cableLine()).
+  // Where the ropes leave, over the street and on across the river (cableLine()); the haul rope there, in reach from
+  // cabin 2's roof, for the trolley (sim/trolley.ts).
   feat('cable:saddle', U + 0.3, r, R);
+  const [hx, hz] = at(U - 0.2, r);
+  out.inter.push({ id: 'haulrope', kind: 'haulrope', x: hx, y: R - 0.2, z: hz, r: 0.4, zh: '牵引索', en: 'Haul rope' });
   K.build();
   // (What stands in its rooms, set after they're carved.)
   out.solids.push(...late);

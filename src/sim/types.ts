@@ -191,8 +191,8 @@ export interface SimState {
   boat?: { x: number; y: number; z: number; yaw: number; v: number; moored: boolean; on?: boolean; fuel: number; batt?: number; ign?: 'key' | 'can' };
   /** on the cableway (M7-05, M7-06): in the cabin or on the trolley, how far out along the line (m) and how fast; where
    *  he stands in the cabin (along, across); where the cabin stopped once he's left it; the line drone's awareness of
-   *  him, when it last heard the cabin and when it saw him */
-  cable?: { by: 'cabin' | 'trolley'; d: number; v: number; at?: [number, number]; cabin?: number; aware?: number; heard?: number; spotted?: number };
+   *  him, when it last heard the cabin and when it saw him; when he started up through the stopped cabin's hatch */
+  cable?: { by: 'cabin' | 'trolley'; d: number; v: number; at?: [number, number]; cabin?: number; aware?: number; heard?: number; spotted?: number; hatch?: number };
   /** sonar buoys an EMP has deafened (M7-09): the buoy's index in the world's features, until when */
   deaf?: Record<number, number>;
   /** the zipline kit's first clamp, on (M5-33) */

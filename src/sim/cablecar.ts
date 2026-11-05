@@ -100,7 +100,7 @@ function depart(s: SimState, w: World, it: Inter) {
  *  rumble; the line drone watching; seen, the hunters coming. */
 export function stepCabin(s: SimState, w: World, input: InputFrame) {
   const C = s.cable, l = lineOf(w), p = s.player;
-  if (C?.by !== 'cabin' || !l || s.dead || s.ended) return;
+  if (C?.by !== 'cabin' || p.mode !== 'cable' || !l || s.dead || s.ended) return;
   C.v = cableLive(s) ? Math.min(CABIN.top, C.v + CABIN.accel * DT) : Math.max(0, C.v - CABIN.brake * DT);
   // (At the south station's wall it stops.)
   C.d = Math.min(l.len - 6, C.d + C.v * DT);
