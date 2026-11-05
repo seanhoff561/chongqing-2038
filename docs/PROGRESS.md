@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M10. Next: M10-38c Key places, hand designed: under the city (U-104).
-Features done: 388 / 438 | Last done: M10-38b
+Features done: 389 / 438 | Last done: M10-40
 <!-- /status -->
 
 ## What's built
@@ -63,3 +63,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-39: his sister's trail (her exit from the seed, her notes from the family flat to it, leaving with her or without)
 - M10-33, M10-34: the Maps menu (the tutorial built in; play, edit, copy, delete, new) and the Training Room (VR goggles into the tutorial and back)
 - M10-38b: the secure sites made by hand (hospital, police station, market, telecom exchange, substation: their mazes, locks, collapses and stories)
+- M10-40: key places on the map only as he learns of them (a note naming one, or walking in), Anna's word on each
