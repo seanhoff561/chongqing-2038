@@ -200,6 +200,13 @@ export interface SimState {
   jam?: { since: number; beacon?: boolean };
   /** the key places he's come to know of (M10-40, sim/places.ts), each with the game time he learned of it */
   known?: Record<string, number>;
+  /** the opening scene (M10-52, sim/opening.ts): seconds into it while it plays; seconds into Anna's speech the first
+   *  time he opens the laptop, till it's done; his laptop and bag on the floor where he woke, each true till taken */
+  opening?: number;
+  hello?: number;
+  gear?: { x: number; y: number; z: number; yaw: number; laptop: boolean; pack: boolean };
+  /** the laptop's apps Anna has had her word on (M10-53) */
+  tabs?: string[];
   /** the game time he last put Anna's map away: places learned since are new on it */
   mapAt?: number;
   /** when his position last went to the network, tracked (U-104) */

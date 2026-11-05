@@ -6,10 +6,19 @@ import { onCmd } from './commands';
 import { GAME_PER_TICK } from './clock';
 import { shelterAt } from './shelter';
 import { powered } from './power';
+import { TAB_LINES } from '../data/dialogue';
 
 /** Game seconds a full battery lasts open; the light its screen casts on him; a full charge's game seconds at a
  *  hideout, and what it takes from the car battery (percent). */
 export const LAPTOP = { lasts: 8 * 3600, glow: 0.5, charge: 3 * 3600, draw: 4 };
+
+// The first time he turns to an app (M10-53): Anna's line on it, once a run. (The map's is her word on the family
+// flat, sim/places.ts; the status page's her first speech, sim/opening.ts.)
+onCmd((s, c) => {
+  if (c.c !== 'act' || c.name !== 'tab' || typeof c.arg !== 'string' || !TAB_LINES[c.arg] || s.tabs?.includes(c.arg)) return;
+  (s.tabs ??= []).push(c.arg);
+  for (const l of TAB_LINES[c.arg]) s.events.push({ t: 'say', id: l.id });
+});
 
 // His notes (M10-15), written sitting at it.
 onCmd((s, c) => {
@@ -27,7 +36,8 @@ onCmd((s, c) => {
 onCmd((s, c) => {
   // Sitting down at it and getting up (focus, M10-13): only while it's out.
   if (c.c === 'act' && c.name === 'focus' && s.laptop?.open && !s.flight && !s.dead) { s.laptop.sit = !s.laptop.sit; return; }
-  if (c.c !== 'act' || c.name !== 'laptop' || s.dead) return;
+  // (Not while it's still on the floor where he woke: M10-52.)
+  if (c.c !== 'act' || c.name !== 'laptop' || s.dead || s.gear?.laptop) return;
   const L = (s.laptop ??= { open: false, charge: 1 });
   if (!L.open && L.charge <= 0) { s.events.push({ t: 'msg', text: "the laptop's flat" }); return; }
   // (Taken out only on his feet, with his hands free of holds: U-104.)

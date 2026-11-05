@@ -2,7 +2,8 @@
 // (render/laptop3d.ts), the game going on round it: Anna's OS (ui/lapos.ts), a desktop and a taskbar. Standing, the
 // lean keys turn Map, Status, Scan and Notes, each filling the desktop; nothing says how. Sat down at it (Q, M10-13)
 // the mouse is a cursor on the screen: the taskbar opens any app in a window. An app he can't use yet says what it
-// needs. Over it all, the glass (M10-57).
+// needs. Over it all, the glass (M10-57). In the opening (M10-52) Anna fills it, over a dark stage, till she goes to
+// her corner; lying open on his bag it shows only her.
 import * as THREE from 'three';
 import type { Game } from '../game';
 import { night } from '../render/materials';
@@ -13,12 +14,15 @@ import { FLIGHT } from '../sim/flight';
 import { heightAt } from '../world/heightfield';
 import { PAGES, camList } from './lappages';
 import { Desk } from './lapos';
-import { Anna } from './anna';
+import { Anna, type Pose } from './anna';
+import { annaScene } from './opening';
 import { enterTraining } from './training';
 import { isNew } from '../sim/places';
 
 /** The page's own size (CSS pixels), scaled onto the screen's glass. */
 export const SCREEN = { w: 640, h: 408 };
+/** Seconds on an app before Anna has her first word on it (flicking past says nothing). */
+const APP_WAIT = 0.8;
 /** The pages he turns through standing. */
 const STANDING = PAGES.filter(p => p.standing);
 
@@ -47,6 +51,11 @@ export class LaptopUI {
   private mapUp = false;
   /** whether he was sat down last frame */
   private sat = false;
+  /** the app in front, and for how long (s): after a moment there, its first time, Anna's word on it (M10-53) */
+  private app = '';
+  private onApp = 0;
+  /** behind Anna while she fills the screen (M10-52) */
+  private stage = document.createElement('div');
 
   constructor(private game: Game) {
     this.root = document.createElement('div');
@@ -57,7 +66,8 @@ export class LaptopUI {
     this.desk = new Desk(game);
     // (Over it all, the glass: M10-57.)
     this.glass.className = 'lt-glass';
-    this.root.append(this.desk.el, this.anna.el, this.desk.bar, this.glass);
+    this.stage.className = 'lt-stage';
+    this.root.append(this.desk.el, this.stage, this.anna.el, this.desk.bar, this.glass);
     document.body.appendChild(this.root);
     this.flying.id = 'dronehud'; this.flying.style.display = 'none'; document.body.appendChild(this.flying);
     // (The light off the glass, on his face and round him, the keys only glancing.)
@@ -121,6 +131,8 @@ export class LaptopUI {
 
   /** Standing, the next page of the four (+1) or the last (-1), round. */
   turn(by: number) {
+    // (Not while she's on her first speech: M10-52.)
+    if (this.game.state.hello !== undefined) return;
     const i = STANDING.indexOf(PAGES[this.page]), n = STANDING.length;
     this.page = PAGES.indexOf(STANDING[(((i < 0 ? 0 : i) + by) % n + n) % n]);
   }
@@ -158,17 +170,20 @@ export class LaptopUI {
   /** Every frame: on the glass while it's out, its corner and page kept up to date. */
   update(dt: number) {
     this.flyHud();
-    const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight, sit = open && !!L?.sit;
+    const g = this.game, L = g.state.laptop, open = !!L?.open && !g.state.flight, sit = open && !!L?.sit, scene = annaScene(g.state), out = open || !!g.state.gear?.laptop;
+    // (Her first speech is on the status page: M10-52.)
+    if (g.state.hello !== undefined) this.page = PAGES.findIndex(q => q.id === 'status');
     if (sit !== this.sat) this.seat(sit);
     // (Taken out, Anna waves.)
     if (open && !this.wasOpen) this.anna.set('wave', 1.6);
     this.wasOpen = open;
-    if (open) this.anna.update(dt);
+    if (scene) this.anna.set(scene.pose as Pose, 2);
+    if (out) this.anna.update(dt);
     // (Sat down, he looks straight ahead at it: U-105.)
     if (sit) g.input.pitch *= Math.exp(-8 * dt);
     this.root.classList.toggle('sit', sit);
-    this.glow.intensity = open ? 1.4 * night.k : 0;
-    const r = open ? g.laptop3d.corners(g.view.fp.cam, innerWidth, innerHeight) : null;
+    this.glow.intensity = out ? 1.4 * night.k : 0;
+    const r = out ? g.laptop3d.corners(g.view.fp.cam, innerWidth, innerHeight) : null;
     if (!r) {
       if (this.mapUp) { this.mapUp = false; g.input.cmds.push({ c: 'act', name: 'map', arg: 0 }); }
       if (this.root.style.display !== 'none') this.root.style.display = 'none';
@@ -185,8 +200,16 @@ export class LaptopUI {
     st.setProperty('--glare', (0.02 + 0.07 * (1 - night.k)).toFixed(3));
     st.setProperty('--grain', (0.012 + 0.05 * g.laptop3d.focus).toFixed(3));
     st.setProperty('--bloom', (0.08 + 0.22 * night.k).toFixed(3));
+    // Anna filling the screen (M10-52): only her.
+    this.root.classList.toggle('full', !!scene?.full);
+    this.root.classList.toggle('close', !!scene?.close);
+    if (scene?.full) return;
     // The desktop: each app's page in its window, redrawn only when it changes.
     const { shown } = this.desk.render(sit, PAGES[this.page].id, app => this.html(app, sit));
+    // (Turned to an app, and stayed a moment: her word on it the first time, M10-53.)
+    const app = this.current();
+    if (app !== this.app) { this.app = app; this.onApp = 0; }
+    else if (app && this.onApp < APP_WAIT && (this.onApp += dt) >= APP_WAIT && !g.state.tabs?.includes(app)) g.input.cmds.push({ c: 'act', name: 'tab', arg: app });
     this.frame++;
     // The map, drawn into its place a few times a second; the feed likewise.
     const mw = this.desk.win('map', sit), slot = mw && shown.includes(mw) ? mw.content.querySelector('.lt-map') : null;

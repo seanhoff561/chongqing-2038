@@ -3,6 +3,8 @@
 const BEFORE = { day: 4.7, night: 0.3 };
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=run&seed=1', 'hideout-light');
+  // (A run already under way: past its opening, M10-52.)
+  await page.evaluate('(() => { const s = window.__cq.game.state; delete s.opening; delete s.gear; delete s.hello; window.__cq.runFrames(1); })()');
   const lum = hour => page.evaluate(`(() => {
     const g = window.__cq.game, s = g.state, w = g.world, gr = w.inter.find(i => i.id === 'airraid-grate');
     s.time = Math.floor(s.time / 86400) * 86400 + ${hour} * 3600; s.flags.clear = true; s.player.lamp = 0;

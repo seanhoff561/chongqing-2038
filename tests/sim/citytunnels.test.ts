@@ -9,7 +9,6 @@ import { teleport } from '../../src/sim/player';
 import { heightAt } from '../../src/world/heightfield';
 import { districtAt } from '../../src/world/yuzhong/lots';
 import { addItem } from '../../src/sim/inventory';
-import { RUBBLE } from '../../src/sim/doors';
 import { GRATE } from '../../src/sim/grate';
 import { B, type SimState } from '../../src/sim/types';
 import { run, aim, secs, settle, LMB, RMB } from './helpers';
@@ -79,23 +78,23 @@ describe('the city tunnels (M6-21)', () => {
     expect(under(s.player.pos)).toBe(true);
   });
 
-  it('walks from the start hideout to Xiaoshizi under the ground: the rubble cleared, the vent, its ladder and grate, the old tunnels, the city and the metro', async () => {
+  it('walks from the start hideout to Xiaoshizi under the ground: the vent cover prised off, the vent, its ladder and grate, the old tunnels, the city and the metro', async () => {
     await settle();
-    const s = createState(1, w), p = s.player, plug = w.inter.find(i => i.id === 'airraid-plug')!, vent = w.inter.find(i => i.id === 'airraid-vent')!;
+    const s = createState(1, w), p = s.player, lid = w.inter.find(i => i.id === 'airraid-vent-cover')!, vent = w.inter.find(i => i.id === 'airraid-vent')!, duct = path('homeVent');
     s.units.length = 0; s.flags.clear = true;
-    addItem(s, s.inv.pack, 'crowbar', 1);
     run(s, w, 10);
     let above = 0;
     const each = (q: V3) => { if (!under(q)) above++; };
-    // Past the shaft's foot to the rubble, cleared with the crowbar.
-    expect(go(s, path('homeExit').slice(0, 1), 0, each), where(s)).toBe(1);
-    aim(s, plug.x, plug.y, plug.z);
-    run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT });
-    for (let t = 0; t < secs(RUBBLE.clear + 0.5) && !s.wstate.open[plug.id]; t++) run(s, w, 1, { buttons: B.INTERACT });
-    expect(s.wstate.open[plug.id]).toBe(true);
-    // Along the old way out into the vent, crouched along it to the shaft's foot.
-    expect(go(s, path('homeExit').slice(1, 3), 0, each), where(s)).toBe(2);
-    expect(go(s, path('homeVent'), B.CROUCH, each), where(s)).toBe(3);
+    // Across the chamber to the vent's cover in its wall: padlocked, it won't come off bare-handed; the crowbar prises it.
+    expect(go(s, duct.slice(0, 1), 0, each), where(s)).toBe(1);
+    const force = () => { aim(s, lid.x, lid.y, lid.z); run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT }); for (let t = 0; t < secs(8) && !s.wstate.open[lid.id]; t++) run(s, w, 1, { buttons: B.INTERACT }); };
+    force();
+    expect(s.wstate.open[lid.id]).toBeFalsy();
+    addItem(s, s.inv.pack, 'crowbar', 1);
+    force();
+    expect(s.wstate.open[lid.id]).toBe(true);
+    // Crouched along the vent to the shaft's foot.
+    expect(go(s, duct.slice(1), B.CROUCH, each), where(s)).toBe(2);
     // Up its ladder hand over hand (as tests/sim/home.test.ts) to the grate, lifted, and out onto the junction room's floor.
     const ladder = w.climbables.find(c => c.kind === 'ladder' && Math.hypot(c.x - vent.x, c.z - vent.z) < 1.5)!, bits = [LMB, RMB];
     teleport(p, ladder.x + ladder.nx * 0.7, p.pos.y + 0.01, ladder.z + ladder.nz * 0.7);

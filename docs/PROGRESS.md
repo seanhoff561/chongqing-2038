@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-52 The opening scene (U-104).
-Features done: 396 / 438 | Last done: M7-10
+**Status:** building M6. Next: M6-03 Hongyadong.
+Features done: 398 / 438 | Last done: M10-53
 <!-- /status -->
 
 ## What's built
@@ -68,3 +68,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-38 fix: a city with no house for the Li family's flat in Shibati puts it in the nearest round it (no crash on a new run)
 - M10-49: many machines without the lag (a crowd's tick and frame cut), and the draw calls back under budget everywhere
 - M10-38d, M6-16, M7-08, M7-09, M7-10: the cableway station by hand (its ropes on the real line), the pier and the site; Route C: the boat, the crossing and its route test; and the city built the same in the browser as in the tests
+- M10-52, M10-53: the opening scene (waking in the blue light, Anna's first words, the laptop and the bag) and her line on each tab

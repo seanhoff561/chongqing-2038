@@ -1,5 +1,6 @@
 // Furniture he puts down (U-013): beds, crates, and the toolbox that turns a table into a workbench (square on its
-// top, M10-25); what he drops, lying where it fell (M3-72); and his sister where she waits (M10-39).
+// top, M10-25); what he drops, lying where it fell (M3-72); his sister where she waits (M10-39); and his school bag on
+// the floor where he wakes, till he puts it on (M10-52).
 import * as THREE from 'three';
 import { itemModel } from './items3d';
 import type { SimState } from '../sim/types';
@@ -12,6 +13,14 @@ const MODELS: Record<string, () => THREE.Object3D> = {
   mattress: () => { const g = new THREE.Group(); g.add(box(0.9, 0.16, 1.9, lam(0x7d8790)), box(0.6, 0.1, 0.35, lam(0xb8b2a4), 0.21)); g.children[1].position.z = -0.7; return g; },
   bedroll: () => { const g = new THREE.Group(); g.add(box(0.7, 0.07, 1.9, lam(0x4f5a3a))); const roll = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.7, 10).rotateZ(Math.PI / 2), lam(0x3f4a2e)); roll.position.set(0, 0.12, -0.85); g.add(roll); return g; },
   foldcrate: () => box(0.6, 0.42, 0.42, lam(0x2d5a7a)),
+  // (Navy, lying on its back: its front pocket up, the zip, the straps out on the floor.)
+  schoolbag: () => {
+    const g = new THREE.Group(), navy = lam(0x1f2a3e), dark = lam(0x121722);
+    g.add(box(0.36, 0.15, 0.44, navy), box(0.26, 0.05, 0.2, navy, 0.17), box(0.27, 0.012, 0.012, dark, 0.2));
+    g.children[1].position.z = 0.07; g.children[2].position.z = -0.03;
+    for (const x of [-0.09, 0.09]) { const s = box(0.05, 0.02, 0.3, dark, 0.01); s.position.set(x, 0, -0.32); s.rotation.y = x * 2; g.add(s); }
+    return g;
+  },
   toolbox: () => { const g = new THREE.Group(); g.add(box(0.5, 0.22, 0.25, lam(0x9a2420)), box(0.3, 0.04, 0.03, lam(0x222222), 0.26)); return g; },
 };
 
@@ -59,7 +68,7 @@ export class Furniture {
   /** Rebuild when what's placed changes; each drawn only within the detail radius of the camera, as small props are. */
   sync(s: SimState, cam: THREE.Vector3) {
     for (const o of this.group.children) o.visible = Math.hypot(o.position.x - cam.x, o.position.z - cam.z) < GFX.detail;
-    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with},${!!s.sister.aboard}` : '');
+    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with},${!!s.sister.aboard}` : '') + (s.gear?.pack ? '|bag' : '');
     if (sig === this.sig) return;
     this.sig = sig;
     this.group.clear();
@@ -74,6 +83,12 @@ export class Furniture {
       const m = merged(itemModel(d.stack.id));
       m.position.set(d.x, d.y + 0.05, d.z);
       m.rotation.set(Math.PI / 2, 0, d.stack.uid * 2.4);
+      this.group.add(m);
+    }
+    if (s.gear?.pack) {
+      const m = merged(MODELS.schoolbag());
+      m.position.set(s.gear.x, s.gear.y, s.gear.z);
+      m.rotation.y = s.gear.yaw;
       this.group.add(m);
     }
     // (Not there once she's in the boat: render/boat3d.ts.)

@@ -2,6 +2,8 @@
 // the street, holding B (U-066) opens the rough-sleep menu, and sleeping rough saves the run.
 export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=3', 'rough');
+  // (A run already under way: past its opening, M10-52.)
+  await page.evaluate('(() => { const s = window.__cq.game.state; delete s.opening; delete s.gear; delete s.hello; window.__cq.runFrames(1); })()');
   await page.evaluate('localStorage.clear()');
   const start = await page.evaluate(`(() => { const s = window.__cq.game.state; return { n: s.inv.pack.items.length, shelters: s.shelters.map(h => h.id) }; })()`);
   if (start.n < 5 || start.shelters.length) fail('rough', `start ${JSON.stringify(start)}`);

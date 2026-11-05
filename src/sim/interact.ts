@@ -32,7 +32,7 @@ export const interKinds = () => [...handlers.keys()];
 export const START_SOUND: Record<string, (it: Inter) => string> = {
   // (A locker opens in silence: its clang grated, U-098.)
   container: it => (it.data?.type === 'locker' ? '' : `open-${(it.data?.type as string | undefined) ?? 'crate'}`),
-  pickup: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
+  pickup: () => 'rustle', gear: () => 'rustle', door: () => 'latch', window: () => 'blow-glass', rubble: () => 'rubble', mattress: () => 'springs', table: () => 'knock', sink: () => 'tap',
   // (M5: a wreck's metal, a junction box's catch, a terminal's keys, the bench, a rope's coil, a ladder's knock, a
   // scooter's deck, a cable clamp.)
   // (A map's sign wiped with a hand to read it: M10-32.)
@@ -139,7 +139,8 @@ export function stepInteract(s: SimState, w: World, input: InputFrame) {
   input.pressed &= ~B.INTERACT;
   const h = handlers.get(it.kind);
   if (!h) return;
-  const why = h.can?.(s, it) ?? null;
+  // (Nowhere to put anything till his bag's on: M10-52.)
+  const why = s.gear?.pack && (it.kind === 'container' || it.kind === 'pickup') ? 'no bag' : h.can?.(s, it) ?? null;
   // (What it needs is never said: U-104.)
   if (why) { const no = h.no?.(s, it); s.events.push({ t: 'blocked', why }); if (no) s.events.push({ t: 'sfx', id: no }); return; }
   const dur = h.dur?.(s, it) ?? 0, sound = START_SOUND[it.kind]?.(it);

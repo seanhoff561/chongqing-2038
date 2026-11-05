@@ -3,6 +3,8 @@
 // the neon on the walls over it.
 export default async function ({ open, screenshot, fail }) {
   const page = await open('?scenario=run&seed=1', 'starthideout');
+  // (A run already under way: past its opening, M10-52.)
+  await page.evaluate('(() => { const s = window.__cq.game.state; delete s.opening; delete s.gear; delete s.hello; window.__cq.runFrames(1); })()');
   const r = await page.evaluate(`(() => { const g = window.__cq.game, v = g.world.inter.find(i => i.id === 'airraid-grate'); return { d: Math.hypot(g.state.player.pos.x - v.x, g.state.player.pos.z - v.z), under: v.y - g.state.player.pos.y }; })()`);
   if (!(r.d < 15 && r.under > 7)) fail('starthideout', 'run did not start in the hideout: ' + JSON.stringify(r));
   await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 22 * 3600; g.state.flags.clear = true; const v = g.world.props.find(q => q.kind === 'grate' && q.text === 'airraid-grate'); Object.assign(g.state.player.pos, { x: v.x, y: g.state.player.pos.y, z: v.z }); g.input.yaw = 0; g.input.pitch = 1.5; window.__cq.runFrames(10); })()`);

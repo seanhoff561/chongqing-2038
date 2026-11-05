@@ -2,6 +2,8 @@
 // the phone, used, plays its voicemail (no subtitle: U-104), its words in its description.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=run&seed=1', 'liflat');
+  // (A run already under way: past its opening, M10-52.)
+  await page.evaluate('(() => { const s = window.__cq.game.state; delete s.opening; delete s.gear; delete s.hello; window.__cq.runFrames(1); })()');
   const r = await page.evaluate(`(() => { const g = window.__cq.game, s = g.state, t = g.world.teleports.find(q => q.name === 'Li family flat');
     if (!t) return null;
     s.time = 14 * 3600; s.flags.clear = true;

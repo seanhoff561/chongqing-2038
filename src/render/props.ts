@@ -154,7 +154,8 @@ const builders: Record<string, Builder> = {
     return l;
   },
   // The vent's light into the chamber under it (M4-41, U-050): daylight down the shaft by day (more with the grate up and
-  // the bags off it), the alley's neon by night, and a faint beam of it down the shaft; p.h the shaft's height.
+  // the bags off it), the alley's ice-blue neon by night flooding the chamber, and a beam of it down the shaft (M10-52);
+  // p.h the shaft's height.
   ventlight: p => {
     const g = new THREE.Group(), light = new THREE.PointLight(0xe8eeff, 0, 22, 1.5), h = p.h!;
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 1.0, h, 12, 1, true).translate(0, h / 2, 0),
@@ -165,9 +166,9 @@ const builders: Record<string, Builder> = {
     g.userData.tick = (_t: number, open: Record<string, boolean>) => {
       const k = night.k, up = open[p.text!] ? 1.6 : 1;
       light.color.copy(day).lerp(neon, k);
-      light.intensity = ((1 - k) * 6 + k * 3.5) * up;
+      light.intensity = ((1 - k) * 6 + k * 5) * up;
       beam.material.color.copy(light.color);
-      beam.material.opacity = ((1 - k) * 0.07 + k * 0.03) * up;
+      beam.material.opacity = ((1 - k) * 0.07 + k * 0.06) * up;
     };
     return g;
   },
