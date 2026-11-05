@@ -29,13 +29,14 @@ export interface Inter { id: string; kind: string; x: number; y: number; z: numb
  *  out; windows (per floor) is how much light leaks out at night; streetSides is how many of its walls face a
  *  street where patrols walk. */
 export interface Site {
-  id: string; kind: 'flat' | 'roof hut' | 'cellar'; x: number; y: number; z: number; /** a named one's name (M6-24b) */ name?: [string, string];
+  /** ('gone': a hand-made building's rolled shelter, kept only for the routes' dice: never in the world's list) */
+  id: string; kind: 'flat' | 'roof hut' | 'cellar' | 'gone'; x: number; y: number; z: number; /** a named one's name (M6-24b) */ name?: [string, string];
   bed: string | null; table: string | null; containers: string[]; exits: number; windows: number; streetSides: number;
 }
 
 /** A high-security site in a building (M6-11): which, its building's ids' prefix, where, and its ways in (each an
  *  interactable: the way it's taken, its id). */
-export interface Secure { id: string; prefix: string; x: number; z: number; ways: { kind: string; id: string }[] }
+export interface Secure { id: string; prefix: string; x: number; z: number; ways: { kind: string; id: string }[]; /** where what it's for is: its loot, its objective (M10-38b) */ heart: { x: number; y: number; z: number } }
 
 /** A light, for perception (M3-16): lit up to v within r of its box (a lamppost's is its pole's height under the
  *  lamp, a strip light's its strip). */

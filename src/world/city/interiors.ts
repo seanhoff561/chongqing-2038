@@ -118,6 +118,18 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
     l.route = path;
     basement(l, r, out, { U, V, base, alongZ, B, at, nid, decay, lobby });
   }
-  const { sites } = puzzle({ l, U, V, n, base, alongZ, decay, B, at, nid, core: hasCore ? { shaft, lobby } : undefined }, from, r, out);
+  const frame = { l, U, V, n, base, alongZ, decay, B, at, nid, core: hasCore ? { shaft, lobby } : undefined };
+  if (l.inside && hasCore) {
+    // Its insides made by hand (M10-38b): the rooms it would have had rolled all the same, so the dice fall for what's
+    // built after as they did (its roof, its signs), and thrown away but for their windows' and shelters' places,
+    // kept as ghosts for the city's own dice (crossings.ts, network.ts) and built nowhere.
+    const dry: Fabric = { solids: [], decor: [], props: [], lots: [], inter: [], climbables: [], hides: [], features: [], sites: [], far: [] };
+    const { sites } = puzzle(frame, 0, r, dry);
+    out.features.push(...dry.features.filter(f => f.kind === 'win:open' || f.kind === 'win:glass').map(f => ({ ...f, kind: 'win:gone' })));
+    out.sites.push(...sites.map(q => ({ ...q, kind: 'gone' as const })));
+    l.inside(frame, from, out, look);
+    return;
+  }
+  const { sites } = puzzle(frame, from, r, out);
   out.sites.push(...sites.map(q => ({ ...q, streetSides: sides(l).filter(sd => sd.street).length })));
 }

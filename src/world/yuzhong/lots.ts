@@ -21,6 +21,8 @@ export interface Plan {
   monument?: boolean;
   /** a high-security site's building: what it was, fixed (yuzhong/secure.ts) */
   siteType?: import('../city/types').BuildingType;
+  /** and its insides, made by hand (M10-38b) */
+  inside?: import('../city/buildings').Lot['inside'];
   /** on the far bank: drawn but not built for play */
   far: boolean;
   /** the ground round it rises above its base (a higher street beside it): solid only, never hollowed */

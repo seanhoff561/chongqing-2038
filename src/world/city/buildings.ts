@@ -12,6 +12,7 @@ import { fronts } from './fronts';
 import { tower } from './towers';
 import { tintFor, PAINTED } from './palette';
 import { ENVELOPE as E } from '../../data/envelope';
+import type { Frame } from './puzzle';
 
 export type LotKind = 'res' | 'tower';
 export interface Lot {
@@ -52,6 +53,8 @@ export interface Lot {
   /** its basement (M3-73a), in its own frame: the space under the ground floor (the foundation is cut for it and the
    *  ground's shell holed over it by the caller) */
   basement?: { x0: number; z0: number; x1: number; z1: number; y0: number; y1: number };
+  /** its insides made by hand (a key place's, M10-38b), built in its stairwell's place of the rolled rooms */
+  inside?: (fr: Frame, from: number, out: Fabric, look: number) => void;
 }
 export interface Fabric { solids: Solid[]; decor: Solid[]; props: Prop[]; lots: Lot[]; inter: Inter[]; climbables: Climbable[]; hides: HideSpot[]; features: Feature[]; sites: Site[]; far: Solid[] }
 
