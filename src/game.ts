@@ -419,7 +419,7 @@ export class Game {
     updateScreens(this.state, performance.now() / 1000);
     this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);
     this.view.setLamp(this.state.player.lamp);
-    this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
+    this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam);
     // What he hears of the city and its machines (audio/soundscape.ts; its music silent under his songs or the main
     // menu); the main menu's own music while it's up.
     this.menuMusic.update(this.menuUp());
