@@ -1,4 +1,4 @@
-// His own songs (M10-17, U-104): the game has no music of its own; the laptop's Songs app plays his. In the desktop game
+// His own songs (M10-17, U-104): the laptop's Songs app plays his, the city's own music silent while they do (U-107). In the desktop game
 // they're the files in its songs folder (Documents/Chongqing 2038/songs, empty at first); in the browser, a folder he
 // picks. They play in a random order, one after another, as background audio through the music bus (the master volume
 // sets them), whatever he's doing; play, pause and skip, the song's name shown.

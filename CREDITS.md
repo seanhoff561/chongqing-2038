@@ -11,6 +11,7 @@ Chongqing 2038 is coded entirely by Claude (Anthropic) from the director's promp
 | The street speakers' voice (lines from src/data/announce.ts) | public/audio/pa/*.ogg | [Kokoro-82M v1.1-zh](https://huggingface.co/hexgrad/Kokoro-82M-v1.1-zh) (ONNX build: onnx-community), voice zf_001 | hexgrad | Apache-2.0 |
 | Streets, buildings, parks, rail, bridges, the cableway, the river banks | src/data/geo/osm.json | © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors | | ODbL 1.0 (the extract is a derivative database) |
 | The ground's height | src/data/geo/ground.ts | Terrain Tiles on AWS Open Data (Mapzen / Tilezen) from SRTM (NASA/USGS, public domain), GMTED2010 and ETOPO1, smoothed by tools/geo-fetch.mjs | | public domain |
+| The city's quiet music (eight pieces, and the pursuit pulse) | src/audio/music.ts | composed for the game and played by Web Audio synthesis | Claude (Anthropic) | the game's own |
 | The main menu's music | src/audio/menu.ts | composed for the game and played by Web Audio synthesis | Claude (Anthropic) | the game's own |
 | The trailer's music (90 s, A minor: cold open 0-12 s, introduction 12-35, escalation 35-65, climax 65-85, button 85-90) | public/audio/trailer.ogg | composed for the game and synthesised sample by sample by tools/trailer.mjs | Claude (Anthropic) | the game's own |
 | Rendering | three.js | [threejs.org](https://threejs.org) | three.js authors | MIT |

@@ -1,5 +1,5 @@
-// M10-17 (U-104): the game has no music of its own; the Songs app plays his. In the browser he picks a folder of
-// songs: two picked, Play plays one of them, its name shown; Skip plays the other; Pause stops it (logs/songs.png).
+// M10-17 (U-104): the Songs app plays his own songs, the city's own music silent while they do (M10-66, U-107). In the
+// browser he picks a folder of songs: two picked, Play plays one of them, its name shown; Skip plays the other; Pause stops it (logs/songs.png).
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -18,7 +18,7 @@ export default async function ({ open, fail, screenshot }) {
   wav(a, 330); wav(b, 440);
   const page = await open('?scenario=hideout&seed=1', 'songs');
   await page.evaluate('(() => { window.__cq.game.input.pitch = -0.55; window.__cq.runFrames(60); })()');
-  if (await page.evaluate('!!window.__cq.game.sound.music')) fail('songs', 'the game still has music of its own');
+  if (!(await page.evaluate('!!window.__cq.game.sound.music'))) fail('songs', 'the city has no music of its own');
   await page.keyboard.press('Tab');
   await page.evaluate('window.__cq.runFrames(30)');
   await page.keyboard.press('KeyQ');
@@ -33,14 +33,14 @@ export default async function ({ open, fail, screenshot }) {
   // (Puppeteer can't answer a folder dialog: the two files given to the same input as a plain pick.)
   await input.evaluate(el => el.removeAttribute('webkitdirectory'));
   await input.uploadFile(a, b);
-  const st = () => page.evaluate(`(() => { window.__cq.runFrames(3); const S = window.__cq.game.songs; return { n: S.list.length, playing: S.playing, cur: S.current()?.name, started: S.started, paused: S.el.paused, shown: document.querySelector('${W} [data-k="song"]')?.textContent ?? '' }; })()`);
+  const st = () => page.evaluate(`(() => { window.__cq.runFrames(3); const S = window.__cq.game.songs; return { n: S.list.length, playing: S.playing, cur: S.current()?.name, started: S.started, paused: S.el.paused, city: window.__cq.game.sound.music.playing, shown: document.querySelector('${W} [data-k="song"]')?.textContent ?? '' }; })()`);
   let s = await st();
   if (s.n !== 2) fail('songs', `picked: ${JSON.stringify(s)}`);
   await click(`${W} [data-act="play"]`);
   await page.evaluate('new Promise(r => setTimeout(r, 600))');
   s = await st();
   const first = s.cur;
-  if (!s.playing || s.paused || !/song\.wav$/.test(first ?? '') || !s.shown.includes(first)) fail('songs', `Play: ${JSON.stringify(s)}`);
+  if (!s.playing || s.paused || s.city || !/song\.wav$/.test(first ?? '') || !s.shown.includes(first)) fail('songs', `Play: ${JSON.stringify(s)}`);
   await screenshot(page, 'songs');
   await click(`${W} [data-act="skip"]`);
   await page.evaluate('new Promise(r => setTimeout(r, 400))');
