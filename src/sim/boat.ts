@@ -19,10 +19,10 @@ import { PIER } from '../world/yuzhong/pier';
 /** Litres a jerrycan pours in; the battery charge that turns the engine over (percent) and what a start draws; top
  *  speed ahead and astern, paddling (m/s); how fast it picks up (m/s²) and turns (rad/s); the current (m/s); the deck
  *  over the water and the helm aft of the middle (m); litres a second at full throttle; how far the engine's heard
- *  (m); the water it draws (m); the seconds pouring, wiring, hotwiring. */
+ *  (m); the water it draws (m); the seconds pouring, wiring, hotwiring; how near Xiaoyu is to come down to it (m). */
 export const BOAT = {
   fuel: 20, crank: 25, start: 2, top: 7, astern: 2, paddle: 0.6, accel: 1.2, turn: 0.45, current: 1.8, deck: 0.8, helm: 2.2,
-  burn: 20 / 1500, noise: 60, draft: 0.7, pour: 5, wire: 4, hotwire: 8,
+  burn: 20 / 1500, noise: 60, draft: 0.7, pour: 5, wire: 4, hotwire: 8, call: 30,
 };
 const [LEN] = PIER.hull;
 
@@ -137,7 +137,7 @@ function stepOff(s: SimState, w: World) {
 }
 
 /** Every tick, once cast off: the helm's input (he's at it), the engine, the current; the boat moved where it floats,
- *  him with it. */
+ *  him with it; Xiaoyu down to it if it waits by her steps (she said she'd come). */
 export function stepBoat(s: SimState, w: World, input: InputFrame) {
   const b = s.boat, p = s.player;
   if (!b || b.moored) return;
@@ -159,4 +159,6 @@ export function stepBoat(s: SimState, w: World, input: InputFrame) {
   if (mx !== dx || mz !== dz) b.v *= 0.5;
   b.x += mx; b.z += mz;
   if (aboard) atHelm(s, mx / DT, mz / DT);
+  const x = s.sister;
+  if (aboard && x?.with && !x.aboard && Math.abs(b.v) < 1 && Math.hypot(x.x - b.x, x.z - b.z) < BOAT.call) { x.aboard = true; msg(s, 'Xiaoyu climbs in'); }
 }

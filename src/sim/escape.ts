@@ -20,10 +20,11 @@ export function stepDone(s: SimState, route: string, step: string) {
   if (r[step] === undefined) r[step] = s.time;
 }
 
-/** The run ends on a route: with his sister if it's her exit and she said she'd come (M10-39). */
+/** The run ends on a route: with his sister if it's her exit and she said she'd come (M10-39); by the river, if she
+ *  came down into the boat (M7-09). */
 export function endRun(s: SimState, route: string) {
   if (s.ended || s.dead) return;
-  const sister = s.sister?.route === route && !!s.sister.with;
+  const sister = s.sister?.route === route && !!s.sister.with && (route !== 'boat' || !!s.sister.aboard);
   s.ended = { route, t: s.time, sister };
   s.events.push({ t: 'ending', route, sister });
 }

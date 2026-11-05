@@ -1,12 +1,12 @@
 // The river police's patrol boat (M7-08), drawn where the run has it (sim/boat.ts), or moored at their pier till he's
 // worked on it: a white hull with the police's blue band, a pointed bow, a wheelhouse forward with its windows and a
-// light on its roof, the helm aft.
+// light on its roof, the helm aft; Xiaoyu sat in the bow once she's come down into it (M7-09).
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
 import type { World, Inter } from '../world/world';
 import { PIER } from '../world/yuzhong/pier';
 import { BOAT } from '../sim/boat';
-import { merged } from './furniture';
+import { sisterModel, merged } from './furniture';
 
 const lam = (c: number) => new THREE.MeshLambertMaterial({ color: c });
 
@@ -31,11 +31,15 @@ function hull() {
 
 export class BoatView {
   readonly group = new THREE.Group();
+  private girl: THREE.Object3D;
   /** where it's moored in the world it was last looked up in */
   private moor?: { w: World; it?: Inter };
 
   constructor(scene: THREE.Scene) {
     this.group.add(merged(hull()));
+    this.girl = merged(sisterModel(false));
+    this.girl.position.set(0, 0.2 + BOAT.deck, -2.4);
+    this.group.add(this.girl);
     this.group.visible = false;
     scene.add(this.group);
   }
@@ -50,5 +54,6 @@ export class BoatView {
     const t = s.time * 0.05;
     this.group.position.set(at.x, at.y - 0.2 + Math.sin(t * 1.3) * 0.04, at.z);
     this.group.rotation.set(Math.sin(t) * 0.015, at.yaw, Math.sin(t * 0.7) * 0.025, 'YXZ');
+    this.girl.visible = !!s.sister?.aboard;
   }
 }
