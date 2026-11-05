@@ -14,6 +14,7 @@ import { heightAt } from '../world/heightfield';
 import { PAGES, camList } from './lappages';
 import { Desk } from './lapos';
 import { Anna } from './anna';
+import { isNew } from '../sim/places';
 
 /** The page's own size (CSS pixels), scaled onto the screen's glass. */
 export const SCREEN = { w: 640, h: 408 };
@@ -41,7 +42,8 @@ export class LaptopUI {
   /** Anna in the screen's corner (M10-18) */
   readonly anna = new Anna();
   private wasOpen = false;
-  private toldFlat = false;
+  /** whether the map was up last frame (M10-40: Anna's word on the places new to it as it comes up) */
+  private mapUp = false;
   /** whether he was sat down last frame */
   private sat = false;
 
@@ -164,7 +166,11 @@ export class LaptopUI {
     this.root.classList.toggle('sit', sit);
     this.glow.intensity = open ? 1.4 * night.k : 0;
     const r = open ? g.laptop3d.corners(g.view.fp.cam, innerWidth, innerHeight) : null;
-    if (!r) { if (this.root.style.display !== 'none') this.root.style.display = 'none'; return; }
+    if (!r) {
+      if (this.mapUp) { this.mapUp = false; g.input.cmds.push({ c: 'act', name: 'map', arg: 0 }); }
+      if (this.root.style.display !== 'none') this.root.style.display = 'none';
+      return;
+    }
     this.root.style.display = 'block';
     // (The page laid onto the glass in perspective, wherever it's held.)
     this.root.style.transform = quadMatrix(SCREEN.w, SCREEN.h, r);
@@ -181,8 +187,12 @@ export class LaptopUI {
     this.frame++;
     // The map, drawn into its place a few times a second; the feed likewise.
     const mw = this.desk.win('map', sit), slot = mw && shown.includes(mw) ? mw.content.querySelector('.lt-map') : null;
-    // (The first time he sees the map, his family's flat on it: U-104; Anna's line about it is M10-53's.)
-    if (slot && !g.state.known?.liflat && !this.toldFlat) { this.toldFlat = true; g.input.cmds.push({ c: 'act', name: 'know', arg: 'liflat' }); }
+    // (The map coming up: Anna's line on each place new to it, the first time his family's flat; put away, all seen.)
+    if (!!slot !== this.mapUp) {
+      this.mapUp = !!slot;
+      g.input.cmds.push({ c: 'act', name: 'map', arg: slot ? 1 : 0 });
+      if (slot && (!g.state.known?.flat || Object.keys(g.state.known).some(id => isNew(g.state, id)))) this.anna.set('laugh', 2);
+    }
     if (slot) { const fresh = this.map.canvas.parentElement !== slot; this.map.place(slot); if (fresh || this.frame % 6 === 0) this.map.draw(); }
     const nw = sit ? this.desk.win('notes', sit) : null, write = nw && shown.includes(nw) ? nw.content.querySelector('.lt-write') : null;
     if (write && this.notes.parentElement !== write) { const f = document.activeElement === this.notes; write.appendChild(this.notes); if (f) this.notes.focus(); }

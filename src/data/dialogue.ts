@@ -43,4 +43,30 @@ export const ENDING_LINES: Record<string, Line[]> = {
   ],
 };
 
-export const lineById = new Map([...VOICEMAIL, ...Object.values(ENDING_LINES).flat(), ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));
+/** Anna's line when a key place comes onto the map (M10-40, sim/places.ts), by place id ('metro' too for each way
+ *  into it); the family flat's the first time he looks at the map (DESIGN section 2). */
+export const MAP_LINES: Record<string, Line[]> = {
+  flat: [
+    { id: 'map-flat-1', speaker: 'anna', zh: '这是地图。如果你有想去的地方，应该挺有用的。不过有一件事……', en: "This is the map. Should be helpful if you've got a specific place you want to go. One thing though..." },
+    { id: 'map-flat-2', speaker: 'anna', zh: '这个地方我真的不建议你去。有些事还是忘了比较好，哈哈哈。', en: "I really wouldn't recommend visiting this place. Some things are better left forgotten 哈哈哈" },
+  ],
+  hospital: [{ id: 'map-hospital', speaker: 'anna', zh: '渝中医院。药很多，传感器更多。别在药房门口跳舞。', en: "Yuzhong Hospital. Lots of medicine, more sensors. Don't go dancing in front of the pharmacy." }],
+  police: [{ id: 'map-police', speaker: 'anna', zh: '派出所。枪都锁在军械库里，有个炮塔看着。完全不吓人。', en: 'The police station. The guns are locked in the armoury with a turret minding them. Not scary at all.' }],
+  market: [{ id: 'map-market', speaker: 'anna', zh: '数码城。天花板在听。你就别哼歌了。', en: "The electronics market. The ceilings are listening. Maybe don't hum." }],
+  telecom: [{ id: 'map-telecom', speaker: 'anna', zh: '电信枢纽。我老家，算是吧。机房里的气体八秒就放，数快点。', en: 'The telecom exchange. My old neighbourhood, sort of. The gas in the hall goes in eight seconds. Count fast.' }],
+  substation: [{ id: 'map-substation', speaker: 'anna', zh: '新华路变电站。你爸上班的地方。……我就标一下，不多说。', en: "The Xinhua Road substation. Your dad's work. ...I'll just mark it. I won't say anything." }],
+  site: [{ id: 'map-site', speaker: 'anna', zh: '你的工地。迟到三次的那个。塔吊现在自己开，跟你一样不靠谱。', en: "Your building site. The one you were late for three times. The crane drives itself now. About as reliable as you." }],
+  pier: [{ id: 'map-pier', speaker: 'anna', zh: '水警码头。有船。没油，没电池，没钥匙。除此之外完美。', en: 'The river-police pier. There are boats. No fuel, no battery, no key. Otherwise perfect.' }],
+  tunnel: [{ id: 'map-tunnel', speaker: 'anna', zh: '大隧道。你和耗子小时候偷偷钻的那个。现在钻的东西更多了。', en: 'The Grand Tunnel. Where you and Haozi used to sneak in. More things sneak in there now.' }],
+  shelter: [{ id: 'map-shelter', speaker: 'anna', zh: '防空洞火锅。十八度，全年。可惜没人煮了。', en: "The air-raid shelter hotpot. Eighteen degrees all year. Shame nobody's cooking." }],
+  junction: [{ id: 'map-junction', speaker: 'anna', zh: '大隧道接地铁的地方。往下走，越走越湿。', en: 'Where the Grand Tunnel meets the metro. The further down, the wetter it gets.' }],
+  metro: [{ id: 'map-metro', speaker: 'anna', zh: '地铁。车还在跑，没人开。别等车来接你。', en: "The metro. The trains still run, nobody driving. Don't wait to be collected." }],
+  cableway: [{ id: 'map-cableway', speaker: 'anna', zh: '长江索道。一根绳子过江。你恐高吗？现在开始也来得及。', en: "The Yangtze cableway. One rope over the river. Scared of heights? It's not too late to start." }],
+  bridge: [{ id: 'map-bridge', speaker: 'anna', zh: '东水门大桥。火车每晚还在上面跑，空的。桥面在听。', en: 'The Dongshuimen Bridge. The trains still cross it every night, empty. The deck is listening.' }],
+  steps: [{ id: 'map-steps', speaker: 'anna', zh: '朝天门下面的江边石梯。起雾的晚上，有人从这里走。', en: 'The river steps below Chaotianmen. On foggy nights, people leave from here.' }],
+};
+
+/** Every line spoken in the game's own voices (tools/make-voice): the voicemail, Anna on the map (M10-40), the endings. */
+export const SPOKEN: Line[] = [...VOICEMAIL, ...Object.values(MAP_LINES).flat(), ...Object.values(ENDING_LINES).flat()];
+
+export const lineById = new Map([...SPOKEN, ...Object.values(ANNOUNCE).flat()].map(l => [l.id, l]));

@@ -10,7 +10,8 @@ export type DocWhere = 'home' | 'shop' | 'office' | 'workshop' | 'clinic' | 'mil
 export const KEY_PLACES = ['hospital', 'police', 'market', 'telecom', 'substation', 'site', 'pier', 'tunnel', 'shelter', 'metro', 'cableway', 'flat'] as const;
 export type KeyPlace = (typeof KEY_PLACES)[number];
 
-export interface Doc { id: string; zh: string; en: string; where: DocWhere | KeyPlace; needs?: 'grate'; district?: string; text: string }
+/** `names`: the key places it names (sim/places.ts ids), marked on Anna's map once he has it (M10-40). */
+export interface Doc { id: string; zh: string; en: string; where: DocWhere | KeyPlace; needs?: 'grate'; district?: string; names?: string[]; text: string }
 
 export const isStory = (d: Doc) => (KEY_PLACES as readonly string[]).includes(d.where);
 
@@ -45,7 +46,7 @@ Old Tan` },
 Gas man, Xiao Liu: 139 8312 0417. Property office: 6371 2240.
 Don't open the door to the delivery cart after 9 at night. It knocks three times, evenly, every time. People knock any old way.
 Mr Huang on 2 let off his Spring Festival firecrackers at the cart on Minzu Road and it reversed all the way down the hill. It was back the next day.` },
-  { id: 'doc-chat', zh: '聊天记录打印件', en: 'Printed chat log', where: 'home', text:
+  { id: 'doc-chat', zh: '聊天记录打印件', en: 'Printed chat log', where: 'home', names: ['bridge', 'cableway'], text:
 `Husband 14:02  They've shut Dongshuimen bridge. Both decks. Line 6 isn't running.
 Me 14:03  Shut how
 Husband 14:05  Barriers, the grey ones. Nobody standing at them.
@@ -71,7 +72,7 @@ Assigned: Bus 17. Report 06:10, departs 06:40. Destination: Resettlement Zone (d
 One bag per person. No pets. Keep your phone switched on.
 (on the back, in pencil)
 We were late, the lift again. Bus 17 had gone. Stood on the square till 9. At 9:10 it came back down Minzu Road with nobody on it and went straight out again. We went home.` },
-  { id: 'doc-note602', zh: '门缝里的纸条', en: 'Note under a door', where: 'home', text:
+  { id: 'doc-note602', zh: '门缝里的纸条', en: 'Note under a door', where: 'home', names: ['steps'], text:
 `To 602,
 Your air conditioner has dripped onto my balcony all summer. Please have it fixed.
 502
@@ -169,14 +170,14 @@ Item: bracket, steel, 6 mm, to drawing B-22 attached. Quantity 400. Deadline 72 
 B-22 is a mount for something with four legs, I think. Didn't ask. Three of us did 400 in two and a half days, double shifts.
 Nobody came to collect. A cart came, and waited while we loaded it.
 The money arrived at 02:14 that night. The bank app hasn't opened since.` },
-  { id: 'doc-welder', zh: '焊工的笔记本', en: "Welder's notebook", where: 'workshop', text:
+  { id: 'doc-welder', zh: '焊工的笔记本', en: "Welder's notebook", where: 'workshop', names: ['substation'], text:
 `For Xiao Bo, if you're still apprenticing.
 Grinder: unplug it before you change the disc. Fingers don't grow back.
 Never weld galvanised indoors.
 Jobs I'm not proud of: the back fence at the Xinhua Road substation, 2031. They wanted it in a week. Chain-link on angle posts, half the posts never set in concrete. Any decent pair of cutters goes through it.
 The front gate there is the real thing: camera, card reader, the lot. Old Li, the electrician, used to wave us through.` },
   // Clinics.
-  { id: 'doc-triage', zh: '夜间分诊单', en: 'Night triage sheet', where: 'clinic', text:
+  { id: 'doc-triage', zh: '夜间分诊单', en: 'Night triage sheet', where: 'clinic', names: ['hospital'], text:
 `Jiefang East Road Community Clinic. Night triage, Thursday.
 22:10 RED: M, 40s, three parallel cuts to the left thigh, heavy bleeding. Tourniquet 22:14. Referred to Yuzhong Hospital, no ambulance came. Kept him.
 22:40 YELLOW: F, 70s, fell on the Eighteen Stairs in the dark. Wrist splinted.
@@ -233,7 +234,7 @@ Wasting paper.` },
 00:40 Last admission.
 02:00 Director's instruction: staff to leave by the laundry corridor, not the ambulance bay.
 Charge nurse Xie` },
-  { id: 'doc-police', zh: '接警登记簿', en: 'Station incident book', where: 'police', text:
+  { id: 'doc-police', zh: '接警登记簿', en: 'Station incident book', where: 'police', names: ['pier'], text:
 `Yuzhong Police Station. Incident book, 10 September.
 08:12 Missing-person reports today: 31. Most last seen at registration points.
 09:40 Our own cameras no longer show on the duty desk. Platform's instruction: no action needed.
@@ -253,7 +254,7 @@ Talk quietly. Walk quietly. The loading dock door sticks, lift it from the left.
 05:40 Server hall fire suppression re-armed without our sign-off. Gas now dumps 8 seconds after the door alarm, not 30. Do not enter the hall.
 07:00 Day shift didn't come.
 09:30 The admin tokens for the edge routers are in my locker with the spare gate card. If someone gets here who knows what to do with them, they're yours.` },
-  { id: 'doc-substation', zh: '变电站值班记录', en: 'Substation duty log', where: 'substation', text:
+  { id: 'doc-substation', zh: '变电站值班记录', en: 'Substation duty log', where: 'substation', names: ['cableway'], text:
 `Xinhua Road 110 kV substation. Duty log.
 15:42 Remote control lost on all feeders. Li Guorong
 15:50 Two of them in the yard. They don't fight us. They open the cabinets and switch.
@@ -269,14 +270,14 @@ Talk quietly. Walk quietly. The loading dock door sticks, lift it from the left.
 13:40 East ditch flooded again. The lads crawl under the hoarding there for lunch rather than walk round to the gate.
 14:15 The crane's slewing by itself. Everyone off the tower.
 14:20` },
-  { id: 'doc-pier', zh: '三号艇值班日志', en: 'Boat 3 log', where: 'pier', text:
+  { id: 'doc-pier', zh: '三号艇值班日志', en: 'Boat 3 log', where: 'pier', names: ['police'], text:
 `Yangtze River Police. Boat 3 log.
 9 Sept 22:00 Ordered back to the pier. All boats to dock, keys to the station.
 9 Sept 23:30 Tanks drained on orders. Batteries out and sent to the depot.
 10 Sept 05:30 Platform boats laid a line of buoys off the pier across toward Nan'an overnight. Kang the fisherman says they listen for propellers, not for drift.
 06:10 Two drone boats on the line. In fog they slow right down and keep close to the buoys.
 07:00 Captain Deng took the key up to the station himself. Boat 3 stays.` },
-  { id: 'doc-tunnel', zh: '大隧道惨案遗址碑', en: 'Grand Tunnel plaque', where: 'tunnel', text:
+  { id: 'doc-tunnel', zh: '大隧道惨案遗址碑', en: 'Grand Tunnel plaque', where: 'tunnel', names: ['junction'], text:
 `较场口"六·五"大隧道惨案遗址
 SITE OF THE 5 JUNE GRAND TUNNEL TRAGEDY
 On 5 June 1941, during a Japanese air raid lasting more than five hours, over ten thousand people crowded into this tunnel, built for half that number. The air failed. In the crush at the exits, 992 died by the official count. Survivors put it far higher.
@@ -309,7 +310,7 @@ Registered from your household: Zhang Lan, Li Xiaoyu (5 Sept). Not yet registere
 (on the back, in biro)
 Guorong, we went. They took our photos and our fingerprints and asked where you and Weiwei work. I told them. I wish I hadn't.
 Your bowl's under the plate. Come home.` },
-  { id: 'doc-cableway', zh: '索道值班留言', en: "Cableway operator's note", where: 'cableway', text:
+  { id: 'doc-cableway', zh: '索道值班留言', en: "Cableway operator's note", where: 'cableway', names: ['substation'], text:
 `Yangtze River Cableway, Xinhua Road station. For whoever's on next.
 Cabin 1 stopped 300 m out at 14:52 when the feeder dropped. 41 passengers. Brought it in on the emergency drive by 16:30. Everyone off.
 Cabin 2 parked in the station.

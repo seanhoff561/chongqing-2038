@@ -62,6 +62,7 @@ import { stepPower } from './power';
 import { stepKitLines } from './zipkit';
 import { stepRiver } from './river';
 import { stepEscape } from './escape';
+import { stepPlaces } from './places';
 import { stepBeats } from './beats';
 import { stepSearch } from './search';
 import { stepSilent } from './silent';
@@ -167,6 +168,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepKitLines(state, world);
   stepRiver(state, world);
   stepEscape(state, world);
+  stepPlaces(state, world);
   stepBeats(state);
   checkCollapse(state);
   state.tick++;
