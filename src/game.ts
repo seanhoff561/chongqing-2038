@@ -401,10 +401,11 @@ export class Game {
     this.snow.update(this.state.tick / 60, cam, this.state.weather.snow ?? 0, covered, 0.12 + 0.88 * daylight(this.state.time), this.view.renderer.domElement.height, this.view.fp.cam.fov);
     this.view.setLamp(this.state.player.lamp);
     this.units?.update(this.world, this.state.units, this.state.time + alpha * GAME_PER_TICK, this.view.fp.cam.position);
-    // What he hears of the city and its machines (audio/soundscape.ts); the main menu's own music while it's up.
+    // What he hears of the city and its machines (audio/soundscape.ts; its music silent under his songs or the main
+    // menu); the main menu's own music while it's up.
     this.menuMusic.update(this.menuUp());
     this.alarmBoards();
-    this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5);
+    this.sound.update(dt, this.state, this.world, this.view.fp.cam, wet || this.under > 0.5, this.songs.playing || this.menuUp());
     this.view.render(this.state.tick / 60, this.state.wstate.open);
     this.frames++;
   }

@@ -1,5 +1,5 @@
-// Everything he hears of the world round him, put together each frame: the empty city's ambience for where he is
-// (M4-51; no music of its own: U-104, his own songs play from the laptop), the machines where they are (M4-33), their dread (M4-52), gunfire as it carries (M4-54), his
+// Everything he hears of the world round him, put together each frame: the empty city's ambience and its quiet music
+// for where he is (M4-51, M4-86; silent while his own songs play, U-107), the machines where they are (M4-33), their dread (M4-52), gunfire as it carries (M4-54), his
 // heartbeat when badly hurt (M4-55).
 import * as THREE from 'three';
 import type { Audio } from './audio';
@@ -8,6 +8,9 @@ import { Ambience, whereIs, SHORE, type Where } from './ambience';
 import { heightAt } from '../world/heightfield';
 import { Dread } from './dread';
 import { Heart } from './heart';
+import { Music, nightOf } from './music';
+import { districtOf } from '../sim/district';
+import { daylight } from '../sim/clock';
 import { machineShot, echo } from './gunfire';
 import { gunshot } from './moves';
 import { raycast } from '../world/geom';
@@ -19,6 +22,7 @@ export class Soundscape {
   readonly ambience: Ambience;
   readonly dread: Dread;
   readonly heart: Heart;
+  readonly music: Music;
   /** where he is, looked at twice a second, and whether there's cover over him */
   env: { where: Where; covered: boolean; height: number } = { where: 'street', covered: false, height: 0 };
   /** metres to the river's water, if it's within earshot (M8-09) */
@@ -33,14 +37,18 @@ export class Soundscape {
     this.ambience = new Ambience(a);
     this.dread = new Dread(a);
     this.heart = new Heart(a);
+    this.music = new Music(a);
   }
 
-  /** Every frame, his head the camera; under the ground or the water. */
-  update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean) {
+  /** Every frame, his head the camera; under the ground or the water; the city's music hushed (his songs playing,
+   *  or the main menu up). */
+  update(dt: number, s: SimState, w: World, cam: THREE.Camera, under: boolean, hush = false) {
     const head = cam.position;
     if ((this.envIn -= dt) <= 0) { this.envIn = 0.5; this.env = whereIs(w, head, under); }
     if (this.envIn === 0.5) this.river = riverOff(w, head.x, head.y, head.z);
     this.ambience.update(dt, { where: this.env.where, hour: (s.time / 3600) % 24, river: this.river });
+    // The music for where he is (M4-86): high up, in the streets, underground.
+    this.music.update(this.env.where, this.env.height, s.hive.districts[districtOf(head.x, head.z)]?.state ?? 'unaware', nightOf(daylight(s.time)), hush);
     this.voices.update(dt, s, w, head, cam.getWorldDirection(this.fwd));
     this.dread.update(dt, s, w, head, this.voices.nearest(head));
     // His heart when he's badly hurt (M4-55, U-077).
