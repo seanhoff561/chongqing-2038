@@ -306,9 +306,11 @@ describe('the cableway station (M6-16)', () => {
     let wet = 0;
     for (let f = 0; f <= 1; f += 0.01) if ((heightAt(g, a.x + (b.x - a.x) * f, a.z + (b.z - a.z) * f) ?? 0) < WATER_Y) wet++;
     expect(wet, 'over the river').toBeGreaterThan(20);
-    // Every rope clear of everything all the way (but where it leaves its hall).
-    expect(w.ropes!.length).toBeGreaterThanOrEqual(3 * 8);
-    for (const l of w.ropes!) {
+    // Every rope clear of everything all the way (but where it leaves its hall). (The bridges' steel and stays, drawn
+    // with them, are coloured: M6-07.)
+    const ropes = w.ropes!.filter(l => l.color === undefined);
+    expect(ropes.length).toBeGreaterThanOrEqual(3 * 8);
+    for (const l of ropes) {
       const dx = l.b.x - l.a.x, dy = l.b.y - l.a.y, dz = l.b.z - l.a.z, d = Math.hypot(dx, dy, dz);
       expect(raycast(w.index, l.a.x + (dx / d) * 0.5, l.a.y + (dy / d) * 0.5, l.a.z + (dz / d) * 0.5, dx / d, dy / d, dz / d, d - 0.5), `rope at ${l.a.x.toFixed(0)},${l.a.y.toFixed(0)},${l.a.z.toFixed(0)}`).toBeNull();
     }

@@ -70,6 +70,8 @@ export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plot
     // Its roof over what's left (and over its stairwell's shaft).
     out.solids.push(turn([solid(lot.x0, c - SLAB, lot.z0, lot.x1, c, lot.z1, MAT.concrete)], o.yaw, o.cx, o.cz)[0]);
     p.wall = plots[n].wall = plots[n].top = c;
+    // (Its way up ends on its new roof: nothing waits where the old one was.)
+    plots[n].route = plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
     const lt = out.lots.find(q => q.id === n);
     if (lt) lt.wall = lt.top = c;
   });
