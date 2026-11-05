@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-64 The laptop opens without a hitch (U-107).
-Features done: 381 / 438 | Last done: M10-45
+**Status:** building M10. Next: M10-32 The map editor (U-104).
+Features done: 382 / 438 | Last done: M10-64
 <!-- /status -->
 
 ## What's built
@@ -57,3 +57,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-37, M10-41, M10-42, M10-48: found documents; no headlamp at the start; locked doors just click; machines take fewer hits
 - M10-43, M10-47, M10-50: crawlers only underground; the dead read at a glance; real trees, vines and street poles to climb
 - M6-10, M10-26, M10-38, M10-61, M10-62, M10-63, M10-65, M10-66, M10-44, M10-31, M10-45: the construction site, loot everywhere, the Li flat, no gym, eldritch machines that keep apart, the ground solid, leaves under the trees, the alley's neon ice blue, real explosions, the city's music back
+- M10-64: the laptop opens without a hitch (no light added on opening, its page and map ready from load)
