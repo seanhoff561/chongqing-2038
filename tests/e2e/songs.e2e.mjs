@@ -5,7 +5,7 @@ import os from 'os';
 import path from 'path';
 
 /** A WAV of a quiet tone, two minutes long (a loaded machine can take tens of seconds between Play and Skip, and a
-// moves on by itself.)
+ *  song ending on its own moves on by itself). */
 function wav(file, hz) {
   const rate = 8000, n = rate * 120, b = Buffer.alloc(44 + n * 2);
   b.write('RIFF', 0); b.writeUInt32LE(36 + n * 2, 4); b.write('WAVEfmt ', 8); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
