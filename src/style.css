@@ -101,6 +101,18 @@ canvas { display: block; }
 #boot .bt-panel table { border-collapse: collapse; margin: 6px 0; }
 #boot .bt-panel td { border: 1px solid var(--ice-line); padding: 2px 6px; vertical-align: top; }
 #boot .bt-claude { color: var(--ice-hi); margin-top: 16px; }
+/* The maps (M10-33): the list, one selected; under it its buttons in a row. */
+#boot .bt-maps { width: min(440px, 92vw); max-height: 50vh; padding: 6px; }
+#boot .bt-map { padding: 6px 10px; cursor: pointer; border: 1px solid transparent; user-select: none; }
+#boot .bt-map:hover { border-color: var(--ice-line); }
+#boot .bt-map.sel { background: #17303c; color: var(--ice-hi); border-color: var(--ice-dim); }
+#boot .bt-map span { float: right; color: var(--ice-dim); font-size: 11px; }
+#boot .bt-hint { color: var(--ice-dim); font-size: 11px; margin: 2px 0 6px; }
+#boot .bt-row { display: flex; gap: 6px; width: min(440px, 92vw); }
+#boot .bt-row button { width: auto; flex: 1; text-align: center; padding: 7px 4px; }
+#boot .bt-maps ~ button { width: min(440px, 92vw); }
+#boot button:disabled { opacity: 0.4; cursor: default; border-color: var(--ice-line); color: var(--ice); }
+#boot button.sure { border-color: #b3201c; color: #ff9a90; }
 
 #laptop { position: fixed; left: 0; top: 0; transform-origin: 0 0; box-sizing: border-box; overflow: hidden; background: #08131a; color: var(--ice); font-size: 12px; line-height: 1.45; pointer-events: none; z-index: 6; }
 #laptop { box-shadow: 0 0 22px 3px rgba(140, 205, 230, var(--bloom, 0.1)); text-shadow: 0 0 1.4px rgba(191, 230, 245, 0.35); }

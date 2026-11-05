@@ -1,6 +1,6 @@
 // The main menu (U-104), on a boot into the game itself (a ?scenario= test load goes straight in), everything paused
-// under it: 重庆 2038, Continue (with a save: its date and time), New Run, Settings (the Esc panel), Maps and
-// the version, which opens the changelog: the README, then the changes (PROGRESS), then the credits, the repository's
+// under it: 重庆 2038, Continue (with a save: its date and time), New Run, Settings (the Esc panel), Maps (the maps'
+// list, ui/maps-menu.ts) and the version, which opens the changelog: the README, then the changes (PROGRESS), then the credits, the repository's
 // link and that Claude coded it all.
 import type { Game } from '../game';
 import type { SaveFile } from '../sim/save';
@@ -9,7 +9,7 @@ import { version } from '../../package.json';
 import readme from '../../README.md?raw';
 import progress from '../../docs/PROGRESS.md?raw';
 import credits from '../../CREDITS.md?raw';
-import { openEditor } from './editor';
+import { mapsMenu } from './maps-menu';
 
 /** The game's repository. */
 export const REPO = 'https://github.com/seanhoff561/chongqing-2038';
@@ -33,15 +33,16 @@ function md(src: string) {
   return out.join('');
 }
 
-export function bootMenu(game: Game, save: SaveFile | null) {
+/** The main menu; on its Maps page, from the editor. */
+export function bootMenu(game: Game, save: SaveFile | null, maps = false) {
   const el = document.createElement('div');
   el.id = 'boot';
   document.body.appendChild(el);
   game.input.uiOpen = true;
   // (Nothing runs under it, the view included: U-104.)
   document.exitPointerLock?.();
-  // (Esc from the changelog goes back to the menu.)
-  const esc = (e: KeyboardEvent) => { if (e.code === 'Escape' && el.querySelector('.bt-log') && !game.settings.open) { e.preventDefault(); e.stopImmediatePropagation(); menu(); } };
+  // (Esc from the changelog or the maps goes back to the menu.)
+  const esc = (e: KeyboardEvent) => { if (e.code === 'Escape' && el.querySelector('.bt-log, .bt-maps') && !game.settings.open) { e.preventDefault(); e.stopImmediatePropagation(); menu(); } };
   addEventListener('keydown', esc, true);
   const close = () => { el.remove(); removeEventListener('keydown', esc, true); game.input.uiOpen = false; };
   const menu = () => {
@@ -54,8 +55,7 @@ export function bootMenu(game: Game, save: SaveFile | null) {
     // (The same panel as Esc in play: U-104.)
     el.querySelector<HTMLButtonElement>('.set')!.onclick = () => game.settings.show();
     el.querySelector<HTMLButtonElement>('.ver')!.onclick = changelog;
-    // (For now straight into the map editor, on the map last edited: M10-32; the maps' list is M10-33's.)
-    el.querySelector<HTMLButtonElement>('.maps')!.onclick = () => { close(); openEditor(game); };
+    el.querySelector<HTMLButtonElement>('.maps')!.onclick = () => mapsMenu(game, el, close, menu);
   };
   const changelog = () => {
     el.innerHTML = `<div class="bt-panel bt-log"><div class="bt-h1">重庆 2038 · v${version}</div>${md(readme)}${md(progress)}${md(credits)}` +
@@ -63,5 +63,5 @@ export function bootMenu(game: Game, save: SaveFile | null) {
       `<button class="back">返回 Back</button>`;
     el.querySelector<HTMLButtonElement>('.back')!.onclick = menu;
   };
-  menu();
+  if (maps) mapsMenu(game, el, close, menu); else menu();
 }

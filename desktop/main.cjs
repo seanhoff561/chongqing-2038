@@ -13,7 +13,7 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: t
 const web = path.join(__dirname, 'web');
 const home = path.join(app.getPath('documents'), 'Chongqing 2038');
 const dirs = { songs: path.join(home, 'songs'), maps: path.join(home, 'maps') };
-const SONG = /\.(mp3|ogg|wav|m4a|flac|opus)$/i, MAP = /^[\w .-]+\.json$/;
+const SONG = /\.(mp3|ogg|wav|m4a|flac|opus)$/i, MAP = /^[\p{L}\p{N}_ .-]+\.json$/u;
 
 app.whenReady().then(() => {
   for (const d of Object.values(dirs)) fs.mkdirSync(d, { recursive: true });
