@@ -40,7 +40,10 @@ import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
 import { riverPolice } from './pier';
-import { cableLine, cableCuts, inCableWay, cutCableway, cableRopes } from './cableway';
+import { cableLine, cableCeil, cableRopes } from './cableway';
+import { cutsUnder, inWayUnder, cutDown, type Ceil } from './cutdown';
+import { bridgeSpans, bridgeCeil, spanFor, deck, buildBridge } from './bridges';
+import { checkpoint } from './checkpoint';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -117,7 +120,9 @@ export function buildYuzhong(): World {
   // The cableway's line over the city and the river to Shangxin Street (M6-16): what the city made in its way stands
   // lower, under its cabins: found now, cut once the city stands and is joined up, its dice all thrown as they were.
   const cwPlan = plans.find(q => q.inside === SECURE.find(S => S.id === 'cableway')!.inside), cable = cwPlan ? cableLine(plans, cwPlan) : null;
-  const cuts = cable ? cableCuts(plans, cable) : new Map<Plan, number>(), inWay = cable ? inCableWay(cable, cuts) : undefined;
+  // And under the bridges' decks (M6-07).
+  const spans = bridgeSpans(g), bc = bridgeCeil(spans), cc = cable ? cableCeil(cable) : null, ceil: Ceil = pts => Math.min(cc ? cc(pts) : Infinity, bc(pts));
+  const cuts = cutsUnder(plans, ceil, bc), inWay = inWayUnder(ceil, cuts);
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
   // Holes knocked through from one building into the next where their floors meet (M3-76).
@@ -127,7 +132,7 @@ export function buildYuzhong(): World {
   layLinks(vert, built, inWay);
   layLinks(cross, built, inWay);
   windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross, inWay);
-  if (cable) cutCableway(cable, cuts, plans, plots, out);
+  cutDown(ceil, cuts, plans, plots, out);
   // The sewer maze under the basements (M3-73a).
   const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
   // The cable tunnel to the telecom exchange and the hospital's basement link (M6-21), off Jiaochangkou's station hall:
@@ -153,8 +158,15 @@ export function buildYuzhong(): World {
   // The streets as drawn, and paths from the doors set back from them to them (U-033).
   const drawn = drawnStreets(sts.filter(onGround), plots), doorWays = doorPaths(g, plots, drawn);
   const decor: Solid[] = [];
-  // Streets are drawn along their lines (render/streets.ts); stairs get their steps here, bridges their decks.
-  for (const s of sts) if (onGround(s) && s.steps) surface(s, g, decor); else if (s.bridge && s.layer > 0) bridge(s, g, out.solids);
+  // Streets are drawn along their lines (render/streets.ts); stairs get their steps here, bridges their decks; the two
+  // big bridges their trusses, pylons and piers (M6-07).
+  for (const s of sts) if (onGround(s) && s.steps) surface(s, g, decor); else if (s.bridge && s.layer > 0) deck(s, g, out.solids, MAIN_ROADS.has(s.kind), spanFor(spans, s));
+  const trusses = spans.map(b => buildBridge(b, g, plots));
+  // The Dongshuimen's checkpoint on its road deck (M6-19); its sensors join the city's last.
+  const check = checkpoint(spans[0]);
+  for (const q of [...trusses, check]) { out.solids.push(...q.solids); decor.push(...q.decor); out.climbables.push(...q.climbables); }
+  for (const q of trusses) out.far.push(...q.far);
+  out.inter.push(...check.inter); out.features.push(...check.features);
   const [W, H] = GEO.size;
   const L = GEO.landmarks, at = (k: string, yaw = 0): Teleport => ({ name: k, x: L[k].x, y: hAt(g, L[k].x, L[k].z) + 1.5, z: L[k].z, yaw });
   const hide = { name: "Friends' hideout (vent grate)", x: home.at.spawn.x, y: home.at.spawn.y + 0.05, z: home.at.spawn.z, yaw: -Math.PI / 2 - home.yaw };
@@ -209,7 +221,7 @@ export function buildYuzhong(): World {
   }
   // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
   const ways = site ? siteWays(site, plots, g) : null;
-  teleports.push(...(ways?.teleports ?? []));
+  teleports.push(...(ways?.teleports ?? []), ...trusses.flatMap(q => q.teleports), ...check.teleports);
   const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, linked.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
@@ -297,6 +309,8 @@ export function buildYuzhong(): World {
   liFlat(world);
   // The cableway's ropes over the river to its south station (M6-16).
   if (cable) { const cr = cableRopes(world, cable); world.ropes = cr.ropes; world.features.push(...cr.features); }
+  world.ropes = (world.ropes ?? []).concat(trusses.flatMap(q => q.lines));
+  world.bridges = spans;
   // The ways out's far ends (M10-51).
   world.zones.push(...exitZones(world));
   // The machines' ways about on foot as the world stands now (M4-02); the street layer between the key points along
@@ -319,6 +333,7 @@ export function buildYuzhong(): World {
   world.flood = under.flood; world.zones.push(...under.seismic);
   const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
   if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
+  world.cameras.push(...check.cameras);
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
@@ -581,29 +596,3 @@ function surface(s: Street, g: Heightfield, decor: Solid[]) {
   }
 }
 
-/** A bridge deck from the ground at its ends, rising to clear what it crosses (5.5 m over the ground once 20 m out
- *  from either end), with railings. */
-function bridge(s: Street, g: Heightfield, solids: Solid[]) {
-  // Pieces of at most 8 m, so the deck can arch over what it crosses.
-  const pts: [number, number][] = [s.pts[0]];
-  for (let k = 1; k < s.pts.length; k++) {
-    const [ax, az] = s.pts[k - 1], [bx, bz] = s.pts[k], m = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 8));
-    for (let i = 1; i <= m; i++) pts.push([ax + ((bx - ax) * i) / m, az + ((bz - az) * i) / m]);
-  }
-  const along = [0];
-  for (let k = 1; k < pts.length; k++) along.push(along[k - 1] + Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1]));
-  const total = along[along.length - 1] || 1, n = pts.length - 1;
-  const y0 = hAt(g, pts[0][0], pts[0][1]), y1 = hAt(g, pts[n][0], pts[n][1]);
-  // Footbridges climb steeply (stairs at their ends); road bridges ramp over 20 m.
-  const foot = !MAIN_ROADS.has(s.kind), ramp = foot ? 6 : 20, thick = foot ? 0.6 : 1.5;
-  const deckY = pts.map(([x, z], k) => Math.max(y0 + ((y1 - y0) * along[k]) / total, hAt(g, x, z) + 5.2 * Math.min(1, Math.min(along[k], total - along[k]) / ramp)));
-  for (let k = 0; k < n; k++) {
-    const [ax, az] = pts[k], [bx, bz] = pts[k + 1], len = Math.hypot(bx - ax, bz - az);
-    if (len < 0.5) continue;
-    const ya = deckY[k], yb = deckY[k + 1];
-    const cx = (ax + bx) / 2, cz = (az + bz) / 2, yaw = atan2(bz - az, bx - ax), lo = Math.min(ya, yb), hi = Math.max(ya, yb);
-    const x0 = cx - len / 2 - 0.2, x1 = cx + len / 2 + 0.2, z0 = cz - s.w / 2, z1 = cz + s.w / 2;
-    const deck = hi - lo < 0.05 ? solid(x0, lo - thick, z0, x1, lo, z1, MAT.concrete) : rampSolid(x0, lo - thick, z0, x1, z1, lo, hi, ya < yb ? 1 : 2, MAT.concrete);
-    solids.push(...turn([deck, solid(x0, lo, z0 - 0.25, x1, hi + 1.1, z0, MAT.metal), solid(x0, lo, z1, x1, hi + 1.1, z1 + 0.25, MAT.metal)], yaw, cx, cz));
-  }
-}

@@ -1,5 +1,6 @@
 // The key places' own insides, continued (M10-38b, insides.ts): the telecom exchange and the substation.
 import { handmade } from '../city/handmade';
+import { FLOOR } from '../city/rooms';
 import type { Lot } from '../city/buildings';
 
 /** The telecom exchange (36.7 x 30.0 m, 13 floors; its stairwell came down over the first floor, so the stairwell
@@ -70,7 +71,8 @@ export const telecom: Lot['inside'] = (fr, from, out, look) => {
  *  floors high, the live busbars across it at 2.6 m, its steel stair up to the control room; its back fence gate
  *  chained; its roof come down at the east end, between the gatehouse and the stair, so round it past the busbars.
  *  The rest room's door onto the hall buried, round by the workshop (its tool crate, the bolt cutters) and the cable
- *  store. Over the gatehouse the control room, the duty log in its desk; behind it store cage B, chained,
+ *  store, his father's locker there (his spare insulated gloves). Over the gatehouse the control room, the duty log
+ *  in its desk, the Dongshuimen Bridge's sensor bus relay on its east wall (M7-02); behind it store cage B, chained,
  *  the relay cabinet in it holding the one spare HV fuse (the heart). */
 export const substation: Lot['inside'] = (fr, from, out, look) => {
   const K = handmade(fr, from, out, look), { U, V } = K;
@@ -116,6 +118,14 @@ export const substation: Lot['inside'] = (fr, from, out, look) => {
   K.door(1, 40.5, 4.25, 'v', 'chained', { label: ['B号库笼', 'Store cage B'] });
   K.put(1, 'drawer', 39.0, V - 0.25, [0, -1], { zh: '值班台抽屉', en: 'Duty desk drawer', doc: true });
   K.put(1, 'cabinet', 42.5, 0.25, [0, 1], { zh: '继电保护柜', en: 'Relay cabinet', items: [['hvfuse', 1]] });
+  // Li Guorong's locker in the rest room, his name on it, his spare gloves on the hook (M7-02).
+  K.put(0, 'locker', 13.45, 7.0, [-1, 0], { zh: '李国荣的储物柜', en: "Li Guorong's locker", items: [['insgloves', 1]] });
+  K.scrawl(0, 13.68, 7.0, [-1, 0], '李国荣  LI GUORONG', 2.05);
+  // The bridge's sensor bus comes in here: its relay cabinet, live (sim/bridge.ts).
+  K.block(1, 'cabinet', U - 0.6, 6.0, U, 7.4, 2.0, [-1, 0]);
+  K.scrawl(1, U - 0.62, 6.7, [-1, 0], '东水门大桥 传感总线  DONGSHUIMEN BRIDGE SENSOR BUS', 2.3);
+  const [rx, rz] = fr.at(U - 0.8, 6.7);
+  out.inter.push({ id: 'bridge-relay', kind: 'busrelay', x: rx, y: fr.base + FLOOR + 1.3, z: rz, r: 0.5, zh: '桥梁传感总线继电器', en: 'Bridge sensor bus relay' });
   K.mark('heart', 1, 40.6, 2.0);
   K.entry([[U - 0.8, 11.26], [42.5, 16.0], [37.0, 17.0], [35.2, 17.0], [33.0, 6.0], [19.0, 5.2], [19.0, 2.0], [10.0, 2.0], [10.0, 5.0], [5.6, 5.0]]);
   K.build();

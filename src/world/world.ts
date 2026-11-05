@@ -12,7 +12,7 @@ export interface Climbable { kind: 'pipe' | 'ladder' | 'rope' | 'tree' | 'post' 
 
 /** A box he can curl up in. The interior box is what must fit him. */
 /** A line he can ride hanging from it (M3-52): a cable strung between buildings, live with power or dead. */
-export interface Line { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number }; live?: boolean; /** strung from his zipline kit (M5-33): its own trolley rides it, and it's taken down again as the kit; a machine has seen it */ kit?: boolean; seen?: boolean }
+export interface Line { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number }; live?: boolean; /** drawn only (`ropes`): its radius and colour, if not a cable's (a bridge's diagonals and stays, M6-07) */ r?: number; color?: number; /** strung from his zipline kit (M5-33): its own trolley rides it, and it's taken down again as the kit; a machine has seen it */ kit?: boolean; seen?: boolean }
 
 /** A place to curl up in: inner is its space, centred where it is with its own width (x) and depth (z) before
  *  it's turned by yaw (as a prop's: three's rotation.y). */
@@ -114,6 +114,8 @@ export interface World {
   gas?: { id: string; box: Box; sensor: number }[];
   /** live busbars (M6-15): each a line, end to end */
   hv?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
+  /** the two bridges' lines (M6-07: yuzhong/bridges.ts) */
+  bridges?: import('./yuzhong/bridges').Span[];
   /** the metro's live third rail, along its top (M6-17: sim/metro.ts) */
   rail?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
   /** the water in Line 1's extension's dip (M7-11): its boxes (in `water`), full and drained (sim/tunnelend.ts) */
@@ -132,7 +134,8 @@ export interface World {
   lawns?: [number, number][][];
   /** cables strung between buildings, to ride (M3-52) */
   lines: Line[];
-  /** the cableway's ropes over the river (M6-16): drawn, not ridden (yuzhong/cableway.ts) */
+  /** drawn, not ridden: the cableway's ropes over the river (M6-16, yuzhong/cableway.ts), the bridges' diagonals and
+   *  stay cables (M6-07, yuzhong/bridges.ts) */
   ropes?: Line[];
   /** the machines' columns' ways out of the factory along the roads, at ground level (M3-57b) */
   /** the machines' columns' ways out of the factory, and where on each a pair peels off into an alley (M4-01b) */

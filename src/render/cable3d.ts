@@ -31,8 +31,9 @@ function cabin() {
   return g;
 }
 
-/** The line drone: a white disc, its ring of light, four arms out to their rotors. */
-function drone() {
+/** The line drone (and the bridge's maintenance drones): a white disc, its ring of light, four arms out to their
+ *  rotors. */
+export function drone() {
   const g = new THREE.Group(), white = lam(0xe8e8e4), dark = lam(0x2a2e33);
   g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.2, 0.1, 12), white));
   g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.245, 0.245, 0.015, 12), new THREE.MeshBasicMaterial({ color: 0x9fe6ff })));
