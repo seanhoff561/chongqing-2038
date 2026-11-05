@@ -9,7 +9,7 @@ import { unitPose, type Unit } from '../sim/units';
 import type { World } from '../world/world';
 import type { UnitKind } from '../data/units';
 import { SCALE } from '../sim/clock';
-import { RIGS, type Anim } from './machines';
+import { RIGS, lookOf, size, type Anim } from './machines';
 import { surface } from './surfaces';
 import { night } from './materials';
 import { ragdoll, settle, type Ragdoll } from './ragdoll';
@@ -38,8 +38,9 @@ const C4 = new THREE.Vector4();
 export class UnitView {
   readonly group = new THREE.Group();
   private batch: THREE.BatchedMesh;
-  /** each kind's instance sets (one instance a part) and which are free */
-  private pool = new Map<UnitKind, { sets: number[][]; free: number[] }>();
+  /** each kind's instance sets (one instance a part), which are free, and its looks' geometries in the batch (a unit's
+   *  set given its own look's when it takes it, M10-44) */
+  private pool = new Map<UnitKind, { sets: number[][]; free: number[]; looks: number[][] }>();
   /** each unit's instance set from its kind's pool (-1: not drawn), its lights as last set, frames till it's looked at
    *  again if it was far */
   private slot: number[] = [];
@@ -60,7 +61,7 @@ export class UnitView {
 
   constructor(units: Unit[]) {
     const kinds = KINDS.filter(k => POOL[k]), n = (k: UnitKind) => Math.min(POOL[k]!, units.filter(u => u.kind === k).length);
-    const verts = kinds.reduce((a, k) => a + RIGS[k].parts.reduce((b, g) => b + g.attributes.position.count, 0), 0);
+    const verts = kinds.reduce((a, k) => a + RIGS[k].looks.flat().reduce((b, g) => b + g.attributes.position.count, 0), 0);
     // (Their plates painted with seams, rivets, scuffs and grime low down: M4-99.)
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true, map: surface('panel') });
     // (Each unit's colour tints its lights only, not its paint; its alpha is how far its paint is left, M10-47: less, the
@@ -75,9 +76,9 @@ export class UnitView {
     mat.customProgramCacheKey = () => 'units';
     this.batch = new THREE.BatchedMesh(Math.max(1, kinds.reduce((a, k) => a + n(k) * RIGS[k].parts.length, 0)), Math.max(1, verts), 0, mat);
     for (const k of kinds) {
-      const geo = RIGS[k].parts.map(g => this.batch.addGeometry(g)), sets: number[][] = [];
-      for (let i = 0; i < n(k); i++) sets.push(geo.map(g => { const id = this.batch.addInstance(g); this.batch.setVisibleAt(id, false); this.batch.setColorAt(id, LIGHT.unaware); return id; }));
-      this.pool.set(k, { sets, free: sets.map((_, i) => i).reverse() });
+      const looks = RIGS[k].looks.map(l => l.map(g => this.batch.addGeometry(g))), sets: number[][] = [];
+      for (let i = 0; i < n(k); i++) sets.push(looks[0].map(g => { const id = this.batch.addInstance(g); this.batch.setVisibleAt(id, false); this.batch.setColorAt(id, LIGHT.unaware); return id; }));
+      this.pool.set(k, { sets, free: sets.map((_, i) => i).reverse(), looks });
     }
     this.batch.frustumCulled = false;
     this.group.add(this.batch);
@@ -114,7 +115,8 @@ export class UnitView {
         const k = pl.free.pop();
         if (k === undefined) return;
         this.slot[i] = k;
-        for (const id of pl.sets[k]) this.batch.setVisibleAt(id, true);
+        const look = pl.looks[u.id % pl.looks.length];
+        pl.sets[k].forEach((id, j) => { this.batch.setVisibleAt(id, true); this.batch.setGeometryIdAt(id, look[j]); });
         this.tint(pl.sets[k], this.lit[i], this.paint[i]);
         this.last[i].t = -1;
       }
@@ -137,7 +139,7 @@ export class UnitView {
         const ground = (x: number, y: number, z: number) => { const h = raycast(w.index, x, y + 0.1, z, 0, -1, 0, 60); return h ? y + 0.1 - h.t : p.y; };
         if (!this.rag[i]) {
           this.pose(w, u, p, L, t, ids.length);
-          this.rag[i] = ragdoll(this.parts.slice(0, ids.length), RIGS[u.kind].parts, this.foot.set(p.x, p.y, p.z), u.id);
+          this.rag[i] = ragdoll(this.parts.slice(0, ids.length), lookOf(RIGS[u.kind], u.id), this.foot.set(p.x, p.y, p.z), u.id);
           if (this.gone[i] === -Infinity) settle(this.rag[i]!, 4, ground);
         }
         const rag = this.rag[i]!;
@@ -164,6 +166,9 @@ export class UnitView {
     if (to) this.m.multiply(this.s.makeScale(1, 1, Math.hypot(to.x - p.x, to.y - p.y, to.z - p.z)));
     // A camera shot out (U-093) hangs off its mount, its light dead.
     else if (u.dead && u.cam !== undefined) this.m.multiply(this.s.makeRotationX(0.95)).multiply(this.s.makeRotationZ(0.35));
+    // (Each a little bigger or smaller than the next: M10-44.)
+    const sz = size(u.kind, u.id);
+    this.m.multiply(this.s.makeScale(sz, sz, sz));
     RIGS[u.kind].pose(this.anim, this.parts);
     // Come apart (M4-62): a humanoid's sensor head shot off, its rifle shot out of its hands.
     if (u.kind === 'humanoid') { if (u.blind) this.parts[2].makeScale(0, 0, 0); if (u.disarmed) this.parts[11].makeScale(0, 0, 0); }

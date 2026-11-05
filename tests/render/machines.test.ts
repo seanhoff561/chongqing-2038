@@ -1,9 +1,10 @@
 // M4-26 (U-031): the machines' rigs. Every kind has a model; a humanoid's hands are on its rifle's grip and fore-end at
 // the low ready and aiming (the rifle then up under its eye, pointing ahead); its stride swings its feet and crouching
-// lowers it; a quadruped trots on diagonal pairs; drones' rotors turn.
+// lowers it; a quadruped trots on diagonal pairs; drones' rotors turn. M10-44: each kind's looks (body plans) share its
+// parts and pivots, and every look of a walker stands on its feet and (a humanoid) holds its rifle.
 import { describe, it, expect } from 'vitest';
 import * as THREE from 'three';
-import { RIGS, type Anim } from '../../src/render/machines';
+import { RIGS, size, type Anim } from '../../src/render/machines';
 import { UNITS } from '../../src/data/units';
 
 const M = Array.from({ length: 24 }, () => new THREE.Matrix4());
@@ -11,7 +12,7 @@ const pose = (k: keyof typeof RIGS, a: Partial<Anim>) => { RIGS[k].pose({ speed:
 const pt = (i: number, x: number, y: number, z: number) => new THREE.Vector3(x, y, z).applyMatrix4(M[i]);
 
 describe("the machines' models (M4-26)", () => {
-  it('has a model for every kind of machine, its parts white with lit eyes', () => {
+  it('has a model for every kind of machine, its parts white with lit sensors', () => {
     for (const k of Object.keys(UNITS) as (keyof typeof RIGS)[]) {
       expect(RIGS[k], k).toBeDefined();
       expect(RIGS[k].parts.length, k).toBeGreaterThan(0);
@@ -23,10 +24,10 @@ describe("the machines' models (M4-26)", () => {
     }
   });
   it("a humanoid's hands hold its rifle, low and aimed; aimed, it's up under the eye and pointing ahead", () => {
-    for (const aim of [0, 1]) {
-      pose('humanoid', { aim });
-      expect(pt(6, 0, -0.33, 0).distanceTo(pt(11, 0, -0.1, -0.02)), `grip ${aim}`).toBeLessThan(0.03);
-      expect(pt(4, 0, -0.33, 0).distanceTo(pt(11, 0, -0.06, 0.2)), `fore-end ${aim}`).toBeLessThan(0.03);
+    for (const [aim, v] of [[0, 0], [1, 0], [0, 1], [1, 1], [0, 2], [1, 2], [0, 3], [1, 3]]) {
+      pose('humanoid', { aim, v });
+      expect(pt(6, 0, -[0.33, 0.4, 0.33, 0.35][v], 0).distanceTo(pt(11, 0, -0.1, -0.02)), `grip ${aim} look ${v}`).toBeLessThan(0.03);
+      expect(pt(4, 0, -[0.33, 0.4, 0.33, 0.35][v], 0).distanceTo(pt(11, 0, -0.06, 0.2)), `fore-end ${aim} look ${v}`).toBeLessThan(0.03);
     }
     pose('humanoid', { aim: 1 });
     const muzzle = pt(11, 0, 0.02, 0.76), grip = pt(11, 0, 0, 0), eye = pt(2, 0, 0.15, 0.15);
@@ -63,5 +64,21 @@ describe("the machines' models (M4-26)", () => {
       const tip = (t: number) => (pose(k, { t }), pt(1, 0.15, 0, 0));
       expect(tip(0).distanceTo(tip(0.01)), k).toBeGreaterThan(0.05);
     }
+  });
+  it('has looks of its kind (M10-44): several body plans for humanoids, each on its feet, each unit its own size', () => {
+    const v = new THREE.Vector3();
+    expect(RIGS.humanoid.looks.length).toBeGreaterThanOrEqual(3);
+    for (const k of Object.keys(RIGS) as (keyof typeof RIGS)[]) for (const look of RIGS[k].looks) expect(look.length, k).toBe(RIGS[k].parts.length);
+    for (const k of ['humanoid', 'quadruped', 'heavy', 'carrier', 'delivery', 'colossus'] as const) RIGS[k].looks.forEach((look, n) => {
+      pose(k, { v: n });
+      let lo = Infinity;
+      look.forEach((g, j) => { const P = g.attributes.position; for (let i = 0; i < P.count; i++) lo = Math.min(lo, v.fromBufferAttribute(P, i).applyMatrix4(M[j]).y); });
+      expect(Math.abs(lo), `${k} look ${n} on its feet`).toBeLessThan(0.03);
+    });
+    const sizes = Array.from({ length: 50 }, (_, id) => size('humanoid', id));
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(0.9);
+    expect(Math.max(...sizes)).toBeLessThanOrEqual(1.1);
+    expect(Math.max(...sizes) - Math.min(...sizes)).toBeGreaterThan(0.12);
+    expect(size('camera', 3)).toBe(1);
   });
 });
