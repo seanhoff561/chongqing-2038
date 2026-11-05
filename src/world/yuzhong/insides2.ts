@@ -99,10 +99,13 @@ export const substation: Lot['inside'] = (fr, from, out, look) => {
   K.put(0, 'crate', 8.0, 0.4, [0, 1], { zh: '工具箱', en: 'Tool crate', items: [['boltcutters', 1]] });
   for (const v of [9.0, 12.4]) K.block(0, 'cabinet', 18.0, v, 20.4, v + 2.6, 2.2, [1, 0]); // transformers
   for (const u of [22.0, 22.6, 23.2]) K.put(0, 'locker', u, 4.65, [0, 1], { zh: '馈线柜', en: 'Feeder panel' });
-  // The last of them the cableway's: its fuse carrier, the blown cartridge in it (the spare fitted, sim/cablecar.ts).
-  const [fx, fz] = fr.at(23.2, 5.0);
-  out.inter.push({ id: 'cable-feeder', kind: 'feeder', x: fx, y: fr.base + 1.5, z: fz, r: 0.3, zh: '索道馈线熔断器', en: 'Cableway feeder fuse' });
-  K.scrawl(0, 23.2, 4.92, [0, 1], '索道 10kV  CABLEWAY 10 kV', 1.85);
+  // The last of them the cableway's, the first the metro's (its pumps: M7-11): each its fuse carrier, the blown
+  // cartridge in it (the spare fitted, sim/cablecar.ts).
+  for (const [u, id, zh, en, sign, route] of [[23.2, 'cable-feeder', '索道馈线熔断器', 'Cableway feeder fuse', '索道 10kV  CABLEWAY 10 kV', 'cable'], [22.0, 'metro-feeder', '地铁馈线熔断器', 'Metro feeder fuse', '地铁 10kV  METRO 10 kV', 'tunnel']] as const) {
+    const [fx, fz] = fr.at(u, 5.0);
+    out.inter.push({ id, kind: 'feeder', x: fx, y: fr.base + 1.5, z: fz, r: 0.3, zh, en, data: { route, live: id } });
+    K.scrawl(0, u, 4.92, [0, 1], sign, 1.85);
+  }
   K.mark('busbar', 0, 27.0, 13.0);
   K.scrawl(0, 19.0, 4.42, [0, 1], '母线带电 弯腰过  BUSBAR LIVE · KEEP LOW');
   K.prop(0, 'bag', 31.0, V - 0.6, [0, -1], 0.4, 0.4, 0.3);

@@ -19,6 +19,7 @@ import type { Obb, P2 } from './shapes';
 import { run, fit, room, tubes, station, interchange, descent, TUBE, type Dig } from './underkit';
 import { airRaid, clipped, SHELTER } from './airraid';
 import { metroRoom } from './metroroom';
+import { lineEnd } from './lineend';
 import { tan, atan2 } from '../trig';
 
 type V3 = { x: number; y: number; z: number };
@@ -34,6 +35,8 @@ export interface Under {
   water: Box[];
   /** the third rail's lines, along its top (M6-17) */
   rails: { a: V3; b: V3 }[];
+  /** Line 1's extension past the crossover (M7-11): the water in its dip the pumps drain, the seismic sensors' reach */
+  flood?: { boxes: Box[]; top: number; bottom: number }; seismic: Zone[];
   /** a walk from Jiaochangkou's metro platform through its running tunnel and the Grand Tunnel to the friends'
    *  chamber (M3-43) */
   metroRoute: V3[];
@@ -53,7 +56,7 @@ const TW = 3.6, TH = 3.4;
 /** gt: the Grand Tunnel's floor, the end of its passage north (the junction), its ways in, and a walk along it
  *  from under Jiaochangkou into the passage. */
 export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; ways: V3[]; walk: V3[]; metro: V3; toJunction: V3[] }): Under {
-  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], water: [], rails: [], at: {} };
+  const u: Under = { solids: [], decor: [], props: [], climbables: [], zones: [], features: [], inter: [], sites: [], lots: [], metroRoute: [], keep: [], route: [], descents: [], water: [], rails: [], seismic: [], at: {} };
   const lining: Solid[] = [], bores: Box[] = [], kept: Solid[] = [], r = makeRng(hashString('under')), lr = makeRng(hashString('under-grates'));
   const k = (x: number, z: number) => Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)));
   const gy = (x: number, z: number) => g.y[k(x, z)], street = (x: number, z: number) => g.street![k(x, z)] !== 0;
@@ -414,6 +417,9 @@ export function buildUnder(g: Heightfield, gt: { floor: number; junction: V3; wa
   }
   // (The flood culvert's mark and sign.)
   for (const f of flood) { marks.push(f.mark); u.props.push(f.sign); }
+  // Line 1 on east past the crossover (M7-11): its protective door, the flooded dip, the way out; the seismic sensors.
+  const le = lineEnd(dig, { x0: X1 + SL, x1: xe - CX, cx: xe, cz: C.z, cr: CX, off, y: LB }, hand, marks);
+  u.water.push(...le.water); u.flood = le.flood; u.seismic = le.zones;
 
   let all = lining;
   for (const b of bores) all = carve(all, b);

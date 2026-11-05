@@ -1,8 +1,8 @@
 // The four ways out's far ends (M10-51, DESIGN section 10): an 'ending:<route>' zone each, where crossing into it ends
 // the run on that route (sim/escape.ts). Each lies where only its way gets him: off the far end of the Dongshuimen
 // Bridge on the Nan'an bank; out over the Yangtze on the cableway's line at the cabins' height; on the open river past
-// Chaotianmen's tip, downstream of the river police's buoys; and in the metro's running tunnel on east past the
-// crossover under Xiaoshizi, under the river.
+// Chaotianmen's tip, downstream of the river police's buoys; and through the end wall of Line 1's extension on past
+// the crossover under Xiaoshizi (yuzhong/lineend.ts).
 import type { World, Zone } from '../world';
 import { GEO } from '../geo';
 import { heightAt } from '../heightfield';
@@ -22,8 +22,8 @@ export function exitZones(w: World): Zone[] {
   // The river: past the tip, on and under the water, a long way from either bank.
   const T = L.chaotianmen;
   if (T) box('boat', T.x + 500, T.z - 480, 120, WATER_Y - 40, WATER_Y + 6);
-  // Under the ground: the running tunnel's level, on east from the crossover chamber under Xiaoshizi.
-  const tube = w.teleports.find(t => t.name === 'Metro tunnel');
-  if (tube && XS) out.push({ kind: 'ending:tunnel', box: { x0: XS.x + 16, y0: tube.y - 3, z0: tube.z - 8, x1: XS.x + 60, y1: tube.y + 6, z1: tube.z + 8 } });
+  // Under the ground: the service passage beyond the end wall of Line 1's extension past the crossover (M7-11).
+  const end = w.features.find(f => f.kind === 'tunnel:end');
+  if (end) out.push({ kind: 'ending:tunnel', box: { x0: end.x - 1, y0: end.y - 1, z0: end.z - 2.3, x1: end.x + 1, y1: end.y + 3, z1: end.z + 2.3 } });
   return out;
 }

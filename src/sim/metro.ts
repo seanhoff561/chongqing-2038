@@ -2,11 +2,13 @@
 // track through the station and the running tunnels east is live (the traction supply is its own, still on): his feet
 // on it and he's dead; it buzzes a step off, a warning, and he steps or jumps over it. The control room's traction
 // breaker cuts it (and closes it again). Its pump panel runs the station's drainage pumps, but only once the metro's
-// feeder has power (route D, M7-11, sets `metro-feeder`); then the pumps run (`metro-pumps`).
+// feeder has power (its fuse at the substation, sim/cablecar.ts); then the pumps run (`metro-pumps`) and Line 1's
+// extension drains (sim/tunnelend.ts).
 import type { SimState } from './types';
 import type { World } from '../world/world';
 import { onInteract, START_SOUND } from './interact';
 import { die } from './body';
+import { stepDone } from './escape';
 
 /** How near his feet must come to the rail's line, and how high over its top, to touch it (m); how far its buzz is
  *  heard (m) and how often (ticks); how long the breaker and the pumps take to work (s); how far they're heard (m). */
@@ -50,6 +52,7 @@ onInteract('pumps', {
   dur: () => RAIL.pumps,
   done: (s, _w, it) => {
     s.wstate.open['metro-pumps'] = true;
+    stepDone(s, 'tunnel', 'pumps');
     s.events.push({ t: 'noise', x: it.x, y: it.y, z: it.z, r: RAIL.noise, kind: 'crash' }, { t: 'msg', text: 'the pumps start: the water will go down' });
   },
 });

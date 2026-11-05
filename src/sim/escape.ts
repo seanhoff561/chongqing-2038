@@ -21,10 +21,12 @@ export function stepDone(s: SimState, route: string, step: string) {
 }
 
 /** The run ends on a route: with his sister if it's her exit and she said she'd come (M10-39); by the river, if she
- *  came down into the boat (M7-09); by the cableway, if she rode the cabin with him (M7-05). */
+ *  came down into the boat (M7-09); by the cableway, if she rode the cabin with him (M7-05); under the ground, if the
+ *  water was pumped out (one oxygen kit: she can't swim it, M7-11). */
 export function endRun(s: SimState, route: string) {
   if (s.ended || s.dead) return;
-  const sister = s.sister?.route === route && !!s.sister.with && ((route !== 'boat' && route !== 'cable') || !!s.sister.aboard);
+  const came = route === 'boat' || route === 'cable' ? !!s.sister?.aboard : route === 'tunnel' ? s.escape?.tunnel?.drained !== undefined : true;
+  const sister = s.sister?.route === route && !!s.sister.with && came;
   s.ended = { route, t: s.time, sister };
   s.events.push({ t: 'ending', route, sister });
 }

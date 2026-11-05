@@ -17,6 +17,7 @@ import { stepWeather } from './weather';
 import { stepGas } from './gas';
 import { stepHv } from './hv';
 import { stepRail } from './metro';
+import { stepTunnelEnd } from './tunnelend';
 import { stepSite } from './sitehaz';
 import { stepCableway } from './cableway';
 import { stepContainers } from './containers';
@@ -127,6 +128,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepRopes(state);
   stepRappel(state, input);
   stepPlanks(state, world);
+  stepTunnelEnd(state, world);
   stepInteract(state, world, input);
   stepPlayer(state, world, input);
   stepBoat(state, world, input);
