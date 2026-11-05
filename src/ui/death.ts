@@ -14,7 +14,7 @@ const CAUSES: Record<string, [string, string]> = {
   thirst: ['脱水', 'Died of thirst'], shot: ['中弹', 'Shot'],
   found: ['藏身处暴露 睡梦中被杀', 'Found in his sleep: the hideout gave itself away'], test: ['测试', 'Test'],
   turret: ['被炮塔击毙', 'Cut down by a turret'], rifle: ['被步枪击毙', "Shot by a humanoid's rifle"], smg: ['被冲锋枪击毙', 'Shot by a hunter drone'],
-  prod: ['被电击棍击倒', 'Shocked by a prod'], river: ['被无人艇截杀', 'Run down by drone boats on the river'], cannon: ['被重型机甲击毙', 'Cut down by a heavy walker'], shock: ['触电', 'Electrocuted'], gas: ['在机房被灭火气体窒息', 'Suffocated by the server hall\'s gas'],
+  prod: ['被电击棍击倒', 'Shocked by a prod'], river: ['被无人艇截杀', 'Run down by drone boats on the river'], cableway: ['困在停下的缆车里被猎杀无人机击毙', 'Caught by hunter drones in a stranded cabin'], cannon: ['被重型机甲击毙', 'Cut down by a heavy walker'], shock: ['触电', 'Electrocuted'], gas: ['在机房被灭火气体窒息', 'Suffocated by the server hall\'s gas'],
 };
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 /** Seconds the death screen holds before he wakes; seconds it fades off him. */

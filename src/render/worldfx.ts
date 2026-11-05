@@ -1,7 +1,7 @@
 // What's moving in the world round him that isn't a machine or him (M4-62, M4-65, M5-14, M5-19 to M5-22): rockets in
 // flight trailing smoke, explosions (M10-65), hurt machines smoking and sparking, what's thrown and its clouds, what he's
 // rigged, and the chain-link fences (cut or not) and the roller shutters near him; the construction site's crane load (M6-10);
-// the river police's patrol boat (M7-08).
+// the river police's patrol boat (M7-08); the cableway's cabin and its line drone (M7-05).
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
 import type { World } from '../world/world';
@@ -16,6 +16,7 @@ import { Shutters } from './shutters';
 import { SiteLoad } from './siteload';
 import { Blasts } from './blastfx';
 import { BoatView } from './boat3d';
+import { CableView } from './cable3d';
 
 export class WorldFx {
   private rockets: THREE.Group[] = [];
@@ -25,6 +26,7 @@ export class WorldFx {
   private shutters: Shutters;
   private load: SiteLoad | null = null;
   private boat: BoatView;
+  private cable: CableView;
   readonly blasts: Blasts;
   private trailIn = 0;
   private smokeIn = 0;
@@ -43,6 +45,7 @@ export class WorldFx {
     this.shutters = new Shutters(scene);
     this.blasts = new Blasts(scene, marks);
     this.boat = new BoatView(scene);
+    this.cable = new CableView(scene);
   }
 
   /** Every frame: `held` what's in his hand, `aiming` the right mouse held, `cam` where he looks from. */
@@ -53,6 +56,7 @@ export class WorldFx {
     this.throwFx.update(s, w, held, aiming);
     this.rigs.update(s);
     this.boat.update(s, w);
+    this.cable.update(s, w);
     this.fences.update(s, w);
     this.shutters.update(s, w, cam);
     if (this.load?.w !== w) { if (this.load) this.scene.remove(this.load.group); this.load = new SiteLoad(w); this.scene.add(this.load.group); }

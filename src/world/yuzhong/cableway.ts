@@ -114,12 +114,18 @@ export const cableway: Lot['inside'] = (fr, from, out, look, rolled) => {
   for (const [u0, u1, v0, v1] of walls) { late.push(box(u0, u1, v0, v1, H + 0.1, H + 1.1, MAT.metal), box(u0, u1, v0, v1, H + 2.1, H + 2.3, MAT.metal)); glass(box(u0, u1, v0, v1, H + 1.1, H + 2.1, MAT.glass)); }
   out.decor.push(box(uc - 0.3, uc + 0.3, r - 0.15, r + 0.15, H + 2.45, R - 0.3, MAT.metal), box(uc - 1.7, uc + 1.7, r - 0.55, r + 0.55, R - 0.35, R - 0.05, MAT.tealMetal));
   feat('cable:cabin', uc, c.v0 + 0.25, H, [0, -1]);
+  // Its control panel on its far wall, where the operator key starts the drive (sim/cablecar.ts).
+  const [px, pz] = at(uc, c.v1 - 0.35);
+  out.inter.push({ id: 'cabinpanel', kind: 'cabin', x: px, y: H + 1.2, z: pz, r: 0.4, zh: '2号车厢操作盘', en: "Cabin 2's control panel" });
   K.prop(T, 'bag', c.u1 - 0.6, c.v1 - 0.6, [0, -1], 0.4, 0.4, 0.3);
   K.prop(T, 'papers', 8.5, 8.0, [1, 0], 0.5, 0.02, 0.4);
   K.scrawl(T, 7.32, r - 0.7, [1, 0], '2号车厢 停放 · 1号车厢在上新街  CABIN 2 PARKED · CABIN 1 AT SHANGXIN STREET');
   K.mark('heart', T, uc, r);
-  // Where the ropes leave, over the street and on across the river (cableLine()).
+  // Where the ropes leave, over the street and on across the river (cableLine()); the haul rope there, in reach from
+  // cabin 2's roof, for the trolley (sim/trolley.ts).
   feat('cable:saddle', U + 0.3, r, R);
+  const [hx, hz] = at(U - 0.2, r);
+  out.inter.push({ id: 'haulrope', kind: 'haulrope', x: hx, y: R - 0.2, z: hz, r: 0.4, zh: '牵引索', en: 'Haul rope' });
   K.build();
   // (What stands in its rooms, set after they're carved.)
   out.solids.push(...late);
