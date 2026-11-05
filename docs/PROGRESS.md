@@ -65,3 +65,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-38b: the secure sites made by hand (hospital, police station, market, telecom exchange, substation: their mazes, locks, collapses and stories)
 - M10-40: key places on the map only as he learns of them (a note naming one, or walking in), Anna's word on each
 - M10-38c: under the city made by hand (the air-raid shelter's hotpot, the metro's control room, the Grand Tunnel's cool room)
+- M10-38 fix: a city with no house for the Li family's flat in Shibati puts it in the nearest round it (no crash on a new run)
