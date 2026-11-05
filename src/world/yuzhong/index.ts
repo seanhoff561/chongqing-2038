@@ -40,6 +40,7 @@ import { signage } from './signage';
 import { liFlat } from './liflat';
 import { riverfront, riverRoad, docks } from './riverfront';
 import { riverPolice } from './pier';
+import { cableRopes } from './cableway';
 import { streetRoute } from './streetroute';
 import { buildNav, walksOf } from './nav';
 import { walkedBeats, columnSpurs, placeCameras, placeGarages } from './patrols';
@@ -222,7 +223,7 @@ export function buildYuzhong(): World {
   river.solids.push(...dock.solids); river.decor.push(...dock.decor); river.features.push(...dock.features);
   // The river police's (M6-20): the pier nearest Chaotianmen.
   const police = riverPolice(g, piers, GEO.landmarks.chaotianmen);
-  if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); inter.push(...police.inter); }
+  if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); river.props.push(...police.props); inter.push(...police.inter); }
   solids.push(...river.solids);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
@@ -270,6 +271,9 @@ export function buildYuzhong(): World {
     world.hides.push({ id: world.hides.length, kind: h.kind, yaw: p.yaw, inner: { x0: x - h.w / 2, y0: p.y + h.y, z0: z - h.d / 2, x1: x + h.w / 2, y1: p.y + h.y + h.h, z1: z + h.d / 2 } });
   }
   liFlat(world);
+  // The cableway's ropes over the river to its south station (M6-16).
+  const cr = cableRopes(world);
+  world.ropes = cr.ropes; world.features.push(...cr.features);
   // The ways out's far ends (M10-51).
   world.zones.push(...exitZones(world));
   // The machines' ways about on foot as the world stands now (M4-02); the street layer between the key points along

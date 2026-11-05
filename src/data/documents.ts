@@ -316,7 +316,7 @@ Cabin 1 stopped 300 m out at 14:52 when the feeder dropped. 41 passengers. Broug
 Cabin 2 parked in the station.
 The main drive won't start without the 10 kV feeder from the Xinhua Road substation. They say its fuse blew.
 Operator key: control desk, top drawer, under the logbook.
-The haul rope still runs to Shangxin Street. The maintenance trolley's up in the tower.` },
+The haul rope still runs to Shangxin Street. Rope gear's in the store up top. Nobody set the bullwheel brake: it creeps in the wind.` },
 ];
 
 export const docById = new Map(DOCS.map(d => [d.id, d]));

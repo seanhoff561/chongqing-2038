@@ -131,7 +131,7 @@ export class View {
       this.world.add(m);
     }
     // The cables over the streets (M3-52).
-    for (const m of lineMeshes(w.lines)) this.world.add(m);
+    for (const m of lineMeshes(w.lines.concat(w.ropes ?? []))) this.world.add(m);
     // Pipes and ladders merge into chunk meshes (trees, posts and vines are their props).
     const merger = new ChunkMerger();
     for (const c of w.climbables) {

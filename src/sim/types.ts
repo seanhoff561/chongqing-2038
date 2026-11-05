@@ -220,6 +220,9 @@ export interface SimState {
   gas?: Record<string, number>;
   /** when the construction site's crane load last struck him (M6-10) */
   siteHit?: number;
+  /** the cableway's bullwheel as last seen, and when it last caught him (M6-16) */
+  wheel?: 'still' | 'strain' | 'turn';
+  wheelHit?: number;
   /** a district's relay cut (M6-14): until when its machines can't pass word on */
   relayDown?: Record<string, number>;
 }

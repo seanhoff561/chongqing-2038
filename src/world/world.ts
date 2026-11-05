@@ -127,6 +127,8 @@ export interface World {
   lawns?: [number, number][][];
   /** cables strung between buildings, to ride (M3-52) */
   lines: Line[];
+  /** the cableway's ropes over the river (M6-16): drawn, not ridden (yuzhong/cableway.ts) */
+  ropes?: Line[];
   /** the machines' columns' ways out of the factory along the roads, at ground level (M3-57b) */
   /** the machines' columns' ways out of the factory, and where on each a pair peels off into an alley (M4-01b) */
   convoys?: Convoy[];

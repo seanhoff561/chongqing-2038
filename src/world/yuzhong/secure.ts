@@ -11,15 +11,19 @@ import { raycast } from '../geom';
 import { MAT } from '../mats';
 import { hospital, police, market } from './insides';
 import { telecom, substation } from './insides2';
+import { cableway } from './cableway';
 import type { Lot } from '../city/buildings';
 
-/** The sites: which building (its plan's seed), what it was, its card, its loot table, its hazard and its insides. */
-export const SECURE: { id: string; plan: string; type: BuildingType; zh: string; en: string; card?: string; loot: string; hazard: 'plate+pir' | 'turret' | 'acoustic' | 'gas' | 'hv'; inside: Lot['inside'] }[] = [
+/** The sites: which building (its plan's seed), what it was (else as rolled), its card, its loot table, its hazard and its insides. */
+export const SECURE: { id: string; plan: string; type?: BuildingType; zh: string; en: string; card?: string; loot: string; hazard: 'plate+pir' | 'turret' | 'acoustic' | 'gas' | 'hv' | 'bullwheel'; inside: Lot['inside'] }[] = [
   { id: 'hospital', plan: 'osm68', type: 'clinic', zh: '渝中医院', en: 'Yuzhong Hospital', card: 'hospcard', loot: 'hospital', hazard: 'plate+pir', inside: hospital },
   { id: 'police', plan: 'osm449', type: 'military', zh: '派出所', en: 'Police station', card: 'policecard', loot: 'police', hazard: 'turret', inside: police },
   { id: 'market', plan: 'osm396', type: 'mall', zh: '数码城', en: 'Electronics market', loot: 'electronics', hazard: 'acoustic', inside: market },
   { id: 'telecom', plan: 'osm9', type: 'office', zh: '电信枢纽', en: 'Telecom exchange', card: 'telcard', loot: 'telecom', hazard: 'gas', inside: telecom },
   { id: 'substation', plan: 'osm855', type: 'workshop', zh: '新华路变电站', en: 'Xinhua Road substation', card: 'badge', loot: 'substation', hazard: 'hv', inside: substation },
+  // (The cableway's north station, M6-16: its hazard, the bullwheel up in its hall, sim/cableway.ts. Its type as the
+  // run rolls it: what it would have been decides the dice for the city round it.)
+  { id: 'cableway', plan: 'back4300', zh: '长江索道北站', en: 'Yangtze cableway', loot: 'workshop', hazard: 'bullwheel', inside: cableway },
 ];
 
 /** How far up a street door's camera hangs, out from the wall and along it from the door (m); the pharmacy's plate's

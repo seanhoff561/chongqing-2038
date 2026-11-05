@@ -1,11 +1,11 @@
-// One-off finds left where they belong (M10-26): the cableway's operator key in a container at its north station, the
-// rail deck's maintenance schedule in one by the Dongshuimen Bridge's bridgehead (its landmark is out over the river),
-// each the room's container nearest the place (not a fridge). Never rolled, like a site's keys (data/loot).
+// One-off finds left where they belong (M10-26): the rail deck's maintenance schedule in a container by the Dongshuimen
+// Bridge's bridgehead (its landmark is out over the river), the room's container nearest the place (not a fridge).
+// Never rolled, like a site's keys (data/loot). (The cableway's operator key is in its control desk: cableway.ts.)
 import type { World } from '../world';
 import { GEO } from '../geo';
 
 /** What, by which landmark, and how far from it the container may be (m). */
-export const FINDS: [item: string, landmark: string, within: number][] = [['opkey', 'cablewayNorth', 150], ['schedule', 'dongshuimenBridge', 400]];
+export const FINDS: [item: string, landmark: string, within: number][] = [['schedule', 'dongshuimenBridge', 400]];
 
 export function placeFinds(w: World) {
   for (const [id, k, within] of FINDS) {

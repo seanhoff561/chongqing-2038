@@ -2,7 +2,7 @@
 // the plot dug out to its lowest ground behind shoring walls topped with hoarding, a gate where the street outside
 // is lowest; the half-built tower's concrete frame (columns and slabs, a switchback stair up its core, a ladder
 // up one corner, the top floors bare columns with rebar); the tower crane beside it with a ladder up the mast
-// to the cab and the jib; site containers. Laid out square to the plot's fitted rectangle, then turned.
+// to the cab and the jib; site containers; the site office's compound (siteoffice.ts). Laid out square to the plot's fitted rectangle, then turned.
 import { solid, turn, type Solid } from '../geom';
 import { MAT } from '../mats';
 import { GEO } from '../geo';
@@ -10,6 +10,7 @@ import type { Heightfield } from '../heightfield';
 import type { Climbable, Feature, Inter, Prop } from '../world';
 import { stair } from '../steps';
 import { minRect, points, rasterPoly, inside, type Obb, type P2 } from './shapes';
+import { siteOffice, OFFICE } from './siteoffice';
 
 /** A stretch of the hoarding (up to 8 m): its middle, length and line; the ground outside, lowest and highest; out
  *  of the site; its top. */
@@ -139,10 +140,13 @@ export function buildSite(g: Heightfield): Site | null {
     if (!fits(x0, z0, x0 + 6, z0 + 2.4)) continue;
     solids.push(solid(x0, base, z0, x0 + 6, base + 2.6, z0 + 2.4, MAT.metal));
     // (Each a tool store, its doors on the side facing the frame: the site's tier 2 tools, data/loot 'construction';
-    // the steel hook always in the first, M6-10.)
-    const [ix, iz] = P(x0 + 3, z0 - 0.35), first = !inter.some(q => q.id.startsWith('site-box'));
-    inter.push({ id: `site-box${i}`, kind: 'container', x: ix, y: base + 1.1, z: iz, r: 1.2, zh: '工具集装箱', en: 'Tool container', data: { type: 'crate', loot: 'construction', ...(first ? { items: [['hook', 1]] } : {}) } });
+    // the steel hook always in the first, M6-10, a crowbar in the next, M10-38d.)
+    const [ix, iz] = P(x0 + 3, z0 - 0.35), n = inter.filter(q => q.id.startsWith('site-box')).length;
+    inter.push({ id: `site-box${i}`, kind: 'container', x: ix, y: base + 1.1, z: iz, r: 1.2, zh: '工具集装箱', en: 'Tool container', data: { type: 'crate', loot: 'construction', ...(n === 0 ? { items: [['hook', 1]] } : n === 1 ? { items: [['crowbar', 1]] } : {}) } });
   }
+  // The site office's fenced compound past the containers (M10-38d: siteoffice.ts), where it fits.
+  const ox = tx0 + 21, oz = tz1 + 6, office = fits(ox, oz, ox + OFFICE.T, oz + OFFICE.S) ? siteOffice(ox, oz, base, P) : null;
+  if (office) { solids.push(...office.solids); decor.push(...office.decor); inter.push(...office.inter); features.push(...office.features.map(f => ({ ...f, group: features.length + f.group }))); }
   props.push({ kind: 'boxes', x: tx1 + 2, y: base, z: tz1 + 2, yaw: 0.3 }, { kind: 'debris', x: tx0 + 3, y: base, z: tz1 + 3, yaw: 1 },
     { kind: 'rubblepile', x: tx0 - 2, y: base, z: tz0 + 4, yaw: 0, w: 3 }, { kind: 'sandbags', x: tx0 + 9, y: base, z: tz1 + 2, yaw: 0 });
   const [fx, fz] = P((tx0 + tx1) / 2, (tz0 + tz1) / 2), [kx, kz] = P(mx, mz);
@@ -151,6 +155,6 @@ export function buildSite(g: Heightfield): Site | null {
     solids: turn(solids, o.yaw, o.cx, o.cz).concat(mapSolids), decor: turn(decor, o.yaw, o.cx, o.cz).concat(mapDecor), plot: o, poly, base,
     frame: { x: fx, z: fz, top: roof }, crane: { x: kx, z: kz, top }, route: route.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z }; }),
     climbables: climb.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z, nx: c * q.nx - s * q.nz, nz: s * q.nx + c * q.nz }; }),
-    props: props.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z, yaw: q.yaw - o.yaw }; }),
+    props: props.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z, yaw: q.yaw - o.yaw }; }).concat(office?.props ?? []),
   };
 }

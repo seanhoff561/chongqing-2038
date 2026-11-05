@@ -2,7 +2,7 @@
 // bank to its pontoon under two cameras; an iron ladder up its river side from the water, for a swimmer off the
 // stilt docks; a cargo crane on the bank whose jib reaches out over the deck (containers stacked in steps under its
 // end to drop onto); the patrol boat moored alongside; sonar buoys round it in the water (sim/river.ts: a swimmer near
-// them is heard as one far out).
+// them is heard as one far out); their deckhouse on it, made by hand (pierhouse.ts).
 import { solid, rampSolid, turn, type Solid } from '../geom';
 import { MAT } from '../mats';
 import { heightAt, type Heightfield } from '../heightfield';
@@ -10,6 +10,7 @@ import { WATER_Y } from './ground';
 import { DOCK } from './riverfront';
 import type { Camera, Climbable, Feature, Inter } from '../world';
 import type { Obb } from './shapes';
+import { pierHouse } from './pierhouse';
 
 /** The gangway's width; the crane's jib height over the deck (a safe drop) and length past the deck's middle; the
  *  buoys' distance out; the boat's hull. */
@@ -72,5 +73,9 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
     features.push({ kind: 'pier:buoy', x, y: WATER_Y, z, group: features.length });
   }
   features.push({ kind: 'pier:deck', x: o.cx, y: top, z: o.cz, group: features.length });
-  return { solids, decor, climbables, inter, cameras, features, deck: { ...o, top, side } };
+  // Their deckhouse on it (M10-38d: pierhouse.ts).
+  const house = pierHouse(o, side, top);
+  solids.push(...house.solids); decor.push(...house.decor); inter.push(...house.inter);
+  features.push(...house.features.map(f => ({ ...f, group: features.length + f.group })));
+  return { solids, decor, climbables, inter, cameras, features, props: house.props, deck: { ...o, top, side } };
 }
