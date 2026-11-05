@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M6. Next: M6-03 Hongyadong.
-Features done: 398 / 438 | Last done: M10-53
+Features done: 401 / 438 | Last done: M7-07
 <!-- /status -->
 
 ## What's built
@@ -69,3 +69,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-49: many machines without the lag (a crowd's tick and frame cut), and the draw calls back under budget everywhere
 - M10-38d, M6-16, M7-08, M7-09, M7-10: the cableway station by hand (its ropes on the real line), the pier and the site; Route C: the boat, the crossing and its route test; and the city built the same in the browser as in the tests
 - M10-52, M10-53: the opening scene (waking in the blue light, Anna's first words, the laptop and the bag) and her line on each tab
+- M7-05, M7-06, M7-07: Route B over the Yangtze (the cabin ride past the line drone, the haul-rope trolley) and its route tests
