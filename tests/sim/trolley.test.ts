@@ -1,6 +1,6 @@
 // M7-06: Route B, the trolley. With the haul-rope trolley he climbs onto cabin 2's roof at the north station's open
 // end (a jump to its lip and a pull up), clips onto the haul rope over it (out of reach from the platform) and slides
-// it on gravity down the line's sag to the ending over the Yangtze; and from a cabin the line drone had stopped, up
+// it down the line's sag to the ending over the Yangtze in 40 s; and from a cabin the line drone had stopped, up
 // through its hatch onto the rope and on.
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
@@ -74,8 +74,8 @@ describe('Route B: the trolley (M7-06)', () => {
     run(s, w, secs(70));
     expect([s.dead, s.ended?.route]).toEqual([null, 'cable']);
     const took = (s.ended!.t - t0) / SCALE;
-    expect(took, 'its slide').toBeGreaterThan(35);
-    expect(took, 'its slide').toBeLessThan(50);
+    expect(Math.abs(took - TROLLEY.secs), `its slide: ${took.toFixed(2)} s`).toBeLessThanOrEqual(1);
+    expect(TROLLEY.secs).toBe(40);
     expect(s.escape!.cable.trolley).toBeDefined();
   }, 900000);
 

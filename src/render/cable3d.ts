@@ -1,9 +1,12 @@
 // The cableway (M7-05, M7-06): cabin 2 out along its ropes where the run has it (sim/cablecar.ts), Xiaoyu sat by its
 // window if she came; the line drone over its stretch of the line, a white disc on four rotors with its line of light;
-// and his trolley on the haul rope (sim/trolley.ts), its block on the rope and the sling down to his harness.
+// and his trolley on the haul rope (sim/trolley.ts), its block on the rope and the sling down to his harness. Cabin 2
+// is drawn here parked at the platform too, until it leaves (the world's own boxes for it left out of the world's
+// meshes: parkedCabin()).
 import * as THREE from 'three';
 import type { SimState } from '../sim/types';
-import type { World } from '../world/world';
+import type { World, Feature } from '../world/world';
+import type { Solid } from '../world/geom';
 import { CABIN, lineOf, cabinAt, onLine, lineDrone } from '../sim/cablecar';
 import { TROLLEY } from '../sim/trolley';
 import { sisterModel, merged } from './furniture';
@@ -52,6 +55,23 @@ function trolley() {
   return g;
 }
 
+/** Cabin 2 parked: its feature, its floor's middle, the way along it (the station's long side). */
+function parked(w: World) {
+  const f = w.features.find((q): q is Feature & { nx: number; nz: number } => q.kind === 'cable:cabin');
+  return f && { y: f.y, x: f.x - f.nx * 1.35, z: f.z - f.nz * 1.35, ux: -f.nz, uz: f.nx };
+}
+
+/** Whether a world box is parked cabin 2's (its floor, walls, glass, roof, hanger and carriage: the boxes within its
+ *  bounds up to its track ropes, none longer than it), which the world's meshes leave to this. */
+export function parkedCabin(w: World): (s: Solid) => boolean {
+  const P = parked(w);
+  if (!P) return () => false;
+  return s => {
+    const e = s.rot ?? s, x = (s.x0 + s.x1) / 2 - P.x, z = (s.z0 + s.z1) / 2 - P.z, y = (s.y0 + s.y1) / 2 - P.y;
+    return y > 0.02 && y < CABIN.hang && Math.max(e.x1 - e.x0, e.z1 - e.z0) < 6.6 && Math.abs(x * P.ux + z * P.uz) < 3.3 && Math.abs(-x * P.uz + z * P.ux) < 1.75;
+  };
+}
+
 export class CableView {
   private car = new THREE.Group();
   private girl: THREE.Object3D;
@@ -71,18 +91,20 @@ export class CableView {
   update(s: SimState, w: World) {
     const l = lineOf(w), C = s.cable, d = C && (C.by === 'cabin' ? C.d : C.cabin);
     this.drone.visible = !!l;
-    this.car.visible = !!l && d !== undefined;
+    const P = d === undefined ? parked(w) : undefined;
+    this.car.visible = !!l && (d !== undefined || !!P);
     this.block.visible = !!l && C?.by === 'trolley' && s.player.mode === 'cable';
     if (!l) return;
     if (this.block.visible) { const r = onLine(l, C!.d); this.block.position.set(r.x, r.y - 0.2, r.z); this.block.rotation.y = Math.atan2(l.dx, l.dz); }
     const q = lineDrone(s, l);
     this.drone.position.set(q.x, q.y + Math.sin(s.time * 0.1) * 0.15, q.z);
     this.drone.rotation.y = q.yaw;
+    this.girl.visible = !!s.sister?.aboard;
+    if (P) { this.car.position.set(P.x, P.y, P.z); this.car.rotation.set(0, Math.atan2(P.ux, P.uz), 0); return; }
     if (d === undefined) return;
     const c = cabinAt(l, d);
     this.car.position.set(c.x, c.y, c.z);
     // (Swaying a little on its hanger as it runs.)
     this.car.rotation.set(Math.sin(s.time * 0.04) * 0.01 * Math.min(1, (C!.by === 'cabin' ? C!.v : 0) / 4), Math.atan2(l.dx, l.dz), 0, 'YXZ');
-    this.girl.visible = !!s.sister?.aboard;
   }
 }

@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { World, Prop } from '../world/world';
 import type { Solid } from '../world/geom';
 import { buildSolidMeshes, ChunkMerger, CASTER_LAYER } from './world-mesh';
+import { parkedCabin } from './cable3d';
 import { buildGroundMeshes, buildFarGround, coarseField } from './ground-mesh';
 import { buildStreetMeshes, buildFarStreets } from './streets';
 import { lineMeshes } from './lines';
@@ -94,12 +95,14 @@ export class View {
     const small = (s: Solid) => { const e = s.rot ?? s; return this.hasFar && !s.ramp && Math.max(e.x1 - e.x0, s.y1 - s.y0, e.z1 - e.z0) < 2.6; };
     // Rooms inside buildings (M3-38) only within INNER, and casting nothing (the shell does).
     const inner = (s: Solid) => this.hasFar && !!s.inner;
-    const meshes = buildSolidMeshes(w.solids.filter(s => !inner(s)).concat(w.decor.filter(s => !small(s) && !inner(s))), this.hasFar ? 'near' : 'all', undefined, w.index);
+    // (Parked cabin 2 is the cableway's to draw, there till it leaves: render/cable3d.ts.)
+    const cabin = parkedCabin(w), solids = w.solids.filter(s => !cabin(s)), decor = w.decor.filter(s => !cabin(s));
+    const meshes = buildSolidMeshes(solids.filter(s => !inner(s)).concat(decor.filter(s => !small(s) && !inner(s))), this.hasFar ? 'near' : 'all', undefined, w.index);
     // In the big city the trims, the rooms and the small props (half its geometry, all drawn only near) are built a
     // 256 m cell at a time as he nears it and let go once he's well away (M4-01c); small worlds build them all now.
     this.stream.clear();
     this.share = GFX.props;
-    const trims = w.decor.filter(s => small(s) && !inner(s)), insides = w.solids.filter(inner).concat(w.decor.filter(inner));
+    const trims = decor.filter(s => small(s) && !inner(s)), insides = solids.filter(inner).concat(decor.filter(inner));
     if (this.hasFar) {
       // (By its middle in the world, as its chunk is chosen: a turned solid's box is its bounds.)
       const mid = (s: Solid) => this.cellAt0((s.x0 + s.x1) / 2, (s.z0 + s.z1) / 2);
