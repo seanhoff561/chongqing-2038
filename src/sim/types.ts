@@ -209,6 +209,8 @@ export interface SimState {
   weather: { fog: number; rain: number; snow?: number; cover?: number; at?: number };
   /** a gas-suppressed room set off, by its id: when (M6-14) */
   gas?: Record<string, number>;
+  /** when the construction site's crane load last struck him (M6-10) */
+  siteHit?: number;
   /** a district's relay cut (M6-14): until when its machines can't pass word on */
   relayDown?: Record<string, number>;
 }

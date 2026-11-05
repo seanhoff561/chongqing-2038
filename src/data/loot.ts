@@ -9,10 +9,10 @@ export const loot: Record<string, LootTable> = {
     { id: 'noodles', w: 6, n: [1, 3] }, { id: 'zhacai', w: 4 }, { id: 'luncheon', w: 2 }, { id: 'crackers', w: 3 },
     { id: 'water', w: 5 }, { id: 'bottle', w: 3 }, { id: 'buns', w: 2 }, { id: 'teaeggs', w: 2 }, { id: 'pork', w: 1 },
     { id: 'peaches', w: 2 }, { id: 'bread', w: 2 }, { id: 'sausage', w: 2 }, { id: 'knife', w: 1 }, { id: 'alcohol', w: 1 }, { id: 'tape', w: 1 },
-    { id: 'toolbox', w: 1 },
+    { id: 'toolbox', w: 1 }, { id: 'zongzi', w: 1 },
   ] },
   bedroom: { rolls: [1, 2], empty: 0.2, items: [
-    { id: 'bedroll', w: 2 },
+    { id: 'bedroll', w: 2 }, { id: 'hikingpack', w: 1 },
     { id: 'hairpins', w: 4 }, { id: 'cloth', w: 4 }, { id: 'painkillers', w: 2 }, { id: 'bandage', w: 2 }, { id: 'phone', w: 1 },
     { id: 'chocolate', w: 2 }, { id: 'energy', w: 2 }, { id: 'headlamp', w: 1 }, { id: 'mylar', w: 1 },
   ] },
@@ -20,15 +20,17 @@ export const loot: Record<string, LootTable> = {
     { id: 'foldcrate', w: 1 }, { id: 'bedroll', w: 1 }, { id: 'mattress', w: 1 }, { id: 'toolbox', w: 2 },
     { id: 'noodles', w: 5, n: [1, 4] }, { id: 'water', w: 5, n: [1, 2] }, { id: 'energy', w: 3 }, { id: 'chocolate', w: 3 },
     { id: 'crackers', w: 3 }, { id: 'zhacai', w: 3 }, { id: 'firecrackers', w: 1 }, { id: 'tape', w: 2 }, { id: 'tablets', w: 1, n: [2, 5] },
+    { id: 'hikingpack', w: 1 }, { id: 'solar', w: 1 },
   ] },
   workshop: { rolls: [1, 2], empty: 0.3, items: [
     { id: 'toolbox', w: 5 }, { id: 'foldcrate', w: 2 },
     { id: 'tape', w: 4 }, { id: 'rods', w: 3 }, { id: 'crowbar', w: 1 }, { id: 'clips', w: 2 }, { id: 'cable', w: 2 },
     { id: 'scootercells', w: 2 }, { id: 'stone', w: 2, n: [1, 3] }, { id: 'chalk', w: 1 }, { id: 'chalkblock', w: 1 }, { id: 'suppressor', w: 1 }, { id: 'reddot', w: 1 }, { id: 'rope', w: 1 }, { id: 'carabiner', w: 2, n: [1, 2] }, { id: 'zipkit', w: 1 },
+    { id: 'lockpick', w: 1 }, { id: 'ladder', w: 1 }, { id: 'inverter', w: 1 },
   ] },
   car: { rolls: [0, 2], empty: 0.35, items: [
     { id: 'water', w: 4 }, { id: 'crackers', w: 2 }, { id: 'firstaid', w: 1 }, { id: 'tape', w: 2 }, { id: 'cable', w: 2 },
-    { id: 'extinguisher', w: 1 }, { id: 'energy', w: 2 }, { id: 'cloth', w: 2 }, { id: 'carbattery', w: 3 }, { id: 'mag9x', w: 1 }, { id: 'scope4x', w: 1 }, { id: 'rocket', w: 1 }, { id: 'rpg', w: 1 },
+    { id: 'extinguisher', w: 1 }, { id: 'energy', w: 2 }, { id: 'cloth', w: 2 }, { id: 'carbattery', w: 3 }, { id: 'inverter', w: 1 }, { id: 'mag9x', w: 1 }, { id: 'scope4x', w: 1 }, { id: 'rocket', w: 1 }, { id: 'rpg', w: 1 },
     { id: 'toolbox', w: 2 },
   ] },
   // The rarer buildings (M5-35, U-091): the rarer, the better. An office's electronics and odds and ends; a military
@@ -69,6 +71,13 @@ export const loot: Record<string, LootTable> = {
     { id: 'pistol', w: 2 }, { id: 'mag9', w: 4, n: [1, 2] }, { id: 'shotgun', w: 1 }, { id: 'shells', w: 3, n: [1, 2] }, { id: 'grenade', w: 2 }, { id: 'extinguisher', w: 1 },
     { id: 'breach', w: 1 }, { id: 'rfamp', w: 2 }, { id: 'fibretap', w: 1 }, { id: 'cameratap', w: 2 }, { id: 'coil', w: 1 }, { id: 'trigger', w: 1 }, { id: 'cloner', w: 1 },
   ] },
+  // The construction site's tool containers (M6-10): its tier 2 tools, what the tower's crews left (the steel hook,
+  // always in one, and the crane cab's pulley block are placed with the site, yuzhong/site.ts).
+  construction: { rolls: [1, 3], empty: 0.1, items: [
+    { id: 'boltcutters', w: 2 }, { id: 'rope', w: 2 }, { id: 'carabiner', w: 2, n: [1, 2] }, { id: 'harness', w: 2 }, { id: 'hook', w: 2 }, { id: 'nailgun', w: 1 },
+    { id: 'nails', w: 2 }, { id: 'grinder', w: 1 }, { id: 'battpack', w: 1 }, { id: 'jerrycan', w: 1 }, { id: 'breach', w: 1 }, { id: 'crowbar', w: 2 }, { id: 'rods', w: 2 },
+    { id: 'ladder', w: 1 }, { id: 'tape', w: 1 },
+  ] },
   // The sites' own (M6-11 to M6-13): the hospital's medicine (tier 2), the police station's weapons and keys (tier 3), the
   // electronics market's parts (tiers 2-3).
   hospital: { rolls: [1, 3], empty: 0.1, items: [
@@ -77,17 +86,17 @@ export const loot: Record<string, LootTable> = {
   ] },
   police: { rolls: [1, 3], empty: 0.05, items: [
     { id: 'pistol', w: 2 }, { id: 'mag9', w: 5, n: [1, 2] }, { id: 'shotgun', w: 1 }, { id: 'shells', w: 3, n: [1, 2] }, { id: 'grenade', w: 2 }, { id: 'extinguisher', w: 1 },
-    { id: 'policecard', w: 2 }, { id: 'boatkey', w: 1 }, { id: 'cloner', w: 1 }, { id: 'binoculars', w: 1 },
+    { id: 'policecard', w: 2 }, { id: 'boatkey', w: 1 }, { id: 'cloner', w: 1 }, { id: 'binoculars', w: 1 }, { id: 'lockpick', w: 1 },
   ] },
   electronics: { rolls: [1, 3], empty: 0.1, items: [
     { id: 'sdr', w: 2 }, { id: 'rfid', w: 2 }, { id: 'board', w: 4, n: [1, 2] }, { id: 'clips', w: 3 }, { id: 'cable', w: 3 }, { id: 'canif', w: 1 }, { id: 'battpack', w: 3 },
-    { id: 'cameratap', w: 1 }, { id: 'rfamp', w: 1 }, { id: 'tape', w: 2 },
+    { id: 'cameratap', w: 1 }, { id: 'rfamp', w: 1 }, { id: 'tape', w: 2 }, { id: 'trigger', w: 1 }, { id: 'solar', w: 1 }, { id: 'solarpanel', w: 1 }, { id: 'chargectl', w: 1 },
   ] },
   telecom: { rolls: [1, 3], empty: 0.05, items: [
     { id: 'rfamp', w: 3 }, { id: 'netcreds', w: 2 }, { id: 'fibretap', w: 2 }, { id: 'cable', w: 3 }, { id: 'board', w: 2 }, { id: 'cameratap', w: 2 }, { id: 'telcard', w: 1 }, { id: 'battpack', w: 1 },
   ] },
   substation: { rolls: [1, 3], empty: 0.1, items: [
-    { id: 'insgloves', w: 2 }, { id: 'coil', w: 3 }, { id: 'cable', w: 3 }, { id: 'tape', w: 3 }, { id: 'clips', w: 2 }, { id: 'carbattery', w: 1 }, { id: 'boltcutters', w: 1 }, { id: 'toolbox', w: 2 },
+    { id: 'insgloves', w: 2 }, { id: 'coil', w: 3 }, { id: 'cable', w: 3 }, { id: 'tape', w: 3 }, { id: 'clips', w: 2 }, { id: 'carbattery', w: 1 }, { id: 'boltcutters', w: 1 }, { id: 'toolbox', w: 2 }, { id: 'trigger', w: 1 },
   ] },
   // Tier 4: the drone hub's: what a drone controller is made of, big battery packs, the thermal module.
   tier4: { rolls: [2, 4], empty: 0, items: [

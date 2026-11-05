@@ -22,6 +22,8 @@ import { alleys } from '../city/climb';
 import { buildTunnels, tunnelFrame, JUNCTION, METRO } from './tunnels';
 import { buildUnder } from './under';
 import { buildSite } from './site';
+import { siteWays } from './siteways';
+import { placeFinds } from './finds';
 import { podiumMask, buildFactory } from './factory';
 import { verticalCity } from './vertical';
 import { crossings, layLinks, windowBridges } from './crossings';
@@ -179,13 +181,17 @@ export function buildYuzhong(): World {
     const q = best ?? { x: mx + MONUMENT.kerb[0] + 3, z: mz };
     Object.assign(jt, { x: q.x, y: hAt(g, q.x, q.z) + 1.5, z: q.z, yaw: Math.atan2(-(mx - q.x), -(mz - q.z)) });
   }
-  const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter);
+  // The construction site's ways in round its hoarding, now its neighbours stand (M6-10).
+  const ways = site ? siteWays(site, plots, g) : null;
+  teleports.push(...(ways?.teleports ?? []));
+  const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
   // Street dressing goes last, round everything else (its solids append, so the gate's index holds).
   const clear = [tun.at.entrance, tun.at.exit, home.at.grate, home.at.exit, ...metro.at].map(q => ({ x: q.x, z: q.z, r: 9 })).concat(site ? [{ x: site.frame.x, z: site.frame.z, r: 50 }] : [],
     plots.filter(p => p.route).map(p => ({ x: p.route![0].x, z: p.route![0].z, r: 2.5 })),
-    (fac?.gates ?? []).map(q => ({ x: q.x + q.nx * 8, z: q.z + q.nz * 8, r: 13 })), under.features.map(f => ({ x: f.x, z: f.z, r: 6 })));
+    (fac?.gates ?? []).map(q => ({ x: q.x + q.nx * 8, z: q.z + q.nz * 8, r: 13 })), under.features.map(f => ({ x: f.x, z: f.z, r: 6 })),
+    (ways?.features ?? []).filter(f => f.kind === 'site:gate' || f.kind === 'site:scaffold' || f.kind === 'site:ditch').map(f => ({ x: f.x, z: f.z, r: 4 })));
   const staged = buildIndex(solids, g), dress = dressStreets(staged, g, sts, land, inter, clear);
   solids.push(...dress.solids);
   // Then the green and the ruins on the marked open ground, round all that.
@@ -218,10 +224,10 @@ export function buildYuzhong(): World {
   if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); inter.push(...police.inter); }
   solids.push(...river.solids);
   const world = makeWorld({
-    name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
-    props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], vert.climbables, under.climbables),
+    name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, laid.decor, filled.decor),
+    props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], ways?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], ways?.climbables ?? [], vert.climbables, under.climbables),
     hides: out.hides, sites: out.sites.concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones),
-    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
+    far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, site?.features ?? [], ways?.features ?? [], fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water],
     teleports, spawn: hide,
   });
   // Nothing floats or sinks (M3-56): whatever stands on something above ground settles onto what's under it, or
@@ -272,7 +278,7 @@ export function buildYuzhong(): World {
     // (No walker's beat off the ground's grid, out past the city's edge where the street network runs on: M6-22.)
     .filter(p => p.kind !== 'street' || p.pts.every(q => q.x >= g.x0 && q.z >= g.z0 && q.x <= g.x0 + (g.w - 1) * g.cell && q.z <= g.z0 + (g.h - 1) * g.cell));
   for (const c of world.convoys ?? []) c.spurs = columnSpurs(world, c.pts);
-  world.cameras = placeCameras(world).concat(placeSensors(world, gtAt), police?.cameras ?? []);
+  world.cameras = placeCameras(world).concat(placeSensors(world, gtAt), police?.cameras ?? [], ways?.cameras ?? []);
   if (police) world.climbables.push(...police.climbables);
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
@@ -315,6 +321,7 @@ export function buildYuzhong(): World {
     const pre = hatch.id.slice(0, hatch.id.lastIndexOf('.')), store = world.inter.filter(i => i.kind === 'container' && i.id.startsWith(pre) && i.y < hatch.y - 1 && i.y > hatch.y - 5);
     if (store.length) world.sites.push({ id: 'hongyadong-cellar', kind: 'cellar', name: ['洪崖洞崖下地窖', 'Hongyadong cliff cellar'], x: store[0].x, y: hatch.y - 3.2, z: store[0].z, bed: null, table: null, containers: store.slice(0, 6).map(i => i.id), exits: 1, windows: 0, streetSides: 0 });
   }
+  placeFinds(world);
   // Each shelter site's bed, table and containers (M6-24): what's in its rooms to claim, by where they stand.
   const claim = new Map<string, Inter[]>(), cellOf = (x: number, z: number) => `${Math.floor(x / 8)},${Math.floor(z / 8)}`;
   for (const it of world.inter) if (it.kind === 'mattress' || it.kind === 'table' || it.kind === 'container') { const k = cellOf(it.x, it.z); (claim.get(k) ?? claim.set(k, []).get(k)!).push(it); }

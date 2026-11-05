@@ -14,10 +14,10 @@ import { movement as M } from '../data/movement';
 export const doorSolid = (it: Inter) => it.data?.solid as number;
 
 /** Make the collision index match the dynamic world state (after load, or after a change): doors open, windows
- *  broken (M3-36), grates up (M3-72), rubble cleared (M4-24), fences cut (M5-25b). */
+ *  broken (M3-36), grates up (M3-72), rubble cleared (M4-24), fences cut (M5-25b), the site's loose planks fallen (M6-10). */
 export function syncWorld(s: SimState, w: World) {
   for (const it of w.inter) {
-    if (it.kind !== 'door' && it.kind !== 'window' && it.kind !== 'grate' && it.kind !== 'rubble' && it.kind !== 'fence') continue;
+    if (it.kind !== 'door' && it.kind !== 'window' && it.kind !== 'grate' && it.kind !== 'rubble' && it.kind !== 'fence' && it.kind !== 'looseplank') continue;
     if (it.data?.shutter) { raiseShutter(s, w, it); continue; }
     if (doorSolid(it) >= 0) w.index.off[doorSolid(it)] = s.wstate.open[it.id] ? 1 : 0;
   }

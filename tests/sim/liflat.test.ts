@@ -15,6 +15,7 @@ import { walkUp, floorWay } from '../../src/world/yuzhong/liflat';
 import { syncWorld } from '../../src/sim/doors';
 import { lockWay } from '../../src/sim/locks';
 import { settle } from './helpers';
+import { free } from '../../src/sim/physics';
 
 const w = getWorld('yuzhong'), flat = w.teleports.find(t => t.name === 'Li family flat')!, top = w.teleports.find(t => t.name === 'Shibati top')!;
 const things = w.features.filter(f => f.kind.startsWith('li:'));
@@ -40,17 +41,18 @@ describe('the Li family flat (M3-19)', () => {
     expect(near.filter(p => p.text === 'fallen').length).toBeGreaterThanOrEqual(4);
     for (const k of ['f:papers', 'f:clothes', 'f:books']) expect(near.some(p => p.kind === k), k).toBe(true);
   });
-  it('holds his father\'s badge and the phone; picked up, the phone plays the voicemail', () => {
-    expect(things.map(f => f.kind).sort()).toEqual(['li:badge', 'li:phone']);
+  it('holds his father\'s badge, the phone and his site card (M6-10); picked up, the phone plays the voicemail', () => {
+    expect(things.map(f => f.kind).sort()).toEqual(['li:badge', 'li:phone', 'li:sitecard']);
     const s = createState(1, w);
     startRun(s, w);
     // (His family's things: not the found documents lying at the key places, M10-37.)
-    expect(s.dropped.filter(d => !d.loose).map(d => d.stack.id).sort()).toEqual(['badge', 'phone']);
+    expect(s.dropped.filter(d => !d.loose).map(d => d.stack.id).sort()).toEqual(['badge', 'phone', 'sitecard']);
     for (const f of things) {
       teleport(s.player, flat.x, flat.y - 1.45, flat.z);
       run(s, w, 30);
-      // Walk to it (straight across the room), look down at it, F.
-      teleport(s.player, f.x + 0.7, f.y + 0.02, f.z);
+      // Walk to it (straight across the room, from a side with room to stand), look down at it, F.
+      const [ox, oz] = [[0.7, 0], [-0.7, 0], [0, 0.7], [0, -0.7]].find(([dx, dz]) => free(w.index, f.x + dx, f.y + 0.02, f.z + dz, 1.75))!;
+      teleport(s.player, f.x + ox, f.y + 0.02, f.z + oz);
       run(s, w, 10);
       aim(s, f.x, f.y + 0.1, f.z);
       run(s, w, 1, { pressed: B.INTERACT, buttons: B.INTERACT });
@@ -59,6 +61,7 @@ describe('the Li family flat (M3-19)', () => {
     const pack = s.inv.pack.items.map(i => i.id);
     expect(pack).toContain('badge');
     expect(pack).toContain('phone');
+    expect(pack).toContain('sitecard');
     // In hand, the left mouse plays it.
     const phone = s.inv.pack.items.find(i => i.id === 'phone')!;
     s.inv.hotbar[0] = phone.uid; s.inv.held = 1;

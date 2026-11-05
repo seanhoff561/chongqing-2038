@@ -7,17 +7,25 @@ import { solid, turn, type Solid } from '../geom';
 import { MAT } from '../mats';
 import { GEO } from '../geo';
 import type { Heightfield } from '../heightfield';
-import type { Climbable, Prop } from '../world';
+import type { Climbable, Feature, Inter, Prop } from '../world';
 import { stair } from '../steps';
 import { minRect, points, rasterPoly, inside, type Obb, type P2 } from './shapes';
 
+/** A stretch of the hoarding (up to 8 m): its middle, length and line; the ground outside, lowest and highest; out
+ *  of the site; its top. */
+export interface Piece { cx: number; cz: number; len: number; yaw: number; lo: number; hi: number; nx: number; nz: number; cap: number }
+
 export interface Site {
+  /** the hoarding's stretches, the gate's, and where the drainage ditch runs out under it (M6-10) */
+  pieces: Piece[]; gate: Piece; ditch: Piece | null; inter: Inter[]; features: Feature[];
   solids: Solid[]; decor: Solid[]; climbables: Climbable[]; props: Prop[]; plot: Obb; poly: P2[]; base: number; frame: { x: number; z: number; top: number }; crane: { x: number; z: number; top: number };
   /** a walk from the ground up the stair core to the top slab, for tests and pursuers */
   route: { x: number; y: number; z: number }[];
 }
 
 const hAt = (g: Heightfield, x: number, z: number) => g.y[Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)))];
+/** The gap the drainage ditch leaves under the hoarding (a crawl, not a crouch: M6-10), and its width. */
+export const DITCH = { gap: 0.65, wide: 1.4 };
 /** The tower: 6 x 4 bays of 6 m, 14 floors of 3.6 m cast, 4 of bare columns above; the stair core in its north-east corner. */
 const BAYS = [5, 4], BAY = 6, FLOORS = 14, BARE = 4, F = 3.6, CORE = 4;
 
@@ -33,13 +41,13 @@ export function buildSite(g: Heightfield): Site | null {
   /** Local (unturned about the rectangle's middle) to the map and back. */
   const P = (x: number, z: number): P2 => [o.cx + c * (x - o.cx) - s * (z - o.cz), o.cz + s * (x - o.cx) + c * (z - o.cz)];
   const local = poly.map(([x, z]): P2 => [o.cx + c * (x - o.cx) + s * (z - o.cz), o.cz - s * (x - o.cx) + c * (z - o.cz)]);
-  const solids: Solid[] = [], decor: Solid[] = [], props: Prop[] = [], climb: Climbable[] = [], mapSolids: Solid[] = [];
+  const solids: Solid[] = [], decor: Solid[] = [], props: Prop[] = [], climb: Climbable[] = [], mapSolids: Solid[] = [], mapDecor: Solid[] = [], inter: Inter[] = [], features: Feature[] = [];
   // Dug out to the lowest ground on the plot.
   let base = Infinity;
   rasterPoly(poly, 0, 0, g.cell, g.w, g.h, (i0, i1, j) => { for (let k = j * g.w + i0; k <= j * g.w + i1; k++) base = Math.min(base, g.y[k]); });
   rasterPoly(poly, 0, 0, g.cell, g.w, g.h, (i0, i1, j) => g.y.fill(base, j * g.w + i0, j * g.w + i1 + 1));
   // Shoring up to the ground outside each 8 m of edge, hoarding 2.4 m over that; a gate where outside is lowest.
-  const pieces: { cx: number; cz: number; len: number; yaw: number; lo: number; hi: number }[] = [];
+  const pieces: Piece[] = [];
   for (let k = 0; k < poly.length; k++) {
     const [ax, az] = poly[k], [bx, bz] = poly[(k + 1) % poly.length], len = Math.hypot(bx - ax, bz - az), n = Math.ceil(len / 8);
     if (len < 0.5) continue;
@@ -48,17 +56,26 @@ export function buildSite(g: Heightfield): Site | null {
     for (let i = 0; i < n; i++) {
       const t0 = i / n, t1 = (i + 1) / n, x0 = ax + (bx - ax) * t0, z0 = az + (bz - az) * t0, x1 = ax + (bx - ax) * t1, z1 = az + (bz - az) * t1;
       const out = [[x0, z0], [x1, z1], [(x0 + x1) / 2, (z0 + z1) / 2]].map(([x, z]) => hAt(g, x + nx * 2.5, z + nz * 2.5));
-      pieces.push({ cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, len: len / n, yaw: Math.atan2(bz - az, bx - ax), lo: Math.min(...out), hi: Math.max(...out) });
+      pieces.push({ cx: (x0 + x1) / 2, cz: (z0 + z1) / 2, len: len / n, yaw: Math.atan2(bz - az, bx - ax), lo: Math.min(...out), hi: Math.max(...out), nx, nz, cap: Math.max(base, Math.max(...out)) + 2.4 });
     }
   }
-  const gate = pieces.filter(p => p.len >= 5).reduce((a, p) => (p.lo < a.lo ? p : a));
+  // (By its highest sample: a lowest one at a corner can fall in the dug-out cells.)
+  const gate = pieces.filter(p => p.len >= 5).reduce((a, p) => (p.hi < a.hi ? p : a));
+  // Where the drainage ditch runs out under the hoarding (M6-10): a flat stretch well away from the gate.
+  const ditch = pieces.filter(p => p !== gate && p.len >= 4 && p.hi - base < 0.6 && Math.hypot(p.cx - gate.cx, p.cz - gate.cz) > 20).sort((a, b) => b.len - a.len)[0] ?? null;
   for (const p of pieces) {
     const x0 = p.cx - p.len / 2 - 0.15, x1 = p.cx + p.len / 2 + 0.15, shore = Math.max(base, p.lo), cap = Math.max(base, p.hi) + 2.4;
     if (p === gate) {
       for (const x of [x0, x1 - 0.3]) mapSolids.push(...turn([solid(x, base, p.cz - 0.15, x + 0.3, cap + 0.6, p.cz + 0.15, MAT.metal)], p.yaw, p.cx, p.cz));
       continue;
     }
-    mapSolids.push(...turn([solid(x0, base - 0.5, p.cz - 0.15, x1, shore, p.cz + 0.15, MAT.concrete), solid(x0, shore, p.cz - 0.12, x1, cap, p.cz + 0.12, MAT.metal)], p.yaw, p.cx, p.cz));
+    // (Over the ditch, the hoarding's held up off the ground: a gap to crawl through, the trickle running out under it.)
+    const gap = p === ditch ? [p.cx - DITCH.wide / 2, p.cx + DITCH.wide / 2] : null;
+    const boards = gap ? [solid(x0, shore, p.cz - 0.12, gap[0], cap, p.cz + 0.12, MAT.metal), solid(gap[0], shore + DITCH.gap, p.cz - 0.12, gap[1], cap, p.cz + 0.12, MAT.metal), solid(gap[1], shore, p.cz - 0.12, x1, cap, p.cz + 0.12, MAT.metal)] : [solid(x0, shore, p.cz - 0.12, x1, cap, p.cz + 0.12, MAT.metal)];
+    // (The ditch cut through the shoring under it.)
+    const shoring = gap ? [solid(x0, base - 0.5, p.cz - 0.15, gap[0], shore, p.cz + 0.15, MAT.concrete), solid(gap[1], base - 0.5, p.cz - 0.15, x1, shore, p.cz + 0.15, MAT.concrete)] : [solid(x0, base - 0.5, p.cz - 0.15, x1, shore, p.cz + 0.15, MAT.concrete)];
+    mapSolids.push(...turn([...shoring, ...boards], p.yaw, p.cx, p.cz));
+    if (gap) mapDecor.push(...turn([solid(gap[0] + 0.3, base + 0.005, p.cz - 3, gap[1] - 0.3, base + 0.02, p.cz + 3, MAT.water)], p.yaw, p.cx, p.cz));
   }
 
   // The tower where its footprint and the crane beside it fit inside the plot, nearest the plot's middle.
@@ -108,19 +125,30 @@ export function buildSite(g: Heightfield): Site | null {
   solids.push(solid(mx - 1.5, top, mz - 1.5, mx + 1.5, top + 2.5, mz + 1.5, MAT.metal));
   solids.push(solid(mx - 50, top + 2.5, mz - 0.6, mx + 14, top + 3.6, mz + 0.6, MAT.metal), solid(mx + 6, top + 3.6, mz - 1.4, mx + 13, top + 6, mz + 1.4, MAT.concrete));
   decor.push(solid(mx - 0.3, top + 3.6, mz - 0.3, mx + 0.3, top + 9, mz + 0.3, MAT.metal));
-  // The hook hangs where the work stopped, over the frame, a skip of rebar on it.
-  decor.push(solid(mx - 30.05, roof + BARE * F + 3, mz - 0.05, mx - 29.95, top + 2.5, mz + 0.05, MAT.metal));
-  solids.push(solid(mx - 31.2, roof + BARE * F + 1.8, mz - 0.9, mx - 28.8, roof + BARE * F + 3, mz + 0.9, MAT.metal));
+  // Still on autopilot (M6-10, sim/sitehaz.ts): its load of rebar picked up off the ground past the frame's far end,
+  // carried up and in along the jib, set down on the top slab between its columns, and back.
+  const pickX = [mx - 45, mx - 42, mx - 40].find(x => inside(local, x, mz) && inside(local, x - 1.5, mz)) ?? mx - 40;
+  const at = (x: number, y: number, kind: string) => { const [px, pz] = P(x, mz); features.push({ kind, x: px, y, z: pz, group: features.length }); };
+  at(pickX, base + 0.6, 'crane:pick'); at(mx - 22, roof + 0.6, 'crane:drop'); at(mx - 22, roof + BARE * F + 3.5, 'crane:high'); at(mx, top + 2.5, 'crane:jib');
+  // (In the cab, a spare pulley block for the crane's hoist, and the driver's odds and ends.)
+  const [kx0, kz0] = P(mx, mz);
+  inter.push({ id: 'site-cab', kind: 'container', x: kx0, y: top + 3, z: kz0, r: 1.5, zh: '塔吊驾驶室', en: 'Crane cab', data: { type: 'locker', loot: 'bedroom', items: [['pulley', 1]] } });
   // Site containers south of the frame, where they fit, and the mess round them.
   for (let i = 0; i < 3; i++) {
     const x0 = tx0 + i * 6.4, z0 = tz1 + 5;
-    if (fits(x0, z0, x0 + 6, z0 + 2.4)) solids.push(solid(x0, base, z0, x0 + 6, base + 2.6, z0 + 2.4, MAT.metal));
+    if (!fits(x0, z0, x0 + 6, z0 + 2.4)) continue;
+    solids.push(solid(x0, base, z0, x0 + 6, base + 2.6, z0 + 2.4, MAT.metal));
+    // (Each a tool store, its doors on the side facing the frame: the site's tier 2 tools, data/loot 'construction';
+    // the steel hook always in the first, M6-10.)
+    const [ix, iz] = P(x0 + 3, z0 - 0.35), first = !inter.some(q => q.id.startsWith('site-box'));
+    inter.push({ id: `site-box${i}`, kind: 'container', x: ix, y: base + 1.1, z: iz, r: 1.2, zh: '工具集装箱', en: 'Tool container', data: { type: 'crate', loot: 'construction', ...(first ? { items: [['hook', 1]] } : {}) } });
   }
   props.push({ kind: 'boxes', x: tx1 + 2, y: base, z: tz1 + 2, yaw: 0.3 }, { kind: 'debris', x: tx0 + 3, y: base, z: tz1 + 3, yaw: 1 },
     { kind: 'rubblepile', x: tx0 - 2, y: base, z: tz0 + 4, yaw: 0, w: 3 }, { kind: 'sandbags', x: tx0 + 9, y: base, z: tz1 + 2, yaw: 0 });
   const [fx, fz] = P((tx0 + tx1) / 2, (tz0 + tz1) / 2), [kx, kz] = P(mx, mz);
   return {
-    solids: turn(solids, o.yaw, o.cx, o.cz).concat(mapSolids), decor: turn(decor, o.yaw, o.cx, o.cz), plot: o, poly, base,
+    pieces, gate, ditch, inter, features,
+    solids: turn(solids, o.yaw, o.cx, o.cz).concat(mapSolids), decor: turn(decor, o.yaw, o.cx, o.cz).concat(mapDecor), plot: o, poly, base,
     frame: { x: fx, z: fz, top: roof }, crane: { x: kx, z: kz, top }, route: route.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z }; }),
     climbables: climb.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z, nx: c * q.nx - s * q.nz, nz: s * q.nx + c * q.nz }; }),
     props: props.map(q => { const [x, z] = P(q.x, q.z); return { ...q, x, z, yaw: q.yaw - o.yaw }; }),

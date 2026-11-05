@@ -10,6 +10,8 @@ export const RECIPES: Recipe[] = [
   { id: 'battpack', parts: [['scootercells', 1], ['tape', 1]], secs: 10 },
   { id: 'grapple', parts: [['hook', 1], ['rope', 1]], secs: 10 },
   { id: 'trolley', parts: [['pulley', 1], ['carabiner', 2], ['harness', 1]], secs: 10 },
+  // (A rooftop sensor's panel wired through a charge controller: screw terminals, no soldering. M10-26.)
+  { id: 'solar', parts: [['solarpanel', 1], ['chargectl', 1], ['cable', 1]], secs: 12 },
   { id: 'cameratap', power: true, parts: [['board', 1], ['cable', 1], ['clips', 1]], secs: 15 },
   { id: 'cloner', power: true, parts: [['rfid', 1], ['board', 1], ['battpack', 1]], secs: 20 },
   { id: 'dronectl', power: true, parts: [['board', 1], ['radiomod', 1], ['battpack', 1]], secs: 20 },
