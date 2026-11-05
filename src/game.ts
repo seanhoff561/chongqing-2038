@@ -161,7 +161,7 @@ export class Game {
     this.inv = new InventoryUI(this);
     this.sleep = new SleepUI(this);
     this.settings = new Settings(this, opts.dev);
-    this.laptop3d = new Laptop3D(this.view.scene);
+    this.laptop3d = new Laptop3D(this.view.scene, this.view.renderer);
     this.laptop = new LaptopUI(this);
     this.craft = new CraftUI(this);
     this.ending = new EndingSequence(this);
@@ -394,7 +394,7 @@ export class Game {
     this.updatePrompt();
     this.updateHeld();
     this.hud.tick(dt);
-    this.furniture.sync(this.state);
+    this.furniture.sync(this.state, this.view.fp.cam.position);
     this.status.update(this.state, dt);
     const cam = this.view.fp.cam.position;
     this.sky.update(this.state.time, cam, this.hazeDistance(), this.underAmount(dt), this.state.weather, this.lit);

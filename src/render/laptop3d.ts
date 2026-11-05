@@ -12,7 +12,10 @@ export const LAPTOP3D = { held: new THREE.Vector3(0, -0.3, -0.45), focus: new TH
 const TILT = -Math.atan2(-LAPTOP3D.held.y, -LAPTOP3D.held.z);
 
 export class Laptop3D {
+  /** where it is (and the screen's glow, ui/laptop.ts, always in it) */
   readonly group = new THREE.Group();
+  /** the machine itself, drawn only while it's out */
+  private body = new THREE.Group();
   private screen: THREE.Mesh;
   /** the keyboard half, kept level whatever the lid's tipped to */
   private deck: THREE.Group;
@@ -21,13 +24,14 @@ export class Laptop3D {
   /** 0 held, 1 sitting at it */
   focus = 0;
 
-  constructor(scene: THREE.Object3D) {
+  /** the renderer's shader programs last frame */
+  private programs = -1;
+
+  constructor(scene: THREE.Scene, private renderer: THREE.WebGLRenderer) {
     const { lid, deck, screen } = buildLaptop(LAPTOP3D.w, LAPTOP3D.h);
     this.screen = screen; this.deck = deck;
-    this.group.add(lid, deck);
-    // (Never hidden: put away it's drawn shrunk to nothing, so its shaders stay compiled for the scene's lights as they
-    // change (night, lamps streaming in), and the screen's glow in it (ui/laptop.ts) is always among those lights, so
-    // taking it out changes nothing to compile, here or for every material in view: M10-64.)
+    this.body.add(lid, deck);
+    this.group.add(this.body);
     this.group.traverse(o => { o.frustumCulled = false; });
     this.group.rotation.order = 'YXZ';
     scene.add(this.group);
@@ -39,7 +43,14 @@ export class Laptop3D {
     this.up += ((open ? 1 : 0) - this.up) * k;
     this.focus += ((sit ? 1 : 0) - this.focus) * k;
     if (!open && this.up < 0.02) this.up = 0;
-    this.group.scale.setScalar(this.up > 0 ? 1 : 1e-4);
+    // Put away it isn't drawn (some ten draw calls a frame), but taking it out compiles nothing (M10-64): the screen's
+    // glow stays in the scene's lights (its group always shown, the glow dark), and whenever the renderer's shader
+    // programs change (the scene's lights changed: night, lamps streaming in) it's drawn for a frame shrunk to nothing,
+    // so its own are compiled, and first drawn (where the driver does its real work), for them unseen.
+    const n = this.renderer.info.programs!.length, warm = this.up === 0 && n !== this.programs;
+    this.programs = n;
+    this.body.visible = this.up > 0 || warm;
+    this.body.scale.setScalar(this.up > 0 ? 1 : 1e-4);
     const at = LAPTOP3D.held.clone().lerp(LAPTOP3D.focus, this.focus), yaw = cam.rotation.y;
     at.y -= (1 - this.up) * 0.4;
     this.group.position.copy(cam.position).add(at.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw));
