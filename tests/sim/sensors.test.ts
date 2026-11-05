@@ -101,7 +101,9 @@ describe('fixed sensors (M4-11)', () => {
     // (The beams across the Grand Tunnel, the metro's face gates' scan line (M6-17) and the bridge checkpoint's two
     // scanner gates (M6-19); the hospital pharmacy's pressure plate is a tripwire laid flat, M6-11.)
     expect(n('tripwire').filter(c => !c.w).length).toBe(5);
-    for (const c of n('tripwire').filter(c => !c.w)) expect(Math.hypot(c.to!.x - c.x, c.to!.z - c.z)).toBeGreaterThan(4.5);
+    // (Each a beam across its tunnel; the checkpoint's are across a lane of its gate, by the gate's mark.)
+    const gate = (c: (typeof w.cameras)[number]) => w.features.some(f => f.kind === 'bridge:gate' && Math.hypot(f.x - (c.x + c.to!.x) / 2, f.z - (c.z + c.to!.z) / 2) < 1);
+    for (const c of n('tripwire').filter(c => !c.w && !gate(c))) expect(Math.hypot(c.to!.x - c.x, c.to!.z - c.z)).toBeGreaterThan(4.5);
     expect(n('acoustic').length).toBeGreaterThanOrEqual(3);
     expect(n('pir').length).toBeGreaterThanOrEqual(3);
     // None hears or sees into the friends' hideout.
