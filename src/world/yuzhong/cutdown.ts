@@ -63,7 +63,8 @@ export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plot
     for (const i of mine) { const q = out.solids[i]; if (q.y0 >= c - 0.01 || (q.y1 > c && q.ramp)) drop.solids.add(i); else if (q.y1 > c) out.solids[i] = { ...q, y1: c }; }
     for (const k of ['decor', 'far'] as const) for (const i of at(k)) { const q = out[k][i]; if (q.y0 >= c - 0.01) drop[k].add(i); else if (q.y1 > c) out[k][i] = { ...q, y1: c }; }
     for (const k of ['props', 'inter'] as const) for (const i of at(k)) if (out[k][i].y >= c - 0.01) drop[k].add(i);
-    for (const i of at('climbables')) { const q = out.climbables[i]; if (q.y0 >= c - 0.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
+    // (One cut to under 1.5 m of climb is gone: a stub left of a vine or a pipe, its prop gone with the floors over it.)
+    for (const i of at('climbables')) { const q = out.climbables[i]; if (q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
     for (const i of at('hides')) if (out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
     for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
     for (const i of at('sites')) if (out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };

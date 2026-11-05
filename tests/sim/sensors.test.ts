@@ -98,9 +98,9 @@ describe('fixed sensors (M4-11)', () => {
     // (One over each gate; the rest at the districts' main junctions, on lampposts: M4-57.)
     const gates = w.features.filter(f => f.kind === 'gate');
     expect(n('turret').filter(t => gates.some(g => Math.hypot(t.x - g.x, t.z - g.z) < 3)).length).toBe(gates.length);
-    // (The beams across the Grand Tunnel and the metro's face gates' scan line, M6-17; the hospital pharmacy's pressure
-    // plate is a tripwire laid flat, M6-11.)
-    expect(n('tripwire').filter(c => !c.w).length).toBe(3);
+    // (The beams across the Grand Tunnel, the metro's face gates' scan line (M6-17) and the bridge checkpoint's two
+    // scanner gates (M6-19); the hospital pharmacy's pressure plate is a tripwire laid flat, M6-11.)
+    expect(n('tripwire').filter(c => !c.w).length).toBe(5);
     for (const c of n('tripwire').filter(c => !c.w)) expect(Math.hypot(c.to!.x - c.x, c.to!.z - c.z)).toBeGreaterThan(4.5);
     expect(n('acoustic').length).toBeGreaterThanOrEqual(3);
     expect(n('pir').length).toBeGreaterThanOrEqual(3);
