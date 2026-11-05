@@ -12,8 +12,8 @@ import { raycast } from '../../src/world/geom';
 import { TRUSS, at, rail, road } from '../../src/world/yuzhong/bridges';
 import { CHECK } from '../../src/world/yuzhong/checkpoint';
 import { B, type SimState } from '../../src/sim/types';
-import { run, aim, secs, settle, LMB, RMB } from './helpers';
-import { walk, crossDeck } from './routekit';
+import { run, aim, secs, settle, LMB } from './helpers';
+import { walk, crossDeck, climbLadder } from './routekit';
 
 type V3 = { x: number; y: number; z: number };
 const w = getWorld('yuzhong'), [b, q] = w.bridges!, H = TRUSS.half;
@@ -53,19 +53,11 @@ describe('the bridges (M6-07, M6-08)', () => {
     await settle();
     const tp = w.teleports.find(t => t.name === 'Dongshuimen Bridge: north pier')!, [lx, lz] = at(b, b.pier!, H + 0.05);
     const ladder = w.climbables.find(c => c.kind === 'ladder' && Math.hypot(c.x - lx, c.z - lz) < 0.2)!;
-    expect(ladder.y1 - ladder.y0, 'a long climb').toBeGreaterThan(20);
-    const s = at0(tp), p = s.player, bits = [LMB, RMB];
-    teleport(p, ladder.x + ladder.nx * 0.7, p.pos.y + 0.01, ladder.z + ladder.nz * 0.7);
-    run(s, w, 5);
-    let hand = 0;
-    for (let k = 0; k < 400 && (p.mode !== 'ground' || k === 0); k++) {
-      const holding = p.hands.reduce((a, h, i) => a | (h.grip ? bits[i] : 0), 0);
-      aim(s, ladder.x + ladder.nx * 0.08, Math.min(ladder.y1 - 0.05, p.pos.y + 2.2), ladder.z + ladder.nz * 0.08);
-      run(s, w, 2, { buttons: holding | bits[hand] });
-      run(s, w, secs(1), { buttons: bits[hand], my: 1 });
-      hand = 1 - hand;
-      if (p.mode === 'action') run(s, w, secs(1));
-    }
+    expect(ladder.y1 - ladder.y0, 'a long climb').toBeGreaterThan(12);
+    const s = at0(tp), p = s.player;
+    s.flags.god = false;
+    expect(climbLadder(s, w, ladder), where(s)).toBe(true);
+    expect(s.dead ?? null).toBeNull();
     expect(p.mode, where(s)).toBe('ground');
     expect(Math.abs(p.pos.y - rail(b, b.pier!)), where(s)).toBeLessThan(0.3);
     // In onto the deck through the handrail's gap.
@@ -133,16 +125,8 @@ describe('the bridge checkpoint (M6-19)', () => {
   it('in up the hatch from the rail deck, and the turrets see him', async () => {
     await settle();
     const lad = R(b.hatch! + 0.05, 0), ladder = w.climbables.find(c => c.kind === 'ladder' && Math.hypot(c.x - lad.x, c.z - lad.z) < 0.2)!;
-    const s = live(P(b.hatch! + 0.7, 0)), p = s.player, bits = [LMB, RMB];
-    let hand = 0;
-    for (let k = 0; k < 60 && (p.mode !== 'ground' || k === 0 || p.pos.y < ladder.y1 - 1); k++) {
-      const holding = p.hands.reduce((a, h, i) => a | (h.grip ? bits[i] : 0), 0);
-      aim(s, ladder.x + ladder.nx * 0.08, Math.min(ladder.y1 - 0.05, p.pos.y + 2.2), ladder.z + ladder.nz * 0.08);
-      run(s, w, 2, { buttons: holding | bits[hand] });
-      run(s, w, secs(1), { buttons: bits[hand], my: 1 });
-      hand = 1 - hand;
-      if (p.mode === 'action') run(s, w, secs(1));
-    }
+    const s = live(P(b.hatch! + 0.7, 0)), p = s.player;
+    expect(climbLadder(s, w, ladder), where(s)).toBe(true);
     expect(p.pos.y, where(s)).toBeGreaterThan(road(b, b.hatch!) - 0.3);
     expect(go(s, [R(b.hatch! - 1.5, 0)]), where(s)).toBe(1);
     let top = 0;

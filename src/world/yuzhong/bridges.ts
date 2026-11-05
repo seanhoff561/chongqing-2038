@@ -176,8 +176,10 @@ export function buildBridge(b: Span, g: Heightfield, plots: Plot[]) {
     box(q - 1.2, q + 1.2, -H, H, R(q) - 3.6, R(q) - T.floor, MAT.plaster, WHITE);
     if (dir < 0) piers.push(q);
   }
-  // The north pier's ladder (M6-08): up its outer column's face to the rail deck's edge, from the ground on the bank.
-  if (b.holes) b.pier = piers.find(q => hAt(g, ...at(b, q, H + 1)) > WATER_Y + 1);
+  // The north pier's ladder (M6-08): up its outer column's face to the rail deck's edge from the ground on the bank,
+  // the pier on land nearest the river with a climb a man can make in one go (26 m at most), if there's one.
+  const foot = (q: number) => hAt(g, ...at(b, q, H + 1)), long = (q: number) => (R(q) - foot(q) < 26 ? 0 : 1);
+  if (b.holes) b.pier = piers.filter(q => foot(q) > WATER_Y + 1).sort((p, q) => long(p) - long(q))[0];
   for (let k = 0; k < n; k++) {
     const t0 = b.ta + k * P, t1 = t0 + P, tm = t0 + P / 2;
     if (gone(t0, t1)) continue;
