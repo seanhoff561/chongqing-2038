@@ -55,8 +55,8 @@ export interface Feature { kind: string; x: number; y: number; z: number; group:
 export interface Plot { corners: [number, number][]; base: number; wall: number; /** roof top (ridge or parapet) */ top: number; kind: string; /** its infill row, if any */ row?: string; /** foundation bottom */ found: number; route?: { x: number; y: number; z: number }[]; /** the floor its stairwell's blocked going up from (U-069) */ blocked?: number; /** what it was this run (M5-35) */ type?: import('./city/types').BuildingType; far: boolean; osm: boolean;
   /** what its interactables' ids start with (`<prefix>-`) */
   prefix?: string;
-  /** what it built itself: its ranges of the world's solids and climbables (first in each list), [from, to) */
-  own?: { solids: [number, number]; climbables: [number, number] } }
+  /** what it built itself: its ranges of the city's lists as they stood once it was built, [from, to) */
+  own?: Record<'solids' | 'decor' | 'far' | 'props' | 'inter' | 'climbables' | 'hides' | 'features' | 'sites', [number, number]> }
 
 export interface Teleport { name: string; x: number; y: number; z: number; yaw: number }
 
@@ -127,6 +127,8 @@ export interface World {
   lawns?: [number, number][][];
   /** cables strung between buildings, to ride (M3-52) */
   lines: Line[];
+  /** the cableway's ropes over the river (M6-16): drawn, not ridden (yuzhong/cableway.ts) */
+  ropes?: Line[];
   /** the machines' columns' ways out of the factory along the roads, at ground level (M3-57b) */
   /** the machines' columns' ways out of the factory, and where on each a pair peels off into an alley (M4-01b) */
   convoys?: Convoy[];

@@ -8,9 +8,6 @@ import { GEO } from '../geo';
 import { heightAt } from '../heightfield';
 import { streets, WATER_Y } from './ground';
 
-/** The cableway's south station on Shangxin Street, across the river (world metres). */
-const CABLE_SOUTH = { x: 2450, z: 1750 };
-
 export function exitZones(w: World): Zone[] {
   const L = GEO.landmarks, g = w.ground!, out: Zone[] = [], h = (x: number, z: number) => heightAt(g, x, z) ?? WATER_Y;
   const box = (route: string, x: number, z: number, r: number, y0: number, y1: number) => out.push({ kind: `ending:${route}`, box: { x0: x - r, y0, z0: z - r, x1: x + r, y1, z1: z + r } });
@@ -19,9 +16,9 @@ export function exitZones(w: World): Zone[] {
   const XS = L.xiaoshizi, dist = (p: [number, number]) => Math.hypot(p[0] - XS.x, p[1] - XS.z);
   const far = streets().filter(s => s.name === '东水门大桥').flatMap(s => s.pts).filter(p => dist(p) > 700 && (heightAt(g, p[0], p[1]) ?? -Infinity) > WATER_Y + 20).sort((a, b) => dist(a) - dist(b))[0];
   if (far) box('bridge', far[0], far[1], 25, h(far[0], far[1]) - 6, h(far[0], far[1]) + 12);
-  // The cableway: three fifths of the way over, well up off the water.
-  const N = L.cablewayNorth;
-  if (N) box('cable', N.x + (CABLE_SOUTH.x - N.x) * 0.6, N.z + (CABLE_SOUTH.z - N.z) * 0.6, 40, WATER_Y + 20, WATER_Y + 160);
+  // The cableway: three fifths of the way along its ropes (yuzhong/cableway.ts), well up off the water.
+  const [N, S] = w.features.filter(f => f.kind === 'cable:rope');
+  if (N && S) box('cable', N.x + (S.x - N.x) * 0.6, N.z + (S.z - N.z) * 0.6, 40, WATER_Y + 20, WATER_Y + 160);
   // The river: past the tip, on and under the water, a long way from either bank.
   const T = L.chaotianmen;
   if (T) box('boat', T.x + 500, T.z - 480, 120, WATER_Y - 40, WATER_Y + 6);

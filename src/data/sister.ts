@@ -34,7 +34,7 @@ If you find this, Ge, that's where I am. Bring Dad's gloves.` },
   ] },
   // Route B: the Yangtze Cableway. The air-raid shelter (where she heard about the parked cabin), the substation (the
   // feeder and its one spare fuse), the cableway's north station.
-  cable: { waits: 'cablewayNorth', notes: [
+  cable: { waits: 'cable:cabin@cablewayNorth', notes: [
     { id: 'xy-cable-1', zh: '桌上的字条', en: 'Note on her desk', at: 'desk', names: ['shelter'], text:
 `Ge,
 Mum went down to Jiaochangkou on the 14th to ask at desk 6 about Dad. She left her bag by the stairs. She hasn't come back.

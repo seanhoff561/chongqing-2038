@@ -17,6 +17,7 @@ import { stepWeather } from './weather';
 import { stepGas } from './gas';
 import { stepHv } from './hv';
 import { stepSite } from './sitehaz';
+import { stepCableway } from './cableway';
 import { stepContainers } from './containers';
 import './loot';
 import { syncWorld } from './doors';
@@ -136,6 +137,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepGas(state, world);
   stepHv(state, world);
   stepSite(state, world);
+  stepCableway(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepPa(state, world);

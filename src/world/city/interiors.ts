@@ -127,7 +127,7 @@ export function hollow(l: Lot, r: Rng, out: Fabric, look = l.mat, core?: boolean
     const { sites } = puzzle(frame, 0, r, dry);
     out.features.push(...dry.features.filter(f => f.kind === 'win:open' || f.kind === 'win:glass').map(f => ({ ...f, kind: 'win:gone' })));
     out.sites.push(...sites.map(q => ({ ...q, kind: 'gone' as const })));
-    l.inside(frame, from, out, look);
+    l.inside(frame, from, out, look, dry);
     return;
   }
   const { sites } = puzzle(frame, from, r, out);

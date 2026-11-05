@@ -86,10 +86,14 @@ export interface Link { a: V3; b: V3; make: (a: V3, b: V3) => void; /** b hangs 
 
 /** Build the connections now the buildings stand (M3-81, U-044): each end fitted to the wall it meets, run on to
  *  it where the building stands back above (a tower's shaft, a stepped top), left out where there's no wall. */
-export function layLinks(out: Vertical, index: SolidIndex) {
+export function layLinks(out: Vertical, index: SolidIndex, skip?: (a: V3, b: V3) => boolean) {
   for (const l of out.links ?? []) {
     const a = fitEnd(index, l.a, l.b), b = a && (l.free ? ([l.b[0] + a[0] - l.a[0], l.b[1], l.b[2] + a[2] - l.a[2]] as V3) : fitEnd(index, l.b, l.a));
-    if (a && b && (!l.ok || l.ok(a, b, index))) l.make(a, b);
+    if (!a || !b || (l.ok && !l.ok(a, b, index))) continue;
+    // (One in the cableway's way, M6-16: made, its dice thrown, and taken down.)
+    const n = [out.solids.length, out.decor.length, out.far.length, out.climbables.length, out.features.length];
+    l.make(a, b);
+    if (skip?.(a, b)) [out.solids, out.decor, out.far, out.climbables, out.features].forEach((q, i) => { q.length = n[i]; });
   }
   out.links = [];
 }
@@ -195,7 +199,7 @@ export function crossings(plans: Plan[], g: Heightfield, sts: Street[], used: Se
 
 /** Once the buildings stand: out of some windows (not barred) a plank to a window or a roof edge across the way,
  *  1.2-9 m off. `wins` are the windows' features (kind 'win:<state>', at the sill outside, n out). */
-export function windowBridges(wins: Feature[], index: SolidIndex, out: Vertical) {
+export function windowBridges(wins: Feature[], index: SolidIndex, out: Vertical, skip?: (a: V3, b: V3) => boolean) {
   const r = makeRng(hashString('windowBridges'));
   // The windows in 4 m cells, to find one across without scanning them all (there are tens of thousands, M3-77).
   const cells = new Map<number, Feature[]>(), key = (x: number, z: number) => Math.floor(x / 4) * 100003 + Math.floor(z / 4);
@@ -215,7 +219,7 @@ export function windowBridges(wins: Feature[], index: SolidIndex, out: Vertical)
     const end: V3 | null = other ? [other.x - nx * 0.1, other.y, other.z - nz * 0.1] : Number.isFinite(top) && top < y + 0.6 && top > y - 2.2 ? [hx + nx * 0.6, top, hz + nz * 0.6] : null;
     const A: V3 = [w.x - nx * 0.15, y, w.z - nz * 0.15];
     // (Both ends on a wall: under the sills, the roof's edge, M3-81.)
-    if (!end || !fitEnd(index, A, end, 0.8) || !fitEnd(index, end, A, 0.8) || !onWall(index, A, end) || !onWall(index, end, A)) continue;
+    if (!end || !fitEnd(index, A, end, 0.8) || !fitEnd(index, end, A, 0.8) || !onWall(index, A, end) || !onWall(index, end, A) || skip?.(A, end)) continue;
     out.solids.push(member(A, end, 0.35, 0.06, MAT.wood));
     out.features.push({ kind: 'winPlank', x: A[0], y, z: A[2], group: out.features.length, nx, nz }, { kind: 'winPlank', x: end[0], y: end[1], z: end[2], group: out.features.length, nx: -nx, nz: -nz });
   }
