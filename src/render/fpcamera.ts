@@ -1,4 +1,4 @@
-// First-person camera: eye height by posture, head bob, landing dip, wall-run and cling lean.
+// First-person camera: eye height by posture, head bob, landing dip, wall-run and cling lean, a blast's tumble and shake.
 import * as THREE from 'three';
 import { LEAN, type Player } from '../sim/player';
 import type { Vec3 } from '../sim/types';
@@ -12,6 +12,8 @@ export class FPCamera {
   private eye = M.eye.stand;
   /** a blast's tumble so far (M4-64) */
   private tumble = 0;
+  /** a blast's shake, 0..1, dying away (M10-65) */
+  private trauma = 0;
   /** stride phase: one step per half turn, so arms swing with sin(bob) */
   bob = 0;
   private dip = 0;
@@ -29,6 +31,9 @@ export class FPCamera {
   }
 
   landed(h: number) { if (h > 0.8) this.dip = Math.min(0.3, h * 0.045); }
+
+  /** A blast felt, 0..1 by how near (M10-65): the view shakes hard and settles over a second or so. */
+  shake(a: number) { this.trauma = Math.min(1, Math.max(this.trauma, a)); }
 
   update(p: Player, pos: Vec3, yaw: number, pitch: number, dt: number) {
     let target = M.eye[p.posture];
@@ -62,8 +67,11 @@ export class FPCamera {
     const out = bx + this.lean * LEAN.out;
     this.cam.position.set(pos.x + Math.cos(yaw) * out, pos.y + this.eye + by - this.dip - Math.abs(this.lean) * LEAN.dip, pos.z - Math.sin(yaw) * out);
     // (The pistol's kick lifts the view as it lifts his aim: M4-21.)
-    const shake = rush * 0.003 * Math.sin(performance.now() * 0.05);
-    this.cam.rotation.set(pitch + p.kick - this.sprint * 0.04 + Math.sin(this.tumble) * 0.5 * Math.min(1, this.tumble) + shake, yaw, this.roll + limpDip * 0.4 + Math.sin(this.bob) * 0.006 * this.sprint + Math.sin(this.tumble * 0.7) * 0.6 * Math.min(1, this.tumble));
+    // (A blast's shake: by the square of how hard it was felt, so a far one's a tremor and a near one throws the view.)
+    const now = performance.now() * 0.001, tr = this.trauma * this.trauma;
+    this.trauma = Math.max(0, this.trauma - dt * 0.9);
+    const shake = rush * 0.003 * Math.sin(now * 50) + tr * 0.07 * (Math.sin(now * 47) + 0.5 * Math.sin(now * 91 + 1));
+    this.cam.rotation.set(pitch + p.kick - this.sprint * 0.04 + Math.sin(this.tumble) * 0.5 * Math.min(1, this.tumble) + shake, yaw + tr * 0.05 * Math.sin(now * 39 + 2), this.roll + tr * 0.08 * Math.sin(now * 33 + 4) + limpDip * 0.4 + Math.sin(this.bob) * 0.006 * this.sprint + Math.sin(this.tumble * 0.7) * 0.6 * Math.min(1, this.tumble));
   }
 
   eyeHeight() { return this.eye; }

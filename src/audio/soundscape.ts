@@ -11,7 +11,7 @@ import { Heart } from './heart';
 import { Music, nightOf } from './music';
 import { districtOf } from '../sim/district';
 import { daylight } from '../sim/clock';
-import { machineShot, echo } from './gunfire';
+import { machineShot, echo, explosion } from './gunfire';
 import { gunshot } from './moves';
 import { raycast } from '../world/geom';
 import type { World } from '../world/world';
@@ -72,6 +72,14 @@ export class Soundscape {
     if (++this.shots > 3 && !e.crack) return;
     const walls = d > 0.5 && !!raycast(w.index, e.x, e.y + 1, e.z, (head.x - e.x) / d, (head.y - e.y - 1) / d, (head.z - e.z) / d, d - 0.5);
     machineShot(this.a, e, d, !!e.crack, walls, this.env.where);
+  }
+
+  /** A blast (M10-65): heard as far off as 1.5 km, late and dull with distance, muffled through walls. */
+  blast(e: Extract<SimEvent, { t: 'blast' }>, w: World, head: THREE.Vector3) {
+    const d = Math.hypot(e.x - head.x, e.y - head.y, e.z - head.z);
+    if (d > 1500 || !this.a.ready) return;
+    const walls = d > 1 && !!raycast(w.index, e.x, e.y + 0.3, e.z, (head.x - e.x) / d, (head.y - e.y - 0.3) / d, (head.z - e.z) / d, d - 0.5);
+    explosion(this.a, e, d, walls, this.env.where);
   }
 }
 

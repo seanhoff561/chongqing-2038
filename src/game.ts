@@ -215,6 +215,7 @@ export class Game {
   /** Switch scenario in place: '' is the game, resumed from its ironman save if there is one. */
   switchTo(name: string) {
     this.marks.clear();
+    this.fx?.blasts.clear();
     const sc = scenarioByName(name) ?? scenarios.find(x => x.run)!;
     const save = sc.run ? readSave(localStorage) : null;
     // (A new run in the city already built keeps it, its building types as rolled: no minute's rebuild, D-123.)
@@ -304,6 +305,8 @@ export class Game {
         else playMove(this.audio, e.id);
       }
       else if (e.t === 'mark') this.marks.add(e);
+      // (A blast seen, heard and felt, by how near: M10-65.)
+      else if (e.t === 'blast') { const c = this.view.fp.cam.position; this.fx.blasts.add(e, this.world); this.sound.blast(e, this.world, c); this.view.fp.shake(Math.min(1, (e.r * 2.5) / Math.max(1, Math.hypot(e.x - c.x, e.y - c.y, e.z - c.z)))); }
       // (Peaches are mostly water but they're eaten: a drink is what comes in a bottle or a can.)
       else if (e.t === 'ate') playMove(this.audio, DRINKS.has(e.id) ? 'drink' : 'eat');
       else if (e.t === 'swing') { playMove(this.audio, 'whoosh'); if (e.on !== 'air') playMove(this.audio, `blow-${e.kind}-${e.on === 'machine' ? 'metal' : e.on}`); this.motion.swing(e.kind, e.on !== 'air'); }

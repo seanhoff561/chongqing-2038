@@ -34,7 +34,7 @@ onUseId('rpg', s => {
 
 /** A burst: him hurt and thrown, the machines round it wrecked by how near. */
 function burst(s: SimState, w: World, at: V3) {
-  blast(s, at, ROCKET);
+  blast(s, w, at, ROCKET);
   for (const u of s.units) {
     if (u.dead || (u.reserve && !u.trip)) continue;
     const q = unitPose(w, u, s.time), d = Math.hypot(q.x - at.x, q.y + 0.8 - at.y, q.z - at.z);
