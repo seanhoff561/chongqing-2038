@@ -315,6 +315,8 @@ export function buildYuzhong(): World {
   world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv;
   // Jiefangbei station's (M6-17): the third rail, and the face-recognition gates' scan line at face height across them.
   world.rail = under.rails;
+  // Line 1's extension (M7-11): its flood the pumps drain, its seismic sensors.
+  world.flood = under.flood; world.zones.push(...under.seismic);
   const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
   if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
   world.teleports.push(...approaches(world, sec.sites));

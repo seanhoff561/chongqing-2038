@@ -116,6 +116,8 @@ export interface World {
   hv?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
   /** the metro's live third rail, along its top (M6-17: sim/metro.ts) */
   rail?: { a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number } }[];
+  /** the water in Line 1's extension's dip (M7-11): its boxes (in `water`), full and drained (sim/tunnelend.ts) */
+  flood?: { boxes: Box[]; top: number; bottom: number };
   /** render-only stand-ins for the far view (U-012): one box per block; empty for small worlds */
   far: Solid[];
   solids: Solid[];

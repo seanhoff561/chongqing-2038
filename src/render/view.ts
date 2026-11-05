@@ -30,6 +30,8 @@ export class View {
   readonly hemi = new THREE.HemisphereLight(0xc8d4e0, 0x4a4438, 1.2);
   readonly world = new THREE.Group();
   private chunks: THREE.Mesh[] = [];
+  /** The water Line 1's extension's pumps drain (M7-11): each plane with its box, moved with its top. */
+  private floods: [THREE.Mesh, { y1: number }][] = [];
   /** The rooms' furniture and clutter, built near only (M3-74). */
   private rooms: RoomProps | null = null;
   private cells: THREE.Group[] = [];
@@ -126,12 +128,14 @@ export class View {
     }
     // (A small pool, a flooded sump down in the sewers, is drawn near only, as the rooms are.)
     const pools: THREE.Mesh[] = [];
+    this.floods = [];
     for (const b of w.water) {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(b.x1 - b.x0, b.z1 - b.z0), material(MAT.water));
       m.rotation.x = -Math.PI / 2;
       m.position.set((b.x0 + b.x1) / 2, b.y1, (b.z0 + b.z1) / 2);
       if (b.x1 - b.x0 < 100 && b.z1 - b.z0 < 100) { m.userData.detail = m.userData.inner = true; pools.push(m); }
       this.world.add(m);
+      if (w.flood?.boxes.includes(b)) this.floods.push([m, b]);
     }
     // The cables over the streets (M3-52).
     for (const m of lineMeshes(w.lines.concat(w.ropes ?? []))) this.world.add(m);
@@ -254,6 +258,8 @@ export class View {
       for (const cell of this.cells) if ((cell.visible = within(cell))) for (const m of cell.children) m.visible = within(m);
     }
     tickProps(t, open);
+    // (The flood as this run has it: its planes' matrices set by hand, their cells frozen.)
+    for (const [m, b] of this.floods) if (m.position.y !== b.y1) { m.position.y = b.y1; m.updateMatrix(); m.matrixWorld.copy(m.matrix); }
     tickBeyond();
     swayTime.value = t;
     if (this.rooms) { this.rooms.update(c); if (this.rooms.group.parent !== this.scene) this.scene.add(this.rooms.group); }

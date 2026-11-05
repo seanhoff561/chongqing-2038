@@ -101,8 +101,9 @@ describe('the four ways out (M10-51)', () => {
       s.flags.god = true;
       startRun(s, w);
       expect(s.sister?.route).toBe(route);
-      // (By the river she has to have come down into the boat, M7-09; by the cableway, ridden the cabin with him, M7-05.)
-      if (sister) { s.sister!.with = true; s.sister!.aboard = route === 'boat' || route === 'cable'; }
+      // (By the river she has to have come down into the boat, M7-09; by the cableway, ridden the cabin with him, M7-05;
+      // under the ground, the water pumped out, M7-11.)
+      if (sister) { s.sister!.with = true; s.sister!.aboard = route === 'boat' || route === 'cable'; if (route === 'tunnel') s.escape = { tunnel: { drained: 0 } }; }
       run(s, w, 40);
       expect(s.ended).toBeUndefined();
       const p = mid(zone(route)), ends: unknown[] = [];

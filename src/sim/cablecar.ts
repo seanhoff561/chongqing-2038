@@ -60,16 +60,18 @@ export function lineDrone(s: SimState, l: CableLine): Pose {
   return look(c.x - l.dz * D.side, c.y + D.up, c.z + l.dx * D.side, Math.atan2(l.dx * k, l.dz * k));
 }
 
-// The feeder's fuse at the substation: the spare in, the breaker closed.
+// A feeder's fuse at the substation (the cableway's, or the metro's for route D, M7-11): the spare in, the breaker
+// closed: what's live (`cable-feeder`, `metro-feeder`).
 START_SOUND.feeder = () => 'latch';
+const live = (it: Inter) => it.data!.live as string;
 onInteract('feeder', {
-  can: s => (s.wstate.open['cable-feeder'] ? 'live' : has(s.inv.pack, 'hvfuse') ? null : 'the cableway feeder: its fuse is blown'),
+  can: (s, it) => (s.wstate.open[live(it)] ? 'live' : has(s.inv.pack, 'hvfuse') ? null : 'its fuse is blown'),
   dur: () => CABIN.fuse,
   done: (s, _w, it) => {
     consume(s.inv.pack, 'hvfuse');
-    s.wstate.open['cable-feeder'] = true;
-    stepDone(s, 'cable', 'feeder');
-    s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: CABIN.breaker, kind: 'crash' }, { t: 'msg', text: 'the breaker closed: the cableway feeder is live' });
+    s.wstate.open[live(it)] = true;
+    stepDone(s, it.data!.route as string, 'feeder');
+    s.events.push({ t: 'sfx', id: 'force' }, { t: 'noise', x: it.x, y: it.y, z: it.z, r: CABIN.breaker, kind: 'crash' }, { t: 'msg', text: `the breaker closed: the ${it.en.toLowerCase().replace(' fuse', '')} is live` });
   },
 });
 
