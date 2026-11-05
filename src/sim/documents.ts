@@ -1,8 +1,8 @@
 // Found documents (M10-37, U-104): placed once as a run starts, by the run's seed. Each worldbuilding document goes
 // into one container, picked at random from those in the kind of building it belongs in (and in a building with a
 // basement drain grate, or in its district, if it says so), never two in one; it's in there when the container is
-// first searched (sim/loot.ts). Each story document goes into a container of its high-security site, or lies at its
-// other key place.
+// first searched (sim/loot.ts). Each story document goes into the container its high-security site keeps for it, or
+// lies at its other key place.
 import type { SimState } from './types';
 import type { World, Inter } from '../world/world';
 import { DOCS, type Doc, type DocWhere } from '../data/documents';
@@ -63,7 +63,8 @@ export function placeDocuments(s: SimState, w: World) {
     const t = site ? undefined : docSpot(w, d.where);
     const pool = (site ? w.inter.filter(i => i.kind === 'container' && owner(i.id) === site.prefix) : t ? [] : spots.filter(q => docFits(d, q)).map(q => q.it))
       .filter(i => !inside[i.id]);
-    if (pool.length) { inside[pool[randInt(r, pool.length)].id] = d.id; continue; }
+    // (At a site, in the container its layout keeps for it, if it has one: M10-38b. The dice thrown all the same.)
+    if (pool.length) { const pick = pool[randInt(r, pool.length)]; inside[(pool.find(i => i.data?.doc) ?? pick).id] = d.id; continue; }
     if (!t) continue;
     // On whatever's under the spot (loose: not a trace of him).
     const hit = raycast(w.index, t.x, t.y + 0.2, t.z, 0, -1, 0, 60);

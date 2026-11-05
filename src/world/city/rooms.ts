@@ -165,7 +165,7 @@ function against(_f: Floor, [u0, v0, u1, v1]: Rect, p: { w: number; d: number; h
 }
 
 /** Build a piece in its box: upright with its front to the room, or knocked over onto its back. */
-function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, fallen: boolean, loot: boolean, out: Fabric, site: Site, room: Kind) {
+export function piece(f: Floor, p: Piece, b: Rect, face: [number, number], id: string, fallen: boolean, loot: boolean, out: Fabric, site: Site, room: Kind) {
   const P = FURNITURE[p], { y, B, at } = f;
   // Drawn as a model of its own (render/roomprops.ts, M3-74), its front facing the room; its box only collides.
   model(f, p, (b[0] + b[2]) / 2, (b[1] + b[3]) / 2, face, P.w, P.h, P.d, out, fallen);
