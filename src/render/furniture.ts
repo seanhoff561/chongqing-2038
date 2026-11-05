@@ -85,7 +85,15 @@ export class Furniture {
       m.rotation.set(Math.PI / 2, 0, d.stack.uid * 2.4);
       this.group.add(m);
     }
-    const sig = s.placed.map(p => p.id).join() + '|' + s.dropped.map(d => d.stack.uid).join() + '|' + (s.sister ? `${s.sister.x},${s.sister.z},${!!s.sister.with},${!!s.sister.aboard}` : '') + (s.gear?.pack ? '|bag' : '');
+    if (s.gear?.pack) {
+      const m = merged(MODELS.schoolbag());
+      m.position.set(s.gear.x, s.gear.y, s.gear.z);
+      m.rotation.y = s.gear.yaw;
+      this.group.add(m);
+    }
+    // (Not there once she's in the boat: render/boat3d.ts.)
+    if (s.sister && !s.sister.aboard) {
+      const m = merged(sisterModel(!!s.sister.with));
       m.position.set(s.sister.x, s.sister.y, s.sister.z);
       // (The model faces +z; her yaw is the sim's, facing -z.)
       m.rotation.y = s.sister.yaw + Math.PI;
