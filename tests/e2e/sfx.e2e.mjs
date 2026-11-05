@@ -2,7 +2,7 @@
 // parkour, landings, tools, weapons, doors, containers, eating, his stomach), footsteps and landings on every surface
 // dry and wet, and the body's sounds in play: a growling stomach when he's hungry, his heart when he's badly hurt.
 export default async function ({ open, fail }) {
-  const page = await open('?scenario=gym&seed=1', 'sfx');
+  const page = await open('?scenario=hideout&seed=1', 'sfx');
   await page.mouse.click(480, 270);
   const r = await page.evaluate(`(async () => {
     const q = window.__cq, g = q.game, a = g.audio;

@@ -16,7 +16,7 @@ export interface Line { a: { x: number; y: number; z: number }; b: { x: number; 
  *  it's turned by yaw (as a prop's: three's rotation.y). */
 export interface HideSpot { id: number; inner: Box; kind: string; yaw?: number }
 
-export interface Label { text: string; x: number; y: number; z: number; face: 'n' | 's' | 'e' | 'w' | 'up' }
+export interface Label { text: string; x: number; y: number; z: number }
 
 /** Render-side set dressing, built by kind in src/render/props.ts. */
 export interface Prop { kind: string; x: number; y: number; z: number; yaw: number; w?: number; h?: number; d?: number; text?: string; gap?: [number, number] }

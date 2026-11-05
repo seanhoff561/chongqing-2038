@@ -39,7 +39,7 @@ async function open(query, where) {
   // (Two cities in memory at most, the one held and the one loading: each takes some 4.7 GB in software-rendered
   // Chrome, and a third runs the machine out of memory (its page dies and every check after it times out). So before a
   // city that's held, or any other whole-city page, loads, the one held goes.)
-  if (SHARED.has(query) || /scenario=(?!gym|hideout)/.test(query)) for (const [q, old] of [...shared.entries()]) { shared.delete(q); await old.close(); }
+  if (SHARED.has(query) || /scenario=(?!hideout)/.test(query)) for (const [q, old] of [...shared.entries()]) { shared.delete(q); await old.close(); }
   const page = await browser.newPage(), label = { v: where };
   await page.setViewport({ width: 960, height: 540 });
   page.on('console', m => { if (m.type() === 'error') fails.push(`${label.v}: console ${m.text().slice(0, 200)}`); });

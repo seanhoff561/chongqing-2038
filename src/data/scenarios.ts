@@ -27,7 +27,6 @@ export interface Scenario {
 }
 
 export const scenarios: Scenario[] = [
-  { name: 'gym', world: 'gym', desc: 'movement gym with labelled obstacles' },
   { name: 'shibati', world: 'yuzhong', desc: 'Shibati and Jiaochangkou: the top of the Eighteen Stairs', overcast: 0.6, at: 'shibati' },
   { name: 'run', world: 'yuzhong', desc: "a new run: day 1, 06:00, in the friends' hideout under the vent grate", run: true, overcast: 0.6 },
   { name: 'hideout', world: 'hideout', desc: 'the furnished air-raid shelter (test scene)', run: true, furnished: true },

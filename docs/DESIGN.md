@@ -316,7 +316,7 @@ A tab he can't use yet opens to a hint at what unlocks it (the binoculars, a cam
 
 **Maps.** Lists the maps in the maps folder (the desktop game's maps/ folder; the browser's saved maps), the tutorial among them. Double click plays one; a single click selects it to edit, delete or copy; New makes one.
 
-**The map editor.** A flat empty ground. Place, move, turn, size and delete: one large empty apartment to fill; movement-gym platforms of any size; pipes, ladders, poles, ledges, rails, ropes and every climbing and parkour piece; props and decorations; containers with chosen loot; red signs for floors and walls whose text he edits and players read by interacting; the spawn point. Save, export and import (JSON); play the map from the editor. The tutorial is a map the director makes with it, shipped with the game, played from the laptop's Training Room. (It replaces the old movement gym.)
+**The map editor.** A flat empty ground. Place, move, turn, size and delete: one large empty apartment to fill; parkour platforms of any size; pipes, ladders, poles, ledges, rails, ropes and every climbing and parkour piece; props and decorations; containers with chosen loot; red signs for floors and walls whose text he edits and players read by interacting; the spawn point. Save, export and import (JSON); play the map from the editor. The tutorial is a map the director makes with it, shipped with the game, played from the laptop's Training Room. (It replaces the old movement gym, removed in M10-31.)
 
 ## 13. Audio
 

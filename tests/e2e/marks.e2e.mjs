@@ -1,7 +1,7 @@
 // M4-61 (U-052): after a fight at a wall, its bullet holes and a crowbar's scrapes stay on it: a screenshot; and the
 // marks are kept (up to their cap).
 export default async function ({ open, fail, screenshot }) {
-  const page = await open('?scenario=gym&seed=1', 'marks');
+  const page = await open('?scenario=hideout&seed=1', 'marks');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
   const shoot = n => page.evaluate(`(() => { const g = window.__cq.game; for (let i = 0; i < ${n}; i++) { g.input.pressed = 64; g.input.mouse = 64; g.runFrames(1); g.input.mouse = 0; g.runFrames(12); } })()`);
   await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; g.state.flags.god = true; g.input.yaw = 0; g.input.pitch = -0.1;

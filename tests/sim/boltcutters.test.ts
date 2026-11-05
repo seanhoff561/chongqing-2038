@@ -7,11 +7,10 @@ import { B } from '../../src/sim/types';
 import { LOCKS } from '../../src/sim/locks';
 import { GRATE } from '../../src/sim/grate';
 import { solid } from '../../src/world/geom';
+import { MAT } from '../../src/world/mats';
 import type { Inter, Camera } from '../../src/world/world';
 import { TAP } from '../../src/sim/camtap';
 import { FENCE } from '../../src/sim/fence';
-import { getWorld } from '../../src/world/build';
-import { createState } from '../../src/sim/sim';
 
 describe('bolt cutters (M5-25)', () => {
   it('cut chains and padlocks quietly, and a grate bolted from below', () => {
@@ -52,8 +51,9 @@ describe('bolt cutters (M5-25)', () => {
     expect(s.body.hp).toBeGreaterThanOrEqual(hp2);
   });
   it('cut a crawl gap through a chain-link fence (M5-25b)', () => {
-    const w = getWorld('gym'), s = createState(1, w), f = w.inter.find(i => i.kind === 'fence')!;
-    s.player.pos = { x: 5, y: 0, z: -2.6 }; s.player.yaw = 0;
+    // A 4 m run of chain-link along z = -4: the mesh down to the ground, its bottom 0.7 m the part that's cut away.
+    const f: Inter = { id: 'f1', kind: 'fence', x: 5, y: 0.5, z: -4, r: 1.5, zh: '铁丝网', en: 'Chain-link fence', data: { solid: 2, x0: 3, x1: 7, z: -4, h: 2.2 } };
+    const { world: w, state: s } = setup([floor(0, 50), solid(3, 0.7, -4.04, 7, 2.2, -3.96, MAT.hidden), solid(3, 0, -4.04, 7, 0.7, -3.96, MAT.hidden)], { x: 5, y: 0, z: -2.6, yaw: 0 }, { inter: [f] });
     run(s, w, 3);
     // Crawling at it: the mesh holds him.
     run(s, w, 1, { pressed: B.CRAWL }); run(s, w, secs(1));

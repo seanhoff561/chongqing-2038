@@ -2,7 +2,6 @@
 // look of the reference photo (U-009): stains, rain streaks, moss, patching. Facades with window grids live
 // in facades.ts and glow at night.
 import * as THREE from 'three';
-import { SEASON_U } from './season';
 import { snowPatch } from './snowcover';
 import { canvasTexture, noise, blotches, streaks } from './textures';
 import { mulberry } from './rand';
@@ -327,9 +326,8 @@ export function groundMaterial(lod: Lod): THREE.MeshPhongMaterial {
     cut.call(m, sh, r);
     sh.uniforms.grassMap = { value: grass };
     sh.uniforms.rubbleMap = { value: rubble };
-    sh.uniforms.uStraw = SEASON_U.straw;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float grass;\nattribute float rubble;\nvarying vec2 vCover;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvCover = vec2(grass, rubble);');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D grassMap;\nuniform sampler2D rubbleMap;\nuniform float uStraw;\nvarying vec2 vCover;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform sampler2D grassMap;\nuniform sampler2D rubbleMap;\nvarying vec2 vCover;')
       .replace('#include <map_fragment>', `vec4 sampledDiffuseColor = texture2D(map, vMapUv), gTex = texture2D(grassMap, vMapUv * ${k}), rTex = texture2D(rubbleMap, vMapUv * ${kr});
 gTex.rgb = mix(gTex.rgb, vec3(dot(gTex.rgb, vec3(0.4))) * vec3(1.25, 1.05, 0.62), uStraw);
 sampledDiffuseColor = mix(sampledDiffuseColor, gTex, smoothstep(0.35, 0.65, vCover.x + (gTex.g - 0.36) * 1.2));

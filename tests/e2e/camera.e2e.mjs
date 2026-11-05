@@ -1,6 +1,6 @@
 // M1-21: eye height follows posture.
 export default async function ({ open, fail }) {
-  const page = await open('?scenario=gym&seed=1', 'camera');
+  const page = await open('?scenario=hideout&seed=1', 'camera');
   await page.evaluate('window.__cq.runFrames(30)');
   const stand = await page.evaluate('window.__cq.game.view.fp.cam.position.y');
   await page.keyboard.down('ControlLeft');

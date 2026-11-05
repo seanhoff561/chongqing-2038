@@ -3,9 +3,9 @@
 const OTHERS = ['water', 'firstaid', 'phone', 'extinguisher', 'boltcutters', 'shotgun', 'nailgun', 'grapple', 'binoculars', 'bread'];
 
 export default async function ({ open, fail }) {
-  const page = await open('?scenario=gym&seed=1', 'viewmodel');
+  const page = await open('?scenario=hideout&seed=1', 'viewmodel');
   await page.waitForFunction('window.__cq.game.hands.ready', { timeout: 20000 });
-  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; g.state.flags.god = true; Object.assign(g.state.player.pos, { x: -60, y: 0, z: 60 }); g.input.yaw = 0; g.input.pitch = 0; })()`);
+  await page.evaluate(`(() => { const g = window.__cq.game; g.state.time = 12 * 3600; g.state.flags.god = true; Object.assign(g.state.player.pos, { x: 80, y: 9, z: 25 }); g.input.yaw = 0; g.input.pitch = 0; })()`);
   const shots = [], frames = n => page.evaluate(`window.__cq.runFrames(${n})`);
   const snap = async label => shots.push([label, await page.screenshot({ encoding: 'base64', type: 'jpeg', quality: 75 })]);
   // Taken out of the hotbar: the draw starts as it's in his hand (read in the same step: the page's own loop runs on).
