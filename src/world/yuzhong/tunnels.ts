@@ -1,18 +1,20 @@
 // The tunnels under Shibati and Jiaochangkou on the real map (M3-41c, D-016): the wartime Grand Tunnel from its
 // real entrance by the Shibati stairs (十八梯大隧道遗址), down a stairway cut between retaining walls and level
 // into the hill toward Jiaochangkou, deep enough that the ground's shell clears it; a stairway up to the street at
-// the far end; the hotpot restaurant's cool room as a dead end. Laid out square in its own frame along the tunnel
-// (u along, v across), then turned onto the map. The ground is holed over the open stairways, with walls and slabs
+// the far end; at its end the neighbourhood's summer cool room, the tunnel come down short of it, round by the old
+// galleries to its gate (M10-38c: galleries()). Laid out square in its own frame along the tunnel (u along, v
+// across), then turned onto the map. The ground is holed over the open stairways, with walls and slabs
 // covering the holes' ragged cell edges. (The friends' chamber is sealed away from it under an alley: home.ts.)
 import { solid, carve, turn, type Solid, type Box } from '../geom';
 import { MAT } from '../mats';
 import { GEO } from '../geo';
 import type { Heightfield } from '../heightfield';
-import type { Inter, Prop, Zone, Site, Climbable } from '../world';
+import type { Inter, Prop, Zone, Site, Climbable, Feature } from '../world';
 import { stair } from '../steps';
 import type { Obb } from './shapes';
+import { door, heap, put, scrawl, mark, type Hand } from './handunder';
 
-export interface Tunnels { solids: Solid[]; decor: Solid[]; props: Prop[]; inter: Inter[]; climbables: Climbable[]; zones: Zone[]; sites: Site[]; frame: { px: number; pz: number; yaw: number; floor: number }; at: Record<string, { x: number; y: number; z: number }>; keep: Obb[] }
+export interface Tunnels { solids: Solid[]; decor: Solid[]; props: Prop[]; inter: Inter[]; climbables: Climbable[]; zones: Zone[]; sites: Site[]; features: Feature[]; frame: { px: number; pz: number; yaw: number; floor: number }; at: Record<string, { x: number; y: number; z: number }>; keep: Obb[] }
 
 const hAt = (g: Heightfield, x: number, z: number) => g.y[Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)))];
 
@@ -54,7 +56,7 @@ export function buildTunnels(g: Heightfield): Tunnels {
   let lowest = Infinity;
   for (let u = 0; u <= 224; u += 2) for (const v of [-3, 0, 3]) lowest = Math.min(lowest, surface(u, v));
   const floor = Math.min(top - 8.5, lowest - 8.4), inRun = (top - floor) / T35;
-  const out: Tunnels = { solids: [], decor: [], props: [], inter: [], climbables: [], zones: [], sites: [], frame: { px, pz, yaw, floor }, at: {}, keep: [] };
+  const out: Tunnels = { solids: [], decor: [], props: [], inter: [], climbables: [], zones: [], sites: [], features: [], frame: { px, pz, yaw, floor }, at: {}, keep: [] };
   const keep = (u0: number, u1: number, v0: number, v1: number) => { const [cx, cz] = W((u0 + u1) / 2, (v0 + v1) / 2); out.keep.push({ cx, cz, hw: (u1 - u0) / 2, hd: (v1 - v0) / 2, yaw }); };
   const under = (x0: number, z0: number, x1: number, z1: number, y0: number, y1: number) => {
     const cs = [P(x0, z0), P(x1, z0), P(x0, z1), P(x1, z1)], xs = cs.map(q => q[0]), zs = cs.map(q => q[1]);
@@ -119,6 +121,15 @@ export function buildTunnels(g: Heightfield): Tunnels {
   bores.push({ x0: X(EXIT_U), y0: floor, z0: Z(-3.1), x1: X(EXIT_U + 3), y1: floor + 3, z1: Z(-2.4) });
 
 
+  galleries({ pre: 'gt', y: floor, kept, decor, props: out.props, inter: out.inter, features: out.features, pt: W,
+    box: (t0, t1, s0, s1, y0, y1, mat) => solid(X(t0), y0, Z(s0), X(t1), y1, Z(s1), mat),
+    space: (u0, u1, v0, v1, y0, y1, mat = MAT.stone) => {
+      const [a0, a1, b0, b1] = [X(u0), X(u1), Z(v0), Z(v1)], t = 0.5;
+      bores.push({ x0: a0, y0, z0: b0, x1: a1, y1, z1: b1 });
+      lining.push(solid(a0 - t, y0 - 1, b0 - t, a1 + t, y0, b1 + t, mat), solid(a0 - t, y1, b0 - t, a1 + t, y1 + 0.8, b1 + t, mat), solid(a0 - t, y0, b0 - t, a0, y1, b1 + t, mat), solid(a1, y0, b0 - t, a1 + t, y1, b1 + t, mat), solid(a0, y0, b0 - t, a1, y1, b0, mat), solid(a0, y0, b1, a1, y1, b1 + t, mat));
+      for (let u = u0; u < u1; u += 4) under(a0 + u - u0, b0, Math.min(a1, a0 + u - u0 + 4), b1, y0 - 0.5, y1);
+    } }, inRun);
+
   // The rusted gate across the foot of the way in, and the cool room's fittings: shelves, a chest freezer,
   // crates and a table, a good place to hide.
   const gate = solid(X(inRun) - 0.25, floor, Z(-HALF), X(inRun) - 0.05, floor + 3, Z(HALF), MAT.hidden);
@@ -149,6 +160,42 @@ export function buildTunnels(g: Heightfield): Tunnels {
   const [mx, mz] = W(METRO.u, METRO.v);
   out.at.metro = { x: mx, y: floor, z: mz };
   return out;
+}
+
+/** The Grand Tunnel's far end made by hand (M10-38c, U-104), in its frame (t along it, s across, north positive):
+ *  the tunnel come down short of the cool room (its heart), round by the wartime galleries to the north, branch 3
+ *  off the tunnel at 186 m into the long gallery along it and through the cool room's chained gate; off the gallery
+ *  the old store (a toolbox with the crowbar in it) and the old way up to Jiaochangkou, fallen in. In the cool room
+ *  the neighbourhood's summer cool room, shut since the 9th. Its ways in: the Shibati stair (inside its gate), the
+ *  far stair out, the passage from the underground's junction and the metro's. */
+function galleries(H: Hand, inRun: number) {
+  const y = H.y;
+  heap(H, 206, 210, -2.5, 2.5, y + 4);
+  scrawl(H, 205.9, 0, [-1, 0], '塌方 危险  ROOF DOWN · DANGER', 2.2);
+  H.space(185, 187.4, 2.4, 7.1, y, y + 3);
+  scrawl(H, 184.9, 3.5, [-1, 0], '三号支洞 → 纳凉点  BRANCH 3 → COOL ROOM', 1.8);
+  H.space(184.4, 215, 7, 10, y, y + 3);
+  scrawl(H, 190, 9.98, [0, -1], '1941 防空洞 三号支洞  AIR-RAID SHELTER 1941 · BRANCH 3', 2.0);
+  H.space(194, 198, 10.6, 13.4, y, y + 2.6);
+  door(H, 'store', 196, 10.3, 's', 'shut', { label: ['旧储藏室', 'Old store'] });
+  put(H, 'crate', 196, 12.9, [0, -1], 1.0, 0.7, 0.6, { id: 'tools', zh: '工具箱', en: 'Toolbox', type: 'crate', loot: 'workshop', items: [['crowbar', 1]] });
+  put(H, 'shelf', 194.4, 12, [1, 0], 1.2, 1.8, 0.4);
+  H.space(203.8, 206.2, 9.9, 16, y, y + 3);
+  heap(H, 203.8, 206.2, 12, 16, y + 3);
+  scrawl(H, 203.82, 11, [1, 0], '通较场口 已塌  WAY UP TO JIAOCHANGKOU · FALLEN IN', 1.6);
+  H.space(212.9, 214.1, 4.4, 7.1, y, y + 2.4);
+  door(H, 'gate', 213.5, 4.75, 's', 'chained', { label: ['纳凉点铁门', 'Cool room gate'] });
+  scrawl(H, 214.4, 6.98, [0, -1], '居委会: 纳凉点即日起关闭 9/9  COMMITTEE: COOL ROOM SHUT UNTIL FURTHER NOTICE', 1.7);
+  // The cool room: deck chairs round the mahjong table, a thermos, the sign.
+  for (const [t, s, f] of [[218.6, 3.3, -1], [215.9, 3.3, 1]] as const) put(H, 'chair', t, s, [f, 0], 0.45, 0.9, 0.45);
+  put(H, 'chair', 221.2, 0.4, [-1, 0], 0.6, 0.9, 1.4, { fallen: true });
+  put(H, 'box', 217.2, 3.3, [0, -1], 0.4, 0.06, 0.4, { up: 0.78 });
+  scrawl(H, 221.98, 0, [-1, 0], '纳凉点 9:00-22:00 · 冬暖夏凉  COOL ROOM · OPEN 9AM TO 10PM · 18° ALL SUMMER', 2.0);
+  mark(H, 'heart:gt', 217, 0);
+  mark(H, 'in:gt:entrance', inRun + 1, 0);
+  mark(H, 'in:gt:exit', EXIT_U + 1.5, -1.5);
+  mark(H, 'in:gt:junction', JUNCTION.u, 4);
+  mark(H, 'in:gt:metro', METRO.u, 4);
 }
 
 /** Holes in the ground over every cell a rectangle in the frame's local coordinates touches. */
