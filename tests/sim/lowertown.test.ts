@@ -19,8 +19,8 @@ describe('Xinhua Road and Xiaoshizi (M6-05)', () => {
     expect(bridge.length, 'the Dongshuimen Bridge').toBeGreaterThan(0);
     const s = createState(5, w), from = w.teleports.find(t => t.name === 'shibati')!, to = w.teleports.find(t => t.name === 'xiaoshizi')!;
     s.flags.god = true; s.flags.clear = true; s.time = 12 * 3600;
-    // (Out of their sight: this is the way, not the machines.)
-    for (const u of s.units) u.off = Infinity;
+    // (No machines: this is the way, not them; and one standing there, on or off, is a body he can't walk through.)
+    s.units.length = 0;
     teleport(s.player, from.x, from.y, from.z);
     run(s, w, 3);
     const way = navPath(w.nav!, s.player.pos, to, 'street')!;

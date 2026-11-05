@@ -31,7 +31,8 @@ describe('riverfronts (M6-06)', () => {
   it('is walked along the Yangtze from below Shibati to Chaotianmen', () => {
     const s = createState(5, w), from = w.features.find(f => f.kind === 'key:riverfront')!, to = w.teleports.find(t => t.name === 'chaotianmen')!;
     s.flags.god = true; s.flags.clear = true; s.time = 12 * 3600;
-    for (const u of s.units) u.off = Infinity;
+    // (No machines: a machine standing there, on or off, is a body he can't walk through, M10-45.)
+    s.units.length = 0;
     teleport(s.player, from.x, from.y + 0.1, from.z);
     run(s, w, 3);
     const way = navPath(w.nav!, s.player.pos, to, 'street')!;

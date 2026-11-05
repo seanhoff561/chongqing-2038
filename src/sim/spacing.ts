@@ -28,11 +28,14 @@ type Body = { u: Unit; x: number; y: number; z: number };
 let memo: { s: SimState | null; tick: number; list: Body[] } = { s: null, tick: -1, list: [] };
 
 /** This tick's bodies: every machine off its beat or stopped (a wreck, a lame one), and those on their beats near him. */
+/** The fixed sensors: mounted on poles, walls and roofs (their housings the world's own solids), not bodies in the way. */
+const FIXED = new Set(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
+
 function crowd(s: SimState, w: World): Body[] {
   if (memo.s === s && memo.tick === s.tick) return memo.list;
   const list: Body[] = [], him = s.player.pos;
   for (const u of s.units) {
-    if (u.cam !== undefined || u.convoy || (u.crash && !u.dead)) continue;
+    if (u.cam !== undefined || FIXED.has(u.kind) || u.convoy || (u.crash && !u.dead)) continue;
     if (!u.trip && !u.stop && (isOff(s, u) || farFromBeat(w, u, him.x, him.z, SPACE.near))) continue;
     const p = unitPose(w, u, s.time);
     if (!p.active && !u.stop) continue;

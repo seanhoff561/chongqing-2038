@@ -3,7 +3,8 @@ import { makeRng, hashString } from './rng';
 import { createPlayer } from './player';
 import type { InputFrame, SimState } from './types';
 import type { World } from '../world/world';
-import { stepPlayer } from './move';
+import { stepPlayer, afterMove } from './move';
+import { blockHim } from './spacing';
 import { GAME_PER_TICK } from './clock';
 import { stepLamp } from './headlamp';
 import { createBody, stepBody } from './body';
@@ -70,6 +71,9 @@ import { stepRockets } from './rockets';
 import { stepGun } from './pistol';
 import { stepTag, stepTrack } from './tag';
 import { stepTreat } from './meds';
+
+// (Him kept out of the machines' bodies after each step, M10-45: hooked in here, where both are loaded.)
+afterMove.push(blockHim);
 
 /** Saves of another version are dropped: 9 since the hive remembers where it saw him (M4-04); 8 since the machines
  *  walk their beats (M4-01). */

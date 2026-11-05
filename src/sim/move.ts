@@ -17,7 +17,10 @@ import { tryChimney, stepChimney } from './chimney';
 import { stepDown, KNOCK } from './knock';
 import { limits, type Limits } from './body';
 import { onPlank } from './plank';
-import { blockHim } from './spacing';
+
+/** What keeps him out of things that aren't the world's solids, after each step (the machines' bodies: spacing.ts
+ *  registers itself, so this file needn't import it, which would close an import cycle). */
+export const afterMove: ((s: SimState, w: World, x0: number, z0: number, h: number) => void)[] = [];
 
 let L: Limits;
 let look = { dYaw: 0, dPitch: 0 };
@@ -219,7 +222,7 @@ function groundAir(state: SimState, world: World, input: InputFrame) {
   if (blocked & 1) p.vel.x = 0;
   if (blocked & 2) p.vel.z = 0;
   // Nor into a machine (M10-45).
-  blockHim(state, world, x0, z0, h);
+  for (const f of afterMove) f(state, world, x0, z0, h);
   // Crouch held on the ground, he won't step off an edge (U-035, as Minecraft's sneak): a move that leaves nothing
   // under him within a step down is taken back, an axis at a time, so he edges along it. (Half a move is kept only
   // where he fits: at a ledge's end against a wall, a window's sill by its jamb, it would put him in the wall: M10-29.)
