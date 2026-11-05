@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M10. Next: M10-38c Key places, hand designed: under the city (U-104).
-Features done: 389 / 438 | Last done: M10-40
+**Status:** building M10. Next: M10-38d Key places, hand designed: the cableway, the pier, the construction site (U-104).
+Features done: 390 / 438 | Last done: M10-38c
 <!-- /status -->
 
 ## What's built
@@ -64,3 +64,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M10-33, M10-34: the Maps menu (the tutorial built in; play, edit, copy, delete, new) and the Training Room (VR goggles into the tutorial and back)
 - M10-38b: the secure sites made by hand (hospital, police station, market, telecom exchange, substation: their mazes, locks, collapses and stories)
 - M10-40: key places on the map only as he learns of them (a note naming one, or walking in), Anna's word on each
+- M10-38c: under the city made by hand (the air-raid shelter's hotpot, the metro's control room, the Grand Tunnel's cool room)
