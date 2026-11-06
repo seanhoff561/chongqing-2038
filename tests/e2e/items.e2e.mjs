@@ -72,18 +72,18 @@ export default async function ({ open, fail, screenshot }) {
     await page.evaluate(`(() => { const cam = window.__cq.game.view.fp.cam; cam.remove(cam.getObjectByName('sheet')); document.getElementById('labels').remove(); })()`);
   }
 
-  // Every item in the backpack: as many as fit at a time, the backpack open (Tab), each with its icon.
+  // Every item in the backpack: as many as fit at a time, the backpack open (its key, Alt: M10-05), each with its icon.
   await page.evaluate(`(() => { const g = window.__cq.game; g.state.inv.held = 0; g.input.pitch = 0; g.runFrames(2); })()`);
   let next = 0, n = 0;
   while (next < ids.length) {
     const r = await page.evaluate(`(() => { const g = window.__cq.game, inv = g.state.inv, ids = ${JSON.stringify(ids)}; inv.pack.items.length = 0; inv.hotbar = inv.hotbar.map(() => null);
       let i = ${next}; while (i < ids.length && window.__cq.give(ids[i]) === 0) i++; g.runFrames(2); return { next: i, held: inv.pack.items.length }; })()`);
     if (r.next === next) { fail('items', `${ids[next]} won't go in an empty backpack`); break; }
-    await page.keyboard.press('Tab');
+    await page.keyboard.press('AltLeft');
     const shown = await page.evaluate(`(() => { window.__cq.runFrames(2); return document.querySelectorAll('#inv .inv-item').length; })()`);
     if (shown < r.held) fail('items', `backpack ${n + 1}: ${shown} of ${r.held} items shown`);
     await screenshot(page, `items-pack-${++n}`);
-    await page.keyboard.press('Tab');
+    await page.keyboard.press('AltLeft');
     await page.evaluate('window.__cq.runFrames(2)');
     next = r.next;
   }

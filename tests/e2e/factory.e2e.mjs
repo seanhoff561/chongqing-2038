@@ -19,22 +19,25 @@ export default async function ({ open, fail, screenshot }) {
   console.log(`  ${r.gates} gates, ${r.posts} posts, ${r.works} works solids, props ${r.props.join('/')}, paths ${r.paths.map(p => `${p.len.toFixed(0)} m ${(p.road * 100).toFixed(0)}% road ${p.away.toFixed(0)} m off`).join(', ')}`);
   if (r.gates < 3 || r.tele !== r.gates) fail('factory', `${r.gates} gates, ${r.tele} gate teleports`);
   if (r.posts < 2 * r.gates) fail('factory', `${r.posts} guard posts for ${r.gates} gates`);
-  if (r.props[0] < 2 * r.gates || r.props[1] < r.gates || r.props[2] < 4 * r.gates) fail('factory', `floodlights/searchlights/barriers ${r.props.join('/')}`);
+  // (Floodlights and barriers at each gate; its searchlights were taken out by U-053.)
+  if (r.props[0] < 2 * r.gates || r.props[2] < 4 * r.gates) fail('factory', `floodlights/searchlights/barriers ${r.props.join('/')}`);
   if (r.works < 100) fail('factory', `only ${r.works} solids of works`);
-  if (r.paths.length !== r.gates || r.paths.some(p => p.len < 250 || p.road < 0.85 || p.away < 120)) fail('factory', 'a column does not march out along the roads');
+  // (Each to one of the city's exits by road, over 300 m of it (M4-58): a bridge's end can lie near its gate as the crow flies.)
+  if (r.paths.length !== r.gates || r.paths.some(p => p.len < 300 || p.road < 0.85)) fail('factory', 'a column does not march out along the roads');
 
   // A gate from the road outside, by night and by day: the column walking out of the light (and moving).
   const lum = `(() => { const g = window.__cq.game; g.view.render(0, {}); const gl = g.view.renderer.getContext(), w = gl.drawingBufferWidth, h = gl.drawingBufferHeight, d = new Uint8Array(160 * 120 * 4); gl.readPixels((w >> 1) - 80, (h >> 1) - 40, 160, 120, gl.RGBA, gl.UNSIGNED_BYTE, d); let s = 0; for (let i = 0; i < d.length; i += 4) s += d[i] + d[i + 1] + d[i + 2]; return s / (d.length / 4) / 3; })()`;
   const view = (name, hour, t, pitch = 0.12, back = 0) => page.evaluate(`(() => {
     const g = window.__cq.game, q = g.world.teleports.find(t => t.name === ${JSON.stringify(name)});
-    g.state.time = ${hour} * 3600; g.state.flags.clear = true; g.state.flags.noclip = true; g.state.flags.god = true;
+    g.state.time = ${hour} * 3600 + ${t} * 30; g.state.flags.clear = true; g.state.flags.noclip = true; g.state.flags.god = true;
     const dx = -Math.sin(q.yaw), dz = -Math.cos(q.yaw);
     Object.assign(g.state.player.pos, { x: q.x - dx * ${back}, y: q.y - 1.5 + ${back} * 0.6, z: q.z - dz * ${back} });
     g.input.yaw = q.yaw; g.input.pitch = ${pitch};
     window.__cq.runFrames(8);
     g.view.render(${t}, {});
-    const c = g.view.convoys.meshes;
-    return { count: c[0].count + c[1].count, first: Array.from(c[0].instanceMatrix.array.slice(12, 15)) };
+    // (The columns are machines on their way (M4-01): the first one's place, a minute of game time later.)
+    const cs = g.state.units.filter(u => u.convoy && !u.dead), p = window.__cq.unitPose(g.world, cs[0], g.state.time);
+    return { count: cs.length, first: [p.x, p.y, p.z] };
   })()`);
   const a = await view('Factory gate 1', 22, 0), nightLum = await page.evaluate(lum);
   await screenshot(page, 'factory-gate-night');

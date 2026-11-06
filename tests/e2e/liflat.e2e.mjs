@@ -1,4 +1,4 @@
-// M3-19: the Li family flat on a run, by day: the room turned over, his father's badge and the phone on the floor;
+// M3-19: the Li family flat on a run, by day: the room turned over, his father's badge, the phone and his site card (M6-10) on the floor;
 // the phone, used, plays its voicemail (no subtitle: U-104), its words in its description.
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=run&seed=1', 'liflat');
@@ -13,7 +13,7 @@ export default async function ({ open, fail, screenshot }) {
     window.__cq.runFrames(40);
     return { items: s.dropped.filter(d => !d.loose).map(d => d.stack.id).sort().join(','), mode: s.player.mode }; })()`);
   if (!r) { fail('liflat', 'no Li family flat teleport'); await page.close(); return; }
-  if (r.items !== 'badge,phone') fail('liflat', `on the floor: ${r.items}`);
+  if (r.items !== 'badge,phone,sitecard') fail('liflat', `on the floor: ${r.items}`);
   await screenshot(page, 'liflat');
   // Into the backpack, then used: the voicemail plays, unsubtitled (subtitles are Anna's lines only, U-104); its words
   // are in the phone's description, hovered in the backpack.
