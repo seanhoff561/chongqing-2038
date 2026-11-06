@@ -31,11 +31,20 @@ let memo: { s: SimState | null; tick: number; list: Body[] } = { s: null, tick: 
 /** The fixed sensors: mounted on poles, walls and roofs (their housings the world's own solids), not bodies in the way. */
 const FIXED = new Set(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
+/** The machines that can ever be bodies (not the cameras, the fixed sensors or the columns: two thirds of the city's
+ *  units), listed once for the units list (again if it grows). */
+const movers = new WeakMap<Unit[], { n: number; list: Unit[] }>();
+function moversOf(units: Unit[]) {
+  let m = movers.get(units);
+  if (!m || m.n !== units.length) movers.set(units, (m = { n: units.length, list: units.filter(u => u.cam === undefined && !FIXED.has(u.kind) && !u.convoy) }));
+  return m.list;
+}
+
 function crowd(s: SimState, w: World): Body[] {
   if (memo.s === s && memo.tick === s.tick) return memo.list;
   const list: Body[] = [], him = s.player.pos;
-  for (const u of s.units) {
-    if (u.cam !== undefined || FIXED.has(u.kind) || u.convoy || (u.crash && !u.dead)) continue;
+  for (const u of moversOf(s.units)) {
+    if (u.crash && !u.dead) continue;
     if (!u.trip && !u.stop && (isOff(s, u) || farFromBeat(w, u, him.x, him.z, SPACE.near))) continue;
     const p = unitPose(w, u, s.time);
     if (!p.active && !u.stop) continue;
@@ -107,7 +116,9 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
   if (a > SPACE.cap) { c.x = base.x + (ax / a) * SPACE.cap; c.z = base.z + (az / a) * SPACE.cap; }
   // No deeper into a body than it was, and not into a wall it wasn't in: else along the wall, or its plain step, or
   // along the wall that way; or its plain step anyway, if its way's in the wall too; or standing.
-  const was = pen(from) + 1e-4, walled = wall(from), ok = (p: V3) => pen(p) <= was && (walled || !wall(p));
+  // (Whether it was in a wall itself, only asked once a step is: most steps are clear.)
+  let walled: boolean | undefined;
+  const was = pen(from) + 1e-4, ok = (p: V3) => pen(p) <= was && (!wall(p) || (walled ??= wall(from)));
   const slides = (p: V3) => [p, { x: p.x, y: p.y, z: from.z }, { x: from.x, y: p.y, z: p.z }];
   const pick = [...slides(c), ...slides(base)].find(ok) ?? (pen(base) <= was && wall(way) ? base : { ...from });
   return [pick, Math.hypot(pick.x - plain.x, pick.z - plain.z) > 0.005];
@@ -155,7 +166,7 @@ export function stepAside(s: SimState, w: World, step: (u: Unit) => number) {
     u.aside = Math.hypot(p.x - raw.x, p.z - raw.z) > 1e-3 ? { x: p.x - raw.x, z: p.z - raw.z } : undefined;
     b.x = p.x; b.z = p.z;
   }
-  for (const u of s.units) if (u.aside && !list.some(b => b.u === u)) u.aside = undefined;
+  for (const u of moversOf(s.units)) if (u.aside && !list.some(b => b.u === u)) u.aside = undefined;
 }
 
 /** He doesn't walk into a machine's body (M10-45): moved from (x0, z0) into one, he's put just clear of it (so he

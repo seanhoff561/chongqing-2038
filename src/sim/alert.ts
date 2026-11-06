@@ -281,5 +281,7 @@ function sendNearest(s: SimState, w: World, cam: Unit, to: V3) {
 
 /** How near its beat comes to a place. */
 function nearestOnBeat(w: World, u: Unit, h: V3) {
-  return Math.min(...w.patrols[u.patrol].pts.map(q => Math.hypot(q.x - h.x, q.z - h.z)));
+  let d = Infinity;
+  for (const q of w.patrols[u.patrol].pts) d = Math.min(d, Math.hypot(q.x - h.x, q.z - h.z));
+  return d;
 }

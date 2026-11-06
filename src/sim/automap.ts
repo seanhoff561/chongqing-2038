@@ -11,9 +11,26 @@ export const MAP = { cell: 10, every: 15, under: 2.5, up: 6 };
 export type Layer = -1 | 0 | 1;
 export const LAYERS: { l: Layer; zh: string; en: string }[] = [{ l: 1, zh: '上层', en: 'Up' }, { l: 0, zh: '街道', en: 'Street' }, { l: -1, zh: '地下', en: 'Under' }];
 
+/** The world's underground zones by the 64 m cells they cover (built once a world): a crawler's way asks every metre
+ *  along it, so not the whole list of zones each time. */
+const UCELL = 64, unders = new WeakMap<World, Map<number, World['zones']>>();
+function undersAt(w: World, x: number, z: number) {
+  let g = unders.get(w);
+  if (!g) {
+    g = new Map();
+    for (const q of w.zones) if (q.kind === 'under')
+      for (let i = Math.floor(q.box.x0 / UCELL); i <= Math.floor(q.box.x1 / UCELL); i++) for (let j = Math.floor(q.box.z0 / UCELL); j <= Math.floor(q.box.z1 / UCELL); j++) {
+        const k = i * 65536 + j, a = g.get(k);
+        if (a) a.push(q); else g.set(k, [q]);
+      }
+    unders.set(w, g);
+  }
+  return g.get(Math.floor(x / UCELL) * 65536 + Math.floor(z / UCELL));
+}
+
 /** Which layer (x, y, z) is on. */
 export function layerAt(w: World, x: number, y: number, z: number): Layer {
-  if (w.zones.some(q => q.kind === 'under' && x >= q.box.x0 && x <= q.box.x1 && y >= q.box.y0 && y <= q.box.y1 && z >= q.box.z0 && z <= q.box.z1)) return -1;
+  if (undersAt(w, x, z)?.some(q => x >= q.box.x0 && x <= q.box.x1 && y >= q.box.y0 && y <= q.box.y1 && z >= q.box.z0 && z <= q.box.z1)) return -1;
   const g = w.ground ? heightAt(w.ground, x, z) : null;
   if (g === null) return 0;
   return y < g - MAP.under ? -1 : y > g + MAP.up ? 1 : 0;
