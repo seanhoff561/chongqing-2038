@@ -17,6 +17,8 @@ export const MOVE_SOUNDS: Record<string, Play> = {
   // runs; dying away; the starter's dead click on a flat battery.
   // The cableway cabin's carriage running over the track ropes (M7-05): its sheaves' rolling rumble, half a second at a time.
   cabin: (a, t) => { a.noise(t, 0.55, 0.06, 'lowpass', 180); a.tone(t, 0.5, 0.04, 62, 58, 'triangle'); },
+  // The wind rising over The Crystal's glass before a gust (M6-18): a roar swelling and breaking.
+  gust: (a, t) => { a.noise(t, 1.6, 0.16, 'bandpass', 420, 0.6, 1300); a.noise(t + 0.7, 1.4, 0.12, 'lowpass', 320); },
   'engine-start': (a, t) => { a.tone(t, 0.9, 0.14, 55, 75, 'sawtooth'); a.noise(t, 0.9, 0.08, 'bandpass', 300, 1, 400); a.tone(t + 0.9, 0.6, 0.2, 45, 38, 'sawtooth'); },
   engine: (a, t) => { for (let k = 0; k < 6; k++) a.tone(t + k * 0.085, 0.07, 0.1, 42, 36, 'sawtooth'); a.noise(t, 0.52, 0.04, 'lowpass', 260); },
   'engine-stop': (a, t) => { a.tone(t, 1.2, 0.14, 40, 18, 'sawtooth'); a.noise(t, 0.8, 0.04, 'lowpass', 200); },

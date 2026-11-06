@@ -49,7 +49,7 @@ export function raffleCuts(plans: Plan[]): Map<Plan, number> {
  *  out there). */
 export const raffleCeil: Ceil = pts => (pts.some(([x, z]) => inside(SQUARE, x, z) || onPoint(x, z) || TOWERS.some(t => inObb(t.obb, x, z, 1))) ? -Infinity : Infinity);
 
-/** The Crystal's frame: t along it from over T2's middle toward T5's, s across (north +), its floor; its ends. */
+/** The Crystal's frame: t along it from over T2's middle toward T5's, s across (south +), its floor; its ends. */
 export interface Frame { ox: number; oz: number; ux: number; uz: number; y: number; t0: number; t1: number; yaw: number; pt: (t: number, s: number) => P2 }
 export function crystalFrame(plans: Plan[]): Frame {
   const cs = TOWERS.filter(t => t.crystal), a = cs.find(t => t.name === 'T2')!.obb, b = cs.find(t => t.name === 'T5')!.obb;
@@ -196,7 +196,8 @@ function shell(r: Raffles) {
   const F = r.frame, { half: S, tall, belly } = RAFFLES, Y = F.y, ox = F.ox, oz = F.oz;
   const box = (t0: number, t1: number, s0: number, s1: number, y0: number, y1: number, mat: number, tint?: number): Solid => ({ ...solid(ox + t0, y0, oz + s0, ox + t1, y1, oz + s1, mat), ...(tint ? { tint } : {}) });
   const own: Solid[] = [], decor: Solid[] = [], steel = 0x4a5058, pane = 0xbcd6e4, g = glassFloor(r);
-  for (const [a, c] of [[F.t0, g[0]], [g[1], F.t1]]) own.push(box(a, c, -S, S, Y - belly, Y, MAT.metal, steel));
+  // (Its floor over the belly and the towers' tops alike: stone.)
+  for (const [a, c] of [[F.t0, g[0]], [g[1], F.t1]]) { own.push(box(a, c, -S, S, Y - belly, Y, MAT.metal, steel)); decor.push(box(a, c, -S, S, Y, Y + 0.02, MAT.stone, 0xc8c2b6)); }
   own.push(box(g[0], g[1], -S, S, Y - 0.2, Y, MAT.hidden), box(g[0], g[1], -S, S, Y - belly, Y - belly + 0.4, MAT.metal, steel));
   // The glass floor: panes 3 m square on beams (0.4 m) both ways.
   for (let t = g[0]; t < g[1] - 0.1; t += 3) for (let s = -S; s < S - 0.1; s += 3) decor.push(box(t + 0.2, Math.min(g[1], t + 3) - 0.2, s + 0.2, Math.min(S, s + 3) - 0.2, Y - 0.05, Y - 0.01, MAT.glass, pane));

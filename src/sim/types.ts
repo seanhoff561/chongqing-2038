@@ -237,6 +237,8 @@ export interface SimState {
   gas?: Record<string, number>;
   /** when the construction site's crane load last struck him (M6-10) */
   siteHit?: number;
+  /** up on The Crystal (M6-18): the last gust he was warned of (its number), when a glass pane last gave him away */
+  crystal?: { warned: number; pane: number };
   /** the cableway's bullwheel as last seen, and when it last caught him (M6-16) */
   wheel?: 'still' | 'strain' | 'turn';
   wheelHit?: number;

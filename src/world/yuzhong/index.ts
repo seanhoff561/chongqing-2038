@@ -43,6 +43,7 @@ import { riverPolice } from './pier';
 import { cableLine, cableCeil, cableRopes } from './cableway';
 import { cutsUnder, inWayUnder, cutDown, type Ceil } from './cutdown';
 import { raffleCuts, raffleCeil, raffles } from './raffles';
+import { droneHub } from './hub';
 import { bridgeSpans, bridgeCeil, spanFor, deck, buildBridge } from './bridges';
 import { checkpoint } from './checkpoint';
 import { streetRoute } from './streetroute';
@@ -267,9 +268,9 @@ export function buildYuzhong(): World {
   const police = riverPolice(g, piers, GEO.landmarks.chaotianmen);
   if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); river.props.push(...police.props); inter.push(...police.inter); }
   solids.push(...river.solids);
-  // Chaotianmen square, Raffles City's towers and The Crystal (M6-04), and whatever the city set out where they stand
+  // Chaotianmen square, Raffles City's towers and The Crystal with the drone hub in it (M6-04, M6-18), and whatever the city set out where they stand
   // (above the ground: the sewers under it stay) taken away, every die thrown as it was.
-  const was = g.y.slice(), raf = raffles(g, plans, plots);
+  const was = g.y.slice(), raf = raffles(g, plans, plots, droneHub(staged, g));
   const above = (x: number, z: number, y: number) => raf.covers(x, z) && y > was[Math.round(z / g.cell) * g.w + Math.round(x / g.cell)] - 1.5;
   const kept = <T,>(a: T[], from: number, gone: (q: T) => boolean) => { let k = from; for (let i = from; i < a.length; i++) if (!gone(a[i])) a[k++] = a[i]; a.length = k; return a; };
   const onIt = (q: Solid) => above((q.x0 + q.x1) / 2, (q.z0 + q.z1) / 2, q.y1), atIt = (q: { x: number; y: number; z: number }) => above(q.x, q.z, q.y + 0.5);

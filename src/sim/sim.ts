@@ -20,6 +20,7 @@ import { stepRail } from './metro';
 import { stepTunnelEnd } from './tunnelend';
 import { stepSite } from './sitehaz';
 import { stepCableway } from './cableway';
+import { stepCrystal } from './crystal';
 import { stepContainers } from './containers';
 import './loot';
 import { syncWorld } from './doors';
@@ -149,6 +150,7 @@ export function step(state: SimState, world: World, raw: InputFrame): void {
   stepRail(state, world);
   stepSite(state, world);
   stepCableway(state, world);
+  stepCrystal(state, world);
   stepSilent(state, world);
   stepDistricts(state, world);
   stepPa(state, world);

@@ -35,9 +35,10 @@ describe('Chaotianmen and Raffles City (M6-04)', () => {
     TOWERS.forEach((t, i) => { if (!t.crystal) expect(tops[i].top - tops[i].base, t.name).toBeCloseTo(t.name.endsWith('N') ? 350 : 250, 0); });
     const c = F('crystal'), feet = TOWERS.map((t, i) => (t.crystal ? tops[i].base : NaN)).filter(v => !Number.isNaN(v));
     expect(Math.abs(c.y - feet.reduce((a, b) => a + b, 0) / feet.length - 250), 'about 250 m up').toBeLessThan(1);
-    // Its floor over each of the four, and its roof over that.
-    TOWERS.forEach((t, i) => { if (t.crystal) { expect(tops[i].top, t.name).toBeCloseTo(c.y, 1); expect(floorAt(t.obb.cx, c.y, t.obb.cz), t.name).toBeCloseTo(c.y, 1); } });
-    expect(raycast(w.index, c.x, c.y + 2, c.z, 0, 1, 0, 40)?.t, 'its roof').toBeCloseTo(RAFFLES.tall - 2, 0);
+    // Its floor over each of the four (off the middle, where a way up comes through it), and its roof over that.
+    TOWERS.forEach((t, i) => { if (t.crystal) { const o = t.obb, x = o.cx - Math.sin(o.yaw) * o.hd * 0.6, z = o.cz + Math.cos(o.yaw) * o.hd * 0.6; expect(tops[i].top, t.name).toBeCloseTo(c.y, 1); expect(floorAt(x, c.y, z), t.name).toBeCloseTo(c.y, 1); } });
+    const [g0, g1] = w.features.filter(f => f.kind === 'crystal:glass');
+    expect(raycast(w.index, (g0.x + g1.x) / 2, c.y + 2, (g0.z + g1.z) / 2, 0, 1, 0, 40)?.t, 'its roof').toBeCloseTo(RAFFLES.tall - 2, 0);
   });
 
   it('has the Jialing and the Yangtze meeting past the tip', () => {
