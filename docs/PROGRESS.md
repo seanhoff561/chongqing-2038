@@ -74,3 +74,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M7-11, M7-12: Route D underground (the door, the flooded dip, the pumps or the oxygen kit, the seismic sensors) and its route test
 - M6-07, M6-08, M6-19, M7-02, M7-03, M7-04, M10-51: Route A over the Dongshuimen (the bridges, the checkpoint, the relay, the rail deck and its route test); every ending reachable
 - M7-14: solvability proofs for every route (and the holes they found: the pier's gangway, the jerrycan and inverter)
+- Release 0.4.0 (M10 complete): all four exits playable with endings, the opening scene, map editor, Maps menu and Training Room; browser checks brought up to the game; perf's last 2-11% over budget in progress
