@@ -18,7 +18,9 @@ const server = http.createServer((req, res) => {
 await new Promise(r => server.listen(0, r));
 const base = `http://127.0.0.1:${server.address().port}/`;
 // (A long protocol timeout: a whole-city page in software GL can take minutes over one call on a busy machine.)
+// (Over a pipe, so the browser goes when this process does, even killed: no orphaned Chrome left eating the machine.)
 const launch = () => puppeteer.launch({
+  pipe: true,
   protocolTimeout: 900000,
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--no-sandbox', '--autoplay-policy=no-user-gesture-required'],
 });
@@ -80,6 +82,8 @@ try {
     const before = fails.length;
     try { await mod.default(ctx); } catch (e) { fails.push(`${f}: ${String(e.message ?? e).split('\n')[0]}`); }
     if (fails.length === before) passes++;
+    // (Each check's failures written as they come, so a run cut short still says what failed.)
+    else fs.appendFileSync('logs/smoke-live.log', fails.slice(before).map(x => `${new Date().toISOString()} ${x.split('\n')[0]}\n`).join(''));
     // (A browser that died, out of memory or crashed, is started again, so one failure doesn't fail every check after it.)
     if (!browser.connected) { shared.clear(); browser = await launch(); fails.push(`${f}: the browser died; started again`); }
   }
