@@ -101,7 +101,7 @@ function current(w: World, x: number, z: number) {
 
 /** Whether the hull floats clear at (x, z): open water deep enough under its middle, bow and stern, nothing solid in
  *  the way. */
-function afloat(w: World, y: number, yaw: number, x: number, z: number) {
+export function afloat(w: World, y: number, yaw: number, x: number, z: number) {
   const f = ahead(yaw);
   for (const k of [0, 0.45, -0.45]) {
     const px = x + f.x * LEN * k, pz = z + f.z * LEN * k;

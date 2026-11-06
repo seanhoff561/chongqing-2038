@@ -31,13 +31,16 @@ export function riverPolice(g: Heightfield, piers: Obb[], near: { x: number; z: 
   /** A box in the pier's own frame (u along it, v across, toward the bank +), turned into place. */
   const box = (u0: number, u1: number, v0: number, v1: number, y0: number, y1: number, mat: number): Solid => turn([solid(o.cx + Math.min(u0, u1), y0, o.cz + Math.min(v0, v1) * side, o.cx + Math.max(u0, u1), y1, o.cz + Math.max(v0, v1) * side, mat)], o.yaw, o.cx, o.cz)[0];
 
-  // The gangway: from the deck's bank edge up (or down) to the ground, railed.
+  // The gangway: from the deck's bank edge up (or down) to the ground, railed; on up a steep bank to its top, not
+  // into its face (M7-14: it stopped 5.6 m under the road, a drop he couldn't come back up).
   if (gap < 30) {
-    const [ex, ez] = W(0, side * (o.hd + gap + 1)), land = Math.max(top, h(ex, ez)), v0 = o.hd - 0.2, v1 = o.hd + gap + 1;
+    let end = gap + 1;
+    while (end < gap + 10 && h(...W(0, side * (o.hd + end + 1))) > h(...W(0, side * (o.hd + end))) + 0.25) end++;
+    const [ex, ez] = W(0, side * (o.hd + end)), land = Math.max(top, h(ex, ez)), v0 = o.hd - 0.2, v1 = o.hd + end;
     const r = rampSolid(o.cx - PIER.gang / 2, Math.min(top, land) - 0.3, o.cz + Math.min(v0, v1) * side, o.cx + PIER.gang / 2, o.cz + Math.max(v0, v1) * side, top, land, side > 0 ? 3 : 4, MAT.metal);
     solids.push(turn([r], o.yaw, o.cx, o.cz)[0]);
     for (const du of [-PIER.gang / 2, PIER.gang / 2]) decor.push(box(du - 0.03, du + 0.03, v0, v1, Math.max(top, land) + 0.9, Math.max(top, land) + 0.95, MAT.metal));
-    const [gx, gz] = W(PIER.gang, side * (o.hd + gap + 1.5)), [dx, dz] = W(0, side * (o.hd - 1));
+    const [gx, gz] = W(PIER.gang, side * (o.hd + end + 0.5)), [dx, dz] = W(0, side * (o.hd - 1));
     cameras.push({ kind: 'camera', x: gx, y: land + 4, z: gz, yaw: atan2(dx - gx, dz - gz) });
     const [kx, kz] = W(-o.hw + 1, side * (o.hd - 0.5));
     cameras.push({ kind: 'camera', x: kx, y: top + 3.5, z: kz, yaw: atan2(W(0, side * (o.hd + gap))[0] - kx, W(0, side * (o.hd + gap))[1] - kz) });

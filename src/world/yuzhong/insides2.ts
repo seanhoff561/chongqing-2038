@@ -6,11 +6,11 @@ import type { Lot } from '../city/buildings';
 /** The telecom exchange (36.7 x 30.0 m, 13 floors; its stairwell came down over the first floor, so the stairwell
  *  reaches neither it nor anything over it from below). The street door into the gate hall, the turnstiles across
  *  it, the exchange's own stair up from it; the plant corridor west to the stairwell come down in the middle, round
- *  it through the generator room (its vent onto the yard), the battery room and the workshop. Upstairs the server
- *  hall (the heart: its gas, its terminal, the district's relay) between the upper hall and the cable gallery, both
- *  its doors on the card; Engineer Gao's locker in the duty room holds the spare card and his shift log. From the
- *  roof the stairwell ends at the second floor: the cable floor there, a flight down to the gallery, come down in
- *  the middle too, round it through the cable vault. */
+ *  it through the generator room (its vent onto the yard; its diesel in the old fuel store), the battery room (a
+ *  spare inverter) and the workshop. Upstairs the server hall (the heart: its gas, its terminal, the district's
+ *  relay) between the upper hall and the cable gallery, both its doors on the card; Engineer Gao's locker in the
+ *  duty room holds the spare card and his shift log. From the roof the stairwell ends at the second floor: the cable
+ *  floor there, a flight down to the gallery, come down in the middle too, round it through the cable vault. */
 export const telecom: Lot['inside'] = (fr, from, out, look) => {
   const K = handmade(fr, from, out, look), { U } = K;
   // Ground floor.
@@ -63,6 +63,10 @@ export const telecom: Lot['inside'] = (fr, from, out, look) => {
   // The cable floor over it, off the stairwell's lowest landing from the roof.
   K.room(2, 0, 2.9, 8.0, 9.0, 'store');
   K.door(2, 0.6, 2.75, 'v', 'shut');
+  // (Set out last, so the rest keep their ids: the generator's diesel in the old fuel store and a spare inverter in
+  // the battery room, so every city has one of each where he can get to them, M7-14.)
+  K.put(0, 'crate', 0.5, 16.4, [1, 0], { zh: '柴油桶箱', en: 'Fuel crate', items: [['jerrycan', 1]] });
+  K.put(0, 'locker', 17.0, 3.85, [0, -1], { zh: '备件柜', en: 'Spares locker', items: [['inverter', 1]] });
   K.entry([[U - 0.8, 16.32], [35.8, 12.0], [34.5, 5.0], [30.6, 5.0], [27.0, 5.0], [26.0, 2.0], [18.0, 2.0], [10.0, 2.0], [10.0, 5.0], [5.6, 5.0]]);
   K.build();
 };
