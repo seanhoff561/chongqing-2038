@@ -56,10 +56,15 @@ function trolley() {
   return g;
 }
 
-/** Cabin 2 parked: its feature, its floor's middle, the way along it (the station's long side). */
-function parked(w: World) {
+/** Cabin 2 parked: its feature, its floor's middle, the way along it (the station's long side); found once a world. */
+type Parked = { y: number; x: number; z: number; ux: number; uz: number } | undefined;
+const parkedAt = new WeakMap<World, Parked>();
+function parked(w: World): Parked {
+  if (parkedAt.has(w)) return parkedAt.get(w);
   const f = w.features.find((q): q is Feature & { nx: number; nz: number } => q.kind === 'cable:cabin');
-  return f && { y: f.y, x: f.x - f.nx * 1.35, z: f.z - f.nz * 1.35, ux: -f.nz, uz: f.nx };
+  const P = f && { y: f.y, x: f.x - f.nx * 1.35, z: f.z - f.nz * 1.35, ux: -f.nz, uz: f.nx };
+  parkedAt.set(w, P);
+  return P;
 }
 
 /** Whether a world box is parked cabin 2's (its floor, walls, glass, roof, hanger and carriage: the boxes within its

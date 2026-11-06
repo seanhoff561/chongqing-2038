@@ -20,11 +20,12 @@ export default async function ({ open, fail }) {
       let t0 = performance.now();
       for (let i = 0; i < 60; i++) g.tick();
       const sim = (performance.now() - t0) / 60;
-      // A frame's render on the CPU, with pauses so the software GPU behind it never holds the page up; the
+      // A frame's render on the CPU, each from an idle GPU so the software GPU behind it never holds the page up (a
+      // pause no longer does: it takes seconds to raster one frame, and the game's own loop draws more meanwhile); the
       // median of 25, as this machine's other work makes single frames noisy.
-      const times = [];
+      const times = [], gl = g.view.renderer.getContext(), px = new Uint8Array(4), idle = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
       for (let i = 0; i < 28; i++) {
-        await new Promise(res => setTimeout(res, 100));
+        idle();
         t0 = performance.now(); g.render(1, 1 / 60); if (i >= 3) times.push(performance.now() - t0);
       }
       times.sort((a, b) => a - b);
