@@ -9,7 +9,9 @@ export default async function ({ open, fail, screenshot }) {
   await screenshot(page, 'light-dusk');
   if (await at(23)) fail('lighting', 'sun shadow at night');
   await screenshot(page, 'light-night');
-  const cost = on => page.evaluate(`(() => { const g = window.__cq.game, T = n => g.world.teleports.find(t => t.name === n), s = T('shibati'); g.state.time = 15 * 3600; window.__cq.runFrames(1); g.view.sun.castShadow = ${on}; for (let i = 0; i < 5; i++) g.view.render(); const t = performance.now(); for (let i = 0; i < 20; i++) g.view.render(); return (performance.now() - t) / 20; })()`);
+  // (Each frame's CPU timed from an idle GPU: software GL takes seconds to raster one of these frames, so frames drawn
+  // back to back time its backlog (the shaders just compiled, the frames queued), not this frame's work.)
+  const cost = on => page.evaluate(`(() => { const g = window.__cq.game, gl = g.view.renderer.getContext(), px = new Uint8Array(4), idle = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); g.state.time = 15 * 3600; window.__cq.runFrames(1); g.view.sun.castShadow = ${on}; for (let i = 0; i < 5; i++) { g.view.render(); idle(); } let t = 0; for (let i = 0; i < 20; i++) { const t0 = performance.now(); g.view.render(); t += performance.now() - t0; idle(); } return t / 20; })()`);
   const off = await cost(false), on = await cost(true);
   console.log(`  lighting: frame ${off.toFixed(1)} ms without shadows, ${on.toFixed(1)} ms with`);
   if (on > off * 2.2) fail('lighting', `shadows cost too much: ${off.toFixed(1)} -> ${on.toFixed(1)} ms`);
