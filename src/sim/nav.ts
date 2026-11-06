@@ -61,16 +61,11 @@ function pieceOf(nav: Nav, kind: UnitKind | 'street'): Int32Array {
   const k = TAKES(kind);
   let ids = m.get(k);
   if (ids) return ids;
-  const P = nav.pts, links: number[][] = P.map(() => []);
-  nav.adj.forEach((es, i) => { for (const e of es) if (canTake(k, e, P[i], P[e[0]])) { links[i].push(e[0]); links[e[0]].push(i); } });
-  ids = new Int32Array(P.length).fill(-1);
-  for (let s = 0, n = 0; s < P.length; s++) {
-    if (ids[s] >= 0) continue;
-    const todo = [s];
-    ids[s] = n;
-    while (todo.length) for (const j of links[todo.pop()!]) if (ids[j] < 0) { ids[j] = n; todo.push(j); }
-    n++;
-  }
+  // (Joined stretch by stretch, each point to the root of its piece.)
+  const P = nav.pts, up = new Int32Array(P.length).map((_, i) => i);
+  const root = (i: number) => { while (up[i] !== i) i = up[i] = up[up[i]]; return i; };
+  nav.adj.forEach((es, i) => { for (const e of es) if (canTake(k, e, P[i], P[e[0]])) up[root(i)] = root(e[0]); });
+  ids = up.map((_, i) => root(i));
   m.set(k, ids);
   return ids;
 }
