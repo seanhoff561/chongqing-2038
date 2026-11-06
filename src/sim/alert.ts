@@ -16,7 +16,7 @@ import { callOut, flankPoint, searchSpots, coverNear, SQUAD } from './squad';
 import { orbitPoint, bounding, strafePoint, fight, holds, pace } from './combat';
 import { farFromBeat } from './perception';
 import { layerAt } from './automap';
-import { keepApart, stepAside } from './spacing';
+import { keepApart, stepAside, SPACE } from './spacing';
 import { BODY } from './damage';
 import { SCALE } from './clock';
 import { DT } from './types';
@@ -45,7 +45,11 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
     if (clear(a, side) && clear(side, eye)) return [side];
     if (!w.nav || clear(a, top)) return [top];
     const p = navPath(w.nav, a, b, 'street');
-    return p ? [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }] : [top];
+    if (p) return [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }];
+    // (No way there under cover, from inside a building to a roof: straight up out of where it is and over, the air
+    // clear; else it can't get there, and doesn't go through the walls in the way.)
+    const up = { x: a.x, y: top.y, z: a.z };
+    return top.y > a.y && clear(a, up) && clear(up, top) ? [up, top] : [];
   }
   if (kind === 'crawler') return sewerWay(w, a, b);
   if (open(w, kind, a, b)) return [b];
@@ -109,7 +113,15 @@ export function leave(s: SimState, w: World, u: Unit, kind: Trip['kind'], to: V3
 function walk(s: SimState, w: World, u: Unit) {
   const t = u.trip!, from = { ...t.pos };
   go(s, w, u);
-  if (u.trip === t && !u.lame && u.kind !== 'heli') keepApart(s, w, u, from, STEP[u.kind]);
+  if (u.trip !== t || u.lame || u.kind === 'heli') return;
+  keepApart(s, w, u, from, STEP[u.kind]);
+  // Held off its way for a while (the back of a crowd round one place, one coming the other way down an alley too
+  // narrow to pass, put off it round a corner): on its way out, that's as near as it gets, and it looks about there;
+  // on its way back, a new way from where it is, or (that way the same) back on its beat.
+  if ((t.stall ?? 0) < SPACE.stall) return;
+  t.stall = 0;
+  const q = t.path[t.i], again = t.back ? way(w, u.kind, t.pos, t.left) : [];
+  if (again.length && q && Math.hypot(again[0].x - q.x, again[0].z - q.z) > 0.5) { t.path = again; t.i = 0; } else t.i = t.path.length;
 }
 
 /** Walking (running when Engaged, or hunting him for the network), looking about at the far end, back, and onto the

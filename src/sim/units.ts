@@ -104,6 +104,8 @@ export interface Trip {
   strafe?: boolean;
   /** the point on its way it was put off making for (M10-45): till it's there, walls on the way aren't excused */
   off?: { x: number; y: number; z: number };
+  /** how long it's made next to no headway to the point it's making for, held off it (s, M10-45) */
+  stall?: number;
 }
 export interface Pose { x: number; y: number; z: number; yaw: number; active: boolean; /** a drone on its dock, charging: sees nothing */ docked?: boolean }
 
