@@ -3,7 +3,9 @@
 // the laptop comes out; a screenshot of each pose (logs/anna-<pose>.png).
 export default async function ({ open, fail, screenshot }) {
   const page = await open('?scenario=hideout&seed=1', 'anna');
-  await page.evaluate('(() => { window.__cq.game.input.pitch = -0.55; window.__cq.runFrames(60); })()');
+  // (The map already seen with all he knows on it, so nothing new: its coming up with news has her laugh over the
+  // wave, M10-40, M10-53.)
+  await page.evaluate('(() => { const g = window.__cq.game; g.input.pitch = -0.55; window.__cq.runFrames(60); (g.state.known ??= {}).flat ??= g.state.time; g.state.mapAt = g.state.time; })()');
   await page.keyboard.press('Tab');
   const svg = () => page.evaluate(`document.querySelector('#laptop .lt-anna').innerHTML`);
   const first = await page.evaluate(`(() => { window.__cq.runFrames(3); return window.__cq.game.laptop.anna.now; })()`);
@@ -17,8 +19,10 @@ export default async function ({ open, fail, screenshot }) {
     seen[pose] = a;
     await screenshot(page, `anna-${pose}`);
     if (pose !== 'blink') {
-      const frames = new Set([a]);
-      for (let i = 0; i < 6; i++) frames.add(await page.evaluate(`(() => { window.__cq.runFrames(9); return document.querySelector('#laptop .lt-anna').innerHTML; })()`));
+      // (Sampled in one go, longer than her slowest frame shows (idle's 1.4 s): the page's own frames, in real time,
+      // run between calls and could land each sample on the same frame.)
+      const frames = new Set(await page.evaluate(`(() => { const f = []; for (let i = 0; i < 10; i++) { window.__cq.runFrames(9); f.push(document.querySelector('#laptop .lt-anna').innerHTML); } return f; })()`));
+      frames.add(a);
       if (frames.size < 2) fail('anna', `${pose} doesn't move`);
     }
   }

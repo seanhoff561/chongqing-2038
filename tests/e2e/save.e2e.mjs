@@ -9,11 +9,10 @@ export default async function ({ open, fail }) {
   const saved = await page.evaluate(`JSON.parse(localStorage.getItem('cq2038.save') || 'null')`);
   if (!saved || saved.state.seed !== 5) { fail('save', 'no save written on waking'); await page.close(); return; }
   await page.goto(page.url().split('?')[0], { waitUntil: 'load' });
-  await page.waitForFunction('window.__cq && window.__cq.ready');
-  const btn = await page.$('#boot .cont');
-  if (!btn) { fail('save', 'no Continue on boot'); await page.close(); return; }
-  await btn.click();
-  const s = await page.evaluate('[window.__cq.game.state.seed, window.__cq.game.state.time]');
+  await page.waitForFunction('window.__cq && window.__cq.ready', { timeout: 240000 });
+  if (!(await page.$('#boot .cont'))) { fail('save', 'no Continue on boot'); await page.close(); return; }
+  // (Read in the click's own task: the game runs on in real time from the first frame after it.)
+  const s = await page.evaluate(`(() => { document.querySelector('#boot .cont').click(); return [window.__cq.game.state.seed, window.__cq.game.state.time]; })()`);
   if (s[0] !== 5 || s[1] !== saved.state.time) fail('save', `continued ${s}`);
   await page.evaluate(`localStorage.clear()`);
   await page.close();
