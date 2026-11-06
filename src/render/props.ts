@@ -124,6 +124,7 @@ function patrolDecor(): THREE.Object3D {
     bot.rotation.y = -Math.PI / 2;
     for (let i = 1; i <= 4; i++) bot.children[i].rotation.x = Math.sin(t * 6 + i * Math.PI / 2) * 0.4;
   };
+  g.userData.always = true;
   return g;
 }
 
@@ -151,6 +152,7 @@ const builders: Record<string, Builder> = {
   neonGlow: () => {
     const l = new THREE.PointLight(ICE_NIGHT.getHex(), 0, 11, 1.3);
     l.userData.tick = () => { l.intensity = 14 * Math.max(0, (night.k - 0.35) / 0.65); };
+    l.userData.always = true;
     return l;
   },
   // The vent's light into the chamber under it (M4-41, U-050): daylight down the shaft by day (more with the grate up and
@@ -170,6 +172,7 @@ const builders: Record<string, Builder> = {
       beam.material.color.copy(light.color);
       beam.material.opacity = ((1 - k) * 0.07 + k * 0.06) * up;
     };
+    g.userData.always = true;
     return g;
   },
   mattress: () => {
@@ -254,13 +257,38 @@ const builders: Record<string, Builder> = {
 };
 
 type Tick = (t: number, open: Record<string, boolean>) => void;
-const ticking: Tick[] = [];
-/** Animate props that move (scripted patrols, doors following the world state). */
-export function tickProps(t: number, open: Record<string, boolean> = {}) {
+/** Each frame's animation (`changed` whether something in the world opened or shut since the last frame), returning
+ *  whether it's still moving (so wants the next frame whatever happens). */
+type Ticker = (t: number, open: Record<string, boolean>, changed: boolean) => boolean;
+const ticking: Ticker[] = [];
+/** Those still moving after the last frame that looked at them all. */
+const busy: Ticker[] = [];
+/** Frames a prop following the world state (a grate, a gate sliding) is animated after a change: it has eased home. */
+const SETTLE = 150;
+/** The world state's open things as tickProps last saw them. */
+let seen: Record<string, boolean> | null = null;
+const was = new Map<string, boolean>();
+/** Whether anything opened or shut since the last frame (so the thousands of doors and panes needn't be looked at
+ *  every frame: M3-53). */
+function openChanged(open: Record<string, boolean>): boolean {
+  let changed = open !== seen, n = 0;
+  seen = open;
+  for (const k in open) { n++; const v = !!open[k]; if (was.get(k) !== v) { was.set(k, v); changed = true; } }
+  if (n !== was.size) { was.clear(); for (const k in open) was.set(k, !!open[k]); changed = true; }
+  return changed;
+}
+/** Animate props that move (scripted patrols, doors following the world state). All of them are looked at when
+ *  something opened or shut or `shown` (what's drawn near him was looked at again, view.ts); between, only those still
+ *  moving (M3-53: thousands of doors and panes, most of them still and out of sight). */
+export function tickProps(t: number, open: Record<string, boolean> = {}, shown = true) {
   // Floodlit beams show after dark only (U-031).
   FLOOD.opacity = 0.08 * night.k;
   tickSigns(t);
-  for (const f of ticking) f(t, open);
+  const changed = openChanged(open);
+  if (changed || shown) { busy.length = 0; for (const f of ticking) if (f(t, open, changed)) busy.push(f); return; }
+  let n = 0;
+  for (const f of busy) if (f(t, open, false)) busy[n++] = f;
+  busy.length = n;
 }
 
 /** Small things, a few pixels from further off: merged apart and drawn only near the camera (view.ts DETAIL). */
@@ -274,7 +302,7 @@ const keep = (p: Prop, share: number) => share >= 1 || !LITTER.has(p.kind) || ((
 /** Props: animated ones stay separate; static meshes (and the parts of static library props) merge per chunk, the
  *  small ones on their own; of the loose litter, `share` of it. */
 export function buildProps(props: Prop[], share = 1): THREE.Group {
-  ticking.length = 0;
+  ticking.length = busy.length = 0;
   const g = new THREE.Group(), big = new ChunkMerger(), small = new ChunkMerger(), swing: Prop[] = [];
   for (const p of props) {
     if (!keep(p, share)) continue;
@@ -286,7 +314,19 @@ export function buildProps(props: Prop[], share = 1): THREE.Group {
     o.rotation.y = p.yaw;
     const merger = SMALL.has(p.kind) ? small : big;
     // (Out of sight, its cell hidden, it waits: M10-04. Its own visibility it may set itself, so only its parents'.)
-    if (o.userData.tick) { const f = o.userData.tick as Tick; ticking.push((t, open) => { if (o.parent?.visible !== false && o.parent?.parent?.visible !== false) f(t, open); }); }
+    // (One following the world state only, a grate or a gate, is animated for a while after a change or after it shows
+    // again; one that moves of itself, or with the night, every frame it's in view.)
+    if (o.userData.tick) {
+      const f = o.userData.tick as Tick, always = !!o.userData.always;
+      let left = SETTLE;
+      ticking.push((t, open, changed) => {
+        if (o.parent?.visible === false || o.parent?.parent?.visible === false) { left = SETTLE; return false; }
+        if (changed) left = SETTLE;
+        if (!always && left <= 0) return false;
+        left--; f(t, open);
+        return always || left > 0;
+      });
+    }
     // Grates and hatches that open and the bags over them (M3-72, M3-73a, M3-83), hundreds of them in the basements: drawn near only.
     if (p.kind === 'grate' || p.kind === 'cover' || p.kind === 'hatch') o.userData.chunk = o.userData.detail = true;
     if ((o as THREE.Mesh).isMesh && !o.userData.tick && o.children.length === 0) merger.add(o as THREE.Mesh);
@@ -356,10 +396,14 @@ function swingers(props: Prop[]): THREE.Mesh[] {
     mesh.userData.chunk = { x: ps[0].x, z: ps[0].z };
     mesh.userData.detail = true;
     const angle = new Float32Array(ps.length), gone = new Uint8Array(ps.length);
-    ticking.push((_t, open) => {
+    // (Looked at only when something's opened or shut, or a door's still swinging: M3-53.)
+    let stale = true, swinging = false;
+    ticking.push((_t, open, changed) => {
       // (Out of range, it catches up once it's drawn again.)
-      if (!mesh.visible || !mesh.parent?.visible) return;
+      if (!mesh.visible || !mesh.parent?.visible) { stale = true; return false; }
+      if (!changed && !stale && !swinging) return false;
       let moved = false;
+      stale = swinging = false;
       for (let i = 0; i < ps.length; i++) {
         const o = !!open[ps[i].text!];
         if (door) {
@@ -367,6 +411,7 @@ function swingers(props: Prop[]): THREE.Mesh[] {
           if (Math.abs(angle[i] - want) < 1e-3) continue;
           angle[i] += (want - angle[i]) * 0.15;
           if (Math.abs(angle[i] - want) < 1e-3) angle[i] = want;
+          else swinging = true;
           place(i, angle[i]);
         } else {
           if (+o === gone[i]) continue;
@@ -376,6 +421,7 @@ function swingers(props: Prop[]): THREE.Mesh[] {
         moved = true;
       }
       if (moved) mesh.instanceMatrix.needsUpdate = true;
+      return swinging;
     });
     out.push(mesh);
   }
@@ -412,8 +458,11 @@ function locks(ps: Prop[]): THREE.Mesh {
   mesh.userData.chunk = { x: ps[0].x, z: ps[0].z };
   mesh.userData.detail = true;
   const gone = new Uint8Array(ps.length);
-  ticking.push((_t, open) => {
-    if (!mesh.visible || !mesh.parent?.visible) return;
+  let stale = true;
+  ticking.push((_t, open, changed) => {
+    if (!mesh.visible || !mesh.parent?.visible) { stale = true; return false; }
+    if (!changed && !stale) return false;
+    stale = false;
     let moved = false;
     for (let i = 0; i < ps.length; i++) {
       const o = +!!open[ps[i].text!];
@@ -422,6 +471,7 @@ function locks(ps: Prop[]): THREE.Mesh {
       for (let k = from[i]; k < from[i + 1]; k++) { const j = o ? from[i] * 3 : k * 3; pos.setXYZ(k, rest[j], rest[j + 1], rest[j + 2]); }
     }
     if (moved) pos.needsUpdate = true;
+    return false;
   });
   return mesh;
 }

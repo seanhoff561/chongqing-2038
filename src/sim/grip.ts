@@ -4,7 +4,7 @@
 // Grabbing keeps momentum; the hands can only pull so hard (see stepGrip).
 import { damage } from './body';
 import { B, DT, type InputFrame, type SimState } from './types';
-import type { World } from '../world/world';
+import type { World, Climbable } from '../world/world';
 import type { Player, Grip } from './player';
 import { movement as M } from '../data/movement';
 import { raycast, topAt, topOver, frameIn, frameOut, frameDirOut, query, type Solid } from '../world/geom';
@@ -42,14 +42,31 @@ function onto(world: World, lip: Grip, back: number) {
 
 /** The ropes he's hung himself (M5-20's grappling hook, M5-21's rope), kept in step with the sim each tick
  *  (grapple.ts): climbed as pipes are. */
-export const ropes: import('../world/world').Climbable[] = [];
+export const ropes: Climbable[] = [];
+
+/** The world's pipes and ladders by the 8 m cells they're in (built once a world, again if it gained some): the hands
+ *  look for a hold every few frames, and the city has thousands. */
+const CCELL = 8, climbGrids = new WeakMap<Climbable[], { n: number; g: Map<number, number[]> }>();
+/** The pipes and ladders within r of (x, z) (and maybe a few more), in the world's order. */
+function climbablesNear(cs: Climbable[], x: number, z: number, r: number): Climbable[] {
+  let e = climbGrids.get(cs);
+  if (!e || e.n !== cs.length) {
+    const g = new Map<number, number[]>();
+    cs.forEach((c, i) => { const k = Math.floor(c.x / CCELL) * 65536 + Math.floor(c.z / CCELL), a = g.get(k); if (a) a.push(i); else g.set(k, [i]); });
+    climbGrids.set(cs, (e = { n: cs.length, g }));
+  }
+  const ids: number[] = [];
+  for (let i = Math.floor((x - r) / CCELL); i <= Math.floor((x + r) / CCELL); i++) for (let j = Math.floor((z - r) / CCELL); j <= Math.floor((z + r) / CCELL); j++) { const a = e.g.get(i * 65536 + j); if (a) ids.push(...a); }
+  return ids.sort((a, b) => a - b).map(i => cs[i]);
+}
 
 export function findGrab(world: World, p: Player): Grip | null {
   const ex = p.pos.x, ey = eyeY(p), ez = p.pos.z, d = lookDir(p);
   let best: Grip | null = null, bestT = G.rayReach;
-  // Pipes and ladders: nearest point of the look ray to the vertical bar.
+  // Pipes and ladders: nearest point of the look ray to the vertical bar (none further off than the reach and a bar's
+  // radius, and its 8 cm off the wall).
   const hl = d.x * d.x + d.z * d.z;
-  if (hl > 1e-6) for (const c of ropes.length ? world.climbables.concat(ropes) : world.climbables) {
+  if (hl > 1e-6) for (const c of climbablesNear(world.climbables, ex, ez, G.rayReach + G.pipeRadius + 0.1).concat(ropes)) {
     const cx = c.x + c.nx * 0.08, cz = c.z + c.nz * 0.08;
     const t = Math.max(0, Math.min(bestT, ((cx - ex) * d.x + (cz - ez) * d.z) / hl));
     const px = ex + d.x * t, pz = ez + d.z * t, py = ey + d.y * t;
