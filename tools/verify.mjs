@@ -6,7 +6,9 @@ fs.mkdirSync('logs', { recursive: true });
 const log = [];
 const steps = [
   ['tsc', 'npx', ['tsc', '--noEmit', '-p', '.']],
-  ['tests', 'npx', ['vitest', 'run', '--reporter=dot', '--exclude', 'scratch/**']],
+  ['tests', 'npx', ['vitest', 'run', '--reporter=dot', '--exclude', 'scratch/**', '--exclude', '**/*.seeds.test.ts', '--exclude', '**/*.seeds.slow.test.ts']],
+  // (Another seed's city: each file in a worker of its own, so no worker holds two cities.)
+  ['seeds', 'npx', ['vitest', 'run', '--isolate', '--reporter=dot', '--exclude', 'scratch/**', '.seeds.']],
   ['build', 'npx', ['vite', 'build']],
   ['smoke', 'node', ['tools/smoke.mjs']],
 ];
@@ -20,15 +22,15 @@ for (const [name, cmd, args] of steps) {
   log.push(`== ${name} (${((Date.now() - t) / 1000).toFixed(1)} s)\n${out}`);
   // (Tests: as the check, vitest's own progress calls timing out while a worker builds the city are harmless; a failed
   // test or any other unhandled error still fails.)
-  const tl = name === 'tests' ? out.split('\n').find(l => /Tests\s+\d/.test(l)) ?? '' : '';
-  const pass = name === 'tests' ? !!tl && !/failed/.test(tl) && !out.split('\n').some(l => /^Error: /.test(l) && !l.includes('Timeout calling "onTaskUpdate"')) : r.status === 0;
+  const tl = name === 'tests' || name === 'seeds' ? out.split('\n').find(l => /Tests\s+\d/.test(l)) ?? '' : '';
+  const pass = name === 'tests' || name === 'seeds' ? !!tl && !/failed/.test(tl) && !out.split('\n').some(l => /^Error: /.test(l) && !l.includes('Timeout calling "onTaskUpdate"')) : r.status === 0;
   if (!pass) {
     ok = false;
     const lines = out.split('\n').filter(l => /FAIL|error|Error|✗|×/.test(l));
     console.log(lines.slice(0, 25).join('\n'));
   }
   let note = '';
-  if (name === 'tests') note = ' ' + (out.split('\n').find(l => /Tests\s+\d/.test(l))?.trim().replace(/\s+/g, ' ') ?? '');
+  if (name === 'tests' || name === 'seeds') note = ' ' + (out.split('\n').find(l => /Tests\s+\d/.test(l))?.trim().replace(/\s+/g, ' ') ?? '');
   if (name === 'smoke') note = ' ' + (out.split('\n').filter(l => l.startsWith('smoke:')).pop() ?? '');
   res.push(`${name} ${pass ? 'ok' : 'FAIL'}${note}`);
 }

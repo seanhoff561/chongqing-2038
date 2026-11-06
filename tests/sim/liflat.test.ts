@@ -142,11 +142,4 @@ describe('the Li family flat (M3-19)', () => {
     expect(Math.hypot(s.player.pos.x - room.x, s.player.pos.z - room.z)).toBeLessThan(1.5);
     expect(s.dead).toBeFalsy();
   }, 120000);
-
-  // (Last: it builds another city, putting this file's out of the cache.)
-  it('is found in a city whose Shibati has no such house: the nearest round it (seed 943166721 had none)', () => {
-    const v = getWorld('yuzhong', 943166721), f = v.teleports.find(t => t.name === 'Li family flat')!, top = v.teleports.find(t => t.name === 'Shibati top')!;
-    expect(f).toBeDefined();
-    expect(Math.hypot(f.x - top.x, f.z - top.z)).toBeLessThan(600);
-  }, 900000);
 });

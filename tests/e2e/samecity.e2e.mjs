@@ -1,5 +1,5 @@
 // The city Chrome builds is the one the tests walk in Node: seed 1's, hashed in the page against the hash Node gave
-// (tests/sim/samecity.slow.test.ts keeps it in tests/worldhash.json). Engines' Math.sin and the rest differ in the
+// (tests/sim/samecity.seeds.slow.test.ts keeps it in tests/worldhash.json). Engines' Math.sin and the rest differ in the
 // last bit; the city is built with src/world/trig.ts so it doesn't.
 import fs from 'fs';
 import { worldHash } from '../worldhash.mjs';
