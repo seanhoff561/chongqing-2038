@@ -42,6 +42,7 @@ import { riverfront, riverRoad, docks } from './riverfront';
 import { riverPolice } from './pier';
 import { cableLine, cableCeil, cableRopes } from './cableway';
 import { cutsUnder, inWayUnder, cutDown, type Ceil } from './cutdown';
+import { raffleCuts, raffleCeil, raffles } from './raffles';
 import { bridgeSpans, bridgeCeil, spanFor, deck, buildBridge } from './bridges';
 import { checkpoint } from './checkpoint';
 import { streetRoute } from './streetroute';
@@ -122,7 +123,11 @@ export function buildYuzhong(): World {
   const cwPlan = plans.find(q => q.inside === SECURE.find(S => S.id === 'cableway')!.inside), cable = cwPlan ? cableLine(plans, cwPlan) : null;
   // And under the bridges' decks (M6-07).
   const spans = bridgeSpans(g), bc = bridgeCeil(spans), cc = cable ? cableCeil(cable) : null, ceil: Ceil = pts => Math.min(cc ? cc(pts) : Infinity, bc(pts));
-  const cuts = cutsUnder(plans, ceil, bc), inWay = inWayUnder(ceil, cuts);
+  const cuts = cutsUnder(plans, ceil, bc);
+  // And at Chaotianmen (M6-04, U-108): what stood on the square and the towers' stand-ins, to their footings, nothing
+  // of the city's strung or set out there; the square and Raffles City are built once the city stands.
+  for (const [p, c] of raffleCuts(plans)) cuts.set(p, c);
+  const below: Ceil = pts => Math.min(ceil(pts), raffleCeil(pts)), inWay = inWayUnder(below, cuts);
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
   // Holes knocked through from one building into the next where their floors meet (M3-76).
@@ -132,7 +137,7 @@ export function buildYuzhong(): World {
   layLinks(vert, built, inWay);
   layLinks(cross, built, inWay);
   windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross, inWay);
-  cutDown(ceil, cuts, plans, plots, out);
+  cutDown(below, cuts, plans, plots, out);
   // The sewer maze under the basements (M3-73a).
   const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
   // The cable tunnel to the telecom exchange and the hospital's basement link (M6-21), off Jiaochangkou's station hall:
@@ -225,6 +230,7 @@ export function buildYuzhong(): World {
   const solids = out.solids.concat(line.solids, metro.solids, site?.solids ?? [], ways?.solids ?? [], fac?.solids ?? [], vert.solids, cross.solids, under.solids, sew.solids, linked.solids, tun.solids), inter = out.inter.concat(sew.inter, tun.inter, line.inter, under.inter, site?.inter ?? [], ways?.inter ?? []);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.length - 1;
+  const fixed = solids.length, inters = inter.length;
   // Street dressing goes last, round everything else (its solids append, so the gate's index holds).
   const clear = [tun.at.entrance, tun.at.exit, home.at.grate, home.at.exit, ...metro.at].map(q => ({ x: q.x, z: q.z, r: 9 })).concat(site ? [{ x: site.frame.x, z: site.frame.z, r: 50 }] : [],
     plots.filter(p => p.route).map(p => ({ x: p.route![0].x, z: p.route![0].z, r: 2.5 })),
@@ -261,13 +267,25 @@ export function buildYuzhong(): World {
   const police = riverPolice(g, piers, GEO.landmarks.chaotianmen);
   if (police) { river.solids.push(...police.solids); river.decor.push(...police.decor); river.features.push(...police.features); river.props.push(...police.props); inter.push(...police.inter); }
   solids.push(...river.solids);
+  // Chaotianmen square, Raffles City's towers and The Crystal (M6-04), and whatever the city set out where they stand
+  // (above the ground: the sewers under it stay) taken away, every die thrown as it was.
+  const was = g.y.slice(), raf = raffles(g, plans, plots);
+  const above = (x: number, z: number, y: number) => raf.covers(x, z) && y > was[Math.round(z / g.cell) * g.w + Math.round(x / g.cell)] - 1.5;
+  const kept = <T,>(a: T[], from: number, gone: (q: T) => boolean) => { let k = from; for (let i = from; i < a.length; i++) if (!gone(a[i])) a[k++] = a[i]; a.length = k; return a; };
+  const onIt = (q: Solid) => above((q.x0 + q.x1) / 2, (q.z0 + q.z1) / 2, q.y1), atIt = (q: { x: number; y: number; z: number }) => above(q.x, q.z, q.y + 0.5);
+  kept(solids, fixed, onIt); kept(inter, inters, atIt);
+  for (const a of [decor, river.decor, out.decor, laid.decor, filled.decor]) kept(a, 0, onIt);
+  for (const a of [out.props, river.props, dress.props, laid.props, green.props, rubble.props, filled.props]) kept(a, 0, atIt);
+  for (const a of [laid.paths, doorWays]) kept(a, 0, l => l.pts.some(([x, z]) => raf.covers(x, z)));
+  solids.push(...raf.solids); decor.push(...raf.decor); out.far.push(...raf.far); out.props.push(...raf.props); inter.push(...raf.inter); out.climbables.push(...raf.climbables);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, linked.decor, laid.decor, filled.decor),
     props: out.props.concat(river.props, tun.props, line.props, metro.props, site?.props ?? [], ways?.props ?? [], fac?.props ?? [], under.props, sew.props, laid.props, dress.props, green.props, rubble.props, filled.props), inter, climbables: out.climbables.concat(sew.climbables, tun.climbables, line.climbables, site?.climbables ?? [], ways?.climbables ?? [], vert.climbables, under.climbables),
     hides: out.hides, sites: out.sites.filter(q => q.kind !== 'gone').concat(tun.sites, under.sites), zones: tun.zones.concat(home.zones, under.zones, sew.zones, linked.zones),
     far: out.far.concat(fac?.far ?? [], vert.far), ground: g, plots, features: out.features.concat(river.features, tun.features, site?.features ?? [], ways?.features ?? [], fac?.features ?? [], vert.features, cross.features, rubble.features, under.features, sew.features, linked.features, laid.features, under.route.map((q, n) => ({ kind: 'underRoute', ...q, group: n })), under.metroRoute.map((q, n) => ({ kind: 'metroRoute', ...q, group: n })), under.descents.flatMap((d, i) => d.map((q, n) => ({ kind: 'descentRoute', ...q, group: i * 100 + n })))), marks, lawns: laid.lawns, convoys: fac?.convoys.map(pts => ({ pts, spurs: [] })), streets: drawn.concat(laid.paths, doorWays), water: [{ x0: 0, y0: WATER_Y - 40, z0: 0, x1: W, y1: WATER_Y, z1: H }, ...sew.water, ...under.water],
-    teleports, spawn: hide,
+    teleports: teleports.concat(raf.teleports), spawn: hide,
   });
+  world.features.push(...raf.features);
   // Nothing floats or sinks (M3-56): whatever stands on something above ground settles onto what's under it, or
   // comes up out of the ground onto it (the set pieces' props below ground are where they are on purpose).
   // (Props placed with collision were set on their support; the buildings' and alleys' props carry none.)
@@ -333,7 +351,7 @@ export function buildYuzhong(): World {
   world.flood = under.flood; world.zones.push(...under.seismic);
   const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
   if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
-  world.cameras.push(...check.cameras);
+  world.cameras.push(...check.cameras, ...raf.cameras);
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {

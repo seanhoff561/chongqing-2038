@@ -1,4 +1,5 @@
 // The three.js scene: renderer, lights, fog, the static world meshes and the first-person rig.
+import { riverPlane } from './rivers';
 import * as THREE from 'three';
 import type { World, Prop } from '../world/world';
 import type { Solid } from '../world/geom';
@@ -130,7 +131,8 @@ export class View {
     const pools: THREE.Mesh[] = [];
     this.floods = [];
     for (const b of w.water) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(b.x1 - b.x0, b.z1 - b.z0), material(MAT.water));
+      // (The rivers round the city, each its own colour where they meet: M6-04.)
+      const big = b === w.water[0] && w.name === 'yuzhong', m = new THREE.Mesh(big ? riverPlane(b) : new THREE.PlaneGeometry(b.x1 - b.x0, b.z1 - b.z0), material(MAT.water, big));
       m.rotation.x = -Math.PI / 2;
       m.position.set((b.x0 + b.x1) / 2, b.y1, (b.z0 + b.z1) / 2);
       if (b.x1 - b.x0 < 100 && b.z1 - b.z0 < 100) { m.userData.detail = m.userData.inner = true; pools.push(m); }
