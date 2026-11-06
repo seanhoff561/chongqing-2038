@@ -12,11 +12,14 @@ import { SCALE } from './clock';
 
 type V3 = { x: number; y: number; z: number };
 
-/** Off after him at a run, from wherever it is; on its way already, the way changed to where he is now. */
+/** Off after him at a run, from wherever it is; on its way already, the way changed to where he is now. (Out already
+ *  and no way from there to him, up a stair it can't climb: it carries on as it was, not held where it is by each
+ *  word of him.) */
 function after(s: SimState, w: World, u: Unit, to: V3) {
   const t = u.trip;
   if (!t) { leave(s, w, u, 'hunt', to); if (u.reserve) u.sent = s.time; return; }
-  Object.assign(t, { kind: 'hunt', path: way(w, u.kind, t.pos, to), i: 0, scan: 0, back: false, visits: undefined, cover: undefined, strafe: false });
+  const path = way(w, u.kind, t.pos, to);
+  if (path.length) Object.assign(t, { kind: 'hunt', path, i: 0, scan: 0, back: false, visits: undefined, cover: undefined, strafe: false });
 }
 
 /** The garage nearest a place: its squad of humanoids sent there (U-104: to where he was given away). */

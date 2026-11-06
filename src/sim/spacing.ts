@@ -20,8 +20,8 @@ import { DT } from './types';
 type V3 = { x: number; y: number; z: number };
 /** How near (m) bodies are looked at; the room it likes round it (m); how hard it steers off one (m/s, full when
  *  touching); its weave either side of its way (m) and how fast (rad/s); the most it's put aside in a tick (m); how fast
- *  one aside of its beat drifts back onto it (m/s). */
-export const SPACE = { near: 20, room: 0.6, steer: 1.5, weave: 0.3, rate: 1.1, cap: 0.3, back: 0.5 };
+ *  one aside of its beat drifts back onto it (m/s); how long one on a trip held off its way gives it up (s). */
+export const SPACE = { near: 20, room: 0.6, steer: 1.5, weave: 0.3, rate: 1.1, cap: 0.3, back: 0.5, stall: 2 };
 
 /** A machine's body this tick, where it is now (moved this tick, if it has). */
 type Body = { u: Unit; x: number; y: number; z: number; /** its girth */ r: number };
@@ -130,7 +130,12 @@ export function keepApart(s: SimState, w: World, u: Unit, from: V3, step: number
   t.pos = pick;
   // Kept off the point it was making for, near it: that'll do (on to the next, or there), facing it. (Still off its
   // way, making for the next.)
-  if (q && Math.hypot(pick.x - base.x, pick.z - base.z) > 0.02 && Math.hypot(q.x - pick.x, q.z - pick.z) < BODY[u.kind][2] + 0.9) { t.yaw = Math.atan2(q.x - pick.x, q.z - pick.z); t.i++; }
+  if (q && Math.hypot(pick.x - base.x, pick.z - base.z) > 0.02 && Math.hypot(q.x - pick.x, q.z - pick.z) < BODY[u.kind][2] + 0.9) { t.yaw = Math.atan2(q.x - pick.x, q.z - pick.z); t.i++; t.stall = 0; }
+  // (Held off it further out, how long it's got next to nowhere: what it does then is sim/alert.ts walk's.)
+  else if (q) {
+    const d = (p: V3) => Math.hypot(q.x - p.x, q.z - p.z), want = d(from) - d(base);
+    t.stall = want > 1e-3 && d(from) - d(pick) < want * 0.2 ? (t.stall ?? 0) + DT : 0;
+  }
   if (pushed || off) t.off = t.path[t.i];
 }
 
