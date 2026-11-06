@@ -11,7 +11,7 @@ import { UNITS } from '../data/units';
 import { movement as M } from '../data/movement';
 import { BODY } from './damage';
 import { unitPose, isOff, type Unit } from './units';
-import { farFromBeat } from './perception';
+import { beatBox } from './perception';
 import { overlaps } from '../world/geom';
 import { free } from './physics';
 import { SCALE, GAME_PER_TICK } from './clock';
@@ -32,20 +32,25 @@ let memo: { s: SimState | null; tick: number; list: Body[] } = { s: null, tick: 
 const FIXED = new Set(['camera', 'sweeper', 'lamppost', 'turret', 'pir', 'tripwire', 'acoustic']);
 
 /** The machines that can ever be bodies (not the cameras, the fixed sensors or the columns: two thirds of the city's
- *  units), listed once for the units list (again if it grows). */
-const movers = new WeakMap<Unit[], { n: number; list: Unit[] }>();
-function moversOf(units: Unit[]) {
+ *  units), listed once for the units list (again if it grows), each with its beat's box (none for a reserve's). */
+const movers = new WeakMap<Unit[], { n: number; list: Unit[]; boxes: (ReturnType<typeof beatBox> | null)[] }>();
+function moversOf(units: Unit[], w: World) {
   let m = movers.get(units);
-  if (!m || m.n !== units.length) movers.set(units, (m = { n: units.length, list: units.filter(u => u.cam === undefined && !FIXED.has(u.kind) && !u.convoy) }));
-  return m.list;
+  if (!m || m.n !== units.length) {
+    const list = units.filter(u => u.cam === undefined && !FIXED.has(u.kind) && !u.convoy);
+    movers.set(units, (m = { n: units.length, list, boxes: list.map(u => (u.reserve || u.patrol < 0 ? null : beatBox(w, w.patrols[u.patrol]))) }));
+  }
+  return m;
 }
 
 function crowd(s: SimState, w: World): Body[] {
   if (memo.s === s && memo.tick === s.tick) return memo.list;
-  const list: Body[] = [], him = s.player.pos;
-  for (const u of moversOf(s.units)) {
+  const list: Body[] = [], him = s.player.pos, { list: all, boxes } = moversOf(s.units, w), R = SPACE.near;
+  for (let i = 0; i < all.length; i++) {
+    const u = all[i], b = boxes[i];
     if (u.crash && !u.dead) continue;
-    if (!u.trip && !u.stop && (isOff(s, u) || farFromBeat(w, u, him.x, him.z, SPACE.near))) continue;
+    // (On its beat and nowhere along it near him: farFromBeat, its box kept here.)
+    if (!u.trip && !u.stop && (isOff(s, u) || (b && (him.x < b.x0 - R || him.x > b.x1 + R || him.z < b.z0 - R || him.z > b.z1 + R)))) continue;
     const p = unitPose(w, u, s.time);
     if (!p.active && !u.stop) continue;
     if (!u.trip && !u.stop && Math.hypot(p.x - him.x, p.z - him.z) > SPACE.near + 5) continue;
@@ -119,8 +124,8 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
   // (Whether it was in a wall itself, only asked once a step is: most steps are clear.)
   let walled: boolean | undefined;
   const was = pen(from) + 1e-4, ok = (p: V3) => pen(p) <= was && (!wall(p) || (walled ??= wall(from)));
-  const slides = (p: V3) => [p, { x: p.x, y: p.y, z: from.z }, { x: from.x, y: p.y, z: p.z }];
-  const pick = [...slides(c), ...slides(base)].find(ok) ?? (pen(base) <= was && wall(way) ? base : { ...from });
+  const slides = (p: V3) => [{ x: p.x, y: p.y, z: from.z }, { x: from.x, y: p.y, z: p.z }];
+  const pick = ok(c) ? c : [...slides(c), base, ...slides(base)].find(ok) ?? (pen(base) <= was && wall(way) ? base : { ...from });
   return [pick, Math.hypot(pick.x - plain.x, pick.z - plain.z) > 0.005];
 }
 
@@ -166,7 +171,7 @@ export function stepAside(s: SimState, w: World, step: (u: Unit) => number) {
     u.aside = Math.hypot(p.x - raw.x, p.z - raw.z) > 1e-3 ? { x: p.x - raw.x, z: p.z - raw.z } : undefined;
     b.x = p.x; b.z = p.z;
   }
-  for (const u of moversOf(s.units)) if (u.aside && !list.some(b => b.u === u)) u.aside = undefined;
+  for (const u of moversOf(s.units, w).list) if (u.aside && !list.some(b => b.u === u)) u.aside = undefined;
 }
 
 /** He doesn't walk into a machine's body (M10-45): moved from (x0, z0) into one, he's put just clear of it (so he

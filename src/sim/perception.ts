@@ -85,19 +85,23 @@ function wireTrips(s: SimState, c: { x: number; y: number; z: number; to?: { x: 
 }
 
 /** Each beat's ground, its dock's too (a box, x and z). */
-const beatBoxes = new WeakMap<Patrol, { x0: number; z0: number; x1: number; z1: number }>();
-/** Whether a unit walking its beat is nowhere along it (or on the way to and from its dock) within r of (x, z): then
- *  it can't see, hear or shoot there, and needn't be placed to know it (M10-04: most of the city's machines most
- *  ticks). A unit off its beat, a column's or a fixed sensor never is. */
-export function farFromBeat(w: World, u: Unit, x: number, z: number, r: number) {
-  if (u.trip || u.stop || u.crash || u.convoy || u.cam !== undefined || u.reserve || u.patrol < 0) return false;
-  const P = w.patrols[u.patrol];
+type Box = { x0: number; z0: number; x1: number; z1: number };
+const beatBoxes = new WeakMap<Patrol, Box>();
+export function beatBox(w: World, P: Patrol): Box {
   let b = beatBoxes.get(P);
   if (!b) {
     const pts = P.dock !== undefined ? [...P.pts, w.docks[P.dock]] : P.pts;
     b = { x0: Math.min(...pts.map(q => q.x)), z0: Math.min(...pts.map(q => q.z)), x1: Math.max(...pts.map(q => q.x)), z1: Math.max(...pts.map(q => q.z)) };
     beatBoxes.set(P, b);
   }
+  return b;
+}
+/** Whether a unit walking its beat is nowhere along it (or on the way to and from its dock) within r of (x, z): then
+ *  it can't see, hear or shoot there, and needn't be placed to know it (M10-04: most of the city's machines most
+ *  ticks). A unit off its beat, a column's or a fixed sensor never is. */
+export function farFromBeat(w: World, u: Unit, x: number, z: number, r: number) {
+  if (u.trip || u.stop || u.crash || u.convoy || u.cam !== undefined || u.reserve || u.patrol < 0) return false;
+  const b = beatBox(w, w.patrols[u.patrol]);
   return x < b.x0 - r || x > b.x1 + r || z < b.z0 - r || z > b.z1 + r;
 }
 /** Whether a unit walking its beat is too far from him anywhere along it to see him. */
