@@ -1,9 +1,11 @@
-// M4-22c (U-048), M10-01 (U-104): the city boots within its budget, painting a loading screen first; waking at the save
-// after death, or a new run from the menu, happens in place: no reload, the same world, the view kept, in a moment.
-const BOOT = 120000, NEW = 2000;
+// M4-22c (U-048), M10-01 (U-104), M9-08: the game loads (its code downloaded and running, the loading screen up) in
+// under 10 s and the city builds behind it within its budget; waking at the save after death, or a new run from the
+// menu, happens in place: no reload, the same world, the view kept, in a moment.
+const LOAD = 10000, BOOT = 120000, NEW = 2000;
 export default async function ({ open, fail }) {
   const page = await open('?scenario=run&seed=1', 'inplace');
   const boot = await page.evaluate('window.__cq.boot');
+  if (!(boot.code > 0 && boot.code < LOAD)) fail('inplace', `loaded in ${Math.round(boot.code)} ms: over ${LOAD}`);
   if (!(boot.view > 0 && boot.view < BOOT)) fail('inplace', `boot ${JSON.stringify(boot)} over its ${BOOT} ms budget`);
   if (await page.$('#loading')) fail('inplace', 'the loading screen still up');
   // Dead (to a humanoid's rifle), then a key: he wakes at the save (written as the run started).
