@@ -4,7 +4,9 @@
 // days a simple forager lives on what he finds. The bands below are what the numbers are kept inside.
 import type { World } from '../../src/world/world';
 import type { SimState } from '../../src/sim/types';
-import { B, emptyInput } from '../../src/sim/types';
+import { B, DT, emptyInput } from '../../src/sim/types';
+import { limits, passTime } from '../../src/sim/body';
+import { movement as M } from '../../src/data/movement';
 import { createState, step } from '../../src/sim/sim';
 import { teleport } from '../../src/sim/player';
 import { navPath } from '../../src/sim/nav';
@@ -17,7 +19,6 @@ import { enterHide, fits } from '../../src/sim/hide';
 import { ALERT } from '../../src/sim/alert';
 import { SCALE, GAME_PER_TICK } from '../../src/sim/clock';
 import { startRun, START_CRATE } from '../../src/sim/run';
-import { passTime } from '../../src/sim/body';
 import { sleepUntil } from '../../src/sim/sleep';
 import { eat, spoiled, shelfLeft } from '../../src/sim/food';
 import { item } from '../../src/data/items';
@@ -27,18 +28,22 @@ import type { Inter } from '../../src/world/world';
 
 type V3 = { x: number; y: number; z: number };
 
-/** The target bands (M9-01), and why. Detection is the first machine fully aware of him (Engaged), real seconds:
- *  careless (upright by day) he's had within a block or two, careful (crouched by night) he gets several times as
- *  far, lying low by night most trials see a minute out. Escapes: hard, not hopeless. */
+/** The target bands (M9-01), and why (BRIEF: they kill on sight; getting seen is survivable, escaping hard and
+ *  thrilling). Detection is the first machine fully aware of him (Engaged), real seconds. */
 export const BANDS = {
-  /** median s to be had moving upright (a jog or a sprint) by day */
-  careless: [4, 30],
-  /** median s crouch-walking by night (unseen trials counted at the cap) */
+  /** median s to be had moving upright (a jog or a sprint) by day: within a block (15 s is 50 m at a jog), never on
+   *  the first frame (the design's half second for a machine 10 m off looking at him) */
+  careless: [0.5, 15],
+  /** median s crouch-walking by night (unseen trials counted at the cap): several times the careless */
   careful: [20, Infinity],
-  /** the share of trials crouched still against a wall by night that go unseen to the cap */
-  lyingLow: [0.5, 1],
-  /** the share of pursuits a sensible player gets away from */
-  escape: [0.3, 0.75],
+  /** the share of trials crouched still against a wall on a street by night unseen to the cap: a gamble that loses
+   *  more often than it wins (a dog's heat sight at 20 m, a drone's at 30: beating thermal is its own means, the
+   *  mylar or the water), not certain death */
+  lyingLow: [0.15, 0.9],
+  /** the share of pursuits got away from by this scripted player, who can only run, hide, go inside or jam (never
+   *  climb, fight, throw a decoy or take to the water): hard (most go wrong), not hopeless; a player with the rest
+   *  of the means should do better */
+  escape: [0.15, 0.6],
 } as const;
 
 /** Each district's street points (the nav graph's, on a street stretch), made once. */
@@ -63,8 +68,8 @@ function fresh(w: World, seed: number, night: boolean, r: Rng): SimState {
   return s;
 }
 
-/** His legs, a tick at a time: facing the point, forward at the gait, sidestepping a while when he gets no nearer and
- *  hopping when he's stood (walker.ts's way, so the trial can watch the machines between ticks). */
+/** His legs, a tick at a time: facing the point, forward at the gait, sidestepping a while when he gets no nearer,
+ *  opening what's in front of him and hopping when he's stood (walker.ts's way, so the trial can watch the machines between ticks). */
 function legs() {
   let best = Infinity, stall = 0, dodge = 0, way = 1, still = 0, last = { x: 0, z: 0 }, t = 0;
   return {
@@ -72,8 +77,9 @@ function legs() {
     step(s: SimState, w: World, q: V3, buttons: number) {
       const p = s.player.pos, dx = q.x - p.x, dz = q.z - p.z, d = Math.hypot(dx, dz);
       if (d < best - 0.05) { best = d; stall = 0; } else if (++stall > 40 && dodge <= 0) { dodge = 30; way = -way; stall = 0; }
-      const yaw = Math.atan2(-dx, -dz), hop = still > 30 && still % 40 < 2, side = dodge-- > 0 ? way : 0;
-      tick(s, w, { yaw, my: 1, mx: side, buttons: buttons | (hop ? B.JUMP : 0), pressed: hop ? B.JUMP : 0 });
+      // (Stood at a shut door, he opens it.)
+      const yaw = Math.atan2(-dx, -dz), hop = still > 30 && still % 40 < 2, open = still === 12, side = dodge-- > 0 ? way : 0;
+      tick(s, w, { yaw, my: open ? 0 : 1, mx: side, buttons: buttons | (hop ? B.JUMP : 0), pressed: (hop ? B.JUMP : 0) | (open ? B.INTERACT : 0) });
       if (Math.hypot(p.x - last.x, p.z - last.z) < 0.02) still++; else { still = 0; last = { x: p.x, z: p.z }; }
       t++;
       return t;
@@ -99,17 +105,65 @@ function follower(way: V3[], buttons: number) {
   };
 }
 
+/** Along a way as M4-32's escapes go: at his sprint (a jog with a bad leg, the limp's pace with a broken one), a tick's
+ *  distance along it each tick, his velocity his run's, standing while he's stunned. An ideal runner: never held up on
+ *  a kerb or a bin, though he makes no footsteps while he's carried. */
+function glider(way: V3[]) {
+  let i = 1, at = way[0];
+  return {
+    done: () => i >= way.length,
+    step(s: SimState, w: World) {
+      const p = s.player, L = limits(s);
+      if (i >= way.length || p.stun > 0) { tick(s, w); return; }
+      let go = (L.sprint ? M.speed.sprint * L.sprintScale : Math.min(M.speed.jog, L.speedCap)) * DT;
+      const from = at;
+      while (go > 0 && i < way.length) {
+        const q = way[i], d = Math.hypot(q.x - at.x, q.y - at.y, q.z - at.z);
+        if (d <= go) { at = q; i++; go -= d; } else { at = { x: at.x + ((q.x - at.x) * go) / d, y: at.y + ((q.y - at.y) * go) / d, z: at.z + ((q.z - at.z) * go) / d }; go = 0; }
+      }
+      teleport(p, at.x, at.y + 0.05, at.z);
+      p.vel.x = (at.x - from.x) / DT; p.vel.z = (at.z - from.z) / DT; p.yaw = Math.atan2(-(at.x - from.x), -(at.z - from.z));
+      tick(s, w);
+    },
+  };
+}
+
 /** A street way from a to somewhere from `near` to `far` m off (away from `from` if given), or null. */
-function wayOut(w: World, r: Rng, a: V3, d: string, near: number, far: number, from?: V3): V3[] | null {
-  const pts = streetPts(w, d).length > 50 ? streetPts(w, d) : streetPts(w, 'yuzhong');
-  for (let k = 0; k < 40; k++) {
+/** How near a way (past its first 8 m) passes the machines he can see: a sensible player doesn't run into a pack. */
+function clearance(way: V3[], eyes: V3[]) {
+  let best = Infinity, run = 0;
+  for (let i = 1; i < way.length; i++) {
+    const a = way[i - 1], b = way[i], L = Math.hypot(b.x - a.x, b.z - a.z), n = Math.max(1, Math.ceil(L / 3));
+    for (let k = 1; k <= n; k++) {
+      run += L / n;
+      if (run < 8) continue;
+      const x = a.x + ((b.x - a.x) * k) / n, z = a.z + ((b.z - a.z) * k) / n;
+      for (const e of eyes) best = Math.min(best, Math.hypot(e.x - x, e.z - z));
+    }
+  }
+  return best;
+}
+/** Nothing solid between two points. */
+function inView(w: World, a: V3, b: V3) {
+  const L = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) || 1;
+  return !raycast(w.index, a.x, a.y, a.z, (b.x - a.x) / L, (b.y - a.y) / L, (b.z - a.z) / L, L - 0.5);
+}
+/** Of the ways found, the first that keeps 15 m from every machine he can see, else the one that keeps furthest. */
+function pickClear<T>(ways: T[], way: (t: T) => V3[], eyes: V3[]): T | null {
+  let best: T | null = null, bd = -1;
+  for (const t of ways) { const c = clearance(way(t), eyes); if (c > 15) return t; if (c > bd) { bd = c; best = t; } }
+  return best;
+}
+
+function wayOut(w: World, r: Rng, a: V3, d: string, near: number, far: number, from?: V3, eyes: V3[] = []): V3[] | null {
+  const ways: V3[][] = [], pts = [...streetPts(w, d), ...(d === 'yuzhong' ? [] : streetPts(w, 'yuzhong'))].filter(b => Math.hypot(b.x - a.x, b.z - a.z) >= near && Math.hypot(b.x - a.x, b.z - a.z) <= far);
+  for (let k = 0; k < 40 && pts.length; k++) {
     const b = pts[randInt(r, pts.length)], L = Math.hypot(b.x - a.x, b.z - a.z);
-    if (L < near || L > far) continue;
     if (from && k < 30 && ((b.x - a.x) * (from.x - a.x) + (b.z - a.z) * (from.z - a.z)) / (L * (Math.hypot(from.x - a.x, from.z - a.z) || 1)) > -0.2) continue;
     const p = navPath(w.nav!, a, b, 'street');
-    if (p && p.length < far * 2) return p.pts;
+    if (p && p.length < far * 2) { ways.push(p.pts); if (ways.length >= 8 || !eyes.length) break; }
   }
-  return null;
+  return pickClear(ways, x => x, eyes);
 }
 
 /** A spot against a wall by a street point: 0.5 m off the nearest wall within 6 m round it, at chest height. */
@@ -155,37 +209,68 @@ export function detection(w: World, o: { district: string; night: boolean; gait:
   return { t: null, sus, by: null, night: o.night, gait: o.gait, district: o.district };
 }
 
-export type Means = 'run' | 'hide' | 'jam';
+export type Means = 'run' | 'hide' | 'inside' | 'jam';
 export type Pursuer = 'quadruped' | 'humanoid' | 'drone' | 'camera';
 
 /** The hiding place nearest him on the street (a nook, a crate, a dumpster, a car's boot) he can run to, not past what's
  *  after him: the way there and in, and which it is. */
-function hideOut(w: World, at: V3, from: V3): { way: V3[]; hide: number } | null {
+function hideOut(w: World, at: V3, from: V3, eyes: V3[]): { way: V3[]; hide: number } | null {
   const near = w.hides.map((h, i) => ({ h, i, c: { x: (h.inner.x0 + h.inner.x1) / 2, y: h.inner.y0, z: (h.inner.z0 + h.inner.z1) / 2 } }))
     .filter(({ h, i, c }) => h.kind !== 'wardrobe' && h.kind !== 'tank' && Math.abs(c.y - at.y) < 6 && Math.hypot(c.x - at.x, c.z - at.z) < 120 && fits(w, i))
     .map(e => {
       const dx = e.c.x - at.x, dz = e.c.z - at.z, L = Math.hypot(dx, dz) || 1, fx = from.x - at.x, fz = from.z - at.z;
       return { ...e, score: L + ((dx * fx + dz * fz) / (L * (Math.hypot(fx, fz) || 1)) > 0.3 ? 80 : 0) };
     }).sort((a, b) => a.score - b.score);
-  for (const e of near.slice(0, 8)) {
+  const ways: { way: V3[]; hide: number }[] = [];
+  for (const e of near.slice(0, 12)) {
     const p = navPath(w.nav!, at, e.c, 'street');
     if (!p || !p.pts.length) continue;
     const end = p.pts[p.pts.length - 1];
     // (Most are off the street, in an alley or a yard: a short way over open ground from its nearest point.)
     if (Math.hypot(end.x - e.c.x, end.z - e.c.z) > 16 || Math.abs(end.y - e.c.y) > 1.5) continue;
     const L = Math.hypot(end.x - e.c.x, end.z - e.c.z) || 1;
-    return { way: [...p.pts, { x: e.c.x + ((end.x - e.c.x) / L) * 0.9, y: e.c.y, z: e.c.z + ((end.z - e.c.z) / L) * 0.9 }], hide: e.i };
+    ways.push({ way: [...p.pts, { x: e.c.x + ((end.x - e.c.x) / L) * 0.9, y: e.c.y, z: e.c.z + ((end.z - e.c.z) / L) * 0.9 }], hide: e.i });
   }
-  return null;
+  return pickClear(ways, x => x.way, eyes);
+}
+
+/** His way from where he is to the nearest street door that leads up inside (not past what's after him), up its stairs
+ *  to a floor halfway or below, and to the wardrobe (or crate) nearest them there; and which hiding place that is
+ *  (M4-32's escape, and M9-01's sensible player's). */
+export function escapeRoute(w: World, at: V3, from?: V3, eyes: V3[] = []): { way: V3[]; hide: number } {
+  const toward = (q: V3) => !!from && ((q.x - at.x) * (from.x - at.x) + (q.z - at.z) * (from.z - at.z)) / ((Math.hypot(q.x - at.x, q.z - at.z) || 1) * (Math.hypot(from.x - at.x, from.z - at.z) || 1)) > 0.3;
+  const score = (q: V3) => Math.hypot(q.x - at.x, q.z - at.z) + (toward(q) ? 80 : 0);
+  const doors = w.plots.filter(p => !p.far && p.route && p.route.length > 3).map(p => p.route!).sort((a, b) => score(a[0]) - score(b[0]));
+  const ways: { way: V3[]; hide: number }[] = [];
+  for (const r of doors.slice(0, eyes.length ? 10 : 6)) {
+    if (ways.length && !eyes.length) break;
+    // (In and up to a floor halfway, inside: the route's top is its roof, in the drones' view.)
+    const street = navPath(w.nav!, at, r[0], 'street');
+    if (!street) continue;
+    // Then off the stairs, to the wardrobe nearest them on a floor halfway up (or its nearest crate), to hide in.
+    const up = r.slice(0, Math.max(3, Math.ceil(r.length / 2)));
+    for (let k = up.length - 1; k >= 2; k--) {
+      const top = up[k], i = w.hides.map((h, i) => ({ h, i, d: Math.hypot((h.inner.x0 + h.inner.x1) / 2 - top.x, (h.inner.z0 + h.inner.z1) / 2 - top.z) }))
+        .filter(({ h, d }) => (h.kind === 'wardrobe' || h.kind === 'crate') && Math.abs(h.inner.y0 - top.y) < 1.5 && d < 25).sort((a, b) => a.d - b.d)[0];
+      if (!i) continue;
+      const b = i.h.inner, by = { x: (b.x0 + b.x1) / 2, y: top.y, z: (b.z0 + b.z1) / 2 };
+      // (Up to it, a step out from it toward the stairs.)
+      const d = Math.hypot(top.x - by.x, top.z - by.z) || 1;
+      ways.push({ way: [...street.pts, ...up.slice(0, k + 1), { x: by.x + ((top.x - by.x) / d) * 1, y: top.y, z: by.z + ((top.z - by.z) / d) * 1 }], hide: i.i });
+      break;
+    }
+  }
+  return pickClear(ways, x => x.way, eyes) ?? { way: [], hide: -1 };
 }
 
 /** A pursuit: a machine of the kind in the district has him at about `dist` m (by day or night), and a sensible player
  *  gets away by his means: sprints off the way he isn't being watched from and crouches still (run); to the nearest
- *  street hiding place and into it (hide); or the same with the jammer on until he's in (jam). The outcome: escaped
+ *  street hiding place and into it (hide); in at the nearest street door, up its stairs and into a wardrobe (inside);
+ *  or that with the jammer on until he's in (jam). The outcome: escaped
  *  (contact broken and the search over without finding him), found (had again after contact was broken), killed, or
  *  held (still on him at the cap); and when contact was broken (real s). `watch` cuts the search short: unfound after
  *  that long it counts as escaped (the fast test's). */
-export function escape(w: World, o: { district: string; night: boolean; pursuer: Pursuer; dist: number; means: Means; seed: number; watch?: number; god?: boolean }) {
+export function escape(w: World, o: { district: string; night: boolean; pursuer: Pursuer; dist: number; means: Means; seed: number; watch?: number }) {
   const r = makeRng(hashString(`esc:${o.district}:${o.night}:${o.pursuer}:${o.dist}:${o.means}:${o.seed}`)), s = fresh(w, o.seed, o.night, r);
   const of = (u: Unit) => (o.pursuer === 'camera' ? u.cam !== undefined && ['camera', 'sweeper', 'lamppost'].includes(w.cameras[u.cam].kind) : u.kind === o.pursuer && u.patrol >= 0 && !u.extra && !u.reserve);
   const cands = s.units.filter(of).map(u => ({ u, q: unitPose(w, u, s.time) })).filter(({ q }) => q.active && !q.docked && districtOf(q.x, q.z) === o.district);
@@ -198,23 +283,28 @@ export function escape(w: World, o: { district: string; night: boolean; pursuer:
   }
   if (!pick) return null;
   const { u } = pick, p = s.player;
-  s.flags.god = !!o.god;
   teleport(p, pick.at.x, pick.at.y + 0.05, pick.at.z);
   for (let i = 0; i < 4; i++) tick(s, w);
   u.quiet = undefined; u.aware = 1.2; u.seen = { ...p.pos }; u.saw = s.time;
   const from = unitPose(w, u, s.time);
-  // His plan.
-  let plan = o.means === 'run' ? null : hideOut(w, p.pos, from);
-  const way = plan?.way ?? wayOut(w, r, p.pos, o.district, 60, 160, from) ?? [];
+  // His plan, away from the machines on the move he can see (within 120 m, nothing in between).
+  const eyes = s.units.filter(q => q !== u && !q.dead && !q.reserve && q.cam === undefined).map(q => unitPose(w, q, s.time))
+    .filter(q => q.active && !q.docked && Math.hypot(q.x - p.pos.x, q.z - p.pos.z) < 120 && inView(w, { x: p.pos.x, y: p.pos.y + 1.6, z: p.pos.z }, { x: q.x, y: q.y + 1, z: q.z }));
+  eyes.push(from);
+  const inside = o.means === 'inside' || o.means === 'jam' ? escapeRoute(w, p.pos, from, eyes) : null;
+  let plan = o.means === 'run' ? null : o.means === 'hide' ? hideOut(w, p.pos, from, eyes) : inside!.hide >= 0 ? inside : null;
+  const way = plan?.way ?? wayOut(w, r, p.pos, o.district, 60, 160, from, eyes) ?? [];
   const means = plan ? o.means : 'run';
   if (means === 'jam') {
     addItem(s, s.inv.pack, 'jammer', 1, { charge: 100 });
     tick(s, w, { cmds: [{ c: 'use', uid: s.inv.pack.items.find(i => i.id === 'jammer')!.uid }] });
   }
-  const f = follower(way, B.SPRINT);
-  let last = s.time, lostAt = -1, hidden = false, tries = 0;
-  const t0 = s.time, res = (outcome: string) => ({ outcome, t: (s.time - t0) / SCALE, lost: lostAt < 0 ? null : (lostAt - t0) / SCALE, means, pursuer: o.pursuer, dist: o.dist, night: o.night, district: o.district });
-  for (let i = 0; i < 360 * 60; i++) {
+  const f = glider([{ ...p.pos }, ...way]);
+  let last = s.time, lostAt = -1, hidden = false, tries = 0, by = '';
+  const hits: Record<string, number> = {};
+  const t0 = s.time, res = (outcome: string) => ({ outcome, t: (s.time - t0) / SCALE, lost: lostAt < 0 ? null : (lostAt - t0) / SCALE, hits, by, means, pursuer: o.pursuer, dist: o.dist, night: o.night, district: o.district });
+  for (let i = 0; i < 240 * 60; i++) {
+    for (const e of s.events) if (e.t === 'hurt') hits[e.cause] = (hits[e.cause] ?? 0) + 1;
     if (s.dead) return res(`killed: ${s.dead}`);
     if (!f.done()) f.step(s, w);
     else if (plan && !hidden && p.mode !== 'hidden') {
@@ -228,7 +318,7 @@ export function escape(w: World, o: { district: string; night: boolean; pursuer:
       tick(s, w, { buttons: p.mode === 'hidden' ? 0 : B.CROUCH });
     }
     const c = contact(s);
-    if (c) { if (lostAt >= 0) return res('found'); last = s.time; }
+    if (c) { if (lostAt >= 0) { const q = unitPose(w, c, s.time); by = `${c.kind} ${Math.round(Math.hypot(q.x - p.pos.x, q.z - p.pos.z))} m, he ${p.mode}`; return res('found'); } last = s.time; }
     else if (lostAt < 0 && (s.time - last) / SCALE >= 4) lostAt = s.time;
     if (lostAt >= 0) {
       const busy = Object.values(s.hive.districts).some(D => D.state === 'engaged' || D.state === 'searching');

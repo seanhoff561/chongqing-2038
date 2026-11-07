@@ -21,7 +21,7 @@ describe('difficulty (M9-01)', () => {
     const esc: NonNullable<ReturnType<typeof escape>>[] = [];
     const P: Pursuer[] = ['quadruped', 'humanoid', 'drone', 'camera'], D = [10, 20, 35];
     let k = 0;
-    for (const district of DISTRICTS) for (const means of ['run', 'hide', 'jam'] as Means[]) for (const seed of [1, 2]) {
+    for (const district of DISTRICTS) for (const means of ['run', 'hide', 'inside', 'jam'] as Means[]) for (const seed of [1, 2]) {
       const r = escape(w, { district, night: k % 2 === 1, pursuer: P[k % 4], dist: D[Math.floor(k / 4) % 3], means, seed });
       k++;
       if (r) esc.push(r);
@@ -46,7 +46,7 @@ describe('difficulty (M9-01)', () => {
         rate: escaped, n: esc.length,
         outcomes: esc.reduce<Record<string, number>>((a, r) => ({ ...a, [r.outcome]: (a[r.outcome] ?? 0) + 1 }), {}),
         contactBroken: share(esc.map(r => ({ outcome: r.lost === null ? 'no' : 'yes' })), o => o === 'yes'),
-        byMeans: by(['run', 'hide', 'jam'], (r, v) => r.means === v), byPursuer: by(P, (r, v) => r.pursuer === v), byDistance: by(D, (r, v) => r.dist === v), byNight: by([false, true], (r, v) => r.night === v),
+        byMeans: by(['run', 'hide', 'inside', 'jam'], (r, v) => r.means === v), byPursuer: by(P, (r, v) => r.pursuer === v), byDistance: by(D, (r, v) => r.dist === v), byNight: by([false, true], (r, v) => r.night === v),
       },
       survival: { days: live.map(r => r.days), causes: live.map(r => r.cause), outsideSecsPerDay: live.map(r => Math.round(r.outside)), searched: live.map(r => r.searched), found: live.map(r => r.found) },
     };
@@ -56,6 +56,7 @@ describe('difficulty (M9-01)', () => {
     expect(careless, 'careless median').toBeLessThanOrEqual(BANDS.careless[1]);
     expect(careful, 'careful median').toBeGreaterThanOrEqual(BANDS.careful[0]);
     expect(lyingLow, 'lying low unseen').toBeGreaterThanOrEqual(BANDS.lyingLow[0]);
+    expect(lyingLow, 'lying low unseen').toBeLessThanOrEqual(BANDS.lyingLow[1]);
     expect(escaped, JSON.stringify(summary.escape.outcomes)).toBeGreaterThanOrEqual(BANDS.escape[0]);
     expect(escaped, JSON.stringify(summary.escape.outcomes)).toBeLessThanOrEqual(BANDS.escape[1]);
   }, 7200000);

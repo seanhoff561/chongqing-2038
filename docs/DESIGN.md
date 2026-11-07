@@ -216,6 +216,16 @@ Each hit: 30% heavy bleed, otherwise light; 15% a limb (sprain or graze). Machin
 **Wrecks (M10-47).** A destroyed machine or camera reads at a glance: its paint fades to grey-black over 1.5 s (the batch's per-instance colour: its alpha mixes the paint toward grey-black, same draw call) and its lights go out. A machine on the ground comes down where it was hit (the sim's wreck, `u.stop`, set at the moment of death, so scanning and salvage find it there): drawn only (render/ragdoll.ts), its rig's parts let go as rigid boxes, toppling the way its id picks, falling onto the ground under each (the world's raycast), bouncing a little, tipping onto a face and lying still within 2 s. One already a wreck when he comes by is drawn already down. Drones fall as before and grey-black too.
 
 **Blasts (M10-65).** A kamikaze FPV's hit, a bomber's grenade, a rocket, his grenade and a hunter drone's crash are one blast (sim/strike.ts `blast`): it hurts him within its reach by how near (rocket 6 m/70, FPV 5/60, bomb 4/45) and throws him within half as far again (sim/knock.ts): 9 m/s away and 4 m/s up within 2 m, falling off linearly to nothing at the edge (a rocket at 1.5 m carries him about 7 m, at 4 m about 4 m, at 8 m barely). Within 3 m he's off his feet, tumbling, and lies down 1.6 s where he lands; further out he's only shoved (holding on to something, he rides it out). A wall or the ground between him and its centre shelters him from all of it. Seen (render/blastfx.ts, pooled): a point-light flash, a white core and orange fireball billows, a dark smoke column drifting on the wind for 6-11 s, 14 debris chunks bouncing down, sparks, a shockwave ring over the ground and a scorch left on it; the view shakes by how near (camera trauma). Heard (audio/gunfire.ts `explosion`): crack, deep thump, rolling roar and debris crackle, late and dull with distance, muffled through walls, echoing; close, a thump through his chest and ringing ears.
+### Difficulty (M9-01)
+tests/sim/difficulty.ts measures the game in the built city with seeded trials; tests/sim/difficulty.slow.test.ts runs them all and writes logs/difficulty.json, tests/sim/difficulty.test.ts holds the bands on a small sample.
+
+| Measure | How | Band (why) | Measured |
+|---|---|---|---|
+| Careless detection | upright (jog, sprint) by day along random street ways in each district, time to the first machine Engaged | median 0.5-15 s (had within a block, not on the first frame) | 1.1 s |
+| Careful detection | crouch-walking by night | median 20 s or more (unseen at the 60 s cap counts 60) | 46 s |
+| Lying low | crouched still against a wall on a street by night, unseen for 60 s | 15-90% (a gamble: dogs' and drones' heat sight find him; beating thermal is its own means) | 21% |
+| Escapes | a machine has him at 10, 20 or 35 m; he runs (and crouches), hides in a street hiding place, goes in at a door and up into a wardrobe, or does that jamming; escaped is contact broken and the search over unfound | 15-60% for this player (no climbing, fighting, decoys or water) | 19% (killed 59%, found again 21%) |
+| Survival | a forager on needs alone: out 5 game hours a day searching the nearest containers, home to eat and sleep | reported | 11-25 days, starved once all within a trip's reach is searched |
 
 ## 7. Items, crafting and loot
 
