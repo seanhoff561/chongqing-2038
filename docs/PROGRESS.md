@@ -82,3 +82,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M9-02, M9-08: every route within budget (and the substation brought under), the download under 3 MB and the loading screen up in 3.5 s
 - M9-01: difficulty measured and banded (detection, escape, survival), and a hunter drone no longer searches through walls
 - M9-10, M9-11: the docs match the game (README's every control and scenario checked by a test), and the full-run playtest checklist
+- Paused (U-109): main passes; M9-07 and M9-09 wait on the session branch for one test (the Grand Tunnel exit teleport), then 0.6.0
