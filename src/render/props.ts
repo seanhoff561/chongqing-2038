@@ -202,17 +202,21 @@ const builders: Record<string, Builder> = {
   },
   inverter: () => new THREE.Mesh(box(0.22, 0.08, 0.14, 0, 0, 0), lam(0x6a6e70)),
   rubble: p => {
-    const g = new THREE.Group();
-    const m = material(MAT.stone);
+    // (Its stones one mesh: nine draw calls a fall drawn across the city were a tenth of the budget, M9-02.)
+    const parts: THREE.BufferGeometry[] = [], at = new THREE.Object3D();
     for (let i = 0; i < 9; i++) {
       const r = 0.25 + ((i * 37) % 10) / 25;
-      const s = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), m);
-      s.position.set(((i * 53) % 10) / 10 * p.w! - p.w! / 2, r * 0.7 + ((i * 17) % 5) / 6 * (p.h! - r), ((i * 29) % 7) / 7 * 0.8 - 0.4);
-      s.rotation.set(i, i * 2, i * 3);
-      g.add(s);
+      at.position.set(((i * 53) % 10) / 10 * p.w! - p.w! / 2, r * 0.7 + ((i * 17) % 5) / 6 * (p.h! - r), ((i * 29) % 7) / 7 * 0.8 - 0.4);
+      at.rotation.set(i, i * 2, i * 3);
+      at.updateMatrix();
+      parts.push(new THREE.DodecahedronGeometry(r, 0).applyMatrix4(at.matrix));
     }
+    const m = new THREE.Mesh(mergeGeometries(parts), material(MAT.stone));
+    if (!p.text) return m;
     // A fall that's cleared (M4-24): gone once its interactable is open.
-    if (p.text) g.userData.tick = (_t: number, open: Record<string, boolean>) => { g.visible = !open[p.text!]; };
+    const g = new THREE.Group();
+    g.add(m);
+    g.userData.tick = (_t: number, open: Record<string, boolean>) => { m.visible = !open[p.text!]; };
     return g;
   },
   grate: p => {
@@ -327,10 +331,13 @@ export function buildProps(props: Prop[], share = 1): THREE.Group {
         return always || left > 0;
       });
     }
-    // Grates and hatches that open and the bags over them (M3-72, M3-73a, M3-83), hundreds of them in the basements: drawn near only.
-    if (p.kind === 'grate' || p.kind === 'cover' || p.kind === 'hatch') o.userData.chunk = o.userData.detail = true;
+    // Grates and hatches that open and the bags over them (M3-72, M3-73a, M3-83), hundreds of them in the basements, and
+    // the falls that are cleared (M4-24), down in the tunnels: drawn near only.
+    if (p.kind === 'grate' || p.kind === 'cover' || p.kind === 'hatch' || p.kind === 'rubble') o.userData.chunk = o.userData.detail = true;
     if ((o as THREE.Mesh).isMesh && !o.userData.tick && o.children.length === 0) merger.add(o as THREE.Mesh);
-    else if (!b && !o.userData.tick) { o.updateMatrixWorld(true); for (const c of [...o.children]) merger.add(c as THREE.Mesh); }
+    // (A group that doesn't move, its pieces all meshes, merges into its chunk as a mesh does: kept whole, each piece
+    // was a draw call wherever it was in view, from across the city: M9-02.)
+    else if (!o.userData.tick && (!b || o.children.every(c => (c as THREE.Mesh).isMesh && !c.children.length))) { o.updateMatrixWorld(true); for (const c of [...o.children]) merger.add(c as THREE.Mesh); }
     else g.add(o);
   }
   for (const m of big.build(mergeGeometries)) g.add(m);

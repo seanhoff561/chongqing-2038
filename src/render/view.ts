@@ -127,7 +127,9 @@ export class View {
       // (And past the map's border, more to see: M4-100.)
       if (w.ground && w.water[0]) this.world.add(buildBeyond(w.ground, w.water[0].y1));
     }
-    // (A small pool, a flooded sump down in the sewers, is drawn near only, as the rooms are.)
+    // (In the city every water but the river is down in the sewers and tunnels or a pool, so drawn near only: a small pool or a
+    // flooded sump as the rooms are, a long channel or the extension's flood within the detail radius. Drawn from
+    // anywhere they were a draw call each across the city: M9-02.)
     const pools: THREE.Mesh[] = [];
     this.floods = [];
     for (const b of w.water) {
@@ -135,7 +137,8 @@ export class View {
       const big = b === w.water[0] && w.name === 'yuzhong', m = new THREE.Mesh(big ? riverPlane(b) : new THREE.PlaneGeometry(b.x1 - b.x0, b.z1 - b.z0), material(MAT.water, big));
       m.rotation.x = -Math.PI / 2;
       m.position.set((b.x0 + b.x1) / 2, b.y1, (b.z0 + b.z1) / 2);
-      if (b.x1 - b.x0 < 100 && b.z1 - b.z0 < 100) { m.userData.detail = m.userData.inner = true; pools.push(m); }
+      const pool = b.x1 - b.x0 < 100 && b.z1 - b.z0 < 100;
+      if (pool || (this.hasFar && !big)) { m.userData.detail = true; m.userData.inner = pool; pools.push(m); }
       this.world.add(m);
       if (w.flood?.boxes.includes(b)) this.floods.push([m, b]);
     }
