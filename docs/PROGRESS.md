@@ -78,3 +78,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M6-04, M6-18, M7-13: Chaotianmen and Raffles City with The Crystal, the drone hub and its second fuse (one fuse, one feeder; two, both); and frame CPU back under budget everywhere
 - M6-03, M6-09: Hongyadong down the Jialing cliff and the western border wall across the Eling neck
 - M9-04, M9-06: every scenario boots clean in the browser; a full run in a sim test (and the two bugs it found: sleeping rough by a crate, the sites count)
+- Release 0.5.0: Raffles City and The Crystal, Hongyadong, the western border wall, frame CPU under budget, the full run's fixes
