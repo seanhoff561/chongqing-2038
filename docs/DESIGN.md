@@ -155,7 +155,7 @@ Each unit keeps an awareness per tick: `rate = 2.5 x V` a second when V >= 0.04,
 
 | Factor | Values |
 |---|---|
-| exposure | the share of 5 body points inside the cone in clear sight |
+| exposure | the share of 5 body points inside the cone in clear sight (swimming, none under the water's surface: his head alone shows, dived nothing) |
 | light | day 1.0, dusk 0.5, night 0.12, plus local lights (lampposts 0.6 within 8 m, neon 0.35 within 5 m, searchlight 1.0, his headlamp 1.0 white or 0.4 dim blue, the laptop's glow 0.5 at night); IR floors it for cameras and humanoids (0.3); thermal units ignore light |
 | posture | standing 1.0, crouched 0.55, crawling 0.3, hanging 0.8, curled in a box 0 (unless searched) |
 | motion | still 0.4, crawl 0.45, crouch-walk 0.6, jog 0.85, sprint, parkour or airborne 1.0 |
@@ -226,6 +226,8 @@ tests/sim/difficulty.ts measures the game in the built city with seeded trials; 
 | Lying low | crouched still against a wall on a street by night, unseen for 60 s | 15-90% (a gamble: dogs' and drones' heat sight find him; beating thermal is its own means) | 21% |
 | Escapes | a machine has him at 10, 20 or 35 m; he runs (and crouches), hides in a street hiding place, goes in at a door and up into a wardrobe, or does that jamming; escaped is contact broken and the search over unfound | 15-60% for this player (no climbing, fighting, decoys or water) | 21% of 53 (D-148) |
 | Survival | a forager on needs alone: out 5 game hours a day searching the nearest containers, home to eat and sleep | reported | 11-25 days, starved once all within a trip's reach is searched |
+
+Every district can be got away from (tests/sim/escapes.slow.test.ts, M9-09): one scripted escape each, by day unless said, had by the district's machines (Engaged) and the search over (Heightened or calm) without him found. Shibati: a dog by the Eighteen Stairs, down the alley to the friends' hideout's grate and under it, shut behind him. Jiaochangkou: a camera at the junction, in at the nearest door away from it, up the stairs into a wardrobe. Xiaoshizi: a camera by night, in at a door and a floor or more up into a wardrobe (its streets crawl with dogs and humanoids). Jiefangbei: a drone over the walking streets, the jammer on while he goes in and up into a wardrobe, off once he's in. Hongyadong: a camera on the 30 m terrace, in through the stilt houses and up their stairs into a wardrobe off the way. Chaotianmen: a drone at the river steps, down into the Yangtze, under 2 m and along the bank, up for air every 40 s. The rest of Yuzhong: a dog on the street, down an alley and up a ladder or drainpipe to a flat roof, crouched still away from the edge. A tag from a dog's launcher is picked off with the dongle before he hides.
 
 ## 7. Items, crafting and loot
 
@@ -413,4 +415,4 @@ A Windows installer (.exe) from desktop/ (Electron): whenever main's package.jso
 - `src/data`: tuning and content (movement, units, items, recipes, loot, dialogue, scenarios, the geo extract).
 - `src/render`, `src/ui`, `src/audio`, `src/input`, `src/dev`: browser only; the renderer interpolates between ticks.
 - Collision: boxes and ramps (turnable about a pivot) in a 4 m grid and the heightfield; per-axis sweeps with step-up; rays for sight.
-- `?dev=1`: teleports, time and weather, perception overlays, item spawner, god mode, noclip, frame costs. `?scenario=<name>`: set-up situations for tests. `?seed=<n>`: the run seed.
+- `?dev=1`: teleports, time and weather, perception overlays, item spawner, god mode, noclip, frame costs. `?scenario=<name>`: set-up situations for tests. `?seed=<n>`: the run seed. A scenario's start (its world's state, the run or the pursuit or the ending begun) is `sim/scenario.ts`, the game's and the tests' alike; a teleport that would stand him in something solid (a landmark's point inside what's built on it) is moved to the nearest spot round it he fits, with a floor and a way off (`world/build.ts`). tests/sim/fuzz.slow.test.ts (M9-07) plays every scenario two minutes at 60 Hz on seeded random input (moving, looking, every button, the hotbar, the UI's commands: the backpack, crafting, the laptop's acts, marks), starting it over three seconds after each death, and fails on anything thrown or a NaN or infinity in him, his body, the machines (their poses too) or, every second, the whole state.
