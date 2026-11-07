@@ -108,7 +108,7 @@ function follower(way: V3[], buttons: number) {
 /** Along a way as M4-32's escapes go: at his sprint (a jog with a bad leg, the limp's pace with a broken one), a tick's
  *  distance along it each tick, his velocity his run's, standing while he's stunned. An ideal runner: never held up on
  *  a kerb or a bin, though he makes no footsteps while he's carried. */
-function glider(way: V3[]) {
+export function glider(way: V3[]) {
   let i = 1, at = way[0];
   return {
     done: () => i >= way.length,
@@ -235,9 +235,9 @@ function hideOut(w: World, at: V3, from: V3, eyes: V3[]): { way: V3[]; hide: num
 }
 
 /** His way from where he is to the nearest street door that leads up inside (not past what's after him), up its stairs
- *  to a floor halfway or below, and to the wardrobe (or crate) nearest them there; and which hiding place that is
- *  (M4-32's escape, and M9-01's sensible player's). */
-export function escapeRoute(w: World, at: V3, from?: V3, eyes: V3[] = []): { way: V3[]; hide: number } {
+ *  to a floor halfway or below (and `rise` m or more over the door), and to the wardrobe (or crate) nearest them there;
+ *  and which hiding place that is (M4-32's escape, and M9-01's sensible player's). */
+export function escapeRoute(w: World, at: V3, from?: V3, eyes: V3[] = [], rise = 0): { way: V3[]; hide: number } {
   const toward = (q: V3) => !!from && ((q.x - at.x) * (from.x - at.x) + (q.z - at.z) * (from.z - at.z)) / ((Math.hypot(q.x - at.x, q.z - at.z) || 1) * (Math.hypot(from.x - at.x, from.z - at.z) || 1)) > 0.3;
   const score = (q: V3) => Math.hypot(q.x - at.x, q.z - at.z) + (toward(q) ? 80 : 0);
   const doors = w.plots.filter(p => !p.far && p.route && p.route.length > 3).map(p => p.route!).sort((a, b) => score(a[0]) - score(b[0]));
@@ -249,7 +249,7 @@ export function escapeRoute(w: World, at: V3, from?: V3, eyes: V3[] = []): { way
     if (!street) continue;
     // Then off the stairs, to the wardrobe nearest them on a floor halfway up (or its nearest crate), to hide in.
     const up = r.slice(0, Math.max(3, Math.ceil(r.length / 2)));
-    for (let k = up.length - 1; k >= 2; k--) {
+    for (let k = up.length - 1; k >= 2 && up[k].y - r[0].y >= rise; k--) {
       const top = up[k], i = w.hides.map((h, i) => ({ h, i, d: Math.hypot((h.inner.x0 + h.inner.x1) / 2 - top.x, (h.inner.z0 + h.inner.z1) / 2 - top.z) }))
         .filter(({ h, d }) => (h.kind === 'wardrobe' || h.kind === 'crate') && Math.abs(h.inner.y0 - top.y) < 1.5 && d < 25).sort((a, b) => a.d - b.d)[0];
       if (!i) continue;

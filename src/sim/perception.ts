@@ -124,8 +124,12 @@ export function visibility(s: SimState, w: World, kind: UnitKind, at: Pose, glas
   // The cone's axis: the way it faces, pitched down for a drone.
   const pc = Math.cos((S.pitch * Math.PI) / 180), ax = Math.sin(at.yaw) * pc, ay = -Math.sin((S.pitch * Math.PI) / 180), az = Math.cos(at.yaw) * pc, half = Math.cos((S.fov * Math.PI) / 360);
   let seen = 0;
+  const swim = s.player.mode === 'swim';
   for (const q of bodyPoints(s)) {
     if (glass && (q.y < glass.y0 || q.y > glass.y1)) continue;
+    // (Swimming, what of him is in the water doesn't show: the rivers and the tunnels' water are murky. His head
+    // out of it does; dived, none of him.)
+    if (swim && w.water.some(b => q.x >= b.x0 && q.x <= b.x1 && q.z >= b.z0 && q.z <= b.z1 && q.y > b.y0 && q.y < b.y1 + 0.02)) continue;
     const dx = q.x - eye.x, dy = q.y - eye.y, dz = q.z - eye.z, L = Math.hypot(dx, dy, dz);
     if (L < 0.01 || (dx * ax + dy * ay + dz * az) / L < half) continue;
     // (Not through a powder cloud, M5-19.)

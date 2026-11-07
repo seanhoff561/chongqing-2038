@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { setup, run, secs, hspeed } from './helpers';
 import { solid } from '../../src/world/geom';
 import { B } from '../../src/sim/types';
+import { visibility } from '../../src/sim/perception';
 
 /** A pool 4 m deep (floor at -4, surface at 0) with a bank at 0.5 m on its north side. */
 function pool() {
@@ -13,6 +14,19 @@ function pool() {
 }
 
 describe('swimming', () => {
+  it("shows only his head out of the water to eyes above it, and none of him dived (M9-09: the water's murky)", () => {
+    const { world, state } = pool(), at = { x: 0, y: 0.5, z: -14, yaw: 0, active: true };
+    state.time = 12 * 3600; state.flags.clear = true;
+    run(state, world, secs(1.5), { my: 1 });
+    run(state, world, secs(3));
+    expect(state.player.mode).toBe('swim');
+    const head = visibility(state, world, 'humanoid', at);
+    // (A machine on the bank 20 m off: his head, one of his five points.)
+    expect(head).toBeGreaterThan(0);
+    expect(head).toBeLessThan(0.25);
+    run(state, world, secs(2), { buttons: B.CROUCH });
+    expect(visibility(state, world, 'humanoid', at)).toBe(0);
+  });
   it('jumps in, swims at 1.4 m/s (2.2 sprinting) and floats at the surface', () => {
     const { world, state } = pool();
     run(state, world, secs(1.5), { my: 1 });
