@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M9. Next: M9-01 Difficulty tuning.
-Features done: 422 / 438 | Last done: M9-08
+**Status:** building M9. Next: M9-07 Fuzz sweep.
+Features done: 423 / 438 | Last done: M9-01
 <!-- /status -->
 
 ## What's built
@@ -80,3 +80,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M9-04, M9-06: every scenario boots clean in the browser; a full run in a sim test (and the two bugs it found: sleeping rough by a crate, the sites count)
 - Release 0.5.0: Raffles City and The Crystal, Hongyadong, the western border wall, frame CPU under budget, the full run's fixes
 - M9-02, M9-08: every route within budget (and the substation brought under), the download under 3 MB and the loading screen up in 3.5 s
+- M9-01: difficulty measured and banded (detection, escape, survival), and a hunter drone no longer searches through walls
