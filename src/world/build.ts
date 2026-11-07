@@ -33,20 +33,36 @@ export function getWorld(name: string, seed = 0): World {
   return w;
 }
 
-/** Each teleport whose body would stand in something solid (a landmark's point inside what's built over it, a
- *  fitting's in its fitting), moved to the nearest spot round it he fits standing, with a floor under him within
- *  3 m and a way to step off it: else he'd stand there walled in, unable to move. */
+/** Each teleport that would leave him walled in (its point inside something solid, a landmark's inside what's built
+ *  over it; or where he lands, his body from the knees up in a wall: furniture or a kerb he'd step onto is no matter),
+ *  moved the least that clears it: to the nearest spot round it
+ *  where he fits standing with a way to step off, on the same floor and in sight of it (the same room) within 4 m, or
+ *  for a point inside a solid the nearest floor within 15 m. Any other stays where it was put (the places others find
+ *  by them, a room's middle, a fitting's foot), and so does one over nothing within 6 m (the water, the air). */
 function clearTeleports(w: World) {
-  const H = M.height.stand, fits = (x: number, y: number, z: number) => free(w.index, x, y, z, H);
-  const floor = (x: number, y: number, z: number) => Math.min(raycast(w.index, x, y + 0.05, z, 0, -1, 0, 3)?.t ?? 9, w.ground ? y - (heightAt(w.ground, x, z) ?? -1e9) : 9) < 3;
-  const way = (x: number, y: number, z: number) => [[0.6, 0], [-0.6, 0], [0, 0.6], [0, -0.6]].some(([dx, dz]) => fits(x + dx, y + 0.35, z + dz));
+  // (Where it's put him: his box clear from a step up off the floor, the ground's slope under it allowed, and clear a
+  // step off to one side or another.)
+  const H = M.height.stand, S = 0.4, inSolid = (x: number, y: number, z: number) => !free(w.index, x, y, z, 0.05, 0.05);
+  const clear = (x: number, f: number, z: number) => free(w.index, x, f + S, z, H - S);
+  const stand = (x: number, f: number, z: number) => clear(x, f, z) && [[0.6, 0], [-0.6, 0], [0, 0.6], [0, -0.6]].some(([dx, dz]) => clear(x + dx, f, z + dz));
+  // (The floor he'd land on dropped from a point: solid or ground, within 6 m.)
+  const under = (x: number, y: number, z: number) => {
+    const h = raycast(w.index, x, y, z, 0, -1, 0, 6), g = w.ground ? heightAt(w.ground, x, z) : null, f = Math.max(h ? y - h.t : -Infinity, g != null && g <= y && g > y - 6 ? g : -Infinity);
+    return f > -Infinity ? f : null;
+  };
   for (const t of w.teleports) {
-    if (fits(t.x, t.y, t.z)) continue;
-    search: for (let r = 0.25; r <= 15; r += 0.25)
+    const walled = inSolid(t.x, t.y, t.z), f0 = walled ? null : under(t.x, t.y, t.z), sight = f0 !== null && !inSolid(t.x, f0 + 1, t.z);
+    if (!walled && (f0 === null || free(w.index, t.x, f0 + 1, t.z, H - 1))) continue;
+    search: for (let r = 0.25; r <= (walled ? 15 : 4); r += 0.25)
       for (let k = 0, n = Math.ceil(r * 8); k < n; k++)
-        for (const dy of [0, 0.5, 1, 1.5, 2, -0.5, -1, -1.5]) {
+        for (const dy of walled ? [0, 1, 2, -1, -2] : [0]) {
           const a = (k / n) * Math.PI * 2, x = t.x + cos(a) * r, y = t.y + dy, z = t.z + sin(a) * r;
-          if (fits(x, y, z) && floor(x, y, z) && way(x, y, z)) { Object.assign(t, { x, y, z }); break search; }
+          if (inSolid(x, y, z)) continue;
+          const f = under(x, y, z);
+          if (f === null || !stand(x, f, z)) continue;
+          if (f0 !== null && (Math.abs(f - f0) > 0.6 || (sight && raycast(w.index, t.x, f0 + 1, t.z, (x - t.x) / r, 0, (z - t.z) / r, r)))) continue;
+          Object.assign(t, { x, y: f + (f0 === null ? Math.max(0.05, y - f) : t.y - f0), z });
+          break search;
         }
   }
 }
