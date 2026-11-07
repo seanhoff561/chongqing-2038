@@ -54,6 +54,7 @@ import { chooseAlley, buildHome, VENT } from './home';
 import { links, cut } from './links';
 import { hongyadong } from './hongyadong';
 import { footprint, sweep, drop, unmark, clipStreets, clipBeat, type Gone, type Owned } from './clear';
+import { borderWall } from './borderwall';
 import { sin, cos, tan, atan2 } from '../trig';
 
 const empty = (): Fabric => ({ solids: [], decor: [], props: [], lots: [], inter: [], climbables: [], hides: [], features: [], sites: [], far: [] });
@@ -314,7 +315,13 @@ export function buildYuzhong(): World {
     ups: [out.climbables] }, owned);
   for (const a of [laid.paths, doorWays]) kept(a, 0, l => l.pts.some(([x, z]) => hy.built(x, z)));
   hy.grade(g);
-  unmark(marks, (x, z) => raf.covers(x, z) || hy.inside(x, z), rubble.features);
+  // The western border wall across the neck (M6-09, U-108), round what of the city runs into it (Line 2's beams); what
+  // the city set where it stands taken away.
+  const bw = borderWall(g, solids), atWall = (x: number, z: number, y: number) => bw.at(x, z) && y > (heightAt(g, x, z) ?? -Infinity) - 2.5;
+  sweep({ point: atWall, solid: bw.clears }, new Set(), { solids: [solids, decor, river.decor, out.decor, line.decor, vert.decor, cross.decor, laid.decor, filled.decor],
+    points: [out.props, river.props, line.props, laid.props, dress.props, green.props, rubble.props, filled.props, inter, out.features, river.features, vert.features, cross.features, rubble.features, laid.features], ups: [out.climbables, line.climbables, vert.climbables] }, owned);
+  solids.push(...bw.solids); decor.push(...bw.decor); out.features.push(...bw.features);
+  unmark(marks, (x, z) => raf.covers(x, z) || hy.inside(x, z) || bw.at(x, z), rubble.features);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.indexOf(gateSolid);
   const world = makeWorld({
@@ -372,7 +379,7 @@ export function buildYuzhong(): World {
   world.zones.push(...exitZones(world));
   // The machines' ways about on foot as the world stands now (M4-02); the street layer between the key points along
   // them (M3-21).
-  world.nav = buildNav(clipStreets(sts, (x, z) => hy.built(x, z, 0.5)), g, world.index, walksOf(world.features).concat(hy.walks));
+  world.nav = buildNav(clipStreets(sts, (x, z) => hy.built(x, z, 0.5) || bw.at(x - 0.7, z)), g, world.index, walksOf(world.features).concat(hy.walks));
   world.features.push(...keys.map((k, n) => ({ kind: `key:${k.name}`, x: k.at.x, y: k.at.y, z: k.at.z, group: n })));
   // The beats as walked, off the streets and under the ground (M4-01).
   world.patrols = walkedBeats(world, net.patrols, [tun.at.junction, tun.at.metro])
@@ -394,14 +401,14 @@ export function buildYuzhong(): World {
   if (police) world.climbables.push(...police.climbables);
   // The high-security sites fitted out: their ways in, loot and hazards (M6-11 to M6-13).
   const sec = fitSecure(world);
-  world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv;
+  world.secure = sec.sites; world.cameras.push(...sec.cameras); world.props.push(...sec.props); world.gas = sec.gas; world.hv = sec.hv.concat(bw.hv);
   // Jiefangbei station's (M6-17): the third rail, and the face-recognition gates' scan line at face height across them.
   world.rail = under.rails;
   // Line 1's extension (M7-11): its flood the pumps drain, its seismic sensors.
   world.flood = under.flood; world.zones.push(...under.seismic);
   const ga = world.features.find(f => f.kind === 'metro:gates:a'), gb = world.features.find(f => f.kind === 'metro:gates:b');
   if (ga && gb) world.cameras.push({ kind: 'tripwire', x: ga.x, y: ga.y + FACE, z: ga.z, yaw: atan2(gb.x - ga.x, gb.z - ga.z), to: { x: gb.x, y: gb.y + FACE, z: gb.z } });
-  world.cameras.push(...check.cameras, ...raf.cameras);
+  world.cameras.push(...check.cameras, ...raf.cameras, ...bw.cameras); world.props.push(...bw.props);
   world.teleports.push(...approaches(world, sec.sites));
   // The river-police pier's ways on (M6-20, M6-25): the gangway's head, the water by its ladder, the crane's foot.
   for (const [k, name] of [['pier:gangway', 'gangway'], ['pier:ladder', 'ladder'], ['pier:crane', 'crane']]) {
