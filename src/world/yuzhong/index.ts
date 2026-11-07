@@ -141,7 +141,7 @@ export function buildYuzhong(): World {
   windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross, inWay);
   cutDown(below, cuts, plans, plots, out);
   // The sewer maze under the basements (M3-73a).
-  const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
+  const sew = sewers(out.features.filter(f => f.kind === 'sewer' || f.kind === 'sewer:capped'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
   // The cable tunnel to the telecom exchange and the hospital's basement link (M6-21), off Jiaochangkou's station hall:
   // each to the foot of its site's basement shaft (the hospital's along the sewer under its street, taken in).
   const shaftFoot = (id: string) => {
