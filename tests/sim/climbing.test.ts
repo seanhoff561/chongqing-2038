@@ -10,7 +10,8 @@ import { BARE } from '../../src/world/city/climb';
 import { free } from '../../src/sim/physics';
 import type { Plot } from '../../src/world/world';
 
-const w = getWorld('yuzhong'), g = w.ground!, near = w.plots.filter(p => !p.far);
+// (The city's own buildings: a place built by hand, Hongyadong's tiers, U-108, has no fabric of its own to climb.)
+const w = getWorld('yuzhong'), g = w.ground!, near = w.plots.filter(p => !p.far && p.own);
 /** From the street a lip this high is in reach (a wall kick); from a lip, the next this much higher (a jump and a
  *  grab from standing on it, more than a dyno from hanging). */
 const FROM_GROUND = E.wallKick.max, STEP = E.mantleJump.max;

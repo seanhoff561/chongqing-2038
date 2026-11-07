@@ -13,7 +13,7 @@ import { setup, run, secs, floor, aim, LMB, settle } from './helpers';
 describe('quick fixes from U-034 and U-035 (M3-69)', () => {
   it('builds the AC units and the metal skins on the facades solid, and an AC unit takes a grab', async () => {
     await settle();
-    const w = getWorld('yuzhong'), own = (p: (typeof w.plots)[number]) => w.solids.slice(p.own!.solids[0], p.own!.solids[1]);
+    const w = getWorld('yuzhong'), own = (p: (typeof w.plots)[number]) => (p.own ? w.solids.slice(p.own.solids[0], p.own.solids[1]) : []);
     const size = (s: (typeof w.solids)[number]) => { const e = s.rot ?? s; return [e.x1 - e.x0, s.y1 - s.y0, e.z1 - e.z0]; };
     const acs = w.plots.filter(p => !p.far).flatMap(own).filter(s => { const [a, h, b] = size(s); return s.mat === MAT.metal && Math.abs(h - 0.5) < 0.03 && Math.abs(Math.min(a, b) - 0.42) < 0.01; });
     const skins = w.plots.filter(p => !p.far).flatMap(own).filter(s => { const [a, h, b] = size(s); return (s.mat === MAT.metal || s.mat === MAT.tealMetal) && h > 5 && Math.abs(Math.min(a, b) - 0.16) < 0.01; });

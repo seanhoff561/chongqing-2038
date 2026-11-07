@@ -42,7 +42,8 @@ describe('the green city (M3-56b)', () => {
   it('stands every tree and shrub on the ground (or, a shrub, on whatever is under it)', () => {
     const off = w.props.filter(p => {
       if (![...TREES, 'shrub'].includes(p.kind) || !markAt(mk, p.x, p.z) || Math.abs(p.y - (heightAt(g, p.x, p.z) ?? -99)) < 0.05) return false;
-      const hit = p.kind === 'shrub' ? raycast(w.index, p.x, p.y + 0.3, p.z, 0, -1, 0, 5) : null;
+      // (A tree planted high up in a place built by hand, The Crystal's beds, stands on its bed as a shrub does.)
+      const high = p.y - (heightAt(g, p.x, p.z) ?? p.y) > 30, hit = p.kind === 'shrub' || high ? raycast(w.index, p.x, p.y + 0.3, p.z, 0, -1, 0, 5) : null;
       return !hit || Math.abs(hit.t - 0.3) > 0.05;
     });
     expect(off.map(p => `${p.kind} ${(p.y - heightAt(g, p.x, p.z)!).toFixed(2)}`).slice(0, 8)).toEqual([]);

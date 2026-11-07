@@ -12,7 +12,8 @@ import { run, settle } from './helpers';
 import { B } from '../../src/sim/types';
 
 const w = getWorld('yuzhong'), g = w.ground!;
-const near = w.plots.filter(p => !p.far);
+// (Not one razed for a place built where it stood, U-108: no walls left to stand.)
+const near = w.plots.filter(p => !p.far && !p.razed);
 
 describe('Yuzhong at 1:1 (M3-41b)', () => {
   it('lays out thousands of buildings, OSM and infill', () => {

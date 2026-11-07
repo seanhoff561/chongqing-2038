@@ -47,7 +47,7 @@ const inObb = (p: Plan, x: number, z: number, m: number) => {
  *  over its cut gone (its windows there kept as ghosts and its shelters 'gone', for the routes' dice, as a hand-made
  *  building's are), a roof over the rest; and whatever else the city strung or set out in the space over the line
  *  (the alleys' cables and junk) taken away. The joins' connections there were never built (inWayUnder()). */
-export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plots: Plot[], out: Fabric) {
+export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plots: Plot[], out: Fabric, razed?: (p: Plan) => boolean) {
   const K = ['solids', 'decor', 'far', 'props', 'inter', 'climbables', 'hides', 'features', 'sites'] as const;
   const owned = Object.fromEntries(K.map(k => [k, new Uint8Array(out[k].length)])) as Record<(typeof K)[number], Uint8Array>;
   const drop = Object.fromEntries(K.map(k => [k, new Set<number>()])) as Record<(typeof K)[number], Set<number>>;
@@ -66,15 +66,19 @@ export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plot
     // (One cut to under 1.5 m of climb is gone: a stub left of a vine or a pipe, its prop gone with the floors over it.)
     for (const i of at('climbables')) { const q = out.climbables[i]; if (q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
     for (const i of at('hides')) if (out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
-    for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
+    // (A basement's manhole razed with it kept, for the sewers' dice: their shaft ends sealed under what stands there.)
+    for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01 || (q.kind === 'sewer' && c === -Infinity)) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
     for (const i of at('sites')) if (out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };
-    // Its roof over what's left (and over its stairwell's shaft).
-    out.solids.push(turn([solid(lot.x0, c - SLAB, lot.z0, lot.x1, c, lot.z1, MAT.concrete)], o.yaw, o.cx, o.cz)[0]);
-    p.wall = plots[n].wall = plots[n].top = c;
+    // Its roof over what's left (and over its stairwell's shaft); one cut to nothing (-Infinity) is gone to its base.
+    // One razed for a new place built there (U-108) has no way up left.
+    const gone = c === -Infinity || !!razed?.(p), y = c === -Infinity ? p.base : c;
+    if (c !== -Infinity) out.solids.push(turn([solid(lot.x0, c - SLAB, lot.z0, lot.x1, c, lot.z1, MAT.concrete)], o.yaw, o.cx, o.cz)[0]);
+    p.wall = plots[n].wall = plots[n].top = y;
     // (Its way up ends on its new roof: nothing waits where the old one was.)
-    plots[n].route = plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
+    if (gone) plots[n].razed = plots[n].route ?? [];
+    plots[n].route = gone ? undefined : plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
     const lt = out.lots.find(q => q.id === n);
-    if (lt) lt.wall = lt.top = c;
+    if (lt) lt.wall = lt.top = y;
   });
   // What isn't a building's, over the ceiling.
   const pt = (x: number, z: number): [number, number][] => [[x, z]], bx = (q: Solid): [number, number][] => [[q.x0, q.z0], [q.x1, q.z0], [q.x0, q.z1], [q.x1, q.z1]];

@@ -482,10 +482,11 @@ export function placeCameras(w: World): Camera[] {
     else if (p.kind === 'campole') out.push({ kind: 'camera', x: p.x + sin(p.yaw) * 0.2, y: p.y + 4.4, z: p.z + cos(p.yaw) * 0.2, yaw: p.yaw, box });
   }
   const near = (x: number, z: number) => DISTRICTS.some(k => Math.hypot(x - GEO.landmarks[k].x, z - GEO.landmarks[k].z) < 400);
-  w.plots.filter(p => !p.far && p.route && p.route.length > 1 && (near(p.route[0].x, p.route[0].z) || p.type === 'military')).forEach((p, i) => {
+  // (One razed for a new place keeps its turn, U-108: every other door's camera where it was.)
+  w.plots.filter(p => { const r = p.route ?? p.razed; return !p.far && r && r.length > 1 && (near(r[0].x, r[0].z) || p.type === 'military'); }).forEach((p, i) => {
     // (A military post's door always watched, its camera never idle: M5-35.)
     const post = p.type === 'military';
-    if (i % 3 && !post) return;
+    if ((i % 3 && !post) || !p.route) return;
     const [door, inside] = p.route!, dx = door.x - inside.x, dz = door.z - inside.z, d = Math.hypot(dx, dz) || 1;
     // (One in four idle, its light off, until the district's Heightened: M4-16.)
     // (Outside, on the wall over the door: just out from its face, so it watches the street and never the room behind:

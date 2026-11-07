@@ -90,9 +90,10 @@ describe('the construction site (M6-10)', () => {
   });
 
   it('is crawled into under the hoarding along the ditch', () => {
-    const s = tp('Construction site: ditch'), q = one('site:ditchIn');
-    // (Standing, he can't get under.)
-    expect(walkPath(s, w, [q], false).reached).toBe(0);
+    const q = one('site:ditchIn');
+    // (Standing, he can't get under; then from where he started, crawling: the walker sidesteps along the hoarding.)
+    expect(walkPath(tp('Construction site: ditch'), w, [q], false).reached).toBe(0);
+    const s = tp('Construction site: ditch');
     run(s, w, 10, { buttons: B.CRAWL, pressed: B.CRAWL });
     for (let t = 0; t < secs(25) && Math.hypot(q.x - s.player.pos.x, q.z - s.player.pos.z) > 1; t++) {
       const yaw = Math.atan2(-(q.x - s.player.pos.x), -(q.z - s.player.pos.z));

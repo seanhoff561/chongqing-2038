@@ -53,7 +53,7 @@ export interface StreetLine { kind: string; w: number; steps: boolean; pts: [num
 export interface Feature { kind: string; x: number; y: number; z: number; group: number; /** out of the wall it's on */ nx?: number; nz?: number }
 
 /** A built lot as laid out on the map (Yuzhong): its corners, base and walking route, for tests and tools. */
-export interface Plot { corners: [number, number][]; base: number; wall: number; /** roof top (ridge or parapet) */ top: number; kind: string; /** its infill row, if any */ row?: string; /** foundation bottom */ found: number; route?: { x: number; y: number; z: number }[]; /** the floor its stairwell's blocked going up from (U-069) */ blocked?: number; /** what it was this run (M5-35) */ type?: import('./city/types').BuildingType; far: boolean; osm: boolean;
+export interface Plot { corners: [number, number][]; base: number; wall: number; /** roof top (ridge or parapet) */ top: number; kind: string; /** its infill row, if any */ row?: string; /** foundation bottom */ found: number; route?: { x: number; y: number; z: number }[]; /** razed for a new place (U-108): the way up it had, so what counted it still does */ razed?: { x: number; y: number; z: number }[]; /** the floor its stairwell's blocked going up from (U-069) */ blocked?: number; /** what it was this run (M5-35) */ type?: import('./city/types').BuildingType; far: boolean; osm: boolean;
   /** what its interactables' ids start with (`<prefix>-`) */
   prefix?: string;
   /** what it built itself: its ranges of the city's lists as they stood once it was built, [from, to) */
