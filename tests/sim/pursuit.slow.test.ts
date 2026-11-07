@@ -18,32 +18,9 @@ import { aimAt } from '../../src/sim/damage';
 import { GRATE, bagsId } from '../../src/sim/grate';
 import { doorSolid } from '../../src/sim/doors';
 import { TAG } from '../../src/data/units';
+import { escapeRoute } from './difficulty';
 
 const w = getWorld('yuzhong');
-type V3 = { x: number; y: number; z: number };
-
-/** His way from where he is to the nearest street door that leads up inside, up its stairs to a floor halfway or
- *  below, and to the wardrobe (or crate) nearest them there; and which hiding place that is. */
-function escapeRoute(at: V3): { way: V3[]; hide: number } {
-  const doors = w.plots.filter(p => !p.far && p.route && p.route.length > 3).map(p => p.route!).sort((a, b) => Math.hypot(a[0].x - at.x, a[0].z - at.z) - Math.hypot(b[0].x - at.x, b[0].z - at.z));
-  for (const r of doors.slice(0, 6)) {
-    // (In and up to a floor halfway, inside: the route's top is its roof, in the drones' view.)
-    const street = navPath(w.nav!, at, r[0], 'street');
-    if (!street) continue;
-    // Then off the stairs, to the wardrobe nearest them on a floor halfway up (or its nearest crate), to hide in.
-    const up = r.slice(0, Math.max(3, Math.ceil(r.length / 2)));
-    for (let k = up.length - 1; k >= 2; k--) {
-      const top = up[k], i = w.hides.map((h, i) => ({ h, i, d: Math.hypot((h.inner.x0 + h.inner.x1) / 2 - top.x, (h.inner.z0 + h.inner.z1) / 2 - top.z) }))
-        .filter(({ h, d }) => (h.kind === 'wardrobe' || h.kind === 'crate') && Math.abs(h.inner.y0 - top.y) < 1.5 && d < 25).sort((a, b) => a.d - b.d)[0];
-      if (!i) continue;
-      const b = i.h.inner, by = { x: (b.x0 + b.x1) / 2, y: top.y, z: (b.z0 + b.z1) / 2 };
-      // (Up to it, a step out from it toward the stairs.)
-      const d = Math.hypot(top.x - by.x, top.z - by.z) || 1;
-      return { way: [...street.pts, ...up.slice(0, k + 1), { x: by.x + ((top.x - by.x) / d) * 1, y: top.y, z: by.z + ((top.z - by.z) / d) * 1 }], hide: i.i };
-    }
-  }
-  return { way: [], hide: -1 };
-}
 
 describe('pursuit escapes (M4-32)', () => {
   for (const name of ['pursuit-drone', 'pursuit-dog', 'pursuit-camera']) {
@@ -96,7 +73,7 @@ describe('pursuit escapes (M4-32)', () => {
       // came out that way, so it's unbolted), down through it, and it shut and bolted behind him; from Jiaochangkou, in
       // at a door, up its stairs and into a wardrobe.
       const grate = w.inter.find(i => i.id === 'airraid-grate')!, home = Math.hypot(grate.x - s.player.pos.x, grate.z - s.player.pos.z) < 120;
-      const { way, hide } = home ? { way: [s.player.pos, ...(navPath(w.nav!, s.player.pos, { x: grate.x + 1.6, y: grate.y, z: grate.z }, 'street')?.pts ?? []), { x: grate.x + 1.6, y: grate.y, z: grate.z }], hide: -1 } : escapeRoute(s.player.pos);
+      const { way, hide } = home ? { way: [s.player.pos, ...(navPath(w.nav!, s.player.pos, { x: grate.x + 1.6, y: grate.y, z: grate.z }, 'street')?.pts ?? []), { x: grate.x + 1.6, y: grate.y, z: grate.z }], hide: -1 } : escapeRoute(w, s.player.pos);
       expect(way.length).toBeGreaterThan(2);
       for (let k = 1; k < way.length; k++) {
         const a = way[k - 1], b = way[k], n = Math.max(1, Math.round((Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) / 5.5) * 60));
