@@ -16,8 +16,9 @@ Chongqing 2038 is coded entirely by Claude (Anthropic) from the director's promp
 | The main menu's music | src/audio/menu.ts | composed for the game and played by Web Audio synthesis | Claude (Anthropic) | the game's own |
 | The trailer's music (90 s, A minor: cold open 0-12 s, introduction 12-35, escalation 35-65, climax 65-85, button 85-90) | media/trailer.ogg | composed for the game and synthesised sample by sample by tools/trailer.mjs | Claude (Anthropic) | the game's own |
 | Rendering | three.js | [threejs.org](https://threejs.org) | three.js authors | MIT |
+| The desktop game's window (with Chromium inside it) and its self-update | Electron, electron-updater (desktop/) | [electronjs.org](https://www.electronjs.org), [electron-builder](https://www.electron.build) | OpenJS Foundation and Electron contributors; electron-userland | MIT (Chromium: BSD-3-Clause and others, listed in the app's LICENSES.chromium.html) |
 
 ## Used to make it, not shipped
 
-- Vite (MIT), TypeScript (Apache-2.0), Vitest (MIT), Puppeteer (Apache-2.0).
+- Vite (MIT), TypeScript (Apache-2.0), Vitest (MIT), Puppeteer (Apache-2.0), electron-builder (MIT, makes the Windows installer).
 - Photos of the real places, kept as modelling references in docs/reference/places: from Wikimedia Commons, each with its author and licence in docs/reference/PLACES.md.
