@@ -196,7 +196,9 @@ function bench(g: Ways, power: boolean): string | null {
   return null;
 }
 
-for (const seed of [1, 2]) describe(`every route can be done, seed ${seed} (M7-14)`, () => {
+/** The proofs for one seed's city (each seed in a file of its own, *.seeds.test: two cities in one worker run it out of
+ *  memory). */
+export const prove = (seed: number) => describe(`every route can be done, seed ${seed} (M7-14)`, () => {
   let c: City, have: Map<string, string>;
   it('finds every part of every route where he can get to it, from nothing but his start pack', async () => {
     await settle();
