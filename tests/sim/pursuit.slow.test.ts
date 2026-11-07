@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { getWorld } from '../../src/world/build';
 import { createState } from '../../src/sim/sim';
-import { teleport } from '../../src/sim/player';
+import { teleport, eyeOf } from '../../src/sim/player';
 import { startPursuit, type Pursuer } from '../../src/sim/pursuit';
 import { navPath } from '../../src/sim/nav';
 import { unitPose } from '../../src/sim/units';
@@ -40,10 +40,12 @@ describe('pursuit escapes (M4-32)', () => {
         s.inv.hotbar[0] = s.inv.pack.items.find(i => i.id === 'pistol')!.uid; s.inv.held = 1;
         let fired = 0, last = '';
         const hits: string[] = [], fly = sc.pursuit === 'drone', done = () => (fly ? !!u!.crash || !!u!.dead : !!u!.blind);
-        // (Fired only with it in his sights, nothing in between: since M5-35 a dog and a hunter close in as he aims.)
+        // (Fired only with it in his sights, nothing in between: since M5-35 a dog and a hunter close in as he aims. His
+        // sights held on its middle against the kick, as a player brings the climbing muzzle back down: a drone's 0.3 m
+        // tall, and each round's kick alone puts the next over it from 20 m.)
         const sight = () => {
           const q = unitPose(w, u!, s.time), p = s.player.pos, dd = Math.hypot(q.x - p.x, q.z - p.z);
-          return { pitch: Math.atan2(q.y + 0.1 - p.y - 1.62, dd), yaw: Math.atan2(-(q.x - p.x), -(q.z - p.z)), dd };
+          return { pitch: Math.atan2(q.y - eyeOf(s.player).y, dd) - s.player.kick, yaw: Math.atan2(-(q.x - p.x), -(q.z - p.z)), dd };
         };
         for (let i = 0; i < secs(90) && sight().dd > 30; i++) run(s, w, 1);
         for (let i = 0; i < secs(60) && fired < 15 && !done(); i++) {
