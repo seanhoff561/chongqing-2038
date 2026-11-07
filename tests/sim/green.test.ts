@@ -39,10 +39,12 @@ describe('the green city (M3-56b)', () => {
     expect(w.lawns!.reduce((a, p) => a + polyArea(p), 0)).toBeGreaterThan(1e4);
     expect(on(['weeds'], MARK.open) + on(['weeds'], MARK.wood)).toBeGreaterThan(300);
   });
-  it('stands every tree and shrub on the ground (or, a shrub, on whatever is under it)', () => {
+  // (Or on whatever is under it: a shrub; and since M6-18 the trees in The Crystal's beds, 250 m over the rough ground
+  // by the towers. Nothing floats.)
+  it('stands every tree and shrub on the ground (or on whatever is under it)', () => {
     const off = w.props.filter(p => {
       if (![...TREES, 'shrub'].includes(p.kind) || !markAt(mk, p.x, p.z) || Math.abs(p.y - (heightAt(g, p.x, p.z) ?? -99)) < 0.05) return false;
-      const hit = p.kind === 'shrub' ? raycast(w.index, p.x, p.y + 0.3, p.z, 0, -1, 0, 5) : null;
+      const hit = raycast(w.index, p.x, p.y + 0.3, p.z, 0, -1, 0, 5);
       return !hit || Math.abs(hit.t - 0.3) > 0.05;
     });
     expect(off.map(p => `${p.kind} ${(p.y - heightAt(g, p.x, p.z)!).toFixed(2)}`).slice(0, 8)).toEqual([]);

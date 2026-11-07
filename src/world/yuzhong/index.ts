@@ -8,7 +8,7 @@ import { MAT } from '../mats';
 import { makeRng, hashString } from '../../sim/rng';
 import { buildLot, PARAPET, type Fabric, type Lot } from '../city/buildings';
 import { stepsFor } from '../steps';
-import { findMarks } from './marks';
+import { findMarks, builtOver } from './marks';
 import { greenery, climbOf } from './green';
 import { layout, doorPaths } from './layout';
 import { ruins } from './ruins';
@@ -105,8 +105,9 @@ export function buildYuzhong(): World {
   const gatePairs = pickGates(plans, makeRng(hashString('gates')));
   // (Round the caches nothing changes: what keeps them out of reach was judged at these heights.)
   oldQuarter(plans, new Set(plans.filter(p => gatePairs.some(([c]) => Math.hypot(p.obb.cx - c.obb.cx, p.obb.cz - c.obb.cz) < 60)).concat(gatePairs.flat())));
-  // Bridged, stacked and built over (M3-57): it may set roofs to meet, so before the lots are built.
-  const vert = verticalCity(plans, g, sts);
+  // Bridged, stacked and built over (M3-57): it may set roofs to meet, so before the lots are built. (Nothing to what
+  // stands at Chaotianmen till Raffles City is built, below: M6-04.)
+  const razed = raffleCuts(plans), vert = verticalCity(plans, g, sts, new Set(razed.keys()));
   // The connections across the streets and between close buildings (M3-37a): roofs may still be set to meet.
   const cross = crossings(plans, g, sts, vert.used!);
   // Each tower's skyline (U-036): the highest roof within 25 m of it.
@@ -127,7 +128,7 @@ export function buildYuzhong(): World {
   const cuts = cutsUnder(plans, ceil, bc);
   // And at Chaotianmen (M6-04, U-108): what stood on the square and the towers' stand-ins, to their footings, nothing
   // of the city's strung or set out there; the square and Raffles City are built once the city stands.
-  for (const [p, c] of raffleCuts(plans)) cuts.set(p, c);
+  for (const [p, c] of razed) cuts.set(p, c);
   const below: Ceil = pts => Math.min(ceil(pts), raffleCeil(pts)), inWay = inWayUnder(below, cuts);
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
@@ -278,6 +279,11 @@ export function buildYuzhong(): World {
   for (const a of [decor, river.decor, out.decor, laid.decor, filled.decor]) kept(a, 0, onIt);
   for (const a of [out.props, river.props, dress.props, laid.props, green.props, rubble.props, filled.props]) kept(a, 0, atIt);
   for (const a of [laid.paths, doorWays]) kept(a, 0, l => l.pts.some(([x, z]) => raf.covers(x, z)));
+  // (And what marks the ground there, or what lay on it: a fallen section's mark with the wall it came off.)
+  for (const a of [river.features, laid.features]) kept(a, 0, atIt);
+  const fell = new Set(rubble.features.filter(f => f.kind.startsWith('fallen') && atIt(f)).map(f => f.group));
+  kept(rubble.features, 0, f => atIt(f) || (f.kind.startsWith('fallen') && fell.has(f.group)));
+  builtOver(marks, raf.covers, rubble.props);
   solids.push(...raf.solids); decor.push(...raf.decor); out.far.push(...raf.far); out.props.push(...raf.props); inter.push(...raf.inter); out.climbables.push(...raf.climbables);
   const world = makeWorld({
     name: 'yuzhong', routes: net.routes, patrols: net.patrols, gates, solids, decor: decor.concat(river.decor, out.decor, tun.decor, line.decor, site?.decor ?? [], ways?.decor ?? [], fac?.decor ?? [], vert.decor, cross.decor, under.decor, sew.decor, linked.decor, laid.decor, filled.decor),
