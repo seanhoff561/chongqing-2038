@@ -22,7 +22,7 @@ Don't eat the rice in the tin. Weevils.
 Xiaoyu` },
     { id: 'xy-bridge-2', zh: '折起来的字条', en: 'Folded note', at: 'Electronics market: door', names: ['substation'], text:
 `Stall 2-117 is shuttered. Somebody's box of capacitors is still spilt on the stairs.
-A woman sleeping by the loading dock knew him. She says the trains don't need a driver to see you on the bridge: the deck is wired, and a grey box at the bridgehead listens to the whole truss. Cut its wires and it's deaf. But it's live, it bites. Dad would know what to wear for that.
+A woman sleeping by the loading dock knew him. She says the trains don't need a driver to see you on the bridge: the deck is wired, and everything it hears runs back along a cable to a cabinet at Dad's substation. Cut the right wires there and the bridge is deaf till they mend it. But it's live, it bites. Dad would know what to wear for that.
 And they hear each other talk. Get close and you need something that shouts over them, made out of what they used to sell up here. I can't make one.
 I'm going to Dad's work. Maybe he's there.` },
     { id: 'xy-bridge-3', zh: '铅笔写的字条', en: 'Note in pencil', at: 'Xinhua Road substation: gate', names: ['bridge'], text:
