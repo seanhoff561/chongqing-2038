@@ -66,3 +66,21 @@ export const markAt = (mk: Marks, x: number, z: number) => {
 export function grassAt(mk: Marks, x: number, z: number): boolean {
   return markAt(mk, x, z) === MARK.wood;
 }
+
+/** Built over once the marks were laid (Chaotianmen square, M6-04): no mark where `covers` is; and a rough patch
+ *  that lost all its debris under it (none of `debris` left on it) is open ground. */
+export function builtOver(mk: Marks, covers: (x: number, z: number) => boolean, debris: { x: number; z: number }[]) {
+  const edge: number[] = [];
+  for (let k = 0; k < mk.m.length; k++) {
+    const i = k % mk.w, j = (k - i) / mk.w;
+    if (mk.m[k] && covers((i + 0.5) * mk.cell, (j + 0.5) * mk.cell)) { mk.m[k] = 0; edge.push(k); }
+  }
+  const has = new Set(debris.map(p => Math.floor(p.z / mk.cell) * mk.w + Math.floor(p.x / mk.cell))), seen = new Set<number>();
+  for (const k0 of edge) for (const s of [k0 - 1, k0 + 1, k0 - mk.w, k0 + mk.w]) {
+    if (mk.m[s] !== MARK.ruin || seen.has(s)) continue;
+    const patch = [s];
+    seen.add(s);
+    for (let n = 0; n < patch.length; n++) for (const q of [patch[n] - 1, patch[n] + 1, patch[n] - mk.w, patch[n] + mk.w]) if (mk.m[q] === MARK.ruin && !seen.has(q)) { seen.add(q); patch.push(q); }
+    if (!patch.some(q => has.has(q))) for (const q of patch) mk.m[q] = MARK.open;
+  }
+}

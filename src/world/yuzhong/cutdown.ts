@@ -57,22 +57,26 @@ export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plot
     for (const k of K) owned[k].fill(1, own[k][0], own[k][1]);
     const c = cuts.get(p);
     if (c === undefined) return;
-    const o = p.obb, lot = { x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd }, at = (k: (typeof K)[number]) => Array.from({ length: own[k][1] - own[k][0] }, (_, i) => own[k][0] + i);
+    // (Cut to its footing, it's gone but for that: its foundation and the slab over it. Nothing it had in it, its
+    // cellar's things and lining included, nor on it or by it; only the sewer's way up under it stays, sewers.ts's,
+    // and the grate over it.)
+    const o = p.obb, razed = c <= p.base, lot = { x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd }, at = (k: (typeof K)[number]) => Array.from({ length: own[k][1] - own[k][0] }, (_, i) => own[k][0] + i);
+    const ways = at('features').map(i => out.features[i]).filter(q => q.kind === 'sewer'), grate = (q: { x: number; y: number; z: number }) => ways.some(f => Math.hypot(q.x - f.x, q.z - f.z) < 0.5 && Math.abs(q.y - f.y) < 0.3);
     // (Its pieces carved apart where a neighbour's floor met it are its own too, M3-76.)
     const mine = at('solids').concat(out.solids.flatMap((q, i) => (i >= own.solids[1] && q.orig && q.orig.x0 === lot.x0 && q.orig.z0 === lot.z0 && q.orig.x1 === lot.x1 && q.orig.z1 === lot.z1 ? [i] : [])));
-    for (const i of mine) { const q = out.solids[i]; if (q.y0 >= c - 0.01 || (q.y1 > c && q.ramp)) drop.solids.add(i); else if (q.y1 > c) out.solids[i] = { ...q, y1: c }; }
-    for (const k of ['decor', 'far'] as const) for (const i of at(k)) { const q = out[k][i]; if (q.y0 >= c - 0.01) drop[k].add(i); else if (q.y1 > c) out[k][i] = { ...q, y1: c }; }
-    for (const k of ['props', 'inter'] as const) for (const i of at(k)) if (out[k][i].y >= c - 0.01) drop[k].add(i);
+    for (const i of mine) { const q = out.solids[i]; if (q.y0 >= c - 0.01 || (q.y1 > c && q.ramp) || (razed && q.inner)) drop.solids.add(i); else if (q.y1 > c) out.solids[i] = { ...q, y1: c }; }
+    for (const k of ['decor', 'far'] as const) for (const i of at(k)) { const q = out[k][i]; if (q.y0 >= c - 0.01 || (razed && q.inner)) drop[k].add(i); else if (q.y1 > c) out[k][i] = { ...q, y1: c }; }
+    for (const k of ['props', 'inter'] as const) for (const i of at(k)) if ((razed && !grate(out[k][i])) || out[k][i].y >= c - 0.01) drop[k].add(i);
     // (One cut to under 1.5 m of climb is gone: a stub left of a vine or a pipe, its prop gone with the floors over it.)
-    for (const i of at('climbables')) { const q = out.climbables[i]; if (q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
-    for (const i of at('hides')) if (out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
-    for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
-    for (const i of at('sites')) if (out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };
+    for (const i of at('climbables')) { const q = out.climbables[i]; if (razed || q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
+    for (const i of at('hides')) if (razed || out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
+    for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01 && !(razed && q.kind !== 'sewer')) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
+    for (const i of at('sites')) if (razed || out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };
     // Its roof over what's left (and over its stairwell's shaft).
     out.solids.push(turn([solid(lot.x0, c - SLAB, lot.z0, lot.x1, c, lot.z1, MAT.concrete)], o.yaw, o.cx, o.cz)[0]);
     p.wall = plots[n].wall = plots[n].top = c;
     // (Its way up ends on its new roof: nothing waits where the old one was.)
-    plots[n].route = plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
+    plots[n].route = razed ? undefined : plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
     const lt = out.lots.find(q => q.id === n);
     if (lt) lt.wall = lt.top = c;
   });
