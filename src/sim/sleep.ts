@@ -3,7 +3,7 @@ import type { SimState } from './types';
 import type { World } from '../world/world';
 import { passTime, damage, die } from './body';
 import { survival as S } from '../data/survival';
-import { onInteract } from './interact';
+import { onInteract, lookTarget } from './interact';
 import { onCmd } from './commands';
 import { nextHour } from './clock';
 import { claimBed } from './shelter';
@@ -40,8 +40,9 @@ onInteract('mattress', { now: (s, _w, it) => { claimBed(s, it); s.events.push({ 
 
 onCmd((s, c, w) => {
   if (c.c !== 'act' || c.name !== 'sleep' || s.dead) return;
-  // In a bed if he's at one; otherwise rough, on whatever floor he stands on (U-013).
-  const where = s.target ? 'bed' : s.player.mode === 'ground' ? 'rough' : null;
+  // In a bed if he's at one (looking at it, not at whatever else is by him); otherwise rough, on whatever floor he
+  // stands on (U-013).
+  const where = lookTarget(s, w)?.kind === 'mattress' ? 'bed' : s.player.mode === 'ground' ? 'rough' : null;
   if (!where) return;
   let until = nextHour(s.time, Number(c.arg));
   for (const h of sleepHooks.beforeSleep) until = Math.min(until, h(s, until));

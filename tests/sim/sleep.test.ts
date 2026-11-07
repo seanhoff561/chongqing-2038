@@ -21,10 +21,10 @@ describe('sleep', () => {
     expect(state.events.some(e => e.t === 'slept')).toBe(true);
   });
 
-  it('holding B lays him down to sleep rough (U-066: its own key): 40% less energy back (U-013)', () => {
+  it('holding B lays him down to sleep rough (U-066: its own key): 40% less energy back (U-013), a crate in front of him no bed', () => {
     const night = (rough: boolean) => {
       const { world, state } = setup([floor()], { x: 0, y: 0, z: 0, yaw: 0 }, {
-        inter: rough ? [] : [{ id: 'm', kind: 'mattress', x: 0, y: 0.3, z: -1.2, r: 0.8, zh: '床垫', en: 'Sleep' }],
+        inter: [{ id: 'm', kind: rough ? 'container' : 'mattress', x: 0, y: 0.3, z: -1.2, r: 0.8, zh: '床垫', en: 'Sleep' }],
       });
       run(state, world, 3, { pitch: -0.6 });
       state.time = 22 * 3600;
