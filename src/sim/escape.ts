@@ -8,6 +8,7 @@ import { dayOf } from './clock';
 import { deleteSave, type Storage } from './save';
 import { docById } from '../data/documents';
 import { NOTES } from '../data/sister';
+import { keyPlaces, inPlace } from './places';
 
 /** Every document's and note's id, for the tally. */
 const PAPERS = new Set([...docById.keys(), ...NOTES.map(n => n.id)]);
@@ -46,19 +47,16 @@ export function closeRun(st: Storage, s: SimState) { if (s.ended) deleteSave(st)
 
 const inBox = (b: { x0: number; y0: number; z0: number; x1: number; y1: number; z1: number }, p: { x: number; y: number; z: number }) => p.x >= b.x0 && p.x <= b.x1 && p.y >= b.y0 && p.y <= b.y1 && p.z >= b.z0 && p.z <= b.z1;
 
-/** Twice a second: an ending zone reached; a site got into; a district newly after him counted as a time seen; how far
- *  he's gone; a document he has. */
+/** Twice a second: an ending zone reached; a high-security site got into (in its building's footprint, as the map has
+ *  it: places.ts); a district newly after him counted as a time seen; how far he's gone; a document he has. */
 export function stepEscape(s: SimState, w: World) {
   if (s.tick % 30 || s.ended || s.dead) return;
   const p = s.player.pos, st = tally(s), d = st.at ? Math.hypot(p.x - st.at.x, p.y - st.at.y, p.z - st.at.z) : 0;
   if (d < STRIDE) st.dist = (st.dist ?? 0) + d;
   st.at = { x: p.x, y: p.y, z: p.z };
   for (const it of s.inv.pack.items) if (PAPERS.has(it.id)) (st.docs ??= {})[it.id] = true;
-  for (const z of w.zones) {
-    if (!inBox(z.box, p)) continue;
-    if (z.kind.startsWith('ending:')) { endRun(s, z.kind.slice(7)); return; }
-    if (z.kind.startsWith('site:')) st.sites[z.kind.slice(5)] = true;
-  }
+  for (const z of w.zones) if (z.kind.startsWith('ending:') && inBox(z.box, p)) { endRun(s, z.kind.slice(7)); return; }
+  for (const q of keyPlaces(w)) if (w.secure?.some(x => x.id === q.id) && inPlace(q, p.x, p.y, p.z)) st.sites[q.id] = true;
   for (const [d, D] of Object.entries(s.hive.districts)) {
     const on = D.state === 'engaged';
     if (on && !st.engaged[d]) st.seen++;

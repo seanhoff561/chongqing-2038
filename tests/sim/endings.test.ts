@@ -23,8 +23,9 @@ const shim = () => { const m = new Map<string, string>(); return { getItem: (k: 
 
 describe('escapes and endings (M7-01)', () => {
   it('keeps route progress, counts sites and sightings, and ends the run on a route, clearing the save', () => {
-    const zones = [{ kind: 'site:police', box: { x0: -2, y0: -1, z0: -12, x1: 2, y1: 4, z1: -8 } }, { kind: 'ending:boat', box: { x0: -2, y0: -1, z0: -32, x1: 2, y1: 4, z1: -28 } }];
+    const zones = [{ kind: 'ending:boat', box: { x0: -2, y0: -1, z0: -32, x1: 2, y1: 4, z1: -28 } }];
     const { world: w, state: s } = setup([floor(0, 60)], { x: 0, y: 0, z: 0, yaw: 0 }, { zones });
+    w.secure = [{ id: 'police', prefix: 'none', x: 0, z: -10, ways: [], heart: { x: 0, y: 0, z: -10 } }];
     s.time = 3 * 86400 + 12 * 3600;
     const st = shim();
     writeSave(st, 'run', s);
