@@ -45,7 +45,13 @@ export function way(w: World, kind: UnitKind, a: V3, b: V3): V3[] {
     if (clear(a, side) && clear(side, eye)) return [side];
     if (!w.nav || clear(a, top)) return [top];
     const p = navPath(w.nav, a, b, 'street');
-    if (p) return [...p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), { x: b.x, y: b.y + 2, z: b.z }];
+    if (p) {
+      // (On from the way's end to the point, or as near it as the air's clear: the way's end can be the street outside
+      // the building the point's up in, and it doesn't go through the walls and floors in between.)
+      const pts = p.pts.slice(1).map(q => ({ x: q.x, y: q.y + 2.5, z: q.z })), e = pts[pts.length - 1] ?? a, to = { x: b.x, y: b.y + 2, z: b.z };
+      const d = Math.hypot(to.x - e.x, to.y - e.y, to.z - e.z), hit = d < 0.1 ? null : raycast(w.index, e.x, e.y, e.z, (to.x - e.x) / d, (to.y - e.y) / d, (to.z - e.z) / d, d), f = hit ? (hit.t - 0.3) / d : 1;
+      return [...pts, ...(f > 0 ? [{ x: e.x + (to.x - e.x) * f, y: e.y + (to.y - e.y) * f, z: e.z + (to.z - e.z) * f }] : [])];
+    }
     // (No way there under cover, from inside a building to a roof: straight up out of where it is and over, the air
     // clear; else it can't get there, and doesn't go through the walls in the way.)
     const up = { x: a.x, y: top.y, z: a.z };
