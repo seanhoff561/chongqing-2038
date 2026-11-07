@@ -1,8 +1,8 @@
 # Progress
 
 <!-- status -->
-**Status:** building M6. Next: M6-03 Hongyadong.
-Features done: 416 / 438 | Last done: M7-13
+**Status:** building M9. Next: M9-01 Difficulty tuning.
+Features done: 418 / 438 | Last done: M6-09
 <!-- /status -->
 
 ## What's built
@@ -76,3 +76,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - M7-14: solvability proofs for every route (and the holes they found: the pier's gangway, the jerrycan and inverter)
 - Release 0.4.0 (M10 complete): all four exits playable with endings, the opening scene, map editor, Maps menu and Training Room; browser checks brought up to the game; perf's last 2-11% over budget in progress
 - M6-04, M6-18, M7-13: Chaotianmen and Raffles City with The Crystal, the drone hub and its second fuse (one fuse, one feeder; two, both); and frame CPU back under budget everywhere
+- M6-03, M6-09: Hongyadong down the Jialing cliff and the western border wall across the Eling neck
