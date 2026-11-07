@@ -1,6 +1,6 @@
 // The trailer's music (M10-35, U-104): about 90 s in A minor, made sample by sample here, no samples from anyone.
 // Run `node tools/trailer.mjs`: it writes scratch/trailer.wav (44.1 kHz, 16-bit, stereo) and, with ffmpeg, encodes
-// public/audio/trailer.ogg (Vorbis q5); without ffmpeg it writes public/audio/trailer.wav (mono, 22.05 kHz) instead.
+// media/trailer.ogg (Vorbis q5); without ffmpeg it writes media/trailer.wav (mono, 22.05 kHz) instead.
 // 120 bpm (a beat is 0.5 s). Its sections, timed to the trailer:
 //    0-12 s  cold open: near silence, the city's hum, a low A drone, two distant piano notes, a drone far off.
 //   12-35 s  introduction: the menu's motif (E C D E A) on electric piano over a cold pad, a slow low pulse.
@@ -353,7 +353,7 @@ function wav(chs, rate, step) {
   });
   return [buf, max];
 }
-mkdirSync('scratch', { recursive: true });
+mkdirSync('scratch', { recursive: true }); mkdirSync('media', { recursive: true });
 const [stereo, max] = wav([L, R], SR, 1);
 writeFileSync('scratch/trailer.wav', stereo);
 const db = (x) => (20 * Math.log10(x)).toFixed(2);
@@ -364,12 +364,12 @@ for (const [a, b, name] of [[0, 12, 'cold open'], [12, 35, 'introduction'], [35,
   console.log(`  ${name.padEnd(13)} ${a}-${b} s  rms ${db(Math.sqrt(s / ((b - a) * SR * 2)))} dBFS`);
 }
 if (spawnSync('which', ['ffmpeg']).status === 0) {
-  const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 'scratch/trailer.wav', '-c:a', 'libvorbis', '-q:a', '5', 'public/audio/trailer.ogg']);
+  const r = spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', 'scratch/trailer.wav', '-c:a', 'libvorbis', '-q:a', '5', 'media/trailer.ogg']);
   if (r.status !== 0) throw new Error(String(r.stderr));
-  console.log('  -> public/audio/trailer.ogg');
+  console.log('  -> media/trailer.ogg');
 } else {
   const M2 = new Float32Array(N);
   for (let i = 0; i < N; i++) M2[i] = (L[i] + R[i]) / 2;
-  writeFileSync('public/audio/trailer.wav', wav([M2], SR / 2, 2)[0]);
-  console.log('  -> public/audio/trailer.wav (mono, 22.05 kHz)');
+  writeFileSync('media/trailer.wav', wav([M2], SR / 2, 2)[0]);
+  console.log('  -> media/trailer.wav (mono, 22.05 kHz)');
 }

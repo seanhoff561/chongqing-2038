@@ -28,8 +28,9 @@ const dev = q.get('dev') === '1';
 const saved = q.get('scenario') ? null : readSave(localStorage);
 const seed = Number(q.get('seed')) || saved?.state.seed || Math.floor(Math.random() * 1e9);
 const sc = scenarioByName(q.get('scenario') ?? 'run');
-// (Each stage's end, in ms since the page opened, for the boot's budget: tests/e2e/inplace.e2e.mjs.)
-const boot = { world: 0, view: 0, ready: 0 };
+// (Each stage's end, in ms since the page opened, for the boot's budget: tests/e2e/inplace.e2e.mjs; `code` when the
+// game's code is loaded and running, its loading screen up, M9-08.)
+const boot = { code: performance.now(), world: 0, view: 0, ready: 0 };
 await stage('建造城市 · Building the city');
 if (sc) getWorld(sc.world, seed);
 boot.world = performance.now();

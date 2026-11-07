@@ -1,7 +1,9 @@
-// npm run verify: typecheck, all tests, production build, browser smoke test.
+// npm run verify: typecheck, all tests, production build and its size, browser smoke test.
 // One-line summary on screen; details in logs/verify.log.
 import { spawnSync } from 'child_process';
 import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
 fs.mkdirSync('logs', { recursive: true });
 const log = [];
 const steps = [
@@ -10,6 +12,8 @@ const steps = [
   // (Another seed's city: each file in a worker of its own, so no worker holds two cities.)
   ['seeds', 'npx', ['vitest', 'run', '--isolate', '--reporter=dot', '--exclude', 'scratch/**', '.seeds.']],
   ['build', 'npx', ['vite', 'build']],
+  // (What a player downloads, M9-08: every file the build makes, gzipped, under 3 MB.)
+  ['bundle'],
   ['smoke', 'node', ['tools/smoke.mjs']],
 ];
 const res = [];
@@ -17,6 +21,15 @@ let ok = true;
 for (const [name, cmd, args] of steps) {
   if (!ok) { res.push(`${name} skipped`); continue; }
   const t = Date.now();
+  if (name === 'bundle') {
+    const files = d => fs.readdirSync(d).flatMap(f => { const p = path.join(d, f); return fs.statSync(p).isDirectory() ? files(p) : [p]; });
+    const mb = files('dist').reduce((a, f) => a + zlib.gzipSync(fs.readFileSync(f), { level: 9 }).length, 0) / 1e6;
+    ok = mb < 3;
+    log.push(`== bundle\n${mb.toFixed(2)} MB gzipped`);
+    if (!ok) console.log(`bundle: ${mb.toFixed(2)} MB gzipped, over 3 MB`);
+    res.push(`bundle ${ok ? 'ok' : 'FAIL'} ${mb.toFixed(2)} MB gzipped`);
+    continue;
+  }
   const r = spawnSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 << 20 });
   const out = ((r.stdout ?? '') + (r.stderr ?? '')).replace(/\x1b\[[0-9;]*m/g, '');
   log.push(`== ${name} (${((Date.now() - t) / 1000).toFixed(1)} s)\n${out}`);

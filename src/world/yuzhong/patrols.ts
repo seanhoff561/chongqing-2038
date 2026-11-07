@@ -163,6 +163,19 @@ function flyOver(w: World, p: Patrol): Patrol {
   return { ...p, pts, dwell, ...(p.look ? { look } : {}) };
 }
 
+/** What of a list lies within r of a point, in the list's order (filed in r-sized cells, so each of a beat's
+ *  thousands of stops looks at what's near it, not the whole city's: some 7 s of the city's build, M9-08); the caller still
+ *  checks the distance. */
+function nearby<T>(xs: T[], at: (x: T) => { x: number; z: number }, r: number): (x: number, z: number) => T[] {
+  const cells = new Map<number, number[]>(), key = (i: number, j: number) => i * 65536 + j;
+  xs.forEach((x, n) => { const p = at(x), k = key(Math.floor(p.x / r), Math.floor(p.z / r)); (cells.get(k) ?? cells.set(k, []).get(k)!).push(n); });
+  return (x, z) => {
+    const i = Math.floor(x / r), j = Math.floor(z / r), out: number[] = [];
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const n of cells.get(key(i + a, j + b)) ?? []) out.push(n);
+    return out.sort((a, b) => a - b).map(n => xs[n]);
+  };
+}
+
 export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[] {
   // The bins and crates to look behind: the alleys' and the streets' (their hiding spots, M3-47).
   const hides = w.hides.filter(h => h.kind === 'crate' || h.kind === 'dumpster' || h.kind === 'drum').map(h => ({ x: (h.inner.x0 + h.inner.x1) / 2, y: h.inner.y0, z: (h.inner.z0 + h.inner.z1) / 2 }));
@@ -171,8 +184,10 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
   /** What a walker stops to look at: the bins, the street doors, and down the side streets where they leave it. */
   const sights = hides.concat(doors.map(([door]) => door), sides.flatMap(st => [st.pts[Math.min(1, st.pts.length - 1)], st.pts[Math.max(0, st.pts.length - 2)]]).map(([x, z]) => ({ x, y: heightAt(g, x, z) ?? 0, z })));
   /** From a point on a side street: beside the bins in an alley within 15 m, or in at a door within 20 m. */
+  const hidesNear = nearby(hides, h => h, 15), doorsNear = nearby(doors, ([door]) => door, 20), sightsNear = nearby(sights, f => f, ALIVE.near);
+  const sidePts = sides.flatMap((st, i) => st.pts.map(([x, z], k) => ({ i, k, x, z }))), sidesNear = nearby(sidePts, q => q, 12);
   const toAlley = (q: V3): V3[] | null => {
-    for (const h of hides) {
+    for (const h of hidesNear(q.x, q.z)) {
       const d = Math.hypot(q.x - h.x, q.z - h.z);
       if (d > 15 || d < 1.5) continue;
       const by = { x: h.x + ((q.x - h.x) / d) * 1.2, y: h.y, z: h.z + ((q.z - h.z) / d) * 1.2 };
@@ -180,7 +195,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
     }
     return null;
   };
-  const toDoor = (q: V3): V3[] | null => { for (const [door, inside] of doors) if (Math.hypot(door.x - q.x, door.z - q.z) < 20 && walkable(w, q, door) && walkable(w, door, inside)) return [door, inside]; return null; };
+  const toDoor = (q: V3): V3[] | null => { for (const [door, inside] of doorsNear(q.x, q.z)) if (Math.hypot(door.x - q.x, door.z - q.z) < 20 && walkable(w, q, door) && walkable(w, door, inside)) return [door, inside]; return null; };
   // The districts' own beats (M4-57): every main street within 300 m of their centres walked by pairs, a squad on the
   // longest, a drone over it; and their side streets within 250 m by walkers on their own. (A street's stretch is
   // walked once, by the first district to take it.)
@@ -298,7 +313,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       since += step; looked += step;
       // Stopping now and then to look at a door or a bin beside its way, or down a side street (M4-59), its head turning.
       if (looked >= ALIVE.every && !rest[i] && i < line.length - 1) {
-        const t = sights.find(f => { const d = Math.hypot(f.x - q.x, f.z - q.z); return d < ALIVE.near && d > 1 && clear(w, q, f, 1); });
+        const t = sightsNear(q.x, q.z).find(f => { const d = Math.hypot(f.x - q.x, f.z - q.z); return d < ALIVE.near && d > 1 && clear(w, q, f, 1); });
         // (With nothing to look at for a while, it stops and looks out to one side all the same.)
         const out = !t && looked >= 2 * ALIVE.every ? atan2(line[i + 1].x - q.x, line[i + 1].z - q.z) + ((spurs + i) % 2 ? Math.PI / 2 : -Math.PI / 2) : null;
         if (t || out !== null) { dwell[dwell.length - 1] = ALIVE.look; look[pts.length - 1] = t ? atan2(t.x - q.x, t.z - q.z) : out!; looked = 0; }
@@ -309,9 +324,11 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
       const near = (x: number, z: number, r: number) => Math.hypot(x - q.x, z - q.z) < r;
       // (Looked for all along first, the other only where there's none of it.)
       const find = (go: typeof toAlley): V3[] | null => {
-        for (const side of sides) {
-          const k = side.pts.findIndex(([x, z]) => near(x, z, 12));
-          if (k < 0) continue;
+        // (Each side street with a point within 12 m, by its first such point, in order.)
+        const firsts = new Map<number, number>();
+        for (const c of sidesNear(q.x, q.z)) if (!firsts.has(c.i) && near(c.x, c.z, 12)) firsts.set(c.i, c.k);
+        for (const [i, k] of firsts) {
+          const side = sides[i];
           for (const dir of [1, -1]) {
             const walk: V3[] = [];
             let from = q;
