@@ -354,7 +354,7 @@ export function walkedBeats(w: World, base: Patrol[], tunnel: [V3, V3]): Patrol[
 function skyDrones(w: World): Patrol[] {
   const out: Patrol[] = [], g = w.ground!;
   for (const k of DISTRICTS) {
-    const L = GEO.landmarks[k], roofs = w.plots.filter(p => !p.far && Math.hypot(centre(p).x - L.x, centre(p).z - L.z) < SKY.r);
+    const L = GEO.landmarks[k], roofs = w.plots.filter(p => !p.far && !p.razed && Math.hypot(centre(p).x - L.x, centre(p).z - L.z) < SKY.r);
     if (roofs.length < 8) continue;
     for (let d = 0; d < SKY.per; d++) {
       const pts: V3[] = [], dwell: number[] = [], look: Record<number, number> = {};

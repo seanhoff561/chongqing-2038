@@ -264,7 +264,10 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
     for (let i = 0; i < n; i++) {
       const d = Math.hypot(obb[i].cx - p.x, obb[i].cz - p.z);
       if (d > 150 || sheer.has(i)) continue;
-      const k = inside[i] >= 0 ? inside[i] : i, s = edges[k].length * 10 - d + (inside[i] >= 0 ? 50 : 0);
+      // (Not one that joins none: a place built by hand with no way in for these routes, Hongyadong's tiers, M6-03.)
+      const k = inside[i] >= 0 ? inside[i] : i;
+      if (!edges[k].length) continue;
+      const s = edges[k].length * 10 - d + (inside[i] >= 0 ? 50 : 0);
       if (s > score) { score = s; best = k; }
     }
     return best;

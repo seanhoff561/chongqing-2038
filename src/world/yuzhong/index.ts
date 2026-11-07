@@ -172,9 +172,11 @@ export function buildYuzhong(): World {
   plots.push(...hy.plots);
   // The caches, and the route network over everything that joins the roofs (M3-37).
   const gates = placeGates(gatePairs.filter(q => isolated(q, plans)), out), L0 = GEO.landmarks, lm = (k: string) => ({ x: L0[k].x, y: 0, z: L0[k].z });
+  // (Hongyadong's ways in reached along the streets as the key points are: the buildings round it, whose doors joined
+  // the streets there, are gone.)
   const net = network(plots.filter(p => !p.razed), out.features.concat(vert.features, cross.features, under.features, sew.features), out.sites, sts, g,
     [['jiaochangkou', 'shibati', 'jiefangbei', 'cablewayNorth', 'xiaoshizi', 'chaotianmen'].map(lm), ['jiefangbei', 'xinhuaIntl', 'hongyadong', 'chaotianmen'].map(lm)],
-    { ...home.at.grate }, cross, gates, buildIndex(out.solids), keys, joins);
+    { ...home.at.grate }, cross, gates, buildIndex(out.solids), keys.concat(hy.plots.flatMap(p => (p.route ? [{ name: 'hongyadong', at: p.route[0] }] : []))), joins);
   // The underground city's buildings (M3-73), as they stand (after the routes: the surface's network doesn't run
   // through the cavern under it).
   under.lots.forEach((s, k) => { const { l, f } = underLot(s, k); place(f, { cx: (l.x0 + l.x1) / 2, cz: (l.z0 + l.z1) / 2, hw: (l.x1 - l.x0) / 2, hd: (l.z1 - l.z0) / 2, yaw: 0 }, `under${k}`, out); });

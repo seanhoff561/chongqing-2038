@@ -157,8 +157,15 @@ export function hongyadong(g: Heightfield, plans: Plan[]) {
   };
   // (Each down to the lowest ground round it, as the city's are: its stilts reach it.)
   const lowest = (b: Rect) => { let y = Infinity; for (let u = b[0] - 4.5; u <= b[2] + 4.5; u += 2) for (let v = b[1] - 4.5; v <= b[3] + 4.5; v += 2) y = Math.min(y, after(u, v)); return y; };
-  const plots = ([[A, Math.min(...ha.map(h => h.floors[0])), d12], [Bt, B_FLOORS[0], d30], [C, C_FLOORS[0], d44], [PLAZA, d44 - HOUSE.slab, d44]] as [Rect, number, number][]).map(([b, base, wall]): Plot => ({
-    corners: [W(b[0], b[1]), W(b[2], b[1]), W(b[2], b[3]), W(b[0], b[3])], base, wall, top: wall, kind: 'res', found: Math.min(base, lowest(b)) - 1, far: false, osm: false, prefix: 'hongyadong', type: 'mall' }));
+  // (B's and C's ways in off the city's streets, for the routes over the city (network.ts): B's off the stepped street
+  // at the 30 m terrace's west end, C's off the clifftop path onto the top. A's houses stand at the street's levels,
+  // not on one floor: no such way.)
+  const into = (y: number) => {
+    const e = entrance.get(y);
+    return e && ([[e.out + 1, was(e.u + e.nu * (e.out + 1), e.v + e.nv * (e.out + 1))], [-2, y]] as const).map(([d, h]) => { const [x, z] = W(e.u + e.nu * d, e.v + e.nv * d); return { x, y: h, z }; });
+  };
+  const plots = ([[A, Math.min(...ha.map(h => h.floors[0])), d12, undefined], [Bt, B_FLOORS[0], d30, into(d30)], [C, C_FLOORS[0], d44, into(d44)], [PLAZA, d44 - HOUSE.slab, d44, undefined]] as [Rect, number, number, Plot['route']][]).map(([b, base, wall, route]): Plot => ({
+    corners: [W(b[0], b[1]), W(b[2], b[1]), W(b[2], b[3]), W(b[0], b[3])], base, wall, top: wall, kind: 'res', found: Math.min(base, lowest(b)) - 1, far: false, osm: false, prefix: 'hongyadong', type: 'mall', route }));
   const look = (du: number, dv: number) => { const dx = c * du - s * dv, dz = s * du + c * dv; return atan2(-dx, -dz); };
   const tp = (name: string, u: number, v: number, y: number, du: number, dv: number): Teleport => { const [x, z] = W(u, v); return { name, x, y: y + 0.3, z, yaw: look(du, dv) }; };
   const teleports = [tp('hongyadong', -60, Bt[3] - 3, d30, 1, 0), tp('Hongyadong riverfront', (ra.u0 + ra.u1) / 2, A[1] - 3.5, ra.floors[0], 0, 1),
