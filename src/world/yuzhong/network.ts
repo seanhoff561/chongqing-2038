@@ -259,11 +259,12 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
     return steps;
   };
   /** The node for a place: the inside of a building near it that joins the most others, else a roof. */
-  const nodeAt = (p: V3) => {
+  /** (`hand`: only a place built by hand, with no fabric of its own: Hongyadong, M6-03.) */
+  const nodeAt = (p: V3, hand = false) => {
     let best = -1, score = -Infinity;
     for (let i = 0; i < n; i++) {
       const d = Math.hypot(obb[i].cx - p.x, obb[i].cz - p.z);
-      if (d > 150 || sheer.has(i)) continue;
+      if (d > 150 || sheer.has(i) || (hand && lots[i].own)) continue;
       // (Not one that joins none: a place built by hand with no way in for these routes, Hongyadong's tiers, M6-03.)
       const k = inside[i] >= 0 ? inside[i] : i;
       if (!edges[k].length) continue;
@@ -350,7 +351,10 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
   };
   const keep = (rt: Route | null) => { if (rt) routes.push(rt); return !!rt; };
   // Main routes: chains of the districts' centres.
-  anchors.forEach((chain, c) => { for (let k = 0; k + 1 < chain.length; k++) { const a = nodeAt(chain[k]), b = nodeAt(chain[k + 1]); if (a >= 0 && b >= 0 && a !== b) keep(along(`main${c}.${k}`, 'main', a, b)); } });
+  // (A centre that's a place built by hand (Hongyadong, M6-03) is left out of its chain, which runs on past it as the
+  // routes through the districts did; it's reached by a way of its own from the nearest of them, below.)
+  const hand = anchors.flat().filter(q => nodeAt(q, true) >= 0);
+  anchors.map(chain => chain.filter(q => !hand.includes(q))).forEach((chain, c) => { for (let k = 0; k + 1 < chain.length; k++) { const a = nodeAt(chain[k]), b = nodeAt(chain[k + 1]); if (a >= 0 && b >= 0 && a !== b) keep(along(`main${c}.${k}`, 'main', a, b)); } });
   // Branches: from the main routes to the shelters within 300 m of them (one in three, up to 30), and to the caches.
   const onMain = new Set<number>();
   for (const rt of routes) for (const q of rt.pts) { const i = owner(q.x, q.z); if (i >= 0) onMain.add(inside[i] >= 0 ? inside[i] : i); }
@@ -365,6 +369,11 @@ export function network(plots: Plot[], features: Feature[], sites: Site[], sts: 
     const best = nearest(t);
     if (best >= 0 && keep(along(`branch${branches}`, 'branch', best, t))) branches++;
   }
+  // (Each place built by hand from the nearest point on the main routes that a way reaches it from.)
+  hand.forEach((q, k) => {
+    const t = nodeAt(q, true), from = [...onMain].sort((a, b) => Math.hypot(nodes[a].x - nodes[t].x, nodes[a].z - nodes[t].z) - Math.hypot(nodes[b].x - nodes[t].x, nodes[b].z - nodes[t].z));
+    for (const f of from.slice(0, 20)) if (keep(along(`place${k}`, 'branch', f, t))) break;
+  });
   gates.forEach((q, k) => { const t = owner(q.x, q.z), best = t >= 0 ? nearest(t) : -1; if (best >= 0) keep(along(`cache${k}`, 'branch', best, t)); });
   // Two of the three layers between the district's key points (M3-21; the streets' is laid once the world stands):
   // over the roofs, in and up at one end and down and out at the other; and underground or through the buildings,
