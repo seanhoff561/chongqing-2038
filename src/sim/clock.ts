@@ -23,6 +23,13 @@ export function phaseOf(t: number): Phase {
 
 /** Daylight 0..1 with smooth dawn and dusk ramps. */
 export function daylight(t: number): number {
+  // (Asked hundreds of times a tick, for each machine that looks: worked out once a time.)
+  if (t === lit.t) return lit.v;
+  lit.t = t;
+  return (lit.v = daylightAt(t));
+}
+const lit = { t: NaN, v: 0 };
+function daylightAt(t: number): number {
   const h = hourOf(t), P = phasesOn(t);
   if (h >= P.day && h < P.dusk) return 1;
   if (h >= P.dawn && h < P.day) return (h - P.dawn) / (P.day - P.dawn);

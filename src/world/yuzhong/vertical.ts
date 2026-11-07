@@ -22,8 +22,7 @@ type V3 = [number, number, number];
 /** A megastructure's columns: how much the roofs under one may differ, and how thick (U-034). */
 export const MEGA_DROP = 4, COLUMN = 1.6;
 export interface Vertical { solids: Solid[]; decor: Solid[]; far: Solid[]; climbables: Climbable[]; features: Feature[]; /** the lots it has joined across a street */ used?: Set<Plan>;
-  /** connections to build once the buildings stand (crossings.ts) */ links?: Link[];
-  /** what it built on which lots, piece by piece (for takeDown) */ made?: { by: Plan[]; items: object[] }[] }
+  /** connections to build once the buildings stand (crossings.ts) */ links?: Link[] }
 
 /** A row lot's frame: u along its street, n out of its front (its own +z). */
 export const frame = (p: Plan) => { const c = cos(p.obb.yaw), s = sin(p.obb.yaw); return { ux: c, uz: s, nx: -s, nz: c }; };
@@ -44,14 +43,16 @@ export const refloor = (p: Plan, y: number, tol: number) => {
 };
 export const parallel = (a: Plan, b: Plan, k: number) => Math.abs(cos(a.obb.yaw - b.obb.yaw)) > k;
 
-export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vertical {
+/** `gone`: the lots razed to their footings once the city stands (cutdown.ts): what would be built on or to them isn't,
+ *  every die thrown as it was. */
+export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[], gone: Set<Plan>): Vertical {
   const out: Vertical = { solids: [], decor: [], far: [], climbables: [], features: [], links: [] }, r = makeRng(hashString('vertical')), used = new Set<Plan>();
+  /** What's been built so far; and, if any of ps is gone, back to that. */
+  const mark = () => [out.solids.length, out.decor.length, out.far.length, out.climbables.length, out.features.length];
+  const unless = (m: number[], ...ps: Plan[]) => { if (ps.some(p => gone.has(p))) [out.solids.length, out.decor.length, out.far.length, out.climbables.length, out.features.length] = m; };
   const yAt = (x: number, z: number) => g.y[Math.max(0, Math.min(g.h - 1, Math.round(z / g.cell))) * g.w + Math.max(0, Math.min(g.w - 1, Math.round(x / g.cell)))];
   const feature = (kind: string, p: Plan, a: number, d: number, y: number, group = out.features.length) => { const [x, z] = world(p, a, d), f = frame(p); out.features.push({ kind, x, y, z, group, nx: f.nx, nz: f.nz }); };
   const rows = new Map<string, Plan[]>();
-  // (What each piece built, on which lots: takeDown().)
-  const lists = () => [out.solids, out.decor, out.far, out.climbables, out.features] as object[][], made: NonNullable<Vertical['made']> = out.made = [];
-  const mark = () => lists().map(l => l.length), done = (from: number[], ...by: Plan[]) => made.push({ by, items: lists().flatMap((l, i) => l.slice(from[i])) });
   for (const p of plans) if (p.row && /^\d+:/.test(p.row) && !p.far && p.kind === 'res' && !p.sheer && !p.pitched) { const a = rows.get(p.row); if (a) a.push(p); else rows.set(p.row, [p]); }
 
   // Across the street: buildings facing each other, overlapping along it.
@@ -67,8 +68,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
       const [al, ad] = local(a, b.obb.cx, b.obb.cz), o0 = Math.max(-a.obb.hw, al - b.obb.hw), o1 = Math.min(a.obb.hw, al + b.obb.hw);
       const z0 = a.obb.hd, z1 = ad - b.obb.hd, m = (o0 + o1) / 2;
       if (o1 - o0 < 6 || z1 - z0 < 3 || z1 - z0 > 40) continue;
-      const ground = Math.max(...[0.15, 0.5, 0.85].flatMap(t => [m - 2, m + 2].map(u => yAt(...world(a, u, z0 + (z1 - z0) * t)))));
-      const n0 = mark();
+      const ground = Math.max(...[0.15, 0.5, 0.85].flatMap(t => [m - 2, m + 2].map(u => yAt(...world(a, u, z0 + (z1 - z0) * t))))), was = mark();
       if (road) {
         // A skybridge, three pairs in four up to 40: the deck at the lower roof, the higher roof's edge a mantle up.
         if (bridges >= 40 || rand(r) > 0.75) continue;
@@ -97,7 +97,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
         feature('overLane', a, m, (z0 + z1) / 2, y0);
         lanes++;
       }
-      done(n0, a, b);
+      unless(was, a, b);
       used.add(a); used.add(b);
       // (Both built out to their edges at the top: nothing stepped back from the deck or the block, M3-81.)
       a.edge = b.edge = true;
@@ -114,12 +114,12 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
       if (g.street![c] && g.street![c] !== 2 && g.y[c] >= p.base + 2 * FLOOR) { H = g.y[c]; d = k; }
     }
     if (!d || !refloor(p, H - PARAPET, 1.5)) continue;
-    const top = p.wall + PARAPET, z0 = -p.obb.hd - d - 0.5, z1 = -p.obb.hd + 0.3, n0 = mark();
+    const top = p.wall + PARAPET, z0 = -p.obb.hd - d - 0.5, z1 = -p.obb.hd + 0.3, was = mark();
     // The ramp rises toward its higher end: the street (-z, 4) or the roof (+z, 3).
     out.solids.push(turn([rampSolid(p.obb.cx - 1.6, Math.min(H, top) - 0.4, p.obb.cz + z0, p.obb.cx + 1.6, p.obb.cz + z1, Math.min(H, top), Math.max(H, top), H > top ? 4 : 3, MAT.concrete)], p.obb.yaw, p.obb.cx, p.obb.cz)[0]);
     for (const k of [-1, 1]) out.decor.push(box(p, k * 1.6 - 0.08, k * 1.6 + 0.08, z0 + 0.1, z0 + 0.26, Math.min(H, top), Math.max(H, top) + 1, MAT.metal));
     feature('roofStreet', p, 0, -p.obb.hd, top);
-    done(n0, p);
+    unless(was, p);
     used.add(p); p.edge = true;
   }
 
@@ -143,7 +143,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
       const s0 = Math.min(...spans.map(s => s[0])), s1 = Math.max(...spans.map(s => s[1])), D = Math.min(18, ...run.map(p => 2 * p.obb.hd));
       if (s1 - s0 < 30 || s1 - s0 > 90) continue;
       const front = M.obb.hd, y0 = Math.max(...run.map(p => p.wall)) + PARAPET + 4.2, y1 = y0 + (4 + randInt(r, 5)) * 3.5;
-      const mat = rand(r) < 0.6 ? MAT.facadeBand : MAT.facade, n0 = mark();
+      const mat = rand(r) < 0.6 ? MAT.facadeBand : MAT.facade, was = mark();
       out.solids.push(box(M, s0, s1, front - D, front + 3, y0, y1, mat));
       out.far.push(out.solids[out.solids.length - 1]);
       for (const [a0, a1, d0, d1] of [[s0, s1, front - D, front - D + 0.3], [s0, s1, front + 2.7, front + 3], [s0, s0 + 0.3, front - D, front + 3], [s1 - 0.3, s1, front - D, front + 3]]) out.solids.push(box(M, a0, a1, d0, d1, y1, y1 + 1, MAT.concrete));
@@ -159,7 +159,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
       out.solids.push(box(M, 0.8 - COLUMN / 2, 0.8 + COLUMN / 2, front - D + 0.05, front - D + 0.05 + COLUMN, M.wall, y0, MAT.concrete));
       out.climbables.push({ kind: 'ladder', x: lx, z: lz, y0: M.wall, y1: y1 + 1, nx: -f.nx, nz: -f.nz });
       feature('mega', M, sm, front - D / 2, y0);
-      done(n0, ...run);
+      unless(was, ...run);
       megas++;
     }
   }
@@ -170,11 +170,11 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
     if (!parallel(a, b, 0.99) || Math.abs(a.wall - b.wall) > 2 || a.wall - a.base < 6 || b.wall - b.base < 6) continue;
     const [al] = local(a, b.obb.cx, b.obb.cz), gap = Math.abs(al) - a.obb.hw - b.obb.hw, k = Math.sign(al);
     if (gap <= E.runningJump.max || gap > E.wallRun.comfortable) continue;
-    const e0 = k * (a.obb.hw - 1.5), e1 = al - k * (b.obb.hw - 1.5), lo = Math.min(a.wall, b.wall) - 2, hi = Math.max(a.wall, b.wall) + 4.5, z = a.obb.hd, n0 = mark();
+    const e0 = k * (a.obb.hw - 1.5), e1 = al - k * (b.obb.hw - 1.5), lo = Math.min(a.wall, b.wall) - 2, hi = Math.max(a.wall, b.wall) + 4.5, z = a.obb.hd, was = mark();
     out.solids.push(box(a, Math.min(e0, e1), Math.max(e0, e1), z + 0.05, z + 0.35, lo, hi, MAT.metal));
     out.decor.push(box(a, Math.min(e0, e1) + 0.3, Math.max(e0, e1) - 0.3, z + 0.35, z + 0.38, lo + 0.4, hi - 0.4, MAT.screen));
     feature('billboard', a, (e0 + e1) / 2, z, Math.min(a.wall, b.wall));
-    done(n0, a, b);
+    unless(was, a, b);
     a.edge = b.edge = true;
   }
   // The layers between the rows' buildings (U-032): vertical alleys (a slot of 1.2-3.2 m between two walls 20 m
@@ -186,7 +186,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
     if (!parallel(a, b, 0.99)) continue;
     const [al] = local(a, b.obb.cx, b.obb.cz), gap = Math.abs(al) - a.obb.hw - b.obb.hw, k = Math.sign(al), lo = Math.min(a.wall, b.wall), floor = Math.max(a.base, b.base);
     const e0 = k * a.obb.hw, e1 = al - k * b.obb.hw, mid = (e0 + e1) / 2, depth = Math.min(a.obb.hd, b.obb.hd);
-    if (gap >= 1.2 && gap <= 3.2 && lo - floor >= 20) { const n0 = mark(); feature('vAlley', a, mid, a.obb.hd - depth, lo); done(n0, a, b); }
+    if (gap >= 1.2 && gap <= 3.2 && lo - floor >= 20) { const was = mark(); feature('vAlley', a, mid, a.obb.hd - depth, lo); unless(was, a, b); }
     if (gap >= 2 && gap <= 7 && lo - floor >= 15 && rand(r) < 0.25) {
       // A plank bridge with a handrail, somewhere between 8 m up and the lower roof, toward the front.
       const y = floor + 8 + rand(r) * Math.max(0, lo - floor - 11), d = a.obb.hd - 2 - rand(r) * Math.max(0, depth * 2 - 6);
@@ -227,7 +227,7 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
   for (const p of plans) {
     if (p.far || p.sheer || p.kind !== 'res' || p.wall - p.base < 20 || !p.row || rand(r) > 0.12) continue;
     const w = Math.min(p.obb.hw * 2 - 2, 6 + rand(r) * 4), u0 = (rand(r) - 0.5) * (p.obb.hw * 2 - w - 1) - w / 2, u1 = u0 + w, f = p.obb.hd;
-    const y0 = p.base + BARE + 1 + rand(r) * 4, y1 = Math.max(y0 + 6, p.base + (p.wall - p.base) * 0.5), n0 = mark();
+    const y0 = p.base + BARE + 1 + rand(r) * 4, y1 = Math.max(y0 + 6, p.base + (p.wall - p.base) * 0.5), was = mark();
     for (let y = y0; y <= y1 + 0.01; y += 2) out.solids.push(box(p, u0, u1, f + 0.1, f + 1.2, y - 0.05, y, MAT.wood));
     for (const u of [u0, u1]) for (const d of [f + 0.15, f + 1.15]) {
       out.solids.push(box(p, u - 0.03, u + 0.03, d - 0.03, d + 0.03, y0 - 0.6, y1 + 1.1, MAT.metal));
@@ -235,14 +235,8 @@ export function verticalCity(plans: Plan[], g: Heightfield, sts: Street[]): Vert
     }
     for (let y = y0 + 1; y <= y1; y += 2) out.decor.push(box(p, u0, u1, f + 1.17, f + 1.21, y - 0.03, y + 0.03, MAT.metal));
     feature('scaffold', p, (u0 + u1) / 2, f + 0.6, y0);
-    done(n0, p);
+    unless(was, p);
   }
   out.used = used;
   return out;
-}
-
-/** What it built on lots razed for a place built there since (U-108) taken down, its dice thrown as they were. */
-export function takeDown(v: Vertical, gone: (p: Plan) => boolean) {
-  const dead = new Set((v.made ?? []).filter(m => m.by.some(gone)).flatMap(m => m.items));
-  for (const k of ['solids', 'decor', 'far', 'climbables', 'features'] as const) (v as unknown as Record<string, object[]>)[k] = v[k].filter(q => !dead.has(q));
 }

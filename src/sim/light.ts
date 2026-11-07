@@ -67,10 +67,28 @@ export function localLight(w: World, x: number, y: number, z: number, time?: num
   return best;
 }
 
+/** The world's underground zones by the 64 m cells they cover (built once a world): asked every frame, and every metre
+ *  along a crawler's way, so not the whole list (some 1700 in the big city) each time. */
+const UCELL = 64, unders = new WeakMap<World, Map<number, World['zones']>>();
+/** The underground zone (x, y, z) is in (the first of the world's, if more than one). */
+export function underZone(w: World, x: number, y: number, z: number) {
+  let g = unders.get(w);
+  if (!g) {
+    g = new Map();
+    for (const q of w.zones) if (q.kind === 'under')
+      for (let i = Math.floor(q.box.x0 / UCELL); i <= Math.floor(q.box.x1 / UCELL); i++) for (let j = Math.floor(q.box.z0 / UCELL); j <= Math.floor(q.box.z1 / UCELL); j++) {
+        const k = i * 65536 + j, a = g.get(k);
+        if (a) a.push(q); else g.set(k, [q]);
+      }
+    unders.set(w, g);
+  }
+  return g.get(Math.floor(x / UCELL) * 65536 + Math.floor(z / UCELL))?.find(q => x >= q.box.x0 && x <= q.box.x1 && y >= q.box.y0 && y <= q.box.y1 && z >= q.box.z0 && z <= q.box.z1);
+}
+
 /** The light there is without lamps: the sky's by the hour, half of it at best under a roof, next to none
  *  underground (a lit hall's own lights aside). */
 export function ambientAt(w: World, x: number, y: number, z: number, time: number): number {
-  const day = daylight(time), zone = w.zones.find(q => q.kind === 'under' && x >= q.box.x0 && x <= q.box.x1 && y >= q.box.y0 && y <= q.box.y1 && z >= q.box.z0 && z <= q.box.z1);
+  const day = daylight(time), zone = underZone(w, x, y, z);
   if (zone) return zone.lit ? AMBIENT.hall : AMBIENT.under;
   // Under a roof: something a metre across or more straight overhead (a cable or a beam isn't a roof).
   const up = raycast(w.index, x, y + 1, z, 0, 1, 0, 40), over = up ? w.solids[up.id] : null;

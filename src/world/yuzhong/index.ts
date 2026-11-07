@@ -1,14 +1,14 @@
 // Yuzhong at 1:1 (M3-41b, D-016): the real ground, streets, stairs, bridges and buildings of the eastern
 // peninsula from the geo data. Each lot is built by the city's lot code in its own unturned frame, then turned
 // into place.
-import { solid, rampSolid, turn, buildIndex, overlaps, grow, raycast, carve, type Solid } from '../geom';
+import { solid, rampSolid, turn, buildIndex, grow, raycast, carve, type Solid } from '../geom';
 import { HUNG, PROP_BOX, PROP_HIDE } from '../../data/props';
 import { makeWorld, type World, type Teleport, type Prop, type Inter, type Climbable, type HideSpot, type Site, type Plot } from '../world';
 import { MAT } from '../mats';
 import { makeRng, hashString } from '../../sim/rng';
 import { buildLot, PARAPET, type Fabric, type Lot } from '../city/buildings';
 import { stepsFor } from '../steps';
-import { findMarks } from './marks';
+import { findMarks, builtOver } from './marks';
 import { greenery, climbOf } from './green';
 import { layout, doorPaths } from './layout';
 import { ruins } from './ruins';
@@ -26,7 +26,7 @@ import { siteWays } from './siteways';
 import { placeFinds } from './finds';
 import { exitZones } from './exits';
 import { podiumMask, buildFactory } from './factory';
-import { verticalCity, takeDown } from './vertical';
+import { verticalCity } from './vertical';
 import { crossings, layLinks, windowBridges } from './crossings';
 import { underLot } from './undercity';
 import { pickGates, placeGates, network, isolated } from './network';
@@ -53,7 +53,7 @@ import { placeSensors } from './sensors';
 import { chooseAlley, buildHome, VENT } from './home';
 import { links, cut } from './links';
 import { hongyadong } from './hongyadong';
-import { footprint, sweep, drop, unmark, clipStreets, clipBeat, type Gone, type Owned } from './clear';
+import { footprint, sweep, drop, clipStreets, clipBeat, type Gone, type Owned } from './clear';
 import { borderWall } from './borderwall';
 import { sin, cos, tan, atan2 } from '../trig';
 
@@ -108,8 +108,9 @@ export function buildYuzhong(): World {
   const gatePairs = pickGates(plans, makeRng(hashString('gates')));
   // (Round the caches nothing changes: what keeps them out of reach was judged at these heights.)
   oldQuarter(plans, new Set(plans.filter(p => gatePairs.some(([c]) => Math.hypot(p.obb.cx - c.obb.cx, p.obb.cz - c.obb.cz) < 60)).concat(gatePairs.flat())));
-  // Bridged, stacked and built over (M3-57): it may set roofs to meet, so before the lots are built.
-  const vert = verticalCity(plans, g, sts);
+  // Bridged, stacked and built over (M3-57): it may set roofs to meet, so before the lots are built. (Nothing to what
+  // stands at Chaotianmen till Raffles City is built, below: M6-04; nor where Hongyadong stands: M6-03.)
+  const hy = hongyadong(g, plans), razed = raffleCuts(plans), vert = verticalCity(plans, g, sts, new Set([...razed.keys(), ...hy.cuts.keys()]));
   // The connections across the streets and between close buildings (M3-37a): roofs may still be set to meet.
   const cross = crossings(plans, g, sts, vert.used!);
   // Each tower's skyline (U-036): the highest roof within 25 m of it.
@@ -127,14 +128,13 @@ export function buildYuzhong(): World {
   const cwPlan = plans.find(q => q.inside === SECURE.find(S => S.id === 'cableway')!.inside), cable = cwPlan ? cableLine(plans, cwPlan) : null;
   // And under the bridges' decks (M6-07).
   // And where Hongyadong stands (M6-03, U-108): razed to nothing, built over once the city stands.
-  const spans = bridgeSpans(g), bc = bridgeCeil(spans), cc = cable ? cableCeil(cable) : null, hy = hongyadong(g, plans);
+  const spans = bridgeSpans(g), bc = bridgeCeil(spans), cc = cable ? cableCeil(cable) : null;
   const ceil: Ceil = pts => (pts.some(([x, z]) => hy.inside(x, z, 0.5)) ? -Infinity : Math.min(cc ? cc(pts) : Infinity, bc(pts)));
   const cuts = cutsUnder(plans, ceil, bc);
   for (const [p, c] of hy.cuts) cuts.set(p, c);
   // And at Chaotianmen (M6-04, U-108): what stood on the square and the towers' stand-ins, to their footings, nothing
   // of the city's strung or set out there; the square and Raffles City are built once the city stands.
-  const rafCuts = raffleCuts(plans);
-  for (const [p, c] of rafCuts) cuts.set(p, c);
+  for (const [p, c] of razed) cuts.set(p, c);
   const below: Ceil = pts => Math.min(ceil(pts), raffleCeil(pts)), inWay = inWayUnder(below, cuts);
   plans.forEach((p, n) => plots.push(buildPlan(p, n, out, g)));
   rowAlleys(plans, out, g, home.pair[0]);
@@ -145,11 +145,8 @@ export function buildYuzhong(): World {
   layLinks(vert, built, inWay);
   layLinks(cross, built, inWay);
   windowBridges(out.features.filter(f => f.kind.startsWith('win:')), built, cross, inWay);
-  const razed = (p: Plan) => hy.cuts.has(p) || rafCuts.has(p);
-  cutDown(below, cuts, plans, plots, out, razed);
-  // (What the vertical city built on what was razed for the new places goes with it; whatever of it and of the
-  // crossings stood where Hongyadong does, too.)
-  takeDown(vert, razed);
+  cutDown(below, cuts, plans, plots, out);
+  // (Whatever of the vertical city and the crossings stood where Hongyadong does goes with what it joined.)
   for (const v of [vert, cross]) {
     for (const k of ['solids', 'decor', 'far'] as const) v[k] = v[k].filter(q => !footprint(q).some(([x, z]) => hy.inside(x, z, 0.5)));
     v.climbables = v.climbables.filter(q => !hy.inside(q.x, q.z, 0.5)); v.features = v.features.filter(q => !hy.inside(q.x, q.z, 8));
@@ -158,7 +155,7 @@ export function buildYuzhong(): World {
   place(hy.f, hy.o, 'hongyadong', out);
   const mine = new Set<object>(K.flatMap((k, i) => (out[k] as object[]).slice(n0[i])));
   // The sewer maze under the basements (M3-73a).
-  const sew = sewers(out.features.filter(f => f.kind === 'sewer'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
+  const sew = sewers(out.features.filter(f => f.kind === 'sewer' || f.kind === 'sewer:capped'), plots, g, under.route, tun.zones.concat(home.zones).map(z => z.box), under.solids, under.zones.map(z => z.box));
   // The cable tunnel to the telecom exchange and the hospital's basement link (M6-21), off Jiaochangkou's station hall:
   // each to the foot of its site's basement shaft (the hospital's along the sewer under its street, taken in).
   const shaftFoot = (id: string) => {
@@ -301,12 +298,12 @@ export function buildYuzhong(): World {
   kept(solids, fixed, onIt); kept(inter, inters, atIt);
   for (const a of [decor, river.decor, out.decor, laid.decor, filled.decor]) kept(a, 0, onIt);
   for (const a of [out.props, river.props, dress.props, laid.props, green.props, rubble.props, filled.props]) kept(a, 0, atIt);
-  kept(out.climbables, 0, q => above(q.x, q.z, q.y1));
   for (const a of [laid.paths, doorWays]) kept(a, 0, l => l.pts.some(([x, z]) => raf.covers(x, z)));
-  // (And a manhole or a trapdoor kept under it, in a basement left under the square, where its walls go down through
-  // it: sealed there.)
-  const rafIdx = buildIndex(raf.solids), buried = (q: { x: number; y: number; z: number }) => raf.covers(q.x, q.z) && overlaps(rafIdx, { x0: q.x - 0.05, y0: q.y - 0.05, z0: q.z - 0.05, x1: q.x + 0.05, y1: q.y + 0.05, z1: q.z + 0.05 });
-  kept(out.props, 0, buried); kept(inter, 0, buried); kept(out.features, 0, f => f.kind === 'sewer' && buried(f));
+  // (And what marks the ground there, or what lay on it: a fallen section's mark with the wall it came off.)
+  for (const a of [river.features, laid.features]) kept(a, 0, atIt);
+  const fell = new Set(rubble.features.filter(f => f.kind.startsWith('fallen') && atIt(f)).map(f => f.group));
+  kept(rubble.features, 0, f => atIt(f) || (f.kind.startsWith('fallen') && fell.has(f.group)));
+  builtOver(marks, raf.covers, rubble.props);
   solids.push(...raf.solids); decor.push(...raf.decor); out.far.push(...raf.far); out.props.push(...raf.props); inter.push(...raf.inter); out.climbables.push(...raf.climbables);
   // Where Hongyadong stands, whatever the city's dressing set there since taken away (not its own), and the ground cut
   // down under it (U-108).
@@ -321,7 +318,10 @@ export function buildYuzhong(): World {
   sweep({ point: atWall, solid: bw.clears }, new Set(), { solids: [solids, decor, river.decor, out.decor, line.decor, vert.decor, cross.decor, laid.decor, filled.decor],
     points: [out.props, river.props, line.props, laid.props, dress.props, green.props, rubble.props, filled.props, inter, out.features, river.features, vert.features, cross.features, rubble.features, laid.features], ups: [out.climbables, line.climbables, vert.climbables] }, owned);
   solids.push(...bw.solids); decor.push(...bw.decor); out.features.push(...bw.features);
-  unmark(marks, (x, z) => raf.covers(x, z) || hy.inside(x, z) || bw.at(x, z), rubble.features);
+  // (Where they stand, no woods, parks or ruins any more, nor a section fallen off a wall that's gone: as at Chaotianmen.)
+  const builtNow = (x: number, z: number) => hy.inside(x, z) || bw.at(x, z), fellHere = new Set(rubble.features.filter(f => f.kind.startsWith('fallen') && builtNow(f.x, f.z)).map(f => f.group));
+  kept(rubble.features, 0, f => f.kind.startsWith('fallen') && fellHere.has(f.group));
+  builtOver(marks, builtNow, rubble.props);
   // The tunnel gate's door switches its own collision solid, the tunnels' last.
   tun.inter.find(i => i.id === 'shibati-gate')!.data!.solid = solids.indexOf(gateSolid);
   const world = makeWorld({

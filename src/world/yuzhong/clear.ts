@@ -3,8 +3,7 @@
 // ending at it. Nothing else is touched, so every die elsewhere falls as it did.
 import { frameOut, type Solid } from '../geom';
 import type { P2 } from './shapes';
-import type { Plot, Feature, Patrol } from '../world';
-import { MARK, type Marks } from './marks';
+import type { Plot, Patrol } from '../world';
 
 /** A solid's footprint: its corners (turned with it) and its middle. */
 export function footprint(s: Solid): P2[] {
@@ -56,25 +55,6 @@ export function clipStreets<S extends { pts: P2[] }>(sts: S[], out: (x: number, 
     // (One it doesn't touch as it was.)
     return cut ? pieces : [s];
   });
-}
-
-/** Where the new places stand, the ground no longer the city's woods, parks or ruins: a patch of ruins reaching into
- *  one gone whole (what lay on it was where the place is), and the sections of a facade fallen there with it. */
-export function unmark(mk: Marks, placed: (x: number, z: number) => boolean, rubble: Feature[]) {
-  const at = (k: number) => placed(((k % mk.w) + 0.5) * mk.cell, (Math.floor(k / mk.w) + 0.5) * mk.cell), seen = new Uint8Array(mk.m.length);
-  for (let k0 = 0; k0 < mk.m.length; k0++) {
-    if (seen[k0] || !mk.m[k0]) continue;
-    if (mk.m[k0] !== MARK.ruin) { if (at(k0)) mk.m[k0] = 0; continue; }
-    const cells = [k0];
-    seen[k0] = 1;
-    for (let n = 0; n < cells.length; n++) {
-      const k = cells[n], i = k % mk.w;
-      for (const q of [i + 1 < mk.w ? k + 1 : -1, i > 0 ? k - 1 : -1, k + mk.w, k - mk.w]) if (q >= 0 && q < mk.m.length && !seen[q] && mk.m[q] === MARK.ruin) { seen[q] = 1; cells.push(q); }
-    }
-    if (cells.some(at)) for (const k of cells) mk.m[k] = 0;
-  }
-  const gone = new Set(rubble.filter(f => f.kind === 'fallen' && placed(f.x, f.z)).map(f => f.group));
-  drop(rubble, f => (f.kind === 'fallen' || f.kind === 'fallenFrom') && gone.has(f.group));
 }
 
 /** A street beat that ran through a new place (`out`) or by it (`near`): its points in it left out, and where the

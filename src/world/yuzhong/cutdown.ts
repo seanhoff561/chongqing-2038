@@ -47,7 +47,7 @@ const inObb = (p: Plan, x: number, z: number, m: number) => {
  *  over its cut gone (its windows there kept as ghosts and its shelters 'gone', for the routes' dice, as a hand-made
  *  building's are), a roof over the rest; and whatever else the city strung or set out in the space over the line
  *  (the alleys' cables and junk) taken away. The joins' connections there were never built (inWayUnder()). */
-export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plots: Plot[], out: Fabric, razed?: (p: Plan) => boolean) {
+export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plots: Plot[], out: Fabric) {
   const K = ['solids', 'decor', 'far', 'props', 'inter', 'climbables', 'hides', 'features', 'sites'] as const;
   const owned = Object.fromEntries(K.map(k => [k, new Uint8Array(out[k].length)])) as Record<(typeof K)[number], Uint8Array>;
   const drop = Object.fromEntries(K.map(k => [k, new Set<number>()])) as Record<(typeof K)[number], Set<number>>;
@@ -57,26 +57,29 @@ export function cutDown(ceil: Ceil, cuts: Map<Plan, number>, plans: Plan[], plot
     for (const k of K) owned[k].fill(1, own[k][0], own[k][1]);
     const c = cuts.get(p);
     if (c === undefined) return;
-    const o = p.obb, lot = { x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd }, at = (k: (typeof K)[number]) => Array.from({ length: own[k][1] - own[k][0] }, (_, i) => own[k][0] + i);
+    // (Cut to its footing, it's gone but for that: its foundation and the slab over it. Nothing it had in it, its
+    // cellar's things and lining included, nor on it or by it. The sewer's way up under it is still dug (sewers.ts),
+    // capped by the footing: no cellar over it, no grate.)
+    const o = p.obb, razed = c <= p.base, lot = { x0: o.cx - o.hw, z0: o.cz - o.hd, x1: o.cx + o.hw, z1: o.cz + o.hd }, at = (k: (typeof K)[number]) => Array.from({ length: own[k][1] - own[k][0] }, (_, i) => own[k][0] + i);
     // (Its pieces carved apart where a neighbour's floor met it are its own too, M3-76.)
     const mine = at('solids').concat(out.solids.flatMap((q, i) => (i >= own.solids[1] && q.orig && q.orig.x0 === lot.x0 && q.orig.z0 === lot.z0 && q.orig.x1 === lot.x1 && q.orig.z1 === lot.z1 ? [i] : [])));
-    for (const i of mine) { const q = out.solids[i]; if (q.y0 >= c - 0.01 || (q.y1 > c && q.ramp)) drop.solids.add(i); else if (q.y1 > c) out.solids[i] = { ...q, y1: c }; }
-    for (const k of ['decor', 'far'] as const) for (const i of at(k)) { const q = out[k][i]; if (q.y0 >= c - 0.01) drop[k].add(i); else if (q.y1 > c) out[k][i] = { ...q, y1: c }; }
-    for (const k of ['props', 'inter'] as const) for (const i of at(k)) if (out[k][i].y >= c - 0.01) drop[k].add(i);
+    for (const i of mine) { const q = out.solids[i]; if (q.y0 >= c - 0.01 || (q.y1 > c && q.ramp) || (razed && q.inner)) drop.solids.add(i); else if (q.y1 > c) out.solids[i] = { ...q, y1: c }; }
+    for (const k of ['decor', 'far'] as const) for (const i of at(k)) { const q = out[k][i]; if (q.y0 >= c - 0.01 || (razed && q.inner)) drop[k].add(i); else if (q.y1 > c) out[k][i] = { ...q, y1: c }; }
+    for (const k of ['props', 'inter'] as const) for (const i of at(k)) if (razed || out[k][i].y >= c - 0.01) drop[k].add(i);
     // (One cut to under 1.5 m of climb is gone: a stub left of a vine or a pipe, its prop gone with the floors over it.)
-    for (const i of at('climbables')) { const q = out.climbables[i]; if (q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
-    for (const i of at('hides')) if (out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
-    // (A basement's manhole razed with it kept, for the sewers' dice: their shaft ends sealed under what stands there.)
-    for (const i of at('features')) { const q = out.features[i]; if (q.y < c - 0.01 || (q.kind === 'sewer' && c === -Infinity)) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
-    for (const i of at('sites')) if (out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };
-    // Its roof over what's left (and over its stairwell's shaft); one cut to nothing (-Infinity) is gone to its base.
-    // One razed for a new place built there (U-108) has no way up left.
-    const gone = c === -Infinity || !!razed?.(p), y = c === -Infinity ? p.base : c;
+    for (const i of at('climbables')) { const q = out.climbables[i]; if (razed || q.y0 >= c - 1.5) drop.climbables.add(i); else if (q.y1 > c) out.climbables[i] = { ...q, y1: c }; }
+    for (const i of at('hides')) if (razed || out.hides[i].inner.y0 >= c - 0.01) drop.hides.add(i);
+    for (const i of at('features')) { const q = out.features[i]; if (razed && q.kind === 'sewer') { out.features[i] = { ...q, kind: 'sewer:capped' }; continue; } if (q.y < c - 0.01 && !razed) continue; if (q.kind === 'win:open' || q.kind === 'win:glass') out.features[i] = { ...q, kind: 'win:gone' }; else drop.features.add(i); }
+    for (const i of at('sites')) if (razed || out.sites[i].y >= c - 0.01) out.sites[i] = { ...out.sites[i], kind: 'gone' };
+    // Its roof over what's left (and over its stairwell's shaft). One cut to nothing (-Infinity: a new place stands
+    // where it was, U-108) has no footing left: its plot keeps its base, and the way up it had, so what counted it still
+    // does (`razed`).
+    const y = c === -Infinity ? p.base : c;
     if (c !== -Infinity) out.solids.push(turn([solid(lot.x0, c - SLAB, lot.z0, lot.x1, c, lot.z1, MAT.concrete)], o.yaw, o.cx, o.cz)[0]);
+    else plots[n].razed = plots[n].route ?? [];
     p.wall = plots[n].wall = plots[n].top = y;
     // (Its way up ends on its new roof: nothing waits where the old one was.)
-    if (gone) plots[n].razed = plots[n].route ?? [];
-    plots[n].route = gone ? undefined : plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
+    plots[n].route = razed ? undefined : plots[n].route?.map(q => (q.y > c ? { ...q, y: c } : q));
     const lt = out.lots.find(q => q.id === n);
     if (lt) lt.wall = lt.top = y;
   });

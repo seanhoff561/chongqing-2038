@@ -29,8 +29,11 @@ const STRIDE: Partial<Record<UnitKind, number>> = { humanoid: 0.75, heavy: 1.2, 
 /** How many of each kind can be drawn at once (M4-83): the nearest within NEAR get an instance set from their kind's
  *  pool, so the batch (and the matrices it uploads each frame) is sized to what's near him, not to the whole city. */
 const POOL: Partial<Record<UnitKind, number>> = { humanoid: 110, quadruped: 110, drone: 70, hunter: 30, fpv: 12, bomber: 8, spider: 6, colossus: 4, heli: 1, crawler: 16, heavy: 8, carrier: 16, delivery: 16, camera: 160, sweeper: 8, turret: 40, pir: 12, tripwire: 4, acoustic: 8 };
-/** Frames between looks at a unit last seen this far past NEAR: none comes 50 m in half a second. */
-const RECHECK = 30;
+/** A machine's top speed (m/s) and the most seconds a far one waits to be looked at again: one seen d metres past
+ *  NEAR isn't looked at again till he and it could have closed d between them (his own way from the camera moving, its
+ *  own at FAST; at most WAIT's worth, as one can come out on its beat somewhere new, each its own share of it so they
+ *  don't all come due in one frame): of the city's thousands, a few a frame (M10-04). */
+const FAST = 100, WAIT = 3;
 /** Seconds a destroyed machine takes to go grey-black. */
 const FADE = 1.5;
 const C4 = new THREE.Vector4();
@@ -47,11 +50,15 @@ export class UnitView {
   /** each kind's instance sets (one instance a part), which are free, and its looks' geometries in the batch (a unit's
    *  set given its own look's when it takes it, M10-44) */
   private pool = new Map<UnitKind, { sets: number[][]; free: number[]; looks: number[][] }>();
-  /** each unit's instance set from its kind's pool (-1: not drawn), its lights as last set, frames till it's looked at
-   *  again if it was far */
+  /** each unit's instance set from its kind's pool (-1: not drawn), its lights as last set, and the odometer's reading
+   *  it's looked at again by if it was far */
   private slot: number[] = [];
   private lit: (keyof typeof LIGHT)[] = [];
-  private wait: number[] = [];
+  private due: number[] = [];
+  /** the metres he and a machine at FAST could have closed between them so far: the camera's way and FAST a second
+   *  passed (either way: a game loaded, or slept through) */
+  private odo = 0;
+  private was = { x: 0, z: 0, t: NaN };
   /** each unit as last drawn: where and when (real seconds), its speed eased, its stride's phase, gun up, crouched */
   private last: { x: number; z: number; t: number; speed: number; phase: number; aim: number; crouch: number }[] = [];
   private m = new THREE.Matrix4();
@@ -119,15 +126,19 @@ export class UnitView {
     FRUSTUM.setFromProjectionMatrix(VP.multiplyMatrices(eye.projectionMatrix, eye.matrixWorldInverse));
     BOOST.value = 1 + 1.6 * night.k;
     this.frame++;
-    while (this.slot.length < units.length) { this.slot.push(-1); this.lit.push('unaware'); this.wait.push(0); this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: this.last.length, aim: 0, crouch: 0 }); this.paint.push(1); this.hid.push(false); this.gone.push(NaN); this.rag.push(undefined); }
+    const W = this.was;
+    this.odo += Number.isNaN(W.t) ? 0 : Math.hypot(cam.x - W.x, cam.z - W.z) + FAST * Math.abs(t - W.t);
+    W.x = cam.x; W.z = cam.z; W.t = t;
+    while (this.slot.length < units.length) { this.slot.push(-1); this.lit.push('unaware'); this.due.push(0); this.last.push({ x: 0, z: 0, t: -1, speed: 0, phase: this.last.length, aim: 0, crouch: 0 }); this.paint.push(1); this.hid.push(false); this.gone.push(NaN); this.rag.push(undefined); }
     units.forEach((u, i) => {
+      // (Far off last time: looked at again only once it could have come near.)
+      if (this.odo < this.due[i]) return;
       const pl = this.pool.get(u.kind);
-      if (!pl) return;
-      // (Far off last time: looked at again only now and then.)
-      if (this.wait[i] > 0) { this.wait[i]--; return; }
+      // (Not drawn here at all: the smart lampposts' cameras are their props'.)
+      if (!pl) { this.due[i] = Infinity; return; }
       // (An idle camera's housing still shows, M4-16, and a machine that's out where it stopped, M4-17.)
       const p = unitPose(w, u, time), d2 = Math.hypot(p.x - cam.x, p.z - cam.z), on = (p.active || u.cam !== undefined || !!u.stop) && d2 <= NEAR;
-      if (!on) { if (this.slot[i] >= 0) this.release(i, u.kind); if (d2 > NEAR + 50) this.wait[i] = RECHECK; return; }
+      if (!on) { if (this.slot[i] >= 0) this.release(i, u.kind); if (d2 > NEAR) this.due[i] = this.odo + Math.min(d2 - NEAR, FAST * WAIT * (0.5 + ((i * 0.618) % 1) / 2)); return; }
       if (this.slot[i] < 0) {
         const k = pl.free.pop();
         if (k === undefined) return;

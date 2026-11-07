@@ -91,8 +91,9 @@ describe('the construction site (M6-10)', () => {
 
   it('is crawled into under the hoarding along the ditch', () => {
     const q = one('site:ditchIn');
-    // (Standing, he can't get under; then from where he started, crawling: the walker sidesteps along the hoarding.)
+    // (Standing, he can't get under.)
     expect(walkPath(tp('Construction site: ditch'), w, [q], false).reached).toBe(0);
+    // (Crawling, from the ditch: not from wherever the walk's sidesteps left him against the hoarding.)
     const s = tp('Construction site: ditch');
     run(s, w, 10, { buttons: B.CRAWL, pressed: B.CRAWL });
     for (let t = 0; t < secs(25) && Math.hypot(q.x - s.player.pos.x, q.z - s.player.pos.z) > 1; t++) {

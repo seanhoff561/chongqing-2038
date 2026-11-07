@@ -43,25 +43,65 @@ export function nearestNav(nav: Nav, p: V3, r = 60): number {
   return best;
 }
 
+/** Each nav graph's search arrays, made once and used again: a point's are this search's only once it's stamped with
+ *  it (a city's hunt asks for ways several times a tick, and filling arrays the size of the city's graph each time, and
+ *  collecting them after, was most of it). */
+const searches = new WeakMap<Nav, { stamp: Uint32Array; n: number; dist: Float64Array; prev: Int32Array; via: Int8Array }>();
+let heapF = new Float64Array(1024), heapI = new Int32Array(1024);
+
+/** Which kinds take the same stretches: the one that stands for each. */
+const TAKES = (kind: UnitKind | 'street'): UnitKind | 'street' => (kind === 'street' || kind === 'quadruped' ? kind : kind === 'colossus' || kind === 'spider' ? 'colossus' : kind === 'delivery' || kind === 'carrier' ? 'delivery' : 'humanoid');
+/** Each nav graph's points by the piece of it they're in for each such kind, its stretches taken either way (made once
+ *  a kind, on first use): two places in different pieces have no way between them, known without searching the whole
+ *  piece one's in for it (a machine sent where it can't go did, most of a hunt's cost). */
+const pieces = new WeakMap<Nav, Map<UnitKind | 'street', Int32Array>>();
+function pieceOf(nav: Nav, kind: UnitKind | 'street'): Int32Array {
+  let m = pieces.get(nav);
+  if (!m) pieces.set(nav, (m = new Map()));
+  const k = TAKES(kind);
+  let ids = m.get(k);
+  if (ids) return ids;
+  // (Joined stretch by stretch, each point to the root of its piece.)
+  const P = nav.pts, up = new Int32Array(P.length).map((_, i) => i);
+  const root = (i: number) => { while (up[i] !== i) i = up[i] = up[up[i]]; return i; };
+  nav.adj.forEach((es, i) => { for (const e of es) if (canTake(k, e, P[i], P[e[0]])) up[root(i)] = root(e[0]); });
+  ids = up.map((_, i) => root(i));
+  m.set(k, ids);
+  return ids;
+}
+
 /** The shortest way between two places for a kind of unit ('street': along the streets and stairs only), or null. */
 export function navPath(nav: Nav, from: V3, to: V3, kind: UnitKind | 'street'): NavPath | null {
   const a = nearestNav(nav, from), b = nearestNav(nav, to), P = nav.pts;
   if (a < 0 || b < 0) return null;
-  const dist = new Float64Array(P.length).fill(Infinity), prev = new Int32Array(P.length).fill(-1), via = new Int8Array(P.length), heap: [number, number][] = [];
+  const piece = pieceOf(nav, kind);
+  if (piece[a] !== piece[b]) return null;
+  let S = searches.get(nav);
+  if (!S || S.stamp.length !== P.length || S.n === 0xffffffff) searches.set(nav, (S = { stamp: new Uint32Array(P.length), n: 0, dist: new Float64Array(P.length), prev: new Int32Array(P.length), via: new Int8Array(P.length) }));
+  const n = ++S.n, { stamp, dist, prev, via } = S;
+  // (A point first come to this search: as far as can be, from nowhere.)
+  const at = (i: number) => { if (stamp[i] !== n) { stamp[i] = n; dist[i] = Infinity; prev[i] = -1; via[i] = 0; } return i; };
   const hd = (i: number) => Math.hypot(P[i].x - P[b].x, P[i].y - P[b].y, P[i].z - P[b].z);
-  const push = (f: number, i: number) => { heap.push([f, i]); for (let k = heap.length - 1; k > 0;) { const q = (k - 1) >> 1; if (heap[q][0] <= heap[k][0]) break; [heap[q], heap[k]] = [heap[k], heap[q]]; k = q; } };
-  const pop = () => {
-    const top = heap[0], last = heap.pop()!;
-    if (heap.length) { heap[0] = last; for (let k = 0; ;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < heap.length && heap[l][0] < heap[m][0]) m = l; if (r < heap.length && heap[r][0] < heap[m][0]) m = r; if (m === k) break; [heap[m], heap[k]] = [heap[k], heap[m]]; k = m; } }
-    return top;
+  // (The open list a binary heap in two arrays, its keys and its points: no garbage made a step.)
+  let hf = heapF, hi = heapI, size = 0;
+  const swap = (p: number, q: number) => { const f = hf[p], i = hi[p]; hf[p] = hf[q]; hi[p] = hi[q]; hf[q] = f; hi[q] = i; };
+  const push = (f: number, i: number) => {
+    if (size === hf.length) { const F = new Float64Array(size * 2), I = new Int32Array(size * 2); F.set(hf); I.set(hi); hf = heapF = F; hi = heapI = I; }
+    hf[size] = f; hi[size] = i; size++;
+    for (let k = size - 1; k > 0;) { const q = (k - 1) >> 1; if (hf[q] <= hf[k]) break; swap(q, k); k = q; }
   };
-  dist[a] = 0; push(hd(a), a);
-  while (heap.length) {
-    const [f, i] = pop();
+  const pop = () => {
+    size--;
+    if (size) { hf[0] = hf[size]; hi[0] = hi[size]; for (let k = 0; ;) { const l = 2 * k + 1, r = l + 1; let m = k; if (l < size && hf[l] < hf[m]) m = l; if (r < size && hf[r] < hf[m]) m = r; if (m === k) break; swap(m, k); k = m; } }
+  };
+  at(a); at(b); dist[a] = 0; push(hd(a), a);
+  while (size) {
+    const f = hf[0], i = hi[0];
+    pop();
     if (i === b) break;
     if (f - hd(i) > dist[i] + 1e-9) continue;
     for (const e of nav.adj[i]) {
-      const j = e[0], c = dist[i] + e[1];
+      const j = at(e[0]), c = dist[i] + e[1];
       if (c < dist[j] && canTake(kind, e, P[i], P[j])) { dist[j] = c; prev[j] = i; via[j] = e[2]; push(c + hd(j), j); }
     }
   }
