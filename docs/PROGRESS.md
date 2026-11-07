@@ -2,7 +2,7 @@
 
 <!-- status -->
 **Status:** building M9. Next: M9-01 Difficulty tuning.
-Features done: 418 / 438 | Last done: M6-09
+Features done: 420 / 438 | Last done: M9-06
 <!-- /status -->
 
 ## What's built
@@ -77,3 +77,4 @@ M10 in order (features.json): 150 fps on medium; settings word for word and the 
 - Release 0.4.0 (M10 complete): all four exits playable with endings, the opening scene, map editor, Maps menu and Training Room; browser checks brought up to the game; perf's last 2-11% over budget in progress
 - M6-04, M6-18, M7-13: Chaotianmen and Raffles City with The Crystal, the drone hub and its second fuse (one fuse, one feeder; two, both); and frame CPU back under budget everywhere
 - M6-03, M6-09: Hongyadong down the Jialing cliff and the western border wall across the Eling neck
+- M9-04, M9-06: every scenario boots clean in the browser; a full run in a sim test (and the two bugs it found: sleeping rough by a crate, the sites count)
