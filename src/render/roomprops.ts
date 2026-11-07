@@ -302,9 +302,13 @@ export class RoomProps {
     for (const p of props) { const k = this.key(Math.floor(p.x / TILE), Math.floor(p.z / TILE)); (this.tiles.get(k) ?? this.tiles.set(k, []).get(k)!).push(p); }
   }
   private key(i: number, j: number) { return `${i},${j}`; }
+  /** Where it was last frame: put somewhere new (a teleport), all near him is built at once, a loading moment as the
+   *  streamed city's is (view.ts), not a tile a frame over the seconds after. */
+  private from = new THREE.Vector3(Infinity, 0, 0);
   update(at: THREE.Vector3) {
     const ci = Math.floor(at.x / TILE), cj = Math.floor(at.z / TILE), r = Math.ceil(NEAR / TILE);
-    let todo = 1;
+    let todo = Number.isFinite(this.from.x) && this.from.distanceTo(at) > 60 ? Infinity : 1;
+    this.from.copy(at);
     for (let i = ci - r; i <= ci + r && todo; i++) for (let j = cj - r; j <= cj + r && todo; j++) {
       const k = this.key(i, j), ps = this.tiles.get(k);
       if (!ps || this.built.has(k) || this.dist(i, j, at) > NEAR) continue;

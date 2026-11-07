@@ -69,6 +69,7 @@ import { board } from './render/signs';
 import { districtOf } from './sim/district';
 import { Settings } from './ui/settings';
 import { findGrab } from './sim/grip';
+import { underZone } from './sim/light';
 import { allInters } from './sim/interact';
 import { raycast } from './world/geom';
 
@@ -443,7 +444,7 @@ export class Game {
   /** Eases toward 1 while the camera is inside an underground zone. */
   private underAmount(dt: number): number {
     const c = this.view.fp.cam.position;
-    const zone = this.world.zones.find(z => z.kind === 'under' && c.x > z.box.x0 && c.x < z.box.x1 && c.y > z.box.y0 && c.y < z.box.y1 && c.z > z.box.z0 && c.z < z.box.z1);
+    const zone = underZone(this.world, c.x, c.y, c.z);
     const k = 1 - Math.exp(-3 * dt);
     this.under += ((zone ? 1 : 0) - this.under) * k;
     this.lit += ((zone?.lit ? 1 : 0) - this.lit) * k;

@@ -25,7 +25,10 @@ export const SPACE = { near: 20, room: 0.6, steer: 1.5, weave: 0.3, rate: 1.1, c
 
 /** A machine's body this tick, where it is now (moved this tick, if it has). */
 type Body = { u: Unit; x: number; y: number; z: number; /** its girth */ r: number };
-let memo: { s: SimState | null; tick: number; list: Body[] } = { s: null, tick: -1, list: [] };
+/** (And by the 8 m cells they stood in as the tick began, with the girth of the widest: a city on the hunt has hundreds
+ *  of machines on their way at once, each asking after the bodies near it.) */
+let memo: { s: SimState | null; tick: number; list: Body[]; cells: Map<number, number[]>; maxR: number } = { s: null, tick: -1, list: [], cells: new Map(), maxR: 0 };
+const CELL = 8;
 
 /** This tick's bodies: every machine off its beat or stopped (a wreck, a lame one), and those on their beats near him. */
 /** The fixed sensors: mounted on poles, walls and roofs (their housings the world's own solids), not bodies in the way. */
@@ -56,8 +59,18 @@ function crowd(s: SimState, w: World): Body[] {
     if (!u.trip && !u.stop && Math.hypot(p.x - him.x, p.z - him.z) > SPACE.near + 5) continue;
     list.push({ u, x: p.x, y: p.y, z: p.z, r: BODY[u.kind][2] });
   }
-  memo = { s, tick: s.tick, list };
+  const cells = new Map<number, number[]>();
+  let maxR = 0;
+  list.forEach((b, i) => { const k = Math.floor(b.x / CELL) * 65536 + Math.floor(b.z / CELL), a = cells.get(k); if (a) a.push(i); else cells.set(k, [i]); maxR = Math.max(maxR, b.r); });
+  memo = { s, tick: s.tick, list, cells, maxR };
   return list;
+}
+
+/** This tick's bodies that stood within d of (x, z) as it began (and maybe a few more), in the crowd's order. */
+function bodiesNear(s: SimState, w: World, x: number, z: number, d: number): Body[] {
+  const list = crowd(s, w), ids: number[] = [];
+  for (let i = Math.floor((x - d) / CELL); i <= Math.floor((x + d) / CELL); i++) for (let j = Math.floor((z - d) / CELL); j <= Math.floor((z + d) / CELL); j++) { const a = memo.cells.get(i * 65536 + j); if (a) for (const k of a) ids.push(k); }
+  return ids.sort((a, b) => a - b).map(k => list[k]);
 }
 
 /** Where a body is now (one on a trip may have moved this tick). */
@@ -70,7 +83,8 @@ const where = (b: Body): V3 => (b.u.trip && !b.u.stop ? b.u.trip.pos : b);
 function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number, yaw: number, weave: boolean, way: V3): [V3, boolean] {
   const [y0, y1, r] = BODY[u.kind], fly = UNITS[u.kind].fly > 0;
   const near: { x: number; y: number; z: number; r: number; lo: number; hi: number; him?: boolean }[] = [];
-  for (const b of crowd(s, w)) {
+  crowd(s, w);
+  for (const b of bodiesNear(s, w, base.x, base.z, r + memo.maxR + SPACE.room + SPACE.cap + 2)) {
     // (Only bodies it could come within its room of this tick, first by where they stood as the tick began, give or take
     // a step: the rest change nothing, and in a crowd they were most of a tick's work, M10-49.)
     const reach = r + b.r + SPACE.room + SPACE.cap + 1;
@@ -81,7 +95,9 @@ function apart(s: SimState, w: World, u: Unit, from: V3, base: V3, step: number,
   }
   const P = s.player.pos;
   if (s.player.mode !== 'dead' && Math.abs(P.x - base.x) < SPACE.near && Math.abs(P.z - base.z) < SPACE.near) near.push({ x: P.x, y: P.y, z: P.z, r: M.width / 2, lo: P.y, hi: P.y + M.height[s.player.posture], him: true });
-  if (!near.length && fly) return [base, false];
+  // (Nothing near, a flyer, or a walker standing where it was (looking about at the end of its way), stays put: no
+  // walls to ask after.)
+  if (!near.length && (fly || (base.x === from.x && base.y === from.y && base.z === from.z))) return [base, false];
   // How far its body's edge is from another's (less than 0 inside it), and the way out (into nx, nz: no garbage made, a
   // crowd calls it thousands of times a tick): his body is a box.
   let nx = 0, nz = 0;

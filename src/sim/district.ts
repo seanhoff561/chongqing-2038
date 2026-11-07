@@ -41,7 +41,8 @@ export function stepDistricts(s: SimState, w: World) {
   for (const u of s.units) {
     const off = isOff(s, u);
     // Out, or no longer Engaged: what it had to tell is lost (M4-17 has the hive notice a silence).
-    if (off || u.state !== 'engaged') { u.cast = undefined; u.live = undefined; }
+    // (Written only if it had: thousands of machines, most never engaged.)
+    if (off || u.state !== 'engaged') { if (u.cast !== undefined) u.cast = undefined; if (u.live !== undefined) u.live = undefined; }
     if (off || u.state === 'unaware') continue;
     const d = districtOf(...xz(where(w, s, u)));
     aware.add(d);

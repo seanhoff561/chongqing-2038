@@ -254,12 +254,13 @@ export class View {
     // moved 4 m or the radius has changed.
     const c = this.fp.cam.position, far = this.hasFar ? lodRadius.value : (this.scene.fog as THREE.Fog).far;
     if (this.stream.size) this.streamCells(c);
-    if (far !== this.visFar || Math.hypot(c.x - this.visAt.x, c.z - this.visAt.z) > 4) {
+    const shown = far !== this.visFar || Math.hypot(c.x - this.visAt.x, c.z - this.visAt.z) > 4;
+    if (shown) {
       this.visFar = far; this.visAt.copy(c);
       const within = (o: THREE.Object3D) => { const [x0, z0, x1, z1] = o.userData.rect; return Math.hypot(Math.max(x0 - c.x, 0, c.x - x1), Math.max(z0 - c.z, 0, c.z - z1)) < (o.userData.inner ? Math.min(far, GFX.inner) : o.userData.detail ? Math.min(far, GFX.detail) : far); };
       for (const cell of this.cells) if ((cell.visible = within(cell))) for (const m of cell.children) m.visible = within(m);
     }
-    tickProps(t, open);
+    tickProps(t, open, shown);
     // (The flood as this run has it: its planes' matrices set by hand, their cells frozen.)
     for (const [m, b] of this.floods) if (m.position.y !== b.y1) { m.position.y = b.y1; m.updateMatrix(); m.matrixWorld.copy(m.matrix); }
     tickBeyond();
@@ -305,7 +306,8 @@ function nearLayers(trims: Solid[], insides: Solid[], props: Prop[], share: numb
   return [...detail, ...rooms, ...(props.length ? smallProps(props, share) : [])];
 }
 
-/** Mark what under o never moves: a subtree with nothing that animates (a prop with a tick) is frozen whole.
+/** Mark what under o never moves: a subtree with nothing that animates (a prop with a tick) is frozen whole, and one
+ *  that does keeps the list of its children that do (a cell's hundred meshes, a few of them alive).
  *  Returns whether something under o animates. */
 function freeze(o: THREE.Object3D): boolean {
   if (o.userData.tick) return true;
@@ -313,6 +315,7 @@ function freeze(o: THREE.Object3D): boolean {
   for (const c of o.children) live = freeze(c) || live;
   o.matrixAutoUpdate = false;
   if (!live) o.userData.frozen = true;
+  else o.userData.live = o.children.filter(c => !c.userData.frozen);
   return live;
 }
 
@@ -329,7 +332,7 @@ function liveWalk(o: THREE.Object3D, force: boolean) {
     o.matrixWorldNeedsUpdate = false;
     force = true;
   }
-  for (const c of o.children) liveWalk(c, force);
+  for (const c of o.userData.live ?? o.children) liveWalk(c, force);
 }
 
 /** The graphics, medium for everyone (U-104; the presets of M3-17 are gone): pixels drawn per CSS pixel, the radius
